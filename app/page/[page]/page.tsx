@@ -5,15 +5,24 @@ import { notFound, redirect } from "next/navigation";
 import ListingPage from "../../listing-page";
 import { type Crumb } from "../../breadcrumb";
 
-import { getAllPosts } from "@/lib/api";
+import { getAllPosts, getBrowseIntro } from "@/lib/api";
 import { visibleTagSlugs } from "@/lib/tags";
-import { SITE_URL, INDEX_STANDFIRST } from "@/lib/constants";
+import { SITE_URL, SITE_DESCRIPTION } from "@/lib/constants";
 import {
   pageItems,
   pageRangeParams,
   parsePageParam,
   totalPagesFor,
 } from "@/lib/paginate";
+
+// The BrowseIntro key, and the one place it is written. Both halves of this
+// route pass this same constant to getBrowseIntro for the reason /about and
+// /privacy pass one SLUG: cache() collapses identical calls, not equivalent
+// ones, so a second literal here is a second POST per render waiting to happen.
+//
+// It names the route rather than the content type, matching "archive",
+// "categories", "tags" and "authors". No schema change was needed for it.
+const INTRO_SLUG = "latest-posts";
 
 // Render pages added after build on demand; out-of-range pages 404 below.
 export const dynamicParams = true;
@@ -36,8 +45,29 @@ export async function generateMetadata({
   if (parsePageParam(page) === null) {
     return { title: "Page not found" };
   }
+
+  // Same slug and same isEnabled the component passes below. getBrowseIntro is
+  // cache()-wrapped, so the two calls collapse into one request per render, but
+  // only while the arguments match — which is why draftMode() is resolved here
+  // rather than defaulted.
+  const { isEnabled } = await draftMode();
+  const intro = await getBrowseIntro(INTRO_SLUG, isEnabled);
+
+  // The description falls back to the site's, exactly as browsePageMetadata
+  // does for the four section fronts. That helper cannot be reused here,
+  // because it builds its canonical from the slug and this route's is per page.
+  // Trimmed because a field holding only whitespace is an empty field.
+  //
+  // This is the one fallback in this route, and it is deliberate: a page with
+  // no description at all is worse in a search result than one carrying the
+  // site's, and SITE_DESCRIPTION is chrome rather than page copy, so it cannot
+  // be mistaken for an edit nobody made. The standfirst below takes the
+  // opposite line, and the note there says why.
+  const description = intro?.metaDescription?.trim() || SITE_DESCRIPTION;
+
   return {
     title: `Latest Posts, Page ${page}`,
+    description,
     alternates: { canonical: `${SITE_URL}/page/${page}` },
   };
 }
@@ -59,6 +89,8 @@ export default async function IndexPage({
   }
 
   const { isEnabled } = await draftMode();
+  // Same arguments generateMetadata passes, so cache() collapses the two.
+  const intro = await getBrowseIntro(INTRO_SLUG, isEnabled);
   const allPosts = await getAllPosts(isEnabled);
   const totalPages = totalPagesFor(allPosts.length);
 
@@ -99,10 +131,19 @@ export default async function IndexPage({
       </h1>
       {/* Never on / itself, where the band carries the site tagline instead. A
           standfirst repeating across the pages of one listing is already how
-          every category reads. */}
-      <p className="max-w-3xl text-lg leading-relaxed text-pretty">
-        {INDEX_STANDFIRST}
-      </p>
+          every category reads.
+
+          Rendered only when the entry has one, which is what the four section
+          fronts do, and there is deliberately no fallback: hard-coded copy
+          appearing in the CMS's slot is how the entry stops being the source of
+          truth, with nothing on the page saying which of the two you are
+          looking at. A fresh fork takes this path, because the fork seed is not
+          being given a latest-posts entry in this change. */}
+      {intro?.standfirst && (
+        <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+          {intro.standfirst}
+        </p>
+      )}
     </ListingPage>
   );
 }

@@ -425,8 +425,11 @@ describe("the index listing, which carries a trail again", () => {
           basePath="/"
         >
           <h1>Latest Posts</h1>
+          {/* Fixture prose. The real standfirst comes from the browseIntro
+              entry keyed "latest-posts" and nothing here asserts its wording,
+              so this stands in for "the band has a standfirst" and no more. */}
           <p className="max-w-3xl text-lg leading-relaxed text-pretty">
-            The long dark teatime of the soul, continued.
+            A standfirst, of the length one usually runs to.
           </p>
         </ListingPage>
       </RootLayout>,

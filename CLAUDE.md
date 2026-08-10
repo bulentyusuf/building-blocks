@@ -369,6 +369,28 @@ The standfirst and meta description on `/tags`, `/categories`, `/authors` and
 with the same slug in `generateMetadata` and in the component — see the
 `cache()` section below. A missing entry degrades to a heading, not a 500.
 
+**`/page/[page]` reads the same way, under the slug `latest-posts`**, which
+names the route rather than the content type as the other four do. Its
+standfirst was a constant in `lib/constants.ts` until it moved, so it was the
+one browse standfirst needing a deploy to edit, and it had no meta description
+at all. It does **not** share `browsePageMetadata`, because that helper builds
+its canonical from the slug and this route's canonical is per page — so
+`app/page/[page]/page.tsx` keeps its own metadata object and takes only the
+description from the entry. The slug lives in one `INTRO_SLUG` constant there
+for the `cache()` reason, the same way `/about` and `/privacy` share one `SLUG`.
+
+**Home does not, and that asymmetry is deliberate.** `/` carries
+`SITE_DESCRIPTION` under the masthead, which is site chrome rather than page
+copy — the same reason `SITE_TITLE` stays in code. Do not unify the two by
+giving home a `browseIntro` entry or by moving the tagline into the CMS.
+
+The two also disagree about fallbacks on purpose. `/page/[page]`'s standfirst
+has none, because hard-coded copy in the CMS's slot is how the entry stops being
+the source of truth with nothing on the page saying which you are reading. Its
+meta description does fall back to `SITE_DESCRIPTION`, matching the four fronts,
+because an empty description is worse in a search result and chrome cannot be
+mistaken for an edit nobody made.
+
 **`/archive` is deliberately different.** Its standfirst is generated from the
 data — post count and earliest month — and the `browseIntro` field there is an
 _override_: leave it empty and the counter renders, which is why `standfirst` is
