@@ -85,12 +85,6 @@ export const SITE_TITLE = "Be Useful.";
 export const SITE_DESCRIPTION =
   "Content & Code, with a little help from Generative AI.";
 
-// The standfirst on /page/2 onward. It lives here rather than in Contentful
-// because the index is the one listing with no entry to fetch a standfirst
-// from, and it never appears on / itself, where the band carries the site
-// tagline above instead.
-export const INDEX_STANDFIRST = "The long dark teatime of the soul, continued.";
-
 export const SITE_AUTHOR = "Bulent Yusuf";
 
 // Shown in the footer's first column. Replace this with your own blurb.
