@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
-import TaxonomyListing from "../../../../taxonomy-listing";
+import ListingPage from "../../../../listing-page";
 import { type Crumb } from "../../../../breadcrumb";
 import { RichText } from "@/lib/rich-text";
 import {
@@ -104,7 +104,7 @@ export default async function AuthorPaginatedPage({
   }
 
   return (
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, pageNumber)}
       currentPage={pageNumber}
@@ -135,6 +135,6 @@ export default async function AuthorPaginatedPage({
           <RichText content={author.bio} headings={[]} />
         </div>
       )}
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

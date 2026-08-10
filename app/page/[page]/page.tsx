@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import TaxonomyListing from "../../taxonomy-listing";
+import ListingPage from "../../listing-page";
 import { type Crumb } from "../../breadcrumb";
 
 import { getAllPosts } from "@/lib/api";
@@ -82,7 +82,7 @@ export default async function IndexPage({
   ];
 
   return (
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={posts}
       currentPage={pageNumber}
@@ -103,6 +103,6 @@ export default async function IndexPage({
       <p className="max-w-3xl text-lg leading-relaxed text-pretty">
         {INDEX_STANDFIRST}
       </p>
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

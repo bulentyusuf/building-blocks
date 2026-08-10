@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import TaxonomyListing from "../../../../taxonomy-listing";
+import ListingPage from "../../../../listing-page";
 import { type Crumb } from "../../../../breadcrumb";
 import {
   getAllCategories,
@@ -102,7 +102,7 @@ export default async function CategoryPaginatedPage({
   }
 
   return (
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, pageNumber)}
       currentPage={pageNumber}
@@ -118,6 +118,6 @@ export default async function CategoryPaginatedPage({
           {category.description}
         </p>
       )}
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

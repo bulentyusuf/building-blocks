@@ -7,10 +7,10 @@ import { clsx } from "clsx";
  * Tailwind emits utilities in ascending value order, so a spacing override can
  * only ever INCREASE a value: a smaller one silently loses.
  *
- * That is why the top inset is a prop rather than a class. Browse pages sit
+ * That is why the top inset is a prop rather than a class. Wide pages sit
  * under a full-bleed band that has already drawn the boundary, so they need
  * LESS space above their content than a bare page does, and `className` cannot
- * express that. app/browse-page.tsx sets the browse rhythm; nothing else passes
+ * express that. app/wide-page.tsx sets the wide rhythm; nothing else passes
  * this.
  */
 const TOP_PAD = {

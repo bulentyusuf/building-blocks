@@ -1,6 +1,6 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import BrowsePage from "../../browse-page";
+import WidePage from "../../wide-page";
 import MoreStories from "../../more-stories";
 import Avatar from "../../avatar";
 import Date from "../../date";
@@ -190,7 +190,7 @@ export default async function PostPage({
     //
     // `bleed` tracks the cover, because it exists to make room for one. A post
     // without a cover has nothing to pull up and takes the ordinary inset.
-    <BrowsePage
+    <WidePage
       crumbs={crumbs}
       bleed={Boolean(post.coverImage)}
       contentOwnsLeading
@@ -351,6 +351,6 @@ export default async function PostPage({
           coverName={coverName}
         />
       </div>
-    </BrowsePage>
+    </WidePage>
   );
 }

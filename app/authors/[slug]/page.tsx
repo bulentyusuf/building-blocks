@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
-import TaxonomyListing from "../../taxonomy-listing";
+import ListingPage from "../../listing-page";
 import { type Crumb } from "../../breadcrumb";
 import { RichText } from "@/lib/rich-text";
 import {
@@ -86,7 +86,7 @@ export default async function AuthorPage({
   };
 
   return (
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, 1)}
       currentPage={1}
@@ -125,6 +125,6 @@ export default async function AuthorPage({
           <RichText content={author.bio} headings={[]} />
         </div>
       )}
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

@@ -20,8 +20,8 @@
 //
 // Renders nothing on page 1, so the common case stays uncluttered and callers
 // can render it unconditionally rather than each deciding when a page counts as
-// paginated. That is what lets app/taxonomy-listing.tsx own it for all six
-// taxonomy routes.
+// paginated. That is what lets app/listing-page.tsx own it for every route it
+// serves — the six taxonomy listings and the index listing at /page/[page].
 export default function PageContext({
   currentPage,
   totalPages,

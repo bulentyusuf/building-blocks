@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import TaxonomyListing from "../../taxonomy-listing";
+import ListingPage from "../../listing-page";
 import { type Crumb } from "../../breadcrumb";
 import {
   getAllCategories,
@@ -72,7 +72,7 @@ export default async function CategoryPage({
   ]);
 
   return (
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, 1)}
       currentPage={1}
@@ -89,6 +89,6 @@ export default async function CategoryPage({
           {category.description}
         </p>
       )}
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

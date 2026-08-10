@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import TaxonomyListing from "../../../../taxonomy-listing";
+import ListingPage from "../../../../listing-page";
 import { type Crumb } from "../../../../breadcrumb";
 import { getAllPosts, getTagBySlug } from "@/lib/api";
 import { postsWithTag, visibleTagSlugs } from "@/lib/tags";
@@ -101,7 +101,7 @@ export default async function TagPaginatedPage({
   }
 
   return (
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, pageNumber)}
       currentPage={pageNumber}
@@ -117,6 +117,6 @@ export default async function TagPaginatedPage({
           {tag.description}
         </p>
       )}
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

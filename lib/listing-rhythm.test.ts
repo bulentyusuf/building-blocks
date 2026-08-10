@@ -149,14 +149,14 @@ describe("the home hero's title keeps a size step over a list card's", () => {
 });
 
 describe("the page under a band contributes no leading of its own", () => {
-  it("the taxonomy listing declares contentOwnsLeading", () => {
+  it("ListingPage declares contentOwnsLeading", () => {
     // The other half. With both the gap and the item padding, band-to-post
     // disagreed with post-to-post in the other direction.
-    expect(read("app/taxonomy-listing.tsx")).toMatch(/contentOwnsLeading/);
+    expect(read("app/listing-page.tsx")).toMatch(/contentOwnsLeading/);
   });
 
-  it("BrowsePage maps that to no top padding", () => {
-    expect(read("app/browse-page.tsx")).toMatch(
+  it("WidePage maps that to no top padding", () => {
+    expect(read("app/wide-page.tsx")).toMatch(
       /contentOwnsLeading \? "none" : "tight"/,
     );
   });

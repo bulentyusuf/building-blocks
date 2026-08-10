@@ -4,7 +4,7 @@ import { draftMode } from "next/headers";
 import { format } from "date-fns";
 import { enGB } from "date-fns/locale";
 import DateComponent from "../date";
-import BrowsePage from "../browse-page";
+import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
 import { getAllPosts, getBrowseIntro } from "@/lib/api";
 import type { ListPost } from "@/lib/types";
@@ -48,7 +48,7 @@ export default async function ArchivePage() {
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Archive" }];
 
   return (
-    <BrowsePage
+    <WidePage
       crumbs={crumbs}
       header={
         <>
@@ -141,6 +141,6 @@ export default async function ArchivePage() {
           );
         })
       )}
-    </BrowsePage>
+    </WidePage>
   );
 }

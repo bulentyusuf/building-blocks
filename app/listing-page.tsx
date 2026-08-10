@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import BrowsePage from "./browse-page";
+import WidePage from "./wide-page";
 import MoreStories from "./more-stories";
 import Pagination from "./pagination";
 import PageContext from "./page-context";
@@ -11,11 +11,6 @@ import type { CardPost } from "@/lib/types";
  * The shell every paginated listing shares — a category, tag or author page in
  * either its paginated or its unpaginated form, and the index listing at
  * /page/[page].
- *
- * The name is narrower than the component, because the index listing is not a
- * taxonomy. `ListingPage` would be right and the rename reaches eight files, so
- * it is deferred rather than folded into the change that widened the scope.
- * Recorded here so the mismatch is a known debt and not a discovery.
  *
  * Those six routes rendered the same tree with the same props and differed only
  * in their `<header>`: a plain heading for a category or tag, a heading beside a
@@ -39,7 +34,7 @@ import type { CardPost } from "@/lib/types";
  * numbers and PageContext returns null on page 1, so no route decides whether
  * its own page counts as paginated.
  */
-export default function TaxonomyListing({
+export default function ListingPage({
   crumbs,
   children,
   posts,
@@ -73,7 +68,7 @@ export default function TaxonomyListing({
   jsonLd?: unknown;
 }) {
   return (
-    <BrowsePage
+    <WidePage
       crumbs={crumbs}
       // The listing's own item padding is the space under the band — see the
       // prop's note. The empty state below carries its own instead.
@@ -117,6 +112,6 @@ export default function TaxonomyListing({
           />
         </>
       )}
-    </BrowsePage>
+    </WidePage>
   );
 }

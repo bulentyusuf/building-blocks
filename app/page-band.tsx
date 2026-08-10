@@ -1,8 +1,10 @@
 import Breadcrumb, { type Crumb } from "./breadcrumb";
 
 /**
- * The masthead band on browsing pages — the four section fronts, every
- * category, tag and author listing, and the index listing at /page/[page].
+ * The masthead band on every wide route — the four section fronts, every
+ * category, tag and author listing, the index listing at /page/[page] and the
+ * post page. This said "browsing pages" and omitted the post, which is the
+ * retired axis contradicting the paragraph below it.
  *
  * Full-bleed on purpose, so it must sit OUTSIDE Container rather than inside
  * it, and it carries its own `max-w-5xl px-5` inner column so the h1's left
@@ -86,7 +88,7 @@ export default function PageBand({
 
           The band therefore adds one thing to the page: colour, plus the
           bottom half of this inset. What sits below that edge is budgeted in
-          app/browse-page.tsx, because it depends on whether the content brings
+          app/wide-page.tsx, because it depends on whether the content brings
           its own leading. */}
       <div
         className={`max-w-5xl mx-auto px-5 pt-8 ${bleed ? "pb-24" : "pb-8"}`}

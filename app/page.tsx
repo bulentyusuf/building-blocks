@@ -5,7 +5,7 @@ import { draftMode } from "next/headers";
 import Date from "./date";
 import CoverImage from "./cover-image";
 import Avatar from "./avatar";
-import BrowsePage from "./browse-page";
+import WidePage from "./wide-page";
 import MoreStories, { TagRow } from "./more-stories";
 import Pagination from "./pagination";
 
@@ -196,7 +196,7 @@ export default async function Page() {
     //
     // Neither element names a colour. Both take white from the band's root, as
     // every other band's contents do.
-    <BrowsePage
+    <WidePage
       header={
         <>
           <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
@@ -240,6 +240,6 @@ export default async function Page() {
         visibleTags={visibleTags}
       />
       <Pagination currentPage={1} totalPages={totalPages} basePath="/" />
-    </BrowsePage>
+    </WidePage>
   );
 }
