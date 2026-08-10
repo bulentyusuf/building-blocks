@@ -3,7 +3,7 @@ import Link from "next/link";
 import { draftMode } from "next/headers";
 import CoverImage from "../cover-image";
 import DateComponent from "../date";
-import BrowsePage from "../browse-page";
+import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
 import {
   getAllCategories,
@@ -57,7 +57,7 @@ export default async function CategoriesPage() {
   ];
 
   return (
-    <BrowsePage
+    <WidePage
       crumbs={crumbs}
       header={
         <>
@@ -153,6 +153,6 @@ export default async function CategoriesPage() {
           );
         })}
       </div>
-    </BrowsePage>
+    </WidePage>
   );
 }

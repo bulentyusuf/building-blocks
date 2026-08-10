@@ -4,18 +4,19 @@ import PageBand from "./page-band";
 import { type Crumb } from "./breadcrumb";
 
 /**
- * The shell every browsing page shares — the four section fronts and all six
- * taxonomy listings.
+ * The shell every wide route renders through — the four section fronts, all six
+ * taxonomy listings, the index listing at /page/[page] and the post page. Which
+ * routes are wide is settled by the header measure, not here.
  *
- * It exists because those ten pages were two implementations of one design.
- * TaxonomyListing owned six of them; the four fronts each hand-rolled the same
+ * It exists because ten of those pages were two implementations of one design.
+ * ListingPage owned six of them; the four fronts each hand-rolled the same
  * `<><PageBand/><Container/></>` pair. Every tuning pass then had to be applied
  * twice and the halves drifted every time one was missed — the raised h1 ramp
  * reached the fronts and not the listings, and the standfirst colour was fixed
  * on the fronts while the listings still painted body ink on navy. Neither was
  * a typo; both were the second copy nobody edited.
  *
- * So the vertical rhythm of a browse page is defined once, here:
+ * So the vertical rhythm of a wide page is defined once, here:
  *
  *   band      py-8            flat, and equal to Container's own pt-8 so the
  *                             breadcrumb starts the same distance below the
@@ -39,7 +40,7 @@ import { type Crumb } from "./breadcrumb";
  * belongs in children, which is why an author's RichText bio is passed down
  * there rather than into the band beside the portrait.
  */
-export default function BrowsePage({
+export default function WidePage({
   crumbs,
   header,
   children,

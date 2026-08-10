@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 import DateComponent from "../date";
-import BrowsePage from "../browse-page";
+import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
 import { getAllPosts, getAllTags, getBrowseIntro } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
@@ -48,7 +48,7 @@ export default async function TagsPage() {
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Tags" }];
 
   return (
-    <BrowsePage
+    <WidePage
       crumbs={crumbs}
       header={
         <>
@@ -158,6 +158,6 @@ export default async function TagsPage() {
           ))}
         </div>
       )}
-    </BrowsePage>
+    </WidePage>
   );
 }

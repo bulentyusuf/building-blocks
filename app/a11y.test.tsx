@@ -48,8 +48,8 @@ vi.mock("@/lib/blur", () => ({ getBlurDataURL: async () => undefined }));
 const RootLayout = (await import("@/app/layout")).default;
 const MoreStories = (await import("@/app/more-stories")).default;
 const Breadcrumb = (await import("@/app/breadcrumb")).default;
-const TaxonomyListing = (await import("@/app/taxonomy-listing")).default;
-const BrowsePage = (await import("@/app/browse-page")).default;
+const ListingPage = (await import("@/app/listing-page")).default;
+const WidePage = (await import("@/app/wide-page")).default;
 const Pagination = (await import("@/app/pagination")).default;
 const CoverImage = (await import("@/app/cover-image")).default;
 const Avatar = (await import("@/app/avatar")).default;
@@ -345,7 +345,7 @@ describe("banded listing page", () => {
   const render = () =>
     renderPage(
       <RootLayout>
-        <TaxonomyListing
+        <ListingPage
           crumbs={[
             { label: "Home", href: "/" },
             { label: "Categories", href: "/categories" },
@@ -359,7 +359,7 @@ describe("banded listing page", () => {
         >
           <h1>Design</h1>
           <p>Posts filed under Design.</p>
-        </TaxonomyListing>
+        </ListingPage>
       </RootLayout>,
     );
 
@@ -416,7 +416,7 @@ describe("the index listing, which carries a trail again", () => {
   const render = () =>
     renderPage(
       <RootLayout>
-        <TaxonomyListing
+        <ListingPage
           crumbs={[{ label: "Home", href: "/" }, { label: "Latest Posts" }]}
           posts={[post("a", ["Design"]), post("b", ["Retro"])]}
           currentPage={2}
@@ -428,7 +428,7 @@ describe("the index listing, which carries a trail again", () => {
           <p className="max-w-3xl text-lg leading-relaxed text-pretty">
             The long dark teatime of the soul, continued.
           </p>
-        </TaxonomyListing>
+        </ListingPage>
       </RootLayout>,
     );
 
@@ -474,7 +474,7 @@ describe("home, whose band carries the masthead as its h1", () => {
   const render = () =>
     renderPage(
       <RootLayout>
-        <BrowsePage
+        <WidePage
           header={
             <>
               <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
@@ -497,7 +497,7 @@ describe("home, whose band carries the masthead as its h1", () => {
             variant="list"
             heading={null}
           />
-        </BrowsePage>
+        </WidePage>
       </RootLayout>,
     );
 

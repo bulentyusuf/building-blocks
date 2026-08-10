@@ -212,7 +212,7 @@ export default function MoreStories({
   // playing the same role, and it should sit the same distance away. Zeroing it
   // made the first post hug the band while every post after it breathed — the
   // rhythm broke at exactly the point the reader starts reading. The page that
-  // owns the band contributes no gap of its own instead (BrowsePage).
+  // owns the band contributes no gap of its own instead (WidePage).
   const container =
     variant === "list"
       ? `flex flex-col divide-y divide-hairline border-hairline ${

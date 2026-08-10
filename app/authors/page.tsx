@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 import ContentfulImage from "@/lib/contentful-image";
-import BrowsePage from "../browse-page";
+import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
 import { RichText } from "@/lib/rich-text";
 import { getAllAuthors, getAuthorBySlug, getBrowseIntro } from "@/lib/api";
@@ -38,7 +38,7 @@ export default async function AuthorsPage() {
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Authors" }];
 
   return (
-    <BrowsePage
+    <WidePage
       crumbs={crumbs}
       header={
         <>
@@ -96,6 +96,6 @@ export default async function AuthorsPage() {
           </article>
         ))}
       </div>
-    </BrowsePage>
+    </WidePage>
   );
 }

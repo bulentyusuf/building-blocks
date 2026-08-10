@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import TaxonomyListing from "../../taxonomy-listing";
+import ListingPage from "../../listing-page";
 import { type Crumb } from "../../breadcrumb";
 import { getAllPosts, getTagBySlug } from "@/lib/api";
 import { postsWithTag, visibleTagSlugs } from "@/lib/tags";
@@ -84,7 +84,7 @@ export default async function TagPage({
   return (
     // No emptyMessage: the threshold gate above guarantees at least
     // MIN_POSTS_PER_TAG posts by the time this renders.
-    <TaxonomyListing
+    <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, 1)}
       currentPage={1}
@@ -100,6 +100,6 @@ export default async function TagPage({
           {tag.description}
         </p>
       )}
-    </TaxonomyListing>
+    </ListingPage>
   );
 }

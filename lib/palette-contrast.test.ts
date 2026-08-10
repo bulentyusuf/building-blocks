@@ -192,7 +192,7 @@ describe("no route paints body ink inside the band", () => {
   // Targeted at the two elements that go in the band rather than at the
   // wrapper around them. Slicing on `<PageBand>` was the obvious approach and
   // it broke the moment the routes started passing their header through
-  // BrowsePage instead — a guard that silently stops covering anything when
+  // WidePage instead — a guard that silently stops covering anything when
   // markup is recomposed is worse than none. An h1 and the standfirst
   // signature survive that; they are what the band actually renders.
   const STANDFIRST = /className="[^"]*max-w-3xl text-lg leading-relaxed[^"]*"/g;

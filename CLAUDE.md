@@ -555,11 +555,10 @@ All sixteen routes are now on the axis.
 
 ### How the band is built
 
-**`app/browse-page.tsx` is the one shell every wide route renders
+**`app/wide-page.tsx` is the one shell every wide route renders
 through** — the four section fronts, the six taxonomy listings, the index
 listing at `/page/[page]` and the post page, the middle seven via
-`app/taxonomy-listing.tsx`. A post is not a browsing route and the component's
-name is now wrong; it is renamed alongside `TaxonomyListing` in a later PR. It
+`app/listing-page.tsx`. It
 owns the band, the container and the whole vertical rhythm, and it exists
 because ten of those pages were previously two implementations of one design:
 every tuning pass had to be applied twice, and the half that got missed
@@ -686,7 +685,7 @@ at identical coordinates sitewide.
   matches the `h1` and standfirst signatures across all ten browse routes,
   author pages included. It does **not** slice `<PageBand>`; that approach was
   tried and stopped covering anything the moment the routes began composing
-  through `BrowsePage`, which is why it also asserts it found something rather
+  through `WidePage`, which is why it also asserts it found something rather
   than passing on an empty match.
 - **Nothing inside the band changes the type or the spacing the page already
   had** — the `h1` ramp stays `text-4xl md:text-5xl lg:text-6xl`, the `h1`
@@ -705,13 +704,13 @@ at identical coordinates sitewide.
 - **The listing under a band drops its opening rule and nothing else**
   (`openRule={false}` on `MoreStories`). The item padding stays, and the page
   contributes no gap of its own instead (`contentOwnsLeading` on
-  `BrowsePage`) — every item is `py-10 md:py-12`, which is how far a hairline
+  `WidePage`) — every item is `py-10 md:py-12`, which is how far a hairline
   sits from the cover below it, and the band's bottom edge plays a hairline's
   part. Zeroing that padding made the first post hug the band while every post
   after it breathed; adding the gap on top made band-to-first-post disagree
   with post-to-post. One or the other, never both. The closing rule stays, and
   `app/pagination.tsx` still has no top border of its own.
-- **The vertical rhythm is set in one place**, `app/browse-page.tsx`: a
+- **The vertical rhythm is set in one place**, `app/wide-page.tsx`: a
   symmetric `py-8` band inset, then a `pt-6` cream gap on the section fronts
   only, because the band has already drawn the boundary and
   that space only has to stop the content touching it. The two are different
@@ -724,11 +723,9 @@ at identical coordinates sitewide.
 ### The taxonomy listings and the index listing share one shell
 
 Category, tag and author pages — each paginated and not — and the index listing
-at `/page/[page]` render through `app/taxonomy-listing.tsx`, which owns the
-container, breadcrumb, listing, pager and empty state. The name is narrower
-than the component now that the index goes through it; `ListingPage` would be
-right and the rename reaches eight files, so it is a recorded deferral rather
-than an oversight. What the index does not bring is a trail, which is why
+at `/page/[page]` render through `app/listing-page.tsx`, which owns the
+container, breadcrumb, listing, pager and empty state. What the index does not
+bring is a trail, which is why
 `crumbs` is optional. `lib/paginate.ts` owns the page arithmetic and `listingMetadata`
 in `lib/page-metadata.ts` owns the Open Graph and Twitter blocks, which ten
 pages each carried a copy of.
@@ -742,7 +739,7 @@ as the guard it replaced, so `/page/2.0` still resolves; tightening that is a
 duplicate-URL decision nobody has taken.
 
 Two things are deliberately **not** absorbed into the shell, both argued in
-`app/taxonomy-listing.tsx`: the `<header>` is `children` (it is where all six
+`app/listing-page.tsx`: the `<header>` is `children` (it is where all six
 genuinely differ, and reassembling it centrally costs a conditional per
 difference), and the fetch strategy stays in the route (category and author
 pages issue `Promise.all([posts, visibleTags])`; tag pages read `getAllPosts`
@@ -758,7 +755,7 @@ same listing's first. Do not reintroduce a per-page variation without a reason
 written down.
 
 **Page position captions the list, not the heading.** `app/page-context.tsx`
-renders between the header and the posts, and `app/taxonomy-listing.tsx` renders
+renders between the header and the posts, and `app/listing-page.tsx` renders
 it rather than any route passing it in — the component already holds both
 numbers, and PageContext returns `null` on page 1, so no route decides whether
 its own page counts as paginated. Do not move it back into the header: position
@@ -1008,6 +1005,38 @@ each gap has already let a defect through:
   scripts, paths, the CI-gate sentence, the repo URL. It **cannot verify a
   claim**: a sentence can name a real file and describe it wrongly, and only a
   reader catches that. This document's accuracy is unguarded.
+
+### Every pattern-matching guard needs a known-bad control
+
+A test that greps source for a class, a token or an element is asserting the
+absence of a string, and absence passes for two reasons. Either the defect is
+gone, or the pattern stopped matching. Nothing in the passing result tells the
+two apart. So a guard of this kind is only trustworthy once someone has watched
+it fail, and whatever made it fail has to stay in the repo.
+
+`app/posts/[slug]/opengraph-image.font.test.tsx` is the pattern to copy. It
+keeps Piazzolla as a permanent known-bad control, so the render guard is
+re-proven on every run rather than on the day it was written.
+
+Where a permanent control is impractical, the fallback is a non-vacuous
+assertion, meaning the guard asserts it matched something before it asserts what
+the match contains. That is weaker, because it proves the pattern found a file
+rather than that it would catch the defect, but it beats nothing.
+
+Four guards here failed exactly this way, each passing while the thing it
+guarded was broken:
+
+- A palette contrast check passed while the band's `h1` rendered at 1.01:1,
+  because it asserted what white does on the band rather than what colour the
+  heading actually inherits.
+- The band inset assertion matched `px-5` followed by a `py-` value, which would
+  have kept passing against a split inset while reading a number that no longer
+  described the bottom.
+- The ink guard sliced the `<PageBand>` block and stopped covering anything the
+  moment the routes began composing through a shared shell. It passed on an
+  empty match for an unknown period.
+- The ink guard's heading pattern was anchored on `<h1 className=` and failed
+  open on any `h1` carrying an earlier attribute.
 
 ### Documentation is excluded from Tailwind's source scanning
 
