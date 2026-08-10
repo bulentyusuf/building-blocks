@@ -23,12 +23,7 @@ import { createCoverNamer } from "@/lib/view-transition-name";
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
-import type {
-  Author,
-  Category,
-  CoverImage as CoverImageType,
-  Tag,
-} from "@/lib/types";
+import type { Author, CoverImage as CoverImageType, Tag } from "@/lib/types";
 import { widont } from "@/lib/typography";
 
 function HeroPost({
@@ -39,7 +34,6 @@ function HeroPost({
   excerpt,
   author,
   slug,
-  category,
   tags,
   transitionName,
 }: {
@@ -50,7 +44,6 @@ function HeroPost({
   excerpt: string;
   author?: Author;
   slug: string;
-  category?: Category;
   /** Already filtered to tags with a live page, exactly as a card's are. */
   tags: Tag[];
   transitionName?: string;
@@ -59,6 +52,19 @@ function HeroPost({
 
   // Lead with the published date (matches the index cards). The updated
   // date is desktop-only so the mobile byline stays one tight line.
+  //
+  // No category. The site has two of them, so the label carries about one bit
+  // and mostly repeats itself down the page, and the tag row directly beneath
+  // is what actually tells one post from another. Putting it on the cards
+  // instead was considered and rejected, because it would need a per-route
+  // exception on /categories/[slug] and its paginated pages, where the category
+  // is the page you are already on. Per-route exceptions are what the axis work
+  // removed.
+  //
+  // The byline stays. It is the hero's other difference from a card and it
+  // earns the space, because the site has three author personas and the film
+  // and games posts are bylined to different ones. There is one hero, so unlike
+  // the category it never repeats.
   const dateline = (
     <>
       <Date dateString={date} />
@@ -66,17 +72,6 @@ function HeroPost({
         <span className="hidden sm:inline">
           {" · "}Updated <Date dateString={updatedDate!} />
         </span>
-      )}
-      {category && (
-        <>
-          {" · "}
-          <Link
-            href={`/categories/${category.slug}`}
-            className="hover:text-brand-crimson transition-colors duration-200"
-          >
-            {category.name}
-          </Link>
-        </>
       )}
     </>
   );
@@ -222,7 +217,6 @@ export default async function Page() {
           author={heroPost.author}
           slug={heroPost.slug}
           excerpt={heroPost.excerpt}
-          category={heroPost.category}
           tags={postTags(heroPost).filter((t) => visibleTags.has(t.slug))}
           transitionName={coverName(heroPost.slug)}
         />
