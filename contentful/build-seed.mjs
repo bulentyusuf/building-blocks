@@ -187,7 +187,10 @@ const entries = [
   // One per browse page, so a fork can edit its own standfirsts rather than
   // finding them hard-coded. Archive deliberately carries no standfirst: its
   // heading line is generated from the post count and stays current on its own,
-  // and typed prose there would be stale by the next post.
+  // and typed prose there would be stale by the next post. Latest Posts is the
+  // odd one out — its slug names the /page/[page] route rather than a content
+  // type — and it has no fallback standfirst in code, so a fork without this
+  // entry gets a heading and nothing under it.
   entry("intro-tags", "browseIntro", {
     title: loc("Tags"),
     slug: loc("tags"),
@@ -214,6 +217,12 @@ const entries = [
     title: loc("Archive"),
     slug: loc("archive"),
     metaDescription: loc("Every post, grouped by year."),
+  }),
+  entry("intro-latest-posts", "browseIntro", {
+    title: loc("Latest Posts"),
+    slug: loc("latest-posts"),
+    standfirst: loc("Everything published here, newest first."),
+    metaDescription: loc("Browse the latest posts, newest first."),
   }),
   entry("code-example", "codeBlock", {
     filename: loc("example.tsx"),
