@@ -95,7 +95,18 @@ function HeroPost({
   return (
     <section className="mx-auto max-w-5xl mb-10 md:mb-12">
       {coverImage && (
-        <div className="mb-8 md:mb-10">
+        // Same device as the post page, and home was the only wide route not
+        // using it. relative so the cover paints above the band rather than
+        // under it; the -mt-16 is the 64px the band's pb-24 was deepened to
+        // absorb, so the band's VISIBLE inset stays symmetric at 32 top and 32
+        // bottom and the extra 64 is the part the cover covers. The arithmetic
+        // lives in page-band.tsx; this is the half that consumes it.
+        //
+        // mb-8 md:mb-10 rather than the post page's flat mb-10. What sits below
+        // differs — a post's cover is followed by its body column, this one by a
+        // headline — and the hero's own rhythm under the cover is not what this
+        // change is about.
+        <div className="relative -mt-16 mb-8 md:mb-10">
           <CoverImage
             slug={slug}
             url={coverImage.url}
@@ -175,11 +186,12 @@ export default async function Page() {
   const visibleTags = visibleTagSlugs(allPosts);
 
   return (
-    // No crumbs, because this is the root. No bleed either, so the hero's
-    // cover sits below the band on cream rather than crossing its edge. Only
-    // the post page bleeds. Whether home should follow now that its hero leads
-    // with a cover is a design call nobody has taken, not a gap left here by
-    // accident.
+    // No crumbs, because this is the root. It bleeds, so the hero's cover
+    // crosses the band's bottom edge rather than starting below it on cream.
+    // This said the opposite until the design call it was waiting on was taken:
+    // home led with a cover and still ended its band above it, which left the
+    // band reading as an empty slab on the one route whose band carries the
+    // masthead.
     //
     // The band carries the site masthead, which is what every other index does
     // with the site as its subject. It is home's h1 now that the hero below is
@@ -196,7 +208,21 @@ export default async function Page() {
     //
     // Neither element names a colour. Both take white from the band's root, as
     // every other band's contents do.
+    //
+    // Both flags below gate on the cover, for the same reason the post page
+    // gates its own bleed: the deepened inset exists to make room for an image.
+    // A hero with nothing to pull up would take a 96px bottom band with no
+    // cover filling it and an h2 hard against the edge, which is worse than the
+    // ordinary inset it would otherwise have had. Every post carries a cover
+    // today, so this is insurance rather than a live case — but it is the
+    // difference between a guard and an assumption.
+    //
+    // contentOwnsLeading gates too, not just bleed. Without a cover the
+    // container's pt-6 is the only leading the hero gets, and dropping it
+    // unconditionally would take that away on exactly the branch that needs it.
     <WidePage
+      bleed={Boolean(heroPost?.coverImage)}
+      contentOwnsLeading={Boolean(heroPost?.coverImage)}
       header={
         <>
           <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
