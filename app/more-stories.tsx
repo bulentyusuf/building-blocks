@@ -82,6 +82,7 @@ function PostPreview({
             <CoverImage
               slug={slug}
               url={coverImage.url}
+              alt={coverImage.title ?? ""}
               priority={priority}
               hover
               transitionName={transitionName}
@@ -123,6 +124,7 @@ function PostPreview({
           <CoverImage
             slug={slug}
             url={coverImage.url}
+            alt={coverImage.title ?? ""}
             priority={priority}
             hover
             transitionName={transitionName}

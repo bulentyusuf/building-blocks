@@ -77,6 +77,7 @@ export default async function CategoriesPage() {
         {categories.map((category, index) => {
           const posts = postsBySlug.get(category.slug) ?? [];
           const thumbUrl = category.thumbnail?.url;
+          const thumbAlt = category.thumbnail?.title ?? "";
           return (
             <article key={category.slug} className="flex flex-col min-w-0">
               <h2 className="mb-3 text-2xl leading-snug md:text-3xl text-pretty">
@@ -98,12 +99,14 @@ export default async function CategoriesPage() {
                 // Thumbnails render through the shared CoverImage so they inherit
                 // its frame (border, blur underlay, shadow, aspect) rather than
                 // duplicating it. Deliberately NOT previews of the cover morph:
-                // no `hover` zoom, no `transitionName`, no `wide`. alt is empty
-                // and the thumbnail's link is hidden from assistive tech, so the
-                // h2 above it is the single announced link to this category.
+                // no `hover` zoom, no `transitionName`, no `wide`. The alt text
+                // is the asset's own title, for crawlers, and the thumbnail's
+                // link is hidden from assistive tech, so the h2 above it is
+                // still the single announced link to this category.
                 <div className="mb-5">
                   <CoverImage
                     url={thumbUrl}
+                    alt={thumbAlt}
                     href={`/categories/${category.slug}`}
                     // Capped in px for the same reason as the listing covers in
                     // more-stories.tsx. This grid is two columns with a 40px

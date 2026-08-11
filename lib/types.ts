@@ -74,6 +74,11 @@ export interface AuthorCollectionResponse {
 
 export interface CoverImage {
   url: string;
+  // The asset's Contentful `title`, used as the image's alt text. Optional and
+  // nullable on purpose: Contentful returns null when no title is set, and a
+  // payload cached before this field was queried carries neither. Every
+  // consumer falls back to "" rather than assuming a string.
+  title?: string | null;
 }
 
 export interface Category {

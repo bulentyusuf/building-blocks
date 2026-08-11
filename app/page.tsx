@@ -110,6 +110,7 @@ function HeroPost({
           <CoverImage
             slug={slug}
             url={coverImage.url}
+            alt={coverImage.title ?? ""}
             wide
             priority
             transitionName={transitionName}

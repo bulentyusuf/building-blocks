@@ -3,13 +3,17 @@ import Link from "next/link";
 import { clsx as cn } from "clsx";
 import { getBlurDataURL } from "@/lib/blur";
 
-// No `title` prop. It existed solely to name the cover link via aria-label,
-// which is exactly the duplicate announcement removed below — the image is
-// decorative (alt="") and the link is hidden from assistive tech, so there is
-// nothing left for a title to name. Callers pass their heading text to their
-// own heading link instead.
+// No `title` prop, in the sense of the post's title. It existed solely to name
+// the cover link via aria-label, which is exactly the duplicate announcement
+// removed below — the link is hidden from assistive tech, so there is nothing
+// left for a title to name. Callers pass their heading text to their own
+// heading link instead.
+//
+// The separate `alt` prop below is the Contentful ASSET title, which is a
+// different string for a different purpose. See its own note.
 export default async function CoverImage({
   url,
+  alt = "",
   slug,
   href,
   sizes,
@@ -19,6 +23,17 @@ export default async function CoverImage({
   transitionName,
 }: {
   url: string;
+  // The asset's Contentful `title`, rendered as the image's alt text. Defaults
+  // to "" so an asset with no title renders exactly what it rendered before
+  // this prop existed, and so the site degrades to decorative rather than to a
+  // filename when the field is unset.
+  //
+  // On a LINKED cover this is deliberately inert for assistive tech: the Link
+  // below carries aria-hidden="true", which removes the whole subtree from the
+  // accessibility tree including this image. The alt text is there for search
+  // crawlers, which read the DOM rather than the accessibility tree. That is
+  // not a contradiction and must not be "fixed" by removing either one.
+  alt?: string;
   slug?: string;
   // Link destination override. When omitted, a `slug` links to /posts/${slug}
   // (the default for post covers and cards). Pass `href` to point the cover
@@ -53,7 +68,7 @@ export default async function CoverImage({
   const linkHref = href ?? (slug ? `/posts/${slug}` : undefined);
   const image = (
     <ContentfulImage
-      alt=""
+      alt={alt}
       priority={priority}
       fetchPriority={priority ? "high" : undefined}
       fill
