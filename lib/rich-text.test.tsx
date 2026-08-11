@@ -575,10 +575,10 @@ describe("inline sidenote embed", () => {
   });
 });
 
-describe("embedded asset descriptions", () => {
-  // The description is both the alt text and the visible caption, so an asset
-  // without one renders as decorative with no caption at all. Empty alt is the
-  // correct render; the warning is what stops that happening unnoticed.
+describe("embedded asset alt text and captions", () => {
+  // `title` is the alt text, `description` is the caption. Two fields, two
+  // jobs. An asset with no title renders empty alt and warns; an asset with no
+  // description simply renders no caption, which is allowed and silent.
   const assetDoc = {
     nodeType: "document",
     data: {},
@@ -591,7 +591,10 @@ describe("embedded asset descriptions", () => {
     ],
   } as unknown as Document;
 
-  const withDescription = (description?: string): Content =>
+  const withAsset = (fields: {
+    title?: string;
+    description?: string;
+  }): Content =>
     ({
       json: assetDoc,
       links: {
@@ -600,17 +603,18 @@ describe("embedded asset descriptions", () => {
             {
               sys: { id: "asset-1" },
               url: "https://images.ctfassets.net/a.jpg",
-              description,
+              title: fields.title,
+              description: fields.description,
             },
           ],
         },
       },
     }) as unknown as Content;
 
-  it("warns and renders empty alt when the description is missing", () => {
+  it("warns and renders empty alt when the title is missing", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const html = renderToStaticMarkup(
-      <RichText content={withDescription()} headings={[]} />,
+      <RichText content={withAsset({})} headings={[]} />,
     );
 
     expect(html).toContain('alt=""');
@@ -619,43 +623,64 @@ describe("embedded asset descriptions", () => {
     warn.mockRestore();
   });
 
-  it("stays quiet and puts the description in the caption, not the alt", () => {
-    // The description is one field doing two jobs, so emitting it as both alt
-    // and caption made every figure announce the same sentence twice in a row.
-    // The caption is visible, adjacent in the DOM and describes the image, so
-    // the image is the one that goes decorative.
+  it("stays quiet about a missing caption when the title is present", () => {
+    // No description is a legitimate editorial choice, not a defect. Several
+    // published figures ship this way. Only a missing title warns.
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const html = renderToStaticMarkup(
       <RichText
-        content={withDescription("A tabby asleep on a keyboard")}
+        content={withAsset({ title: "A tabby asleep on a keyboard" })}
         headings={[]}
       />,
     );
 
-    expect(html).toContain(
-      '<figcaption class="text-[0.875em] italic text-brand-muted mt-1.5 text-center">A tabby asleep on a keyboard</figcaption>',
-    );
-    expect(html).toContain('alt=""');
-    expect(html).not.toContain('alt="A tabby asleep on a keyboard"');
+    expect(html).toContain('alt="A tabby asleep on a keyboard"');
+    expect(html).not.toContain("<figcaption");
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
 
-  it("keeps the description out of the alt on the non-lightbox path too", () => {
+  it("puts the title in the alt and the description in the caption", () => {
+    // The two fields must reach two different attributes. This is the guard
+    // that would catch a regression back to one field doing both jobs.
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const html = renderToStaticMarkup(
+      <RichText
+        content={withAsset({
+          title: "A tabby asleep on a keyboard",
+          description: "Bruno, entirely unbothered by the deadline",
+        })}
+        headings={[]}
+      />,
+    );
+
+    expect(html).toContain('alt="A tabby asleep on a keyboard"');
+    expect(html).toContain(
+      '<figcaption class="text-[0.875em] italic text-brand-muted mt-1.5 text-center">Bruno, entirely unbothered by the deadline</figcaption>',
+    );
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("does the same on the non-lightbox path", () => {
     // Pages render with lightbox={false}, which takes the plain ContentfulImage
     // branch. Both branches sit above the same figcaption.
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const html = renderToStaticMarkup(
       <RichText
-        content={withDescription("A tabby asleep on a keyboard")}
+        content={withAsset({
+          title: "A tabby asleep on a keyboard",
+          description: "Bruno, entirely unbothered by the deadline",
+        })}
         headings={[]}
         lightbox={false}
       />,
     );
 
-    expect(html).toContain("A tabby asleep on a keyboard</figcaption>");
-    expect(html).toContain('alt=""');
-    expect(html).not.toContain('alt="A tabby asleep on a keyboard"');
+    expect(html).toContain('alt="A tabby asleep on a keyboard"');
+    expect(html).toContain(
+      "Bruno, entirely unbothered by the deadline</figcaption>",
+    );
     warn.mockRestore();
   });
 
@@ -700,7 +725,7 @@ describe("embedded asset descriptions", () => {
       // omits them, which is that path.
       const html = renderToStaticMarkup(
         <RichText
-          content={withDescription("A tabby asleep on a keyboard")}
+          content={withAsset({ title: "A tabby asleep on a keyboard" })}
           headings={[]}
           lightbox={lightbox}
         />,

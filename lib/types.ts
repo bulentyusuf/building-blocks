@@ -5,7 +5,15 @@ export interface Asset {
     id: string;
   };
   url: string;
+  // The caption, rendered as the figure's figcaption. NOT the alt text — see
+  // `title` below. One field cannot serve both: 21 of the 24 cover assets are
+  // also embedded as figures, so a shared field would have to be empty and
+  // populated at once.
   description: string;
+  // The asset's Contentful `title`, rendered as the image's alt text. Optional
+  // and nullable: Contentful returns null when no title is set, and a payload
+  // cached before this field was queried carries neither.
+  title?: string | null;
   // Optional and nullable on purpose. Contentful returns null for both on a
   // non-image asset, and a payload cached before these were queried carries
   // neither, so every consumer falls back rather than assuming a shape.
