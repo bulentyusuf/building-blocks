@@ -237,6 +237,7 @@ export default async function PostPage({
           <div className="relative -mt-16 mb-10">
             <CoverImage
               url={post.coverImage.url}
+              alt={post.coverImage.title ?? ""}
               wide
               priority
               transitionName={coverName(post.slug)}

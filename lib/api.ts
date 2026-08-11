@@ -40,6 +40,7 @@ const POST_GRAPHQL_FIELDS = `
   title
   coverImage {
     url
+    title
   }
   date
   updatedDate
@@ -137,6 +138,7 @@ const CARD_GRAPHQL_FIELDS = `
   title
   coverImage {
     url
+    title
   }
   date
   excerpt
@@ -171,6 +173,7 @@ const LIST_GRAPHQL_FIELDS = `
   title
   coverImage {
     url
+    title
   }
   date
   updatedDate
@@ -692,6 +695,7 @@ export async function getAllCategories(
           description
           thumbnail {
             url
+            title
           }
         }
       }

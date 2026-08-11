@@ -53,9 +53,40 @@ describe("CoverImage link semantics", () => {
     expect(out).not.toContain('tabindex="-1"');
   });
 
-  it("keeps the cover image decorative", async () => {
+  it("defaults to empty alt when no asset title is passed", async () => {
+    // An asset with no Contentful title renders exactly what it rendered
+    // before the alt prop existed. Never a filename, never the post title.
     const out = await html({ url: URL, slug: "a-post" });
 
     expect(out).toContain('alt=""');
+  });
+
+  it("renders the asset title as alt when given one", async () => {
+    const out = await html({
+      url: URL,
+      slug: "a-post",
+      alt: "A brass desk lamp lighting a stack of paperbacks",
+    });
+
+    expect(out).toContain(
+      'alt="A brass desk lamp lighting a stack of paperbacks"',
+    );
+  });
+
+  it("keeps a linked cover out of the accessibility tree even with alt text", async () => {
+    // The aria-hidden Link is what makes a listing cover decorative, not the
+    // empty alt. Alt text on a linked cover is for crawlers, which read the
+    // DOM. Both must hold at once.
+    const out = await html({
+      url: URL,
+      slug: "a-post",
+      alt: "A brass desk lamp lighting a stack of paperbacks",
+    });
+
+    expect(out).toContain('aria-hidden="true"');
+    expect(out).toContain('tabindex="-1"');
+    expect(out).toContain(
+      'alt="A brass desk lamp lighting a stack of paperbacks"',
+    );
   });
 });
