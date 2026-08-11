@@ -355,6 +355,34 @@
     },
     {
       "sys": {
+        "id": "intro-latest-posts",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "browseIntro"
+          }
+        },
+        "publishedVersion": 1
+      },
+      "fields": {
+        "title": {
+          "en-US": "Latest Posts"
+        },
+        "slug": {
+          "en-US": "latest-posts"
+        },
+        "standfirst": {
+          "en-US": "Everything published here, newest first."
+        },
+        "metaDescription": {
+          "en-US": "Browse the latest posts, newest first."
+        }
+      }
+    },
+    {
+      "sys": {
         "id": "code-example",
         "type": "Entry",
         "contentType": {
