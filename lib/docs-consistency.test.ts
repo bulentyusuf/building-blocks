@@ -96,8 +96,14 @@ describe("the repo URL is the same everywhere", () => {
     // The rename from nextjs-blog-draft-mode to building-blocks had to touch
     // four files. GitHub redirects the old URL, so a missed one keeps working
     // and stays wrong indefinitely — nothing would ever surface it.
+    //
+    // The pattern reaches past an environment override to the quoted default,
+    // because that default is the canonical repository and is what these
+    // documents describe; a deployment pointing its footer somewhere else says
+    // nothing about them. It stops at the statement's semicolon so it cannot
+    // wander into the next declaration if the override is ever removed.
     const constants = read("lib/constants.ts");
-    const url = /SITE_REPO_URL\s*=\s*["']([^"']+)["']/.exec(constants)?.[1];
+    const url = /SITE_REPO_URL\s*=[^;]*?["']([^"']+)["']/.exec(constants)?.[1];
     expect(url, "SITE_REPO_URL not found in lib/constants.ts").toBeTruthy();
 
     const repo = url!.replace(/\/$/, "");
