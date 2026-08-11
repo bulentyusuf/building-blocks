@@ -80,9 +80,36 @@ function parseHostname(url: string): string {
 
 export const SITE_HOSTNAME = parseHostname(SITE_URL);
 
-export const SITE_TITLE = "Be Useful.";
+// Site identity is a code constant with an environment override, and the
+// override exists for one caller: demo-site, which builds this same repo from
+// the `demo` branch against a different Contentful space. The two projects run
+// identical code and differ only in environment variables, so a demo wanting
+// its own name has no other lever. Editing this on `demo` would end the
+// fast-forward sync — `git push origin main:demo` would stop being a
+// fast-forward and the weekly sync workflow would start failing — which is the
+// source divergence the one-repo setup exists to avoid.
+//
+// This is not the "move site identity into the CMS" change CLAUDE.md rejects.
+// That one puts constants fourteen files deep behind a network fetch on routes
+// that never touch Contentful. This is build-time config in the same shape as
+// NEXT_PUBLIC_SITE_URL above, and the default in code is still the live name,
+// so a fork that sets nothing is unaffected.
+//
+// Both are NEXT_PUBLIC_ despite every current read being server-side. The title
+// is rendered on the page, so nothing is being withheld, and the prefix means a
+// future client component reading either constant gets the configured value
+// rather than silently falling back to the default in the browser alone.
+//
+// Title and description move together: app/page.tsx renders them as home's
+// masthead and the standfirst directly beneath it, so overriding one leaves the
+// band half-renamed. SITE_AUTHOR is deliberately not overridable — nothing has
+// needed it, and the feed's author is a truthful credit for whoever built the
+// deployment rather than a name to disguise.
+export const SITE_TITLE =
+  process.env.NEXT_PUBLIC_SITE_TITLE?.trim() || "Be Useful.";
 
 export const SITE_DESCRIPTION =
+  process.env.NEXT_PUBLIC_SITE_DESCRIPTION?.trim() ||
   "Content & Code, with a little help from Generative AI.";
 
 export const SITE_AUTHOR = "Bulent Yusuf";
