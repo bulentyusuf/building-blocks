@@ -402,7 +402,7 @@ Site-level constants stay in code. `SITE_TITLE` alone is read by fourteen files
 touch Contentful. Moving those behind a network fetch is a much larger change
 than editing a standfirst; not the obvious next step.
 
-The four `NEXT_PUBLIC_` identity overrides are not a counterexample: build-time
+The five `NEXT_PUBLIC_` identity overrides are not a counterexample: build-time
 config resolved once at module scope, with the live values still the defaults in
 code. What this section rules out is the fetch, not the variable.
 
@@ -963,19 +963,30 @@ activated, so a new type is always two trips: activate, then populate.
 
 One repo, two Vercel projects running **identical code**, differing only in
 environment variables — a different Contentful space, tokens,
-`NEXT_PUBLIC_SITE_URL`, and the four identity overrides below. There is no
+`NEXT_PUBLIC_SITE_URL`, and the five identity overrides below. There is no
 source divergence to manage, so do not fork the repo to separate them; one repo
 feeding several projects is the designed path (Vercel allows 25 per repository).
 
-**The demo names itself through four `NEXT_PUBLIC_` overrides** — `SITE_TITLE`,
-`SITE_DESCRIPTION`, `SITE_FOOTER_BLURB` and `SITE_REPO_URL`, each prefixed —
-set on `demo-site` only; `lib/constants.ts` carries the argument. They exist
-because identical code is the whole design, so renaming the demo in source would
-rename the live site too, and renaming it on `demo` would end the fast-forward
-sync. All four are dashboard settings, so they share the fragility of the three
-below — unset, the demo silently answers to the live site's name and links to
-its repository. Title and description move together, because home renders them
-as masthead and standfirst. `SITE_AUTHOR` is deliberately not among them.
+**The demo names itself through five `NEXT_PUBLIC_` overrides** — `SITE_TITLE`,
+`SITE_DESCRIPTION`, `SITE_FOOTER_BLURB`, `SITE_REPO_URL` and `SITE_ICON_SET`,
+each prefixed — set on `demo-site` only; `lib/constants.ts` carries the
+argument. They exist because identical code is the whole design, so renaming the
+demo in source would rename the live site too, and renaming it on `demo` would
+end the fast-forward sync. All five are dashboard settings, so they share the
+fragility of the three below — unset, the demo silently answers to the live
+site's name and wears its mark. Title and description move together, because
+home renders them as masthead and standfirst. `SITE_AUTHOR` is deliberately not
+among them.
+
+**The icon set is the one that is allowlisted, and the one that removed a file
+convention.** All four icons live in `public/icons/<set>/`, because
+`app/favicon.ico` and `app/apple-icon.png` were Next file conventions that no
+variable can switch — do not reintroduce either, since Next emits its own
+`<link>` for one on top of the declared set and leaves the browser to choose.
+`NEXT_PUBLIC_SITE_ICON_SET` names a directory, and an unrecognised name warns
+and falls back rather than serving four 404s. `public/favicon.ico` is a copy of
+the default set, kept only for bare `/favicon.ico` requests, and is the single
+surface where the demo still shows the live mark.
 
 Three dashboard settings keep `demo-site` off `main`'s critical path. None is
 expressible in this repo and all are easy to lose, since a dashboard setting

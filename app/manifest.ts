@@ -2,6 +2,7 @@ import { MetadataRoute } from "next";
 import {
   SITE_TITLE,
   SITE_DESCRIPTION,
+  SITE_ICONS,
   BRAND_HEADER_COLOR,
 } from "@/lib/constants";
 
@@ -16,26 +17,26 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: BRAND_HEADER_COLOR,
     icons: [
       {
-        src: "/favicon.ico",
+        src: SITE_ICONS.favicon,
         sizes: "any",
         type: "image/x-icon",
       },
       {
-        src: "/apple-icon.png",
+        src: SITE_ICONS.apple,
         sizes: "180x180",
         type: "image/png",
       },
       // Chrome requires a 192 and a 512 PNG before it will offer to install a
-      // site, and reads them from here rather than from any <link>. Hence
-      // public/ rather than an app/icon.png file convention: these two are
-      // referenced by path from this manifest and nowhere else.
+      // site, and reads them from here rather than from any <link>. All four
+      // paths now come from SITE_ICONS, which is what lets a second deployment
+      // of this repo carry its own mark; lib/constants.ts holds the argument.
       {
-        src: "/icon-192.png",
+        src: SITE_ICONS.icon192,
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/icon-512.png",
+        src: SITE_ICONS.icon512,
         sizes: "512x512",
         type: "image/png",
       },

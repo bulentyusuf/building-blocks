@@ -8,6 +8,7 @@ import {
   SITE_URL,
   SITE_REPO_URL,
   SITE_FOOTER_BLURB,
+  SITE_ICONS,
   BRAND_HEADER_COLOR,
   BRAND_HEADER_COLOR_DARK,
   DEFAULT_LOCALE,
@@ -27,7 +28,9 @@ export const metadata = {
   },
   description: SITE_DESCRIPTION,
   icons: {
-    apple: "/apple-icon.png",
+    icon: SITE_ICONS.favicon,
+    shortcut: SITE_ICONS.favicon,
+    apple: SITE_ICONS.apple,
   },
   openGraph: {
     title: SITE_TITLE,

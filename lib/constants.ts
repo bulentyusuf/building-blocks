@@ -137,6 +137,50 @@ export const SITE_REPO_URL =
   process.env.NEXT_PUBLIC_SITE_REPO_URL?.trim() ||
   "https://github.com/bulentyusuf/building-blocks";
 
+// The icon set, the one piece of identity that could not be a plain override.
+// app/favicon.ico and app/apple-icon.png were Next file conventions, baked in by
+// filename, so no variable could switch them — which is why all four icons now
+// live under public/icons/<set>/ and every path is declared here instead. Do not
+// reintroduce either file convention: Next emits its own <link> for one on top
+// of whatever app/layout.tsx declares, and two rel="icon" links leave the choice
+// to the browser.
+//
+// Unlike the string overrides this one is allowlisted, because its failure mode
+// is worse than a wrong value. A typo'd set name is a path that 404s for every
+// icon, and a site with no icon at all looks like a broken deployment rather
+// than a missed setting, so an unrecognised name falls back to the default set.
+// The names are closed by definition: a set only exists if its four files were
+// committed, and lib/site-icons.test.ts asserts that both are complete.
+const ICON_SETS = ["beuseful", "template"] as const;
+const DEFAULT_ICON_SET = "beuseful";
+
+function resolveIconSet(): (typeof ICON_SETS)[number] {
+  const configured = process.env.NEXT_PUBLIC_SITE_ICON_SET?.trim();
+  if (!configured) return DEFAULT_ICON_SET;
+
+  const match = ICON_SETS.find((set) => set === configured);
+  if (match) return match;
+
+  console.warn(
+    `[constants] NEXT_PUBLIC_SITE_ICON_SET is set to "${configured}", which is not one of ${ICON_SETS.join(", ")}. Falling back to "${DEFAULT_ICON_SET}".`,
+  );
+  return DEFAULT_ICON_SET;
+}
+
+export const SITE_ICON_SET = resolveIconSet();
+
+// public/favicon.ico is a copy of the default set's icon, kept only so a bare
+// /favicon.ico request — a legacy path some feed readers and crawlers still hit
+// directly, ignoring the declared links — returns the live site's mark rather
+// than a 404. Every browser uses the <link> below instead, so on the demo that
+// one legacy path is the single place the old icon still shows.
+export const SITE_ICONS = {
+  favicon: `/icons/${SITE_ICON_SET}/favicon.ico`,
+  apple: `/icons/${SITE_ICON_SET}/apple-icon.png`,
+  icon192: `/icons/${SITE_ICON_SET}/icon-192.png`,
+  icon512: `/icons/${SITE_ICON_SET}/icon-512.png`,
+} as const;
+
 // Posts shown per listing page (index and category). On page 1 of the index
 // the hero counts as one of these, so every page holds the same number of posts.
 export const POSTS_PER_PAGE = 5;
