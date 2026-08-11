@@ -442,7 +442,8 @@
                 "tags",
                 "categories",
                 "authors",
-                "archive"
+                "archive",
+                "latest-posts"
               ]
             },
             {
