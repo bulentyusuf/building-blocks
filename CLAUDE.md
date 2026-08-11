@@ -821,6 +821,13 @@ default locale. It is the **template's** content model, imported by people
 forking this repo into their own space, not a mirror of the live space. Do not
 "correct" it.
 
+**Demo Site inherits that exception.** `18c3oqmr28q0` was imported from
+`export.json`, so its only locale is `en-US` while the live space is `en-GB`.
+The code never notices, because no query passes a locale and each space returns
+its own default — but a direct write to Demo Site, by MCP or by script, must key
+its fields `en-US`. The connector refuses `list_locales` there, so a rejected
+write is what tells you. This is the one place an `en-US` is not a regression.
+
 ### Single-entry fetchers are `cache()`-wrapped on purpose
 
 **Every** single-entry fetcher in `lib/api.ts` is wrapped in React's `cache()`:
