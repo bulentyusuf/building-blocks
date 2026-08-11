@@ -402,10 +402,9 @@ Site-level constants stay in code. `SITE_TITLE` alone is read by fourteen files
 touch Contentful. Moving those behind a network fetch is a much larger change
 than editing a standfirst; not the obvious next step.
 
-The `NEXT_PUBLIC_SITE_TITLE` and `NEXT_PUBLIC_SITE_DESCRIPTION` overrides are
-not a counterexample: build-time config resolved once at module scope, with the
-live name still the default in code. What this section rules out is the fetch,
-not the variable.
+The four `NEXT_PUBLIC_` identity overrides are not a counterexample: build-time
+config resolved once at module scope, with the live values still the defaults in
+code. What this section rules out is the fetch, not the variable.
 
 ### The OG card's font is guarded by a real render, not a hash
 
@@ -957,18 +956,19 @@ activated, so a new type is always two trips: activate, then populate.
 
 One repo, two Vercel projects running **identical code**, differing only in
 environment variables — a different Contentful space, tokens,
-`NEXT_PUBLIC_SITE_URL`, and the two identity overrides below. There is no source
-divergence to manage, so do not fork the repo to separate them; one repo feeding
-several projects is the designed path (Vercel allows 25 per repository).
+`NEXT_PUBLIC_SITE_URL`, and the four identity overrides below. There is no
+source divergence to manage, so do not fork the repo to separate them; one repo
+feeding several projects is the designed path (Vercel allows 25 per repository).
 
-**The demo names itself through `NEXT_PUBLIC_SITE_TITLE` and
-`NEXT_PUBLIC_SITE_DESCRIPTION`**, set on `demo-site` only; `lib/constants.ts`
-carries the argument. They exist because identical code is the whole design, so
-renaming the demo in source would rename the live site too, and renaming it on
-`demo` would end the fast-forward sync. Both are dashboard settings, so they
-share the fragility of the three below — unset, the demo silently answers to the
-live site's name. The two move together: home renders them as masthead and
-standfirst.
+**The demo names itself through four `NEXT_PUBLIC_` overrides** — `SITE_TITLE`,
+`SITE_DESCRIPTION`, `SITE_FOOTER_BLURB` and `SITE_REPO_URL`, each prefixed —
+set on `demo-site` only; `lib/constants.ts` carries the argument. They exist
+because identical code is the whole design, so renaming the demo in source would
+rename the live site too, and renaming it on `demo` would end the fast-forward
+sync. All four are dashboard settings, so they share the fragility of the three
+below — unset, the demo silently answers to the live site's name and links to
+its repository. Title and description move together, because home renders them
+as masthead and standfirst. `SITE_AUTHOR` is deliberately not among them.
 
 Three dashboard settings keep `demo-site` off `main`'s critical path. None is
 expressible in this repo and all are easy to lose, since a dashboard setting

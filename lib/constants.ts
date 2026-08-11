@@ -95,16 +95,25 @@ export const SITE_HOSTNAME = parseHostname(SITE_URL);
 // NEXT_PUBLIC_SITE_URL above, and the default in code is still the live name,
 // so a fork that sets nothing is unaffected.
 //
-// Both are NEXT_PUBLIC_ despite every current read being server-side. The title
+// All four are NEXT_PUBLIC_ despite every current read being server-side. Each
 // is rendered on the page, so nothing is being withheld, and the prefix means a
-// future client component reading either constant gets the configured value
-// rather than silently falling back to the default in the browser alone.
+// future client component reading one gets the configured value rather than
+// silently falling back to the default in the browser alone.
 //
-// Title and description move together: app/page.tsx renders them as home's
-// masthead and the standfirst directly beneath it, so overriding one leaves the
-// band half-renamed. SITE_AUTHOR is deliberately not overridable — nothing has
-// needed it, and the feed's author is a truthful credit for whoever built the
-// deployment rather than a name to disguise.
+// The four are exactly the constants that name or place the site: the two the
+// masthead renders, the footer blurb, and the repository the footer links to.
+// Title and description in particular move together, because app/page.tsx
+// renders them as home's masthead and the standfirst directly beneath it, so
+// overriding one leaves the band half-renamed.
+//
+// SITE_AUTHOR is deliberately not among them. It credits whoever wrote the
+// posts, which on any deployment of this repo is still the same person, and the
+// feed's author is a truthful credit rather than a name to disguise.
+//
+// Resolution is `?.trim() || fallback` in all four. Do not tidy it to `??`: an
+// unset variable on Vercel is frequently an empty string rather than undefined,
+// which `??` passes through, and an empty title renders an empty masthead.
+// lib/site-identity.test.ts keeps those cases as its known-bad control.
 export const SITE_TITLE =
   process.env.NEXT_PUBLIC_SITE_TITLE?.trim() || "Be Useful.";
 
@@ -116,10 +125,17 @@ export const SITE_AUTHOR = "Bulent Yusuf";
 
 // Shown in the footer's first column. Replace this with your own blurb.
 export const SITE_FOOTER_BLURB =
+  process.env.NEXT_PUBLIC_SITE_FOOTER_BLURB?.trim() ||
   "A blog about content, code, and collaborating with generative AI. Written in Munich and published from a headless CMS.";
 
-// Shown as the footer "GitHub" link. Point this at your own repository.
-export const SITE_REPO_URL = "https://github.com/bulentyusuf/building-blocks";
+// Shown as the footer "GitHub" link. Point this at your own repository. The
+// default here is the canonical repo, and lib/docs-consistency.test.ts holds it
+// against README.md and public/llms.txt — that guard reads the default only,
+// which is right, because those documents describe the repository rather than
+// whatever a given deployment links to.
+export const SITE_REPO_URL =
+  process.env.NEXT_PUBLIC_SITE_REPO_URL?.trim() ||
+  "https://github.com/bulentyusuf/building-blocks";
 
 // Posts shown per listing page (index and category). On page 1 of the index
 // the hero counts as one of these, so every page holds the same number of posts.
