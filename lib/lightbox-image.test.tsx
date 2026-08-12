@@ -85,20 +85,24 @@ describe("lightbox aspect ratio", () => {
 });
 
 describe("lightbox accessible naming", () => {
-  // A caption is rendered immediately after the image by the caller, so
-  // repeating it as alt made the same sentence announce twice (three times
-  // once the trigger's "Enlarge image: <desc>" label is counted).
-  it("leaves the image decorative when a caption describes it", () => {
+  // alt and caption are two different fields now, so a caption no longer
+  // suppresses the alt. The old behaviour existed only because both strings
+  // came from Contentful's `description`.
+  it("keeps the alt when a caption is also present", () => {
     const html = renderToStaticMarkup(
       <LightboxImage
         src="https://images.ctfassets.net/x/y.jpg"
-        alt="A placeholder"
-        caption="A placeholder"
+        alt="A tabby asleep on a keyboard"
+        caption="Bruno, entirely unbothered by the deadline"
       />,
     );
 
-    expect(html).toContain('alt=""');
-    expect(html).not.toContain('alt="A placeholder"');
+    // Only the alt is asserted. This component renders its caption solely
+    // inside the portal, which needs `mounted && open`, so the caption is
+    // absent from the server output by design — the figcaption under a body
+    // figure is the caller's, and rich-text.test.tsx covers that pairing.
+    // What matters here is that passing one no longer blanks the other.
+    expect(html).toContain('alt="A tabby asleep on a keyboard"');
   });
 
   it("keeps alt when there is no caption to carry the description", () => {

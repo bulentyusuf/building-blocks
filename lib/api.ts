@@ -30,6 +30,8 @@ const ASSET_BLOCK_FIELDS = `
     id
   }
   url
+  title
+  fileName
   description
   width
   height

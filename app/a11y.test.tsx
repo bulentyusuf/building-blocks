@@ -248,6 +248,7 @@ const bodyContent = {
         {
           sys: { id: "img1" },
           url: "https://images.ctfassets.net/x/y/photo.jpg",
+          title: "Three vintage beige computers stacked in a glass cabinet",
           description: "A cabinet of vintage computers stacked three high",
         },
       ],
@@ -647,18 +648,20 @@ describe("post page", () => {
     }
   });
 
-  it("describes a captioned figure once, not twice", async () => {
-    // Contentful's `description` is one field feeding both. Emitted as alt as
-    // well as caption, every figure announced the same sentence twice. Only
-    // applies where a figure actually holds an image — the PromptBlock figure
-    // in this fixture has none, and its figcaption names the prompt, not a
-    // picture, so there is nothing for it to redundantly describe.
+  it("never repeats a figure's caption as its alt text", async () => {
+    // alt and caption are separate Contentful fields and must stay separate
+    // strings. If they ever match, a screen reader announces one sentence
+    // twice in a row, which is the failure the old empty-alt rule existed to
+    // avoid. Only applies where a figure actually holds an image — the
+    // PromptBlock figure in this fixture has none, and its figcaption names
+    // the prompt, not a picture.
     await render();
     for (const figure of document.querySelectorAll("figure")) {
       const img = figure.querySelector("img");
       if (!img) continue;
       const caption = figure.querySelector("figcaption")?.textContent?.trim();
-      if (caption) expect(img.getAttribute("alt")).toBe("");
+      const alt = img.getAttribute("alt")?.trim();
+      if (caption && alt) expect(alt).not.toBe(caption);
     }
   });
 

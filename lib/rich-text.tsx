@@ -1,6 +1,7 @@
 import LightboxImage from "./lightbox-image";
 import Sidenote from "./sidenote";
 import { renderHyperlink } from "./rich-text-link";
+import { isPlaceholderTitle } from "./placeholder-title";
 import CopyButton from "./copy-button";
 import ContentfulImage from "./contentful-image";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
@@ -53,16 +54,20 @@ function RichTextAsset({
 
   if (!asset?.url) return null;
 
-  // The description is the caption, and only the caption — see the alt note
-  // below. So a missing one does not degrade the image's description, it
-  // removes it: no caption renders, and with alt empty by design the figure
-  // reaches the reader entirely unlabelled. A filename or a guessed
-  // description would be worse, and nothing in the CMS flags the gap, so warn
-  // instead — it surfaces in the build log while the asset can still be
-  // traced.
-  if (!asset.description) {
+  // `title` is the alt text, so a title that is really a filing label reaches
+  // a screen reader as though it described the picture. Checking only for an
+  // ABSENT title would be a guard that can never fire — Contentful requires
+  // the field — which is how a whole library of filename stems and generator
+  // output shipped with every check green. lib/placeholder-title.ts carries
+  // the argument and the known-bad control.
+  //
+  // A missing `description` is NOT warned on. It means only that no caption
+  // renders, which is a legitimate editorial choice and is already the case on
+  // several published figures. Alt is the accessibility floor; a caption is
+  // an addition.
+  if (isPlaceholderTitle(asset.title, asset.fileName)) {
     console.warn(
-      `[rich-text] Embedded asset ${asset.sys.id} has no description, so it renders with empty alt text and no caption.`,
+      `[rich-text] Embedded asset ${asset.sys.id} has no usable title (${JSON.stringify(asset.title ?? null)}), so its alt text does not describe the image.`,
     );
   }
 
@@ -75,7 +80,7 @@ function RichTextAsset({
       {lightbox ? (
         <LightboxImage
           src={asset.url}
-          alt={asset.description || ""}
+          alt={asset.title ?? ""}
           caption={asset.description}
           width={asset.width}
           height={asset.height}
@@ -83,14 +88,15 @@ function RichTextAsset({
       ) : (
         <ContentfulImage
           src={asset.url}
-          // Always empty, and not a bug. The description is the caption
-          // rendered directly below, so repeating it here made every figure
-          // announce the same sentence twice in a row. With a visible caption
-          // adjacent in the DOM the image is already described, which is the
-          // case W3C's own guidance makes for an empty alt. When there is no
-          // description there is no caption either, and empty was already the
-          // documented render (the build warning above still fires).
-          alt=""
+          // The asset's title, which is a different string from the caption
+          // below and describes what is depicted rather than commenting on it.
+          // These were once the same field, which is why the image had to go
+          // decorative to avoid announcing one sentence twice. They are not
+          // the same field any more, so it does not.
+          //
+          // "" when no title is set, never a filename and never a guess. The
+          // build warning above is what surfaces that case.
+          alt={asset.title ?? ""}
           // The asset's real shape, with 3:2 as the fallback for an asset that
           // carries no dimensions — see the same pair in lightbox-image.tsx.
           // w-full h-auto means the bitmap wins once loaded either way, so a
