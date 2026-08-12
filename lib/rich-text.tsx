@@ -1,6 +1,7 @@
 import LightboxImage from "./lightbox-image";
 import Sidenote from "./sidenote";
 import { renderHyperlink } from "./rich-text-link";
+import { isPlaceholderTitle } from "./placeholder-title";
 import CopyButton from "./copy-button";
 import ContentfulImage from "./contentful-image";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
@@ -53,17 +54,20 @@ function RichTextAsset({
 
   if (!asset?.url) return null;
 
-  // `title` is the alt text. Without it the figure reaches a screen reader and
-  // a crawler entirely unlabelled, and nothing in the CMS flags the gap, so
-  // warn — it surfaces in the build log while the asset can still be traced.
+  // `title` is the alt text, so a title that is really a filing label reaches
+  // a screen reader as though it described the picture. Checking only for an
+  // ABSENT title would be a guard that can never fire — Contentful requires
+  // the field — which is how a whole library of filename stems and generator
+  // output shipped with every check green. lib/placeholder-title.ts carries
+  // the argument and the known-bad control.
   //
   // A missing `description` is NOT warned on. It means only that no caption
   // renders, which is a legitimate editorial choice and is already the case on
   // several published figures. Alt is the accessibility floor; a caption is
   // an addition.
-  if (!asset.title) {
+  if (isPlaceholderTitle(asset.title, asset.fileName)) {
     console.warn(
-      `[rich-text] Embedded asset ${asset.sys.id} has no title, so it renders with empty alt text.`,
+      `[rich-text] Embedded asset ${asset.sys.id} has no usable title (${JSON.stringify(asset.title ?? null)}), so its alt text does not describe the image.`,
     );
   }
 

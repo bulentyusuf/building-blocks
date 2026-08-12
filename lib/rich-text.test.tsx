@@ -594,6 +594,7 @@ describe("embedded asset alt text and captions", () => {
   const withAsset = (fields: {
     title?: string;
     description?: string;
+    fileName?: string;
   }): Content =>
     ({
       json: assetDoc,
@@ -605,6 +606,7 @@ describe("embedded asset alt text and captions", () => {
               url: "https://images.ctfassets.net/a.jpg",
               title: fields.title,
               description: fields.description,
+              fileName: fields.fileName,
             },
           ],
         },
@@ -618,6 +620,27 @@ describe("embedded asset alt text and captions", () => {
     );
 
     expect(html).toContain('alt=""');
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0][0]).toMatch(/asset-1/);
+    warn.mockRestore();
+  });
+
+  it("warns when the title is only the asset's filename", () => {
+    // The wiring, not the rule — lib/placeholder-title.test.ts owns the rule
+    // and its known-bad control. This asserts the renderer actually consults
+    // it, because the guard it replaced could not fire at all: every asset has
+    // a title, so "warn when absent" stayed silent while the whole library
+    // rendered filename stems as alt text.
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const html = renderToStaticMarkup(
+      <RichText
+        content={withAsset({ title: "wages", fileName: "wages.jpg" })}
+        headings={[]}
+      />,
+    );
+
+    // The bad title still renders — the warning is the signal, not a fallback.
+    expect(html).toContain('alt="wages"');
     expect(warn).toHaveBeenCalledOnce();
     expect(warn.mock.calls[0][0]).toMatch(/asset-1/);
     warn.mockRestore();

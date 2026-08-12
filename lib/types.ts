@@ -14,6 +14,10 @@ export interface Asset {
   // and nullable: Contentful returns null when no title is set, and a payload
   // cached before this field was queried carries neither.
   title?: string | null;
+  // Read only by the build-time placeholder check in lib/placeholder-title.ts,
+  // which compares the title against it — a title that is just the filename is
+  // the defect that shipped. Nothing renders this.
+  fileName?: string | null;
   // Optional and nullable on purpose. Contentful returns null for both on a
   // non-image asset, and a payload cached before these were queried carries
   // neither, so every consumer falls back rather than assuming a shape.
