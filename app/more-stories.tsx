@@ -117,8 +117,16 @@ function PostPreview({
     );
   }
 
+  // Full height and column flow so the tag row below can take the slack.
+  // Grid items stretch to their row's height by default, and without this the
+  // pills sit directly under an excerpt whose length varies from card to
+  // card, so two cards in one row end at different heights and the shorter
+  // one leaves dead space above the listing's closing rule. Clamping the
+  // excerpt was the alternative and it is worse, because these are
+  // hand-written standfirsts and an ellipsis mid-sentence loses something a
+  // ragged bottom edge does not.
   return (
-    <article>
+    <article className="flex h-full flex-col">
       {coverImage && (
         <div className="mb-4">
           {/* Covers on this grid are authored 1920x1080. A bare 3:2 frame
@@ -150,7 +158,11 @@ function PostPreview({
         <DateComponent dateString={date} />
       </div>
       <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
-      <TagRow tags={tags} className="mt-4" />
+      {/* mt-auto takes the slack so every pill row in a grid row lands on the
+          same line; pt-4 keeps sixteen pixels above the pills on a card whose
+          excerpt happens to fill the cell, where mt-auto alone would resolve
+          to zero. */}
+      <TagRow tags={tags} className="mt-auto pt-4" />
     </article>
   );
 }
