@@ -25,13 +25,41 @@ describe("a banded listing keeps its item padding", () => {
 
   it("still sets a symmetric item padding to be the rhythm", () => {
     // Non-vacuous: the check above passes trivially if the padding is gone.
-    expect(moreStories).toMatch(/py-10[^"]*md:py-12/);
+    //
+    // Scoped to the list ITEM rather than to the file. The ruled grid
+    // container now carries the same py-10 md:py-12 as its own inset, so a
+    // file-wide match would keep passing on the grid's copy long after the
+    // list item's padding was deleted, which is precisely the regression the
+    // check above exists to catch. The list item is the only article in this
+    // file carrying a class list, and the count assertion is what keeps that
+    // true rather than assumed.
+    const items = [...moreStories.matchAll(/<article className="([^"]*)"/g)];
+    expect(items).toHaveLength(1);
+    expect(items[0][1]).toMatch(/py-10[^"]*md:py-12/);
+  });
+
+  it("gives a ruled grid that same inset in place of item padding", () => {
+    // The other half of the rhythm, and nothing else asserts it. A grid cell
+    // has no padding of its own, so the container supplies it, and only when
+    // the run is ruled. Without it the opening rule on home sits flush against
+    // the first row of covers while every list on the site keeps a full item's
+    // padding under its own hairline.
+    const grid = /`grid grid-cols-1[\s\S]*?`;/.exec(moreStories);
+    expect(grid).not.toBeNull();
+    expect(grid![0]).toMatch(/py-10 md:py-12/);
   });
 
   it("drops only the rule when openRule is false", () => {
-    const ternary = /openRule \? "border-y" : "([^"]*)"/.exec(moreStories);
-    expect(ternary).not.toBeNull();
-    expect(ternary![1].trim()).toBe("border-b");
+    // Both branches, not whichever exec happened to find first. The list and
+    // the grid each build this ternary now, so a single exec checked one and
+    // left the other free to drift to border-t with nothing noticing.
+    const ternaries = [
+      ...moreStories.matchAll(/openRule \? "border-y" : "([^"]*)"/g),
+    ];
+    expect(ternaries).toHaveLength(2);
+    for (const ternary of ternaries) {
+      expect(ternary[1].trim()).toBe("border-b");
+    }
   });
 });
 
