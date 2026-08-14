@@ -106,7 +106,7 @@ describe("the sticky bar's height does not depend on its contents", () => {
   });
 });
 
-describe("the home hero's title keeps a size step over a list card's", () => {
+describe("the home hero's title keeps a size step over a grid card's", () => {
   // Same family as the rest of this file: a difference nothing else can see.
   // The hero and the first card sit one scroll apart on home, both are h2 now
   // that the listing renders no heading of its own, and from md up the headline
@@ -115,11 +115,18 @@ describe("the home hero's title keeps a size step over a list card's", () => {
   // purpose. So the classes are allowed to agree at the base step and must
   // diverge above it. They collapsed into a match once, and a rendering test
   // cannot catch it, because jsdom applies no stylesheet and both are h2.
+  //
+  // The grid card, not the list card. Home renders MoreStories with
+  // variant="grid" now, so the grid heading is what actually sits under the
+  // hero; the list heading belongs to /page/2 and the other listing routes,
+  // which share no viewport with the hero at all. Checking the wrong branch
+  // would pass by accident, since the two ramps happen to agree at the base
+  // step regardless of which one is compared.
   const SIZE_STEP = /^(?:md:)?text-(?:sm|base|lg|\d*xl)$/;
   const sizeSteps = (className: string) =>
     className.split(/\s+/).filter((c) => SIZE_STEP.test(c));
 
-  it("the hero title and the list card title do not carry the same ramp", () => {
+  it("the hero title and the grid card title do not carry the same ramp", () => {
     // Matched on the tag and any attribute order rather than on `<h2 className=`
     // exactly, so an attribute added before the class list cannot make this
     // fail open.
@@ -128,17 +135,18 @@ describe("the home hero's title keeps a size step over a list card's", () => {
     ];
     expect(hero).toHaveLength(1);
 
-    // The list variant's heading, not the grid variant's. The grid is the post
-    // page's Read Next teaser and shares no viewport with the hero.
-    const listVariant = read("app/more-stories.tsx").split(
-      'variant === "list"',
-    )[1];
-    expect(listVariant).toBeDefined();
-    const card = /<Heading className="([^"]*)"/.exec(listVariant);
-    expect(card).not.toBeNull();
+    // Matched across the whole file rather than split on a variant string,
+    // which would silently pick up whichever branch happens to come first in
+    // source order. The count assertion is the guard: exactly one Heading per
+    // variant, list then grid, so the second match is always the grid's.
+    const headings = [
+      ...read("app/more-stories.tsx").matchAll(/<Heading className="([^"]*)"/g),
+    ];
+    expect(headings).toHaveLength(2);
+    const card = headings[1];
 
     const heroSteps = sizeSteps(hero[0][1]);
-    const cardSteps = sizeSteps(card![1]);
+    const cardSteps = sizeSteps(card[1]);
     // Non-vacuous: two empty lists are equal, so an unmatched ramp would
     // otherwise fail this test rather than pass it, but a ramp that stopped
     // being spelled in classes at all would sail through the comparison below.
