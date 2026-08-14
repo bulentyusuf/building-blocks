@@ -19,7 +19,8 @@
       "Bash(gh pr create --base main --head fix/contentful-export-activation-main --title 'fix: import content types as activated' --body ' *)",
       "Bash(git merge *)",
       "Bash(node -e 'JSON.parse\\(require\\(\"fs\"\\).readFileSync\\(\"package.json\"\\)\\);console.log\\(\"package.json valid\"\\)')",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "mcp__Claude_Code_Remote__subscribe_pr_activity"
     ]
   }
 }
