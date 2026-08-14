@@ -26,14 +26,17 @@ describe("a banded listing keeps its item padding", () => {
   it("still sets a symmetric item padding to be the rhythm", () => {
     // Non-vacuous: the check above passes trivially if the padding is gone.
     //
-    // Scoped to the list ITEM rather than to the file. The ruled grid
-    // container now carries the same py-10 md:py-12 as its own inset, so a
-    // file-wide match would keep passing on the grid's copy long after the
-    // list item's padding was deleted, which is precisely the regression the
-    // check above exists to catch. The list item is the only article in this
-    // file carrying a class list, and the count assertion is what keeps that
-    // true rather than assumed.
-    const items = [...moreStories.matchAll(/<article className="([^"]*)"/g)];
+    // Matched on an article carrying py-10 specifically, not on every classed
+    // article. The grid variant's article carries a class list of its own now
+    // too (flex h-full flex-col, so its tag row can sit on mt-auto), but no
+    // padding, so a bare className match would count two and the assertion
+    // below would need loosening to fit — which is exactly the kind of guard
+    // that stops guarding. The list item is still the only article whose
+    // padding IS the rhythm, and the count assertion keeps that true rather
+    // than assumed.
+    const items = [
+      ...moreStories.matchAll(/<article className="([^"]*py-10[^"]*)"/g),
+    ];
     expect(items).toHaveLength(1);
     expect(items[0][1]).toMatch(/py-10[^"]*md:py-12/);
   });

@@ -20,7 +20,8 @@
       "Bash(git merge *)",
       "Bash(node -e 'JSON.parse\\(require\\(\"fs\"\\).readFileSync\\(\"package.json\"\\)\\);console.log\\(\"package.json valid\"\\)')",
       "Bash(git commit *)",
-      "mcp__Claude_Code_Remote__subscribe_pr_activity"
+      "mcp__Claude_Code_Remote__subscribe_pr_activity",
+      "mcp__Claude_Code_Remote__unsubscribe_pr_activity"
     ]
   }
 }
