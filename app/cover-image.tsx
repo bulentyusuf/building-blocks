@@ -40,8 +40,11 @@ export default async function CoverImage({
   // elsewhere — e.g. the categories thumbnails link to /categories/${slug}.
   href?: string;
   sizes?: string;
-  // When true, the image is 3:2 on mobile and 16:9 on desktop (md+).
-  // Used only by the post hero. Omitted everywhere else (cards stay 3:2).
+  // When true, the image is 3:2 on mobile and 16:9 on desktop (md+). This is
+  // the treatment for any cover rendered from a 1920x1080 source, which is
+  // every post cover: the post hero, the home hero, and the listing cards in
+  // the grid variant. 16:9 at a phone's full width is a letterbox strip, so
+  // mobile takes the taller crop regardless.
   wide?: boolean;
   // Set on the above-the-fold hero image only (index + post page) so the
   // LCP element is fetched eagerly. Leave false for cards and grids.

@@ -257,11 +257,16 @@ export default async function Page() {
           contributed to. Its mb-8 only ever sat between itself and the first
           card.
 
-          This is also what finally makes home and /page/2 the same shape.
-          They now differ only in what the band says. */}
+          Home and /page/2 now differ in shape as well as in band, and
+          deliberately: the browse routes are the site's lists, and the front
+          page should not be a fifth copy of one. The grid is what makes home
+          read as a front page rather than another listing. The hero stays an
+          h2 and the cards stay h2 either way, so the flat outline the heading
+          removal bought is unaffected by which variant renders beneath it. */}
       <MoreStories
         morePosts={morePosts}
-        variant="list"
+        variant="grid"
+        ruled
         heading={null}
         coverName={coverName}
         visibleTags={visibleTags}

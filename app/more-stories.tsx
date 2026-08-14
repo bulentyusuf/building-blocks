@@ -118,13 +118,19 @@ function PostPreview({
   }
 
   return (
-    <div>
+    <article>
       {coverImage && (
         <div className="mb-4">
+          {/* Covers on this grid are authored 1920x1080. A bare 3:2 frame
+              cropped 15.6% off the width of every one of them. wide keeps the
+              mobile 3:2 (a full-width 16:9 on a phone is a letterbox strip)
+              and renders the source uncropped from md up, which also puts
+              these cards on the same aspect as the hero above them. */}
           <CoverImage
             slug={slug}
             url={coverImage.url}
             alt={coverImage.title ?? ""}
+            wide
             priority={priority}
             hover
             transitionName={transitionName}
@@ -145,13 +151,14 @@ function PostPreview({
       </div>
       <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
       <TagRow tags={tags} className="mt-4" />
-    </div>
+    </article>
   );
 }
 
 export default function MoreStories({
   morePosts,
   variant = "list",
+  ruled = variant === "list",
   heading,
   priorityFirst = false,
   coverName = createCoverNamer(),
@@ -160,6 +167,14 @@ export default function MoreStories({
 }: {
   morePosts: CardPost[];
   variant?: Variant;
+  // Whether the run draws its own opening and closing hairlines. Defaults to
+  // true for a list, which is every listing route, and false for a grid,
+  // which is the post page's Read Next teaser. Home is the exception that
+  // needs it explicitly: it renders a grid but it IS a listing, and the pager
+  // below it draws no rule of its own precisely because it expects the run
+  // above to have closed itself. An unruled grid there leaves the pager
+  // floating under nothing.
+  ruled?: boolean;
   heading: string | null;
   // When true, the first post's cover image is fetched with priority. Use on
   // heroless listing pages (index page 2+, category pages) where that image is
@@ -202,8 +217,12 @@ export default function MoreStories({
   // its top padding and sits below this one. Do not give it a border again, or
   // the two land in the same row and print a double line.
   //
-  // Deliberately list-only. The grid variant is a teaser block on the post
-  // page, not a listing, and has no rules between its cells to continue.
+  // Ruled by default on a list and unruled by default on a grid, because the
+  // grid variant is ordinarily a teaser block on the post page, not a listing,
+  // and has no rules between its cells to continue. Home is the one caller
+  // that renders a grid and passes ruled explicitly: it IS a listing, and its
+  // pager below relies on this run having closed itself exactly as the list
+  // variant does.
   //
   // openRule=false drops the top half only. A banded page already ends the navy
   // block where the list starts, so the opening rule lands just under that edge
@@ -215,12 +234,22 @@ export default function MoreStories({
   // made the first post hug the band while every post after it breathed — the
   // rhythm broke at exactly the point the reader starts reading. The page that
   // owns the band contributes no gap of its own instead (WidePage).
+  //
+  // A ruled grid carries that same py-10 md:py-12 as its own container inset
+  // rather than on each cell, for the same reason: a grid cell has no padding
+  // of its own, so without it the opening rule would sit flush against the
+  // first row of covers and the rhythm would break at exactly the point the
+  // reader starts reading.
   const container =
     variant === "list"
-      ? `flex flex-col divide-y divide-hairline border-hairline ${
-          openRule ? "border-y" : "border-b"
+      ? `flex flex-col divide-y divide-hairline${
+          ruled ? ` border-hairline ${openRule ? "border-y" : "border-b"}` : ""
         }`
-      : "grid grid-cols-1 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 gap-y-20 md:gap-y-32";
+      : `grid grid-cols-1 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 gap-y-20 md:gap-y-32${
+          ruled
+            ? ` border-hairline ${openRule ? "border-y" : "border-b"} py-10 md:py-12`
+            : ""
+        }`;
 
   // When the section renders its own h2 heading, post titles sit one level
   // below it (h3). With no section heading, the page h1 is the parent, so post

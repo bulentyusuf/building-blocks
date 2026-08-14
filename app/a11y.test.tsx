@@ -498,7 +498,7 @@ describe("home, whose band carries the masthead as its h1", () => {
           </section>
           <MoreStories
             morePosts={[post("b"), post("c")]}
-            variant="list"
+            variant="grid"
             heading={null}
           />
         </WidePage>
