@@ -125,11 +125,22 @@ function HeroPost({
             the masthead structurally the top of the page rather than only
             visually it.
 
-            One step above a list card's text-2xl md:text-3xl and two below the
-            masthead's ramp, which is the "closer to the card" end of the gap.
-            At the wide h1 ramp it carried before, this was the same size as a
-            post page's own headline, which is the whole reason it read as one. */}
-        <h2 className="mb-4 text-3xl md:text-4xl leading-tight text-pretty">
+            One step above the card's ramp and one below the masthead's at
+            every width: the masthead runs 36/48/60, this runs 30/36/48, a
+            card runs 24/30/30. The lg step is the fix, not decoration. The
+            masthead keeps climbing to lg:text-6xl while this used to stop at
+            md, so the gap above the hero widened to 24px at desktop while the
+            gap below it stayed at 6px, and the hero read as a slightly large
+            card rather than as the thing leading the page.
+
+            It stops at text-5xl rather than climbing with the masthead.
+            Above the masthead's own md step it starts competing with the
+            site name, and going that far was tried once already: at the wide
+            h1 ramp this carried before, it was the same size as a post
+            page's own headline, which is the whole reason home read as a
+            preview of an article rather than as the top of a list. Bringing
+            it down fixed that, and this change does not undo it. */}
+        <h2 className="mb-4 text-3xl md:text-4xl lg:text-5xl leading-tight text-pretty">
           <Link
             href={`/posts/${slug}`}
             className="hover:text-brand-crimson transition-colors duration-200"

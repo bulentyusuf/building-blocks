@@ -153,7 +153,13 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   // which share no viewport with the hero at all. Checking the wrong branch
   // would pass by accident, since the two ramps happen to agree at the base
   // step regardless of which one is compared.
-  const SIZE_STEP = /^(?:md:)?text-(?:sm|base|lg|\d*xl)$/;
+  // Must capture an lg: step, not only md:. The hero carries one now, and a
+  // pattern that drops it would silently compare the base and md steps only,
+  // never the largest one. Concretely: a hero of text-3xl md:text-4xl
+  // lg:text-3xl against a card of text-2xl md:text-3xl renders both at 30px
+  // at desktop, exactly the collapse this test exists to catch, and the
+  // pattern without lg passes it green.
+  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl)$/;
   const sizeSteps = (className: string) =>
     className.split(/\s+/).filter((c) => SIZE_STEP.test(c));
 
