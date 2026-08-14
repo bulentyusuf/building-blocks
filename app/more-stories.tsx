@@ -146,7 +146,15 @@ function PostPreview({
           />
         </div>
       )}
-      <Heading className="text-3xl mb-3 leading-snug text-pretty">
+      {/* The list card's own ramp, so the two variants agree about how big a
+          card headline is. They did not before: this was a flat text-3xl,
+          the Vercel template's value from when the grid was only ever the
+          post page's Read Next teaser, and as home's main listing that put
+          the card headline within 6px of the hero at desktop and level with
+          it on mobile, with nothing showing because the two variants never
+          shared a page. It also stops all four cards forcing two lines at
+          the 428px cell this grid resolves to inside the 984px content cap. */}
+      <Heading className="text-2xl md:text-3xl mb-3 leading-snug text-pretty">
         <Link
           href={`/posts/${slug}`}
           className="hover:text-brand-crimson transition-colors duration-200"

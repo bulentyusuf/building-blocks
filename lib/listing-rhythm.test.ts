@@ -153,7 +153,21 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   // which share no viewport with the hero at all. Checking the wrong branch
   // would pass by accident, since the two ramps happen to agree at the base
   // step regardless of which one is compared.
-  const SIZE_STEP = /^(?:md:)?text-(?:sm|base|lg|\d*xl)$/;
+  //
+  // Captures an lg: step as well as md:, because the hero carries one now and
+  // the card does not. Two ramps differing only at lg would otherwise filter
+  // to identical arrays and fail this test on class lists that genuinely
+  // differ, which is a false alarm one edit away from being live. So the lg:
+  // capture prevents a spurious red. It does not catch a missed collapse.
+  //
+  // What this cannot see: the comparison below is literal equality of filtered
+  // class tokens, not resolved cascade values, so two ramps whose token lists
+  // differ in LENGTH pass regardless of what they paint. A hero of
+  // text-3xl md:text-4xl lg:text-3xl against a card of text-2xl md:text-3xl
+  // renders both at 30px from lg up and this stays green, with or without the
+  // lg: capture. Resolving each list to a per-breakpoint size and asserting
+  // the hero is strictly larger at each is the fix, and it is not this one.
+  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl)$/;
   const sizeSteps = (className: string) =>
     className.split(/\s+/).filter((c) => SIZE_STEP.test(c));
 
@@ -168,8 +182,15 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
 
     // Matched across the whole file rather than split on a variant string,
     // which would silently pick up whichever branch happens to come first in
-    // source order. The count assertion is the guard: exactly one Heading per
-    // variant, list then grid, so the second match is always the grid's.
+    // source order. The count assertion only establishes that there are two
+    // headings and no more, so a third variant added later fails loudly here
+    // rather than silently shifting the index underneath this comparison.
+    // Which of the two is the grid comes from source order instead: the list
+    // branch returns before the grid branch in app/more-stories.tsx, and that
+    // ordering is load-bearing rather than incidental. It matters more than
+    // it used to, because since #394 the two class lists differ only in mb-2
+    // against mb-3, so reordering the branches would swap what this test
+    // compares without changing the count and without anything looking wrong.
     const headings = [
       ...read("app/more-stories.tsx").matchAll(/<Heading className="([^"]*)"/g),
     ];
