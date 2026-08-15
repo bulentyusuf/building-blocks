@@ -91,7 +91,13 @@ export default async function TagsPage() {
               // scroll-mt here — the two are additive, so keeping both would
               // overshoot.
               id={tag.slug}
-              className="mb-10 last:mb-0"
+              // One hairline per tag rather than per post row, so the eye
+              // tracks a block instead of hunting across a gap to a far-right
+              // date. Every section closes with its own border-bottom,
+              // including the last, matching the reference rather than the
+              // archive's open-top/closed-bottom run — there is no page-level
+              // list here for a shared rule to belong to.
+              className="border-b border-hairline py-[26px] first:pt-0 last:pb-0"
             >
               {/* Term and gloss on the left, examples on the right — a
                   glossary rather than twelve identical full-width blocks. At
@@ -101,14 +107,15 @@ export default async function TagsPage() {
                   back in beside their titles.
 
                   Single column below lg, where there is no width to divide. */}
-              <div className="lg:grid lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-x-10">
+              <div className="lg:grid lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-x-14">
                 <div className="lg:sticky lg:top-20 lg:self-start">
-                  {/* Smaller than the archive's year headings and in body ink
-                      rather than muted. A year is wayfinding, so it recedes; a
-                      tag name is the subject of its section. */}
+                  {/* Display size now — the tag name is the subject of its
+                      section, on the same footing as a post title on a
+                      listing, not a subordinate label the way a year number
+                      is on the archive. */}
                   {/* Not flex, unlike the archive's year headings. Flex makes
                       the count a second column, so a name that wraps in this
-                      18rem measure — "Information architecture" — pushed it to
+                      340px measure — "Information architecture" — pushed it to
                       the far right and split it over two lines. Inline, it
                       simply follows the last word. whitespace-nowrap keeps
                       "3 posts" together when that word lands near the edge. */}
@@ -117,39 +124,43 @@ export default async function TagsPage() {
                       teases the posts, and the full list, breadcrumb and
                       standfirst live at /tags/<slug> — the same relationship
                       /categories has with a category page. */}
-                  <h2 className="mb-1 text-xl md:text-2xl">
+                  <h2 className="mb-2 text-2xl md:text-[30px] tracking-[-0.018em]">
                     <Link
                       href={`/tags/${tag.slug}`}
                       className="transition-colors duration-200 hover:text-brand-crimson"
                     >
                       {tag.name}
                     </Link>{" "}
-                    <span className="font-ui text-xs font-normal uppercase tracking-wide whitespace-nowrap text-brand-muted tabular-nums">
+                    <span className="font-ui text-[11px] font-semibold uppercase tracking-[0.14em] whitespace-nowrap text-brand-muted">
                       {tagged.length} {tagged.length === 1 ? "post" : "posts"}
                     </span>
                   </h2>
                   {descriptions.get(tag.slug) && (
-                    <p className="mb-4 leading-relaxed text-brand-muted text-pretty lg:mb-0">
+                    <p className="mb-4 text-base leading-[1.55] text-brand-muted text-pretty lg:mb-0">
                       {descriptions.get(tag.slug)}
                     </p>
                   )}
                 </div>
 
-                <ul className="space-y-3 border-t border-hairline pt-4 lg:border-t-0 lg:pt-1">
+                <ul className="space-y-[10px] border-t border-hairline pt-4 lg:border-t-0 lg:pt-1.5">
                   {tagged.map((post) => (
                     <li
                       key={post.slug}
-                      className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-x-6"
+                      // Date-led, so date stays first in both DOM and visual
+                      // order rather than reordering like the archive's
+                      // title-led mobile rows. Stacked below sm, where a fixed
+                      // 96px column would not leave the title room to breathe.
+                      className="flex flex-col gap-y-1 sm:grid sm:grid-cols-[96px_1fr] sm:items-baseline sm:gap-x-5"
                     >
+                      <span className="text-sm tabular-nums text-brand-muted">
+                        <DateComponent dateString={post.date} />
+                      </span>
                       <Link
                         href={`/posts/${post.slug}`}
-                        className="hover:text-brand-crimson transition-colors duration-200"
+                        className="text-[19px] leading-[1.3] font-semibold text-pretty hover:text-brand-crimson transition-colors duration-200"
                       >
                         {widont(post.title)}
                       </Link>
-                      <span className="shrink-0 text-sm tabular-nums text-brand-muted sm:text-right">
-                        <DateComponent dateString={post.date} />
-                      </span>
                     </li>
                   ))}
                 </ul>
