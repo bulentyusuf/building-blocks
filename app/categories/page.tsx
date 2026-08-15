@@ -39,7 +39,9 @@ export default async function CategoriesPage() {
   // explicit order field to the Category type rather than relying on the name.
   const categories = await getAllCategories(isEnabled);
 
-  // One capped fetch per category, in parallel.
+  // One capped fetch per category, in parallel. Each entry carries both the
+  // teaser slice AND the category's real total, which the capped `items`
+  // alone cannot answer.
   const previews = await Promise.all(
     categories.map(
       async (c) =>
@@ -72,86 +74,103 @@ export default async function CategoriesPage() {
         </>
       }
     >
-      {/* One card per category, two across on desktop, stacked on mobile. */}
-      <div className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10">
+      {/* One full-width block per category rather than a two-column card
+          grid: with two categories, two columns made two thin strips and
+          needed bespoke papercraft art to fill them, which clashed with the
+          painterly post covers. The cover here is the category's own most
+          recent post, which also retires the need for that art — there is no
+          more per-category thumbnail field to keep populated. */}
+      <div className="flex flex-col gap-16">
         {categories.map((category, index) => {
-          const posts = postsBySlug.get(category.slug) ?? [];
-          const thumbUrl = category.thumbnail?.url;
-          const thumbAlt = category.thumbnail?.title ?? "";
+          const { items: posts, total } = postsBySlug.get(category.slug) ?? {
+            items: [],
+            total: 0,
+          };
+          const latestCover = posts[0]?.coverImage;
           return (
-            <article key={category.slug} className="flex flex-col min-w-0">
-              <h2 className="mb-3 text-2xl leading-snug md:text-3xl text-pretty">
-                <Link
+            <article
+              key={category.slug}
+              className="grid gap-14 lg:grid-cols-[1fr_420px] lg:items-start"
+            >
+              {latestCover ? (
+                <CoverImage
+                  url={latestCover.url}
+                  alt={latestCover.title ?? ""}
                   href={`/categories/${category.slug}`}
-                  className="hover:text-brand-crimson transition-colors duration-200"
-                >
-                  {widont(category.name)}
-                </Link>
-              </h2>
-
-              {category.description && (
-                <p className="mb-5 text-lg leading-relaxed text-brand-muted text-pretty">
-                  {category.description}
-                </p>
+                  // Capped at the point the 1fr track stops growing: at
+                  // max-w-5xl's 984px content width, 420px fixed and a 56px
+                  // gap leave 984 - 420 - 56 = 508px for the cover.
+                  sizes="(max-width: 1024px) 100vw, 508px"
+                  priority={index === 0}
+                />
+              ) : (
+                // A category can exist with no posts yet (or none Contentful
+                // has published), and then there is no "most recent cover" to
+                // show. Decorative, matching CoverImage's own pending tint
+                // rather than introducing a second placeholder treatment.
+                <div
+                  aria-hidden="true"
+                  className="aspect-video rounded-xs bg-brand-dark/5"
+                />
               )}
-
-              {thumbUrl && (
-                // Thumbnails render through the shared CoverImage so they inherit
-                // its frame (border, blur underlay, shadow, aspect) rather than
-                // duplicating it. Deliberately NOT previews of the cover morph:
-                // no `hover` zoom, no `transitionName`, no `wide`. The alt text
-                // is the asset's own title, for crawlers, and the thumbnail's
-                // link is hidden from assistive tech, so the h2 above it is
-                // still the single announced link to this category.
-                <div className="mb-5">
-                  <CoverImage
-                    url={thumbUrl}
-                    alt={thumbAlt}
-                    href={`/categories/${category.slug}`}
-                    // Capped in px for the same reason as the listing covers in
-                    // more-stories.tsx. This grid is two columns with a 40px
-                    // gap inside the 984px container, so a thumbnail tops out
-                    // at (984 - 40) / 2 = 472px. Left at 50vw it asked for
-                    // 720px at a 1440px viewport, which at DPR 2 pulled the
-                    // 1920 derivative instead of the 1080 that covers it.
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 472px"
-                    priority={index === 0}
-                  />
-                </div>
-              )}
-
-              {posts.length > 0 ? (
-                <>
-                  <ul className="flex flex-col divide-y divide-hairline border-t border-hairline">
-                    {posts.map((post) => (
-                      <li key={post.slug} className="py-4">
-                        <Link
-                          href={`/posts/${post.slug}`}
-                          className="block text-lg font-medium text-pretty hover:text-brand-crimson transition-colors duration-200"
-                        >
-                          {widont(post.title)}
-                        </Link>
-                        <div className="mt-1 text-sm text-brand-muted">
-                          <DateComponent dateString={post.date} />
-                        </div>
-                        {post.excerpt && (
-                          <p className="mt-1 text-base leading-relaxed text-brand-muted line-clamp-1">
-                            {post.excerpt}
-                          </p>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+              <div className="flex flex-col gap-3">
+                <h2 className="text-[52px] leading-none font-bold tracking-[-0.028em] text-pretty">
                   <Link
                     href={`/categories/${category.slug}`}
-                    className="mt-5 inline-block font-ui text-sm font-bold uppercase tracking-wide text-brand-crimson hover:underline"
+                    className="hover:text-brand-crimson transition-colors duration-200"
                   >
-                    See all in {category.name} &rarr;
+                    {widont(category.name)}
                   </Link>
-                </>
-              ) : (
-                <p className="text-lg text-brand-muted">No posts here yet.</p>
-              )}
+                </h2>
+
+                {category.description && (
+                  <p className="text-lg leading-[1.5] text-brand-muted text-pretty">
+                    {category.description}
+                  </p>
+                )}
+
+                {total > 0 && (
+                  <p className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+                    {total} {total === 1 ? "post" : "posts"}
+                  </p>
+                )}
+
+                {posts.length > 0 ? (
+                  <>
+                    <ul className="flex flex-col gap-2 pt-2.5">
+                      {posts.map((post) => (
+                        <li
+                          key={post.slug}
+                          className="grid grid-cols-[78px_1fr] items-baseline gap-4"
+                        >
+                          <span className="text-sm tabular-nums text-brand-muted">
+                            <DateComponent
+                              dateString={post.date}
+                              formatString="d MMM"
+                            />
+                          </span>
+                          <Link
+                            href={`/posts/${post.slug}`}
+                            className="text-lg leading-[1.3] font-semibold text-pretty hover:text-brand-crimson transition-colors duration-200"
+                          >
+                            {widont(post.title)}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="pt-2 text-right">
+                      <Link
+                        href={`/categories/${category.slug}`}
+                        className="font-ui text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-crimson hover:underline"
+                      >
+                        All of {category.name} &rarr;
+                      </Link>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-lg text-brand-muted">No posts here yet.</p>
+                )}
+              </div>
             </article>
           );
         })}

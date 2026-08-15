@@ -97,7 +97,6 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  thumbnail?: CoverImage; // optional 4:3 category tile; absent on categories without one
 }
 
 // A cross-cutting topic, up to three per post. No thumbnail: the /tags glossary
@@ -178,6 +177,12 @@ export interface CardPostCollectionResponse {
   data?: {
     postCollection?: {
       items: CardPost[];
+      // Only selected (and only meaningful) on the capped teaser queries —
+      // getRecentPostsByCategory and getRecentPostsByAuthor — which need the
+      // collection's real size even though `items` itself is capped short of
+      // it. total is independent of limit/skip, so a bounded query still
+      // reports the count a caller would get back unbounded.
+      total?: number;
     };
   };
 }

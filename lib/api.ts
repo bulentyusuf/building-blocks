@@ -695,10 +695,6 @@ export async function getAllCategories(
           name
           slug
           description
-          thumbnail {
-            url
-            title
-          }
         }
       }
     }`,
@@ -759,6 +755,10 @@ export async function getPostsByCategory(
   );
 }
 
+// Shared by the two teaser fetchers below: a capped `items` slice alongside
+// the collection's real `total`, which `limit` alone never reveals.
+export type RecentPosts = { items: CardPost[]; total: number };
+
 // Recent posts in a category, capped server-side. Same card fragment as
 // getPostsByCategory above; the difference is the limit. This one teases a few
 // posts on the categories landing page, that one returns the whole category so
@@ -767,10 +767,11 @@ export async function getRecentPostsByCategory(
   slug: string,
   limit: number,
   isDraftMode = false,
-): Promise<CardPost[]> {
+): Promise<RecentPosts> {
   const entries = await fetchGraphQL<CardPostCollectionResponse>(
     `query GetRecentPostsByCategory($slug: String!, $limit: Int!, $preview: Boolean) {
       postCollection(where: { category: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit) {
+        total
         items {
           ${CARD_GRAPHQL_FIELDS}
         }
@@ -780,7 +781,37 @@ export async function getRecentPostsByCategory(
     { slug, limit, preview: isDraftMode },
   );
 
-  return entries?.data?.postCollection?.items ?? [];
+  return {
+    items: entries?.data?.postCollection?.items ?? [],
+    total: entries?.data?.postCollection?.total ?? 0,
+  };
+}
+
+// Recent posts by an author, capped server-side. Same shape as
+// getRecentPostsByCategory above, for the authors index teasing a few posts
+// per author rather than the whole (paginated) author page's list.
+export async function getRecentPostsByAuthor(
+  slug: string,
+  limit: number,
+  isDraftMode = false,
+): Promise<RecentPosts> {
+  const entries = await fetchGraphQL<CardPostCollectionResponse>(
+    `query GetRecentPostsByAuthor($slug: String!, $limit: Int!, $preview: Boolean) {
+      postCollection(where: { author: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit) {
+        total
+        items {
+          ${CARD_GRAPHQL_FIELDS}
+        }
+      }
+    }`,
+    isDraftMode,
+    { slug, limit, preview: isDraftMode },
+  );
+
+  return {
+    items: entries?.data?.postCollection?.items ?? [],
+    total: entries?.data?.postCollection?.total ?? 0,
+  };
 }
 
 export const getAuthorBySlug = cache(
