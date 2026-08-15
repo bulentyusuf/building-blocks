@@ -99,7 +99,12 @@ function PostPreview({
           </div>
         )}
         <div>
-          <Heading className="text-2xl md:text-3xl mb-2 leading-snug text-pretty">
+          {/* The post title is the display element on a listing, not the page
+              label above it — a "Tags" or "Archive" h1 carries less
+              information than the post it sits above and should not be the
+              largest type on the page. 32px at md matches the grid variant's
+              own card size below, so the two listing shapes agree. */}
+          <Heading className="text-2xl md:text-[32px] tracking-[-0.02em] leading-[1.12] mb-2 text-pretty">
             <Link
               href={`/posts/${slug}`}
               className="hover:text-brand-crimson transition-colors duration-200"
@@ -148,7 +153,9 @@ function PostPreview({
           it on mobile, with nothing showing because the two variants never
           shared a page. It also stops all four cards forcing two lines at
           the 428px cell this grid resolves to inside the 984px content cap. */}
-      <Heading className="text-2xl md:text-3xl mb-3 leading-snug text-pretty">
+      {/* Same display-size rule as the list variant above: the post title,
+          not the page label, is the largest type a listing shows. */}
+      <Heading className="text-2xl md:text-[32px] tracking-[-0.02em] leading-[1.12] mb-3 text-pretty">
         <Link
           href={`/posts/${slug}`}
           className="hover:text-brand-crimson transition-colors duration-200"

@@ -167,7 +167,12 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   // renders both at 30px from lg up and this stays green, with or without the
   // lg: capture. Resolving each list to a per-breakpoint size and asserting
   // the hero is strictly larger at each is the fix, and it is not this one.
-  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl)$/;
+  // The card's own md step moved to an arbitrary value (text-[32px]) so it
+  // could land on the exact display-scale figure rather than the nearest
+  // named step, so the pattern has to accept a bracketed value too — otherwise
+  // it silently stops matching that step, which is exactly the kind of
+  // shortened-list false pass the comment above warns about.
+  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl|\[[^\]]+\])$/;
   const sizeSteps = (className: string) =>
     className.split(/\s+/).filter((c) => SIZE_STEP.test(c));
 
