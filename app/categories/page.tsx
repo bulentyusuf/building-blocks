@@ -144,10 +144,11 @@ export default async function CategoriesPage() {
                           className="grid grid-cols-[78px_1fr] items-baseline gap-4"
                         >
                           <span className="text-sm tabular-nums text-brand-muted">
-                            <DateComponent
-                              dateString={post.date}
-                              formatString="d MMM"
-                            />
+                            {/* No formatString override: unlike the archive,
+                                there is no year heading nearby for "d MMM" to
+                                borrow a year from, so this keeps the sitewide
+                                long form. */}
+                            <DateComponent dateString={post.date} />
                           </span>
                           <Link
                             href={`/posts/${post.slug}`}
