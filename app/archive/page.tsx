@@ -83,48 +83,32 @@ export default async function ArchivePage() {
           const yearPosts = byYear.get(year)!;
           return (
             <section key={year} className="mb-10 last:mb-0">
-              {/* Section marker, deliberately subordinate to the h1. Bricolage
-                  comes from the base layer; brand-muted keeps it legible in
-                  both colour schemes without any scheme-specific code. */}
-              <h2 className="mb-4 flex items-baseline gap-x-3 text-2xl text-brand-muted md:text-3xl tabular-nums">
-                {year}
-                {/* Uppercase and tracked, the same signal the category links
-                    below and the footer headings use for a label. In sentence
-                    case at body-muted it dressed as prose and read as the start
-                    of one; as a tally it stays out of the way. Matches the tag
-                    counts on /tags — the same phrase should not look like two
-                    different things. */}
-                <span className="font-ui text-xs font-normal uppercase tracking-wide text-brand-muted">
+              {/* The year is masthead-scale ink, not muted — it is what gives
+                  the page a spine now that the row itself carries no other
+                  large type. The count beside it stays the small-caps label
+                  treatment every tally on the site uses. */}
+              <h2 className="mb-2.5 flex items-baseline gap-4">
+                <span className="text-4xl font-extrabold leading-none tracking-[-0.03em] tabular-nums md:text-[56px]">
+                  {year}
+                </span>
+                <span className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
                   {yearPosts.length} {yearPosts.length === 1 ? "post" : "posts"}
                 </span>
               </h2>
-              <ul className="space-y-3">
+              <ul>
                 {yearPosts.map((post) => (
+                  // Date | title | category as three columns from sm up, so
+                  // the category sits in its own lane instead of competing
+                  // inline with the title. flex-col below sm, where a fixed
+                  // 96/150px pair of columns would not leave the title room to
+                  // breathe; `order` re-sequences the same three children into
+                  // title-first there. Every row carries its own top rule, and
+                  // the last row of a year closes the group with a bottom one.
                   <li
                     key={post.slug}
-                    className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-x-6"
+                    className="flex flex-col gap-y-1 border-t border-hairline py-3.5 last:border-b sm:grid sm:grid-cols-[96px_1fr_150px] sm:items-baseline sm:gap-x-6 sm:gap-y-0"
                   >
-                    <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <Link
-                        href={`/posts/${post.slug}`}
-                        className="hover:text-brand-crimson transition-colors duration-200"
-                      >
-                        {widont(post.title)}
-                      </Link>
-                      {post.category && (
-                        <Link
-                          href={`/categories/${post.category.slug}`}
-                          className="font-ui text-sm uppercase tracking-wide text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
-                        >
-                          {/* Screen readers run adjacent inline elements
-                              together, so the title ran straight into the
-                              category name. A word gives it a boundary. */}
-                          <span className="sr-only">in </span>
-                          {post.category.name}
-                        </Link>
-                      )}
-                    </span>
-                    <span className="shrink-0 text-sm tabular-nums text-brand-muted sm:text-right">
+                    <span className="order-2 text-sm tabular-nums text-brand-muted sm:order-1">
                       <DateComponent
                         dateString={post.date}
                         formatString="d MMM"
@@ -134,6 +118,24 @@ export default async function ArchivePage() {
                           that heading, so restore it for them only. */}
                       <span className="sr-only"> {year}</span>
                     </span>
+                    <Link
+                      href={`/posts/${post.slug}`}
+                      className="order-1 text-[21px] leading-[1.25] font-semibold text-pretty hover:text-brand-crimson transition-colors duration-200 sm:order-2"
+                    >
+                      {widont(post.title)}
+                    </Link>
+                    {post.category && (
+                      <Link
+                        href={`/categories/${post.category.slug}`}
+                        className="order-3 font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson sm:justify-self-end"
+                      >
+                        {/* Screen readers run adjacent inline elements
+                            together, so the title ran straight into the
+                            category name. A word gives it a boundary. */}
+                        <span className="sr-only">in </span>
+                        {post.category.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
