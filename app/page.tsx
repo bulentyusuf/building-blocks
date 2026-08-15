@@ -82,10 +82,10 @@ function HeroPost({
   // top of a list. The band above made that unmissable by putting a real
   // masthead directly over a masthead-shaped block that is not one.
   //
-  // The cover keeps `wide` and `priority`. It is still the LCP element and it
-  // is now the first painted image in document order as well, so it is
-  // preloaded exactly as before and contentful-image.tsx still opens it at its
-  // `instant` reveal state rather than waiting on hydration.
+  // The cover keeps `priority`. It is still the LCP element and it is now the
+  // first painted image in document order as well, so it is preloaded exactly
+  // as before and contentful-image.tsx still opens it at its `instant` reveal
+  // state rather than waiting on hydration.
   //
   // The bottom margin is the listing item's own py-10 md:py-12, so the hero
   // sits exactly as far above the opening rule as every card sits above the
@@ -111,7 +111,6 @@ function HeroPost({
             slug={slug}
             url={coverImage.url}
             alt={coverImage.title ?? ""}
-            wide
             priority
             transitionName={transitionName}
             sizes="(max-width: 768px) 100vw, 1024px"

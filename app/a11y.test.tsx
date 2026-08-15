@@ -297,7 +297,6 @@ describe("listing page", () => {
             <CoverImage
               url="https://images.ctfassets.net/x/y/hero.jpg"
               slug="hero"
-              wide
               priority
             />
           </section>
@@ -609,7 +608,6 @@ describe("post page", () => {
             <h1>A post title</h1>
             <CoverImage
               url="https://images.ctfassets.net/x/y/cover.jpg"
-              wide
               priority
             />
             <Avatar

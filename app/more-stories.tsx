@@ -129,16 +129,10 @@ function PostPreview({
     <article className="flex h-full flex-col">
       {coverImage && (
         <div className="mb-4">
-          {/* Covers on this grid are authored 1920x1080. A bare 3:2 frame
-              cropped 15.6% off the width of every one of them. wide keeps the
-              mobile 3:2 (a full-width 16:9 on a phone is a letterbox strip)
-              and renders the source uncropped from md up, which also puts
-              these cards on the same aspect as the hero above them. */}
           <CoverImage
             slug={slug}
             url={coverImage.url}
             alt={coverImage.title ?? ""}
-            wide
             priority={priority}
             hover
             transitionName={transitionName}

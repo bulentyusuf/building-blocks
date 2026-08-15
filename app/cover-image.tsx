@@ -17,7 +17,6 @@ export default async function CoverImage({
   slug,
   href,
   sizes,
-  wide,
   priority = false,
   hover = false,
   transitionName,
@@ -40,12 +39,6 @@ export default async function CoverImage({
   // elsewhere — e.g. the categories thumbnails link to /categories/${slug}.
   href?: string;
   sizes?: string;
-  // When true, the image is 3:2 on mobile and 16:9 on desktop (md+). This is
-  // the treatment for any cover rendered from a 1920x1080 source, which is
-  // every post cover: the post hero, the home hero, and the listing cards in
-  // the grid variant. 16:9 at a phone's full width is a letterbox strip, so
-  // mobile takes the taller crop regardless.
-  wide?: boolean;
   // Set on the above-the-fold hero image only (index + post page) so the
   // LCP element is fetched eagerly. Leave false for cards and grids.
   priority?: boolean;
@@ -78,7 +71,12 @@ export default async function CoverImage({
       sizes={
         sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
       }
-      className={cn("object-cover", {
+      // No object-cover: the source art is authored at 16:9, the frame below
+      // is aspect-video, and the two ratios matching is what makes this a
+      // stretch-to-fit no-op rather than a crop. A wide focus-area crop
+      // belongs in the Contentful Images API request (fit=fill&f=…), never in
+      // this class.
+      className={cn({
         // Hover only, no group-focus-within: the link below is removed from
         // the tab order (see there), so keyboard focus never lands inside this
         // group and the focus variant would be a dead rule claiming otherwise.
@@ -106,8 +104,10 @@ export default async function CoverImage({
     >
       <div
         className={cn(
-          "relative overflow-hidden bg-brand-dark/5 border border-cover-keyline",
-          wide ? "aspect-3/2 md:aspect-video" : "aspect-3/2",
+          // Every cover is 16:9, the source art's native ratio, on every
+          // breakpoint. Nothing here should crop it — see the note on the
+          // image's className above.
+          "relative overflow-hidden bg-brand-dark/5 border border-cover-keyline aspect-video",
           {
             "cursor-pointer": linkHref,
             group: hover,
