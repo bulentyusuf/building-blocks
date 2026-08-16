@@ -23,9 +23,10 @@ export default function ExploreWithAI({ slug }: { slug: string }) {
           tracking. The two sit one above the other in the same sidebar, so any
           difference between them reads as an accident rather than a
           distinction. */}
-      <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
+      <p className="mb-3 font-ui text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
         Explore with AI
       </p>
+      {/* 15px, matching the table-of-contents item size directly above it. */}
       <ul className="space-y-2">
         {targets.map((t) => (
           <li key={t.href}>
@@ -33,7 +34,7 @@ export default function ExploreWithAI({ slug }: { slug: string }) {
               href={t.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="block leading-snug text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+              className="block text-[15px] leading-[1.35] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
             >
               {t.label}
               <NewWindowHint />

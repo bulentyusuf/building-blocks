@@ -203,10 +203,15 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
         </svg>
       </summary>
       <nav aria-label="Table of contents" className="text-sm pt-3 xl:pt-0">
-        <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block">
+        <p className="mb-3 font-ui text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-muted hidden xl:block">
           On this page
         </p>
-        <ul className="space-y-2 border-l border-brand-dark/10">
+        {/* No rail down the list — only the current item carries a border, so
+            a reader is not looking at eleven inactive left edges to find the
+            one that means something. Every item still reserves the same
+            border-l-2 width and -ml offset, transparent when inactive, so
+            becoming current does not shift the text sideways. */}
+        <ul className="space-y-2">
           {headings.map((h) => (
             <li key={h.slug}>
               <a
@@ -216,10 +221,10 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                 // position information sighted readers get.
                 aria-current={activeId === h.slug ? "location" : undefined}
                 onClick={() => onLinkClick(h.slug)}
-                className={`block border-l -ml-px pl-3 leading-snug transition-colors duration-200 ${
+                className={`block border-l-2 -ml-[14px] pl-3 text-[15px] leading-[1.35] transition-colors duration-200 ${
                   activeId === h.slug
-                    ? "border-brand-crimson text-brand-crimson font-medium"
-                    : "border-transparent text-brand-muted hover:text-brand-crimson"
+                    ? "border-brand-crimson text-brand-crimson font-semibold"
+                    : "border-transparent hover:text-brand-crimson"
                 }`}
               >
                 {/* h.text is always a plain string; widont de-widows the
