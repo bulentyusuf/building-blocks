@@ -55,7 +55,7 @@ A recurring subject of the blog is the process of building and maintaining it. M
 **Reading**
 
 - Light and dark colour schemes, following the operating system preference
-- Per-post table of contents, reading time, and an image lightbox
+- Per-post table of contents and an image lightbox
 - Sidenotes that float into the right margin on wide screens and collapse behind their reference number on narrow ones, opening without JavaScript
 - Cross-page view transitions on cover images
 - Skip link, a single visible focus indicator across the site, and reduced-motion support
