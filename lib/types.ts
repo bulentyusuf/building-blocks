@@ -177,11 +177,11 @@ export interface CardPostCollectionResponse {
   data?: {
     postCollection?: {
       items: CardPost[];
-      // Only selected (and only meaningful) on the capped teaser queries —
-      // getRecentPostsByCategory and getRecentPostsByAuthor — which need the
-      // collection's real size even though `items` itself is capped short of
-      // it. total is independent of limit/skip, so a bounded query still
-      // reports the count a caller would get back unbounded.
+      // Only selected (and only meaningful) on getRecentPostsByCategory's
+      // capped teaser query, which needs the collection's real size even
+      // though `items` itself is capped short of it. total is independent of
+      // limit/skip, so a bounded query still reports the count a caller
+      // would get back unbounded.
       total?: number;
     };
   };

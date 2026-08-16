@@ -755,7 +755,7 @@ export async function getPostsByCategory(
   );
 }
 
-// Shared by the two teaser fetchers below: a capped `items` slice alongside
+// Returned by getRecentPostsByCategory below: a capped `items` slice alongside
 // the collection's real `total`, which `limit` alone never reveals.
 export type RecentPosts = { items: CardPost[]; total: number };
 
@@ -771,33 +771,6 @@ export async function getRecentPostsByCategory(
   const entries = await fetchGraphQL<CardPostCollectionResponse>(
     `query GetRecentPostsByCategory($slug: String!, $limit: Int!, $preview: Boolean) {
       postCollection(where: { category: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit) {
-        total
-        items {
-          ${CARD_GRAPHQL_FIELDS}
-        }
-      }
-    }`,
-    isDraftMode,
-    { slug, limit, preview: isDraftMode },
-  );
-
-  return {
-    items: entries?.data?.postCollection?.items ?? [],
-    total: entries?.data?.postCollection?.total ?? 0,
-  };
-}
-
-// Recent posts by an author, capped server-side. Same shape as
-// getRecentPostsByCategory above, for the authors index teasing a few posts
-// per author rather than the whole (paginated) author page's list.
-export async function getRecentPostsByAuthor(
-  slug: string,
-  limit: number,
-  isDraftMode = false,
-): Promise<RecentPosts> {
-  const entries = await fetchGraphQL<CardPostCollectionResponse>(
-    `query GetRecentPostsByAuthor($slug: String!, $limit: Int!, $preview: Boolean) {
-      postCollection(where: { author: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit) {
         total
         items {
           ${CARD_GRAPHQL_FIELDS}
