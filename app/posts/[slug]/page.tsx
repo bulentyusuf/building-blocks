@@ -266,7 +266,7 @@ export default async function PostPage({
                 panel. Read that one value; do not hard-code a second. TOC
                 repeats every heading; excluded so headings are not
                 double-weighted in search. */}
-            <div className="mt-8 xl:sticky xl:top-20 xl:mt-0 xl:pb-4">
+            <div className="mt-8 xl:sticky xl:top-20 xl:pb-4">
               <TableOfContents headings={headings} />
               <div className="mt-[30px] hidden xl:block">
                 <ExploreWithAI slug={slug} />
@@ -301,7 +301,7 @@ export default async function PostPage({
                 aria-label="Tags"
                 className="mt-12 border-t border-hairline pt-6"
               >
-                <p className="mb-2 font-ui text-xs font-semibold uppercase tracking-[0.14em] text-brand-muted">
+                <p className="mb-2 font-ui text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted">
                   Tagged
                 </p>
                 <p className="text-[15px]">
