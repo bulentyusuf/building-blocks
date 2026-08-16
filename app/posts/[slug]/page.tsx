@@ -309,22 +309,24 @@ export default async function PostPage({
                 aria-label="Tags"
                 className="mt-12 border-t border-hairline pt-6"
               >
-                {/* The label is sentence case and unstyled; the tags are
-                    small-caps, bold and letterspaced. An outlined pill shape
-                    once carried that distinction instead — a bare uppercase
-                    tag list was tried before that and read as a third tag
-                    beside "Tagged" — but the current treatment sits at a
-                    different scale from the label as well as a different
-                    case (10px vs text-sm) and stays paired with the same
-                    hover affordance every other converted small-caps link on
-                    the site carries. */}
+                {/* A labelled row rather than the small-caps run every other
+                    converted tag caller uses (see more-stories.tsx): this is
+                    the one place tags render beside body prose rather than on
+                    a card, so they carry the same 15px/body-ink signature as
+                    a table-of-contents item instead of a UI-face treatment.
+                    The label alone stays sentence case and unstyled, which is
+                    still enough to keep it from reading as a fourth tag —
+                    a bare uppercase run was the thing tried and rejected
+                    before the small-caps treatment existed at all, and this
+                    is neither: bigger than the label, not letterspaced,
+                    not uppercase. */}
                 <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <li className="mr-2 text-sm text-brand-muted">Tagged</li>
                   {tags.map((tag) => (
                     <li key={tag.slug}>
                       <Link
                         href={`/tags/${tag.slug}`}
-                        className="font-ui text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+                        className="text-[15px] leading-[1.35] font-semibold text-pretty transition-colors duration-200 hover:text-brand-crimson"
                       >
                         {tag.name}
                       </Link>
