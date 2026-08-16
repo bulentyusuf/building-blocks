@@ -2,15 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 
-import Date from "./date";
+import DateComponent from "./date";
 import CoverImage from "./cover-image";
-import Avatar from "./avatar";
-import WidePage from "./wide-page";
-import MoreStories, { TagRow } from "./more-stories";
+import Container from "./container";
 import Pagination from "./pagination";
 
 import { getAllPosts } from "@/lib/api";
-import { postTags, visibleTagSlugs } from "@/lib/tags";
 import {
   POSTS_PER_PAGE,
   SITE_URL,
@@ -19,160 +16,112 @@ import {
 } from "@/lib/constants";
 import { totalPagesFor } from "@/lib/paginate";
 import { createCoverNamer } from "@/lib/view-transition-name";
+import type { ListPost } from "@/lib/types";
+import { widont } from "@/lib/typography";
 
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
-import type { Author, CoverImage as CoverImageType, Tag } from "@/lib/types";
-import { widont } from "@/lib/typography";
 
-function HeroPost({
-  title,
-  coverImage,
-  date,
-  updatedDate,
-  excerpt,
-  author,
-  slug,
-  tags,
+// How many of the page's posts render as plates (a lead spanning the full
+// width, then two more 2-up) before the rest fall into the dated "Earlier"
+// list. Fixed at three because the lead/grid split below is built for
+// exactly that shape — changing this needs a design pass, not a constant bump.
+const PLATE_COUNT = 3;
+
+// Date first (a reader wants to know the blog is alive before anything else
+// on a plate), category after if the post has one — see CLAUDE.md's
+// standfirst-vs-date rule for why a plate carries both and an Earlier row
+// carries only the date.
+function PlateMeta({ post }: { post: ListPost }) {
+  return (
+    <p className="text-sm text-brand-muted tabular-nums">
+      <DateComponent dateString={post.date} />
+      {post.category && (
+        <>
+          <span className="text-separator" aria-hidden="true">
+            {" "}
+            &middot;{" "}
+          </span>
+          {post.category.name}
+        </>
+      )}
+    </p>
+  );
+}
+
+function Plate({
+  post,
+  lead = false,
+  priority = false,
   transitionName,
 }: {
-  title: string;
-  coverImage?: CoverImageType;
-  date: string;
-  updatedDate?: string;
-  excerpt: string;
-  author?: Author;
-  slug: string;
-  /** Already filtered to tags with a live page, exactly as a card's are. */
-  tags: Tag[];
+  post: ListPost;
+  lead?: boolean;
+  priority?: boolean;
   transitionName?: string;
 }) {
-  const showUpdated = updatedDate && updatedDate !== date;
-
-  // Lead with the published date (matches the index cards). The updated
-  // date is desktop-only so the mobile byline stays one tight line.
-  //
-  // No category. The site has two of them, so the label carries about one bit
-  // and mostly repeats itself down the page, and the tag row directly beneath
-  // is what actually tells one post from another. Putting it on the cards
-  // instead was considered and rejected, because it would need a per-route
-  // exception on /categories/[slug] and its paginated pages, where the category
-  // is the page you are already on. Per-route exceptions are what the axis work
-  // removed.
-  //
-  // The byline stays. It is the hero's other difference from a card and it
-  // earns the space, because the site has three author personas and the film
-  // and games posts are bylined to different ones. There is one hero, so unlike
-  // the category it never repeats.
-  const dateline = (
-    <>
-      <Date dateString={date} />
-      {showUpdated && (
-        <span className="hidden sm:inline">
-          {" · "}Updated <Date dateString={updatedDate!} />
-        </span>
-      )}
-    </>
+  const title = (
+    <Link
+      href={`/posts/${post.slug}`}
+      className="hover:text-brand-crimson transition-colors duration-200"
+    >
+      {widont(post.title)}
+    </Link>
   );
 
-  // Cover first, then headline, excerpt and byline. In the old order this was
-  // a post page's masthead rendered on the index — same elements, same order,
-  // same scale — so home read as a preview of the article rather than as the
-  // top of a list. The band above made that unmissable by putting a real
-  // masthead directly over a masthead-shaped block that is not one.
-  //
-  // The cover keeps `priority`. It is still the LCP element and it is now the
-  // first painted image in document order as well, so it is preloaded exactly
-  // as before and contentful-image.tsx still opens it at its `instant` reveal
-  // state rather than waiting on hydration.
-  //
-  // The bottom margin is the listing item's own py-10 md:py-12, so the hero
-  // sits exactly as far above the opening rule as every card sits above the
-  // hairline below it. It was mb-section, 64px, which is the gap between two
-  // page sections and left a visible hole under the pills once the hero
-  // stopped being one.
-  return (
-    <section className="mx-auto max-w-5xl mb-10 md:mb-12">
-      {coverImage && (
-        // Same device as the post page, and home was the only wide route not
-        // using it. relative so the cover paints above the band rather than
-        // under it; the -mt-16 is the 64px the band's pb-24 was deepened to
-        // absorb, so the band's VISIBLE inset stays symmetric at 32 top and 32
-        // bottom and the extra 64 is the part the cover covers. The arithmetic
-        // lives in page-band.tsx; this is the half that consumes it.
-        //
-        // mb-8 md:mb-10 rather than the post page's flat mb-10. What sits below
-        // differs — a post's cover is followed by its body column, this one by a
-        // headline — and the hero's own rhythm under the cover is not what this
-        // change is about.
-        <div className="relative -mt-16 mb-8 md:mb-10">
-          <CoverImage
-            slug={slug}
-            url={coverImage.url}
-            alt={coverImage.title ?? ""}
-            priority
-            transitionName={transitionName}
-            sizes="(max-width: 768px) 100vw, 1024px"
-          />
-        </div>
-      )}
-      <div>
-        {/* An h2, and so is every card title below, because the listing no
-            longer renders a heading of its own. Home's outline is the site
-            name at h1 and then one flat list of siblings, which is what makes
-            the masthead structurally the top of the page rather than only
-            visually it.
+  const cover = post.coverImage && (
+    <CoverImage
+      slug={post.slug}
+      url={post.coverImage.url}
+      alt={post.coverImage.title ?? ""}
+      priority={priority}
+      hover
+      transitionName={transitionName}
+      sizes={
+        lead
+          ? "(max-width: 768px) 100vw, 984px"
+          : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 472px"
+      }
+    />
+  );
 
-            One step above the card's ramp and one below the masthead's at
-            every width: the masthead runs 36/48/60, this runs 30/36/48, a
-            card runs 24/30/30. The lg step is the fix, not decoration. The
-            masthead keeps climbing to lg:text-6xl while this used to stop at
-            md, so the gap above the hero widened to 24px at desktop while the
-            gap below it stayed at 6px, and the hero read as a slightly large
-            card rather than as the thing leading the page.
-
-            It stops at text-5xl rather than climbing with the masthead.
-            Above the masthead's own md step it starts competing with the
-            site name, and going that far was tried once already: at the wide
-            h1 ramp this carried before, it was the same size as a post
-            page's own headline, which is the whole reason home read as a
-            preview of an article rather than as the top of a list. Bringing
-            it down fixed that, and this change does not undo it. */}
-        <h2 className="mb-4 text-3xl md:text-4xl lg:text-5xl leading-tight text-pretty">
-          <Link
-            href={`/posts/${slug}`}
-            className="hover:text-brand-crimson transition-colors duration-200"
-          >
-            {widont(title)}
-          </Link>
-        </h2>
-        <p className="text-lg leading-relaxed mb-6 text-pretty">{excerpt}</p>
-        {author && (
-          <div className="flex items-center">
-            <Avatar
-              name={author.name}
-              slug={author.slug}
-              picture={author.picture}
-              meta={dateline}
-            />
+  // The lead plate spans the full width and splits into title (left) and
+  // standfirst-plus-meta (right) — the one size distinction left in the
+  // design once the masthead itself carries the site name. The two grid
+  // plates below stack title, standfirst and meta in one column instead.
+  if (lead) {
+    return (
+      <article className="md:col-span-2">
+        {cover && <div className="mb-6">{cover}</div>}
+        <div className="grid gap-10 md:grid-cols-[1fr_380px]">
+          <h2 className="text-[56px] leading-[1.04] tracking-[-0.028em] font-bold text-pretty">
+            {title}
+          </h2>
+          <div>
+            <p className="text-lg leading-relaxed text-pretty">
+              {post.excerpt}
+            </p>
+            <div className="mt-3">
+              <PlateMeta post={post} />
+            </div>
           </div>
-        )}
-        {/* Last, which is the same rule a card follows and not the same
-            position. more-stories.tsx puts pills below the excerpt because a
-            count that varies from one to three should land at the foot of the
-            card where it pushes nothing around. A card's date sits above its
-            excerpt and this hero's byline sits below one, so the foot here is
-            after the byline. The two components order their middles
-            differently on purpose.
+        </div>
+      </article>
+    );
+  }
 
-            mt-6 rather than the card's mt-3, because what sits above differs
-            too. A card's pills follow a text baseline, whereas these follow a
-            40px avatar block, and 12px under that read as the pills belonging
-            to the byline rather than to the post. */}
-        <TagRow tags={tags} className="mt-6" />
+  return (
+    <article>
+      {cover && <div className="mb-4">{cover}</div>}
+      <h2 className="mb-2 text-[32px] leading-tight tracking-[-0.02em] font-bold text-pretty">
+        {title}
+      </h2>
+      <p className="text-[17px] leading-[1.55] text-pretty">{post.excerpt}</p>
+      <div className="mt-3">
+        <PlateMeta post={post} />
       </div>
-    </section>
+    </article>
   );
 }
 
@@ -180,108 +129,77 @@ export default async function Page() {
   const { isEnabled } = await draftMode();
   const allPosts = await getAllPosts(isEnabled);
 
-  const heroPost = allPosts[0];
-  // Hero counts toward the page budget, so page 1 shows the hero plus
-  // (POSTS_PER_PAGE - 1) cards.
-  const morePosts = allPosts.slice(1, POSTS_PER_PAGE);
+  // The first three posts render as plates — a lead, then two 2-up — and
+  // whatever else fits the page budget falls into the dated "Earlier" list.
+  const platePosts = allPosts.slice(0, PLATE_COUNT);
+  const earlierPosts = allPosts.slice(PLATE_COUNT, POSTS_PER_PAGE);
   const totalPages = totalPagesFor(allPosts.length);
 
-  // One name allocator for the whole page so the hero and the cards below can
-  // never emit the same cover-{slug} twice (a duplicate would invalidate the
-  // entire view transition). First occurrence — the hero — wins.
+  // One name allocator for the whole page so a plate and an Earlier row (an
+  // Earlier row carries no cover, so in practice this only ever guards the
+  // three plates against each other) can never emit the same cover-{slug}
+  // twice — a duplicate would invalidate the entire view transition.
   const coverName = createCoverNamer();
 
-  // Computed once and shared. The hero and the cards must agree on which tags
-  // have a live page, and two calls could only ever diverge — a tag hidden on
-  // a card and shown on the hero would be worse than showing none at all.
-  const visibleTags = visibleTagSlugs(allPosts);
-
   return (
-    // No crumbs, because this is the root. It bleeds, so the hero's cover
-    // crosses the band's bottom edge rather than starting below it on cream.
-    // This said the opposite until the design call it was waiting on was taken:
-    // home led with a cover and still ended its band above it, which left the
-    // band reading as an empty slab on the one route whose band carries the
-    // masthead.
-    //
-    // The band carries the site masthead, which is what every other index does
-    // with the site as its subject. It is home's h1 now that the hero below is
-    // an h2, so the outline and the visual hierarchy finally say the same
-    // thing. It stays unlinked, because a link on / points at the page the
-    // reader is already on, which is why the last breadcrumb crumb is plain
-    // text too. The bar's own wordmark hides itself here through a rule in
-    // globals.css, so the name is said once rather than twice within 100px.
-    //
-    // No font-display and no weight class. The base-layer rule in globals.css
-    // gives h1 both, and as a <p> this rendered at 400 against the 700 of the
-    // post headlines under it, which is what a per-component override would
-    // have papered over.
-    //
-    // Neither element names a colour. Both take white from the band's root, as
-    // every other band's contents do.
-    //
-    // Both flags below gate on the cover, for the same reason the post page
-    // gates its own bleed: the deepened inset exists to make room for an image.
-    // A hero with nothing to pull up would take a 96px bottom band with no
-    // cover filling it and an h2 hard against the edge, which is worse than the
-    // ordinary inset it would otherwise have had. Every post carries a cover
-    // today, so this is insurance rather than a live case — but it is the
-    // difference between a guard and an assumption.
-    //
-    // contentOwnsLeading gates too, not just bleed. Without a cover the
-    // container's pt-6 is the only leading the hero gets, and dropping it
-    // unconditionally would take that away on exactly the branch that needs it.
-    <WidePage
-      bleed={Boolean(heroPost?.coverImage)}
-      contentOwnsLeading={Boolean(heroPost?.coverImage)}
-      header={
-        <>
-          <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-            {SITE_TITLE}
-          </h1>
-          <p className="max-w-3xl text-lg leading-relaxed">
-            {SITE_DESCRIPTION}
-          </p>
-        </>
-      }
-    >
-      {heroPost && (
-        <HeroPost
-          title={heroPost.title}
-          coverImage={heroPost.coverImage}
-          date={heroPost.date}
-          updatedDate={heroPost.updatedDate}
-          author={heroPost.author}
-          slug={heroPost.slug}
-          excerpt={heroPost.excerpt}
-          tags={postTags(heroPost).filter((t) => visibleTags.has(t.slug))}
-          transitionName={coverName(heroPost.slug)}
-        />
-      )}
-      {/* No `heading`. With the hero already an h2 the heading was furniture
-          between two things that are now siblings, and MoreStories reads its
-          absence as "the page h1 is my parent", so the card titles step up to
-          h2 and the whole index becomes one flat list. The rule above the
-          first card still separates them: openRule defaults true here, and the
-          gap above it is the hero's own bottom margin, which the heading never
-          contributed to. Its mb-8 only ever sat between itself and the first
-          card.
+    <Container>
+      {/* The masthead is home's h1 — the same signature every other index
+          uses for the site itself — with the tagline as its standfirst and a
+          rule closing the pair off from the listing below. No band: chrome is
+          the sticky bar and the footer only, so this renders on cream like
+          every other route's header now. */}
+      <h1 className="site-masthead text-[96px] leading-[0.86] tracking-[-0.04em] font-extrabold text-pretty">
+        {SITE_TITLE}
+      </h1>
+      <p className="mt-3 max-w-3xl text-xl leading-[1.45] text-brand-muted">
+        {SITE_DESCRIPTION}
+      </p>
+      <div className="mt-8 border-t-[3px] border-brand-dark" />
 
-          Home and /page/2 now differ in shape as well as in band, and
-          deliberately: the browse routes are the site's lists, and the front
-          page should not be a fifth copy of one. The grid is what makes home
-          read as a front page rather than another listing. The hero stays an
-          h2 and the cards stay h2 either way, so the flat outline the heading
-          removal bought is unaffected by which variant renders beneath it. */}
-      <MoreStories
-        morePosts={morePosts}
-        variant="grid"
-        ruled
-        heading={null}
-        coverName={coverName}
-        visibleTags={visibleTags}
+      <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2">
+        {platePosts.map((post, i) => (
+          <Plate
+            key={post.slug}
+            post={post}
+            lead={i === 0}
+            priority={i === 0}
+            transitionName={coverName(post.slug)}
+          />
+        ))}
+      </div>
+
+      {earlierPosts.length > 0 && (
+        <section className="mt-16">
+          <h2 className="border-b border-hairline pb-3 font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+            Earlier
+          </h2>
+          <ul className="divide-y divide-hairline">
+            {earlierPosts.map((post) => (
+              <li
+                key={post.slug}
+                className="grid grid-cols-[132px_1fr] items-baseline gap-5 py-[18px]"
+              >
+                <span className="text-sm text-brand-muted tabular-nums">
+                  <DateComponent dateString={post.date} />
+                </span>
+                <Link
+                  href={`/posts/${post.slug}`}
+                  className="text-[21px] leading-[1.3] font-semibold text-pretty hover:text-brand-crimson transition-colors duration-200"
+                >
+                  {widont(post.title)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <Pagination
+        currentPage={1}
+        totalPages={totalPages}
+        basePath="/"
+        variant="simple"
       />
-      <Pagination currentPage={1} totalPages={totalPages} basePath="/" />
-    </WidePage>
+    </Container>
   );
 }

@@ -22,28 +22,32 @@ export default function Avatar({
   slug?: string;
   meta?: ReactNode;
 }) {
+  // 38px — the post sidebar's byline, an attribution stamp read once rather
+  // than a card's own heading. app/author-bio-card.tsx renders its own,
+  // larger portrait for the foot-of-article card; the two are deliberately
+  // different components; see the note there.
   return (
     <div className="flex items-center">
-      <div className="mr-4 w-12 h-12 shrink-0">
+      <div className="mr-3 h-[38px] w-[38px] shrink-0">
         {picture?.url ? (
           <ContentfulImage
             alt=""
             className="object-cover h-full w-full rounded-full"
-            height={48}
-            width={48}
+            height={38}
+            width={38}
             src={picture.url}
           />
         ) : (
           <div
             aria-hidden="true"
-            className="flex h-full w-full items-center justify-center rounded-full bg-brand-dark/10 text-sm font-bold text-brand-muted"
+            className="flex h-full w-full items-center justify-center rounded-full bg-brand-dark/10 text-xs font-bold text-brand-muted"
           >
             {initials(name)}
           </div>
         )}
       </div>
       <div className="leading-tight">
-        <div className="text-xl font-bold">
+        <div className="text-[15px] font-semibold">
           {slug ? (
             <Link
               href={`/authors/${slug}`}
@@ -56,7 +60,7 @@ export default function Avatar({
           )}
         </div>
         {meta && (
-          <div className="mt-1 text-sm font-normal text-brand-muted">
+          <div className="mt-0.5 text-sm font-normal text-brand-muted">
             {meta}
           </div>
         )}

@@ -1,20 +1,20 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import WidePage from "../../wide-page";
+import Container from "../../container";
+import Breadcrumb, { type Crumb } from "../../breadcrumb";
 import MoreStories from "../../more-stories";
 import Avatar from "../../avatar";
 import Date from "../../date";
 import CoverImage from "../../cover-image";
 import { RichText } from "@/lib/rich-text";
-import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
+import { getAllPosts, getPostAndMorePosts, getPostsByAuthor } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { extractHeadings } from "@/lib/headings";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import AuthorBioCard from "../../author-bio-card";
-import { type Crumb } from "../../breadcrumb";
 import {
   SITE_URL,
   SITE_AUTHOR,
@@ -106,6 +106,13 @@ export default async function PostPage({
   const visible = visibleTagSlugs(allPosts);
   const tags = postTags(post).filter((t) => visible.has(t.slug));
 
+  // For the author card's "All N posts" link. A second request, but a slim
+  // one (the card fragment, not full bodies), and the author bio card is the
+  // one place on the site that needs a total rather than a capped teaser.
+  const authorPostCount = post.author?.slug
+    ? (await getPostsByAuthor(post.author.slug, isEnabled)).length
+    : 0;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -134,10 +141,10 @@ export default async function PostPage({
     },
   };
 
+  // Byline sub-line: lead with the published date, flag the revision on
+  // mobile, show the full updated date on desktop. This is the sidebar's
+  // static byline, read once and never sticky — see the note below.
   const showUpdated = post.updatedDate && post.updatedDate !== post.date;
-
-  // Byline sub-line: lead with the published date (matches the index cards),
-  // flag the revision on mobile, show the full updated date on desktop.
   const dateline = (
     <span className="tabular-nums">
       <Date dateString={post.date} />
@@ -155,12 +162,9 @@ export default async function PostPage({
   const headings = extractHeadings(post.content.json);
   const highlighted = await highlightCodeBlocks(post.content);
 
-  // One name allocator for the whole page, as on the home index. The cover
-  // below and the "Read Next" cards draw from it, so a duplicate cover-{slug}
-  // — which invalidates the entire view transition — is impossible by
-  // construction. It was previously impossible only because the related-post
-  // queries filter with slug_not_in: [$slug], which put a page-level invariant
-  // two files away in a GraphQL where clause.
+  // One name allocator for the whole page. The cover below and the "Read
+  // Next" cards draw from it, so a duplicate cover-{slug} — which invalidates
+  // the entire view transition — is impossible by construction.
   const coverName = createCoverNamer();
 
   const crumbs: Crumb[] = post.category
@@ -176,96 +180,78 @@ export default async function PostPage({
     : [{ label: "Home", href: "/" }, { label: post.title }];
 
   return (
-    // The band's contents are the trail and the title, and the excerpt stays
-    // where it is. A listing standfirst describes a collection to someone
-    // deciding whether to enter it, whereas a post excerpt introduces an
-    // article to a reader who has already arrived. With the cover crossing the
-    // edge the band reads as trail, title, top of the picture, which is a
-    // complete masthead rather than a shortened one.
-    //
-    // `bleed` tracks the cover, because it exists to make room for one. A post
-    // without a cover has nothing to pull up and takes the ordinary inset.
-    <WidePage
-      crumbs={crumbs}
-      bleed={Boolean(post.coverImage)}
-      contentOwnsLeading
-      header={
-        // data-pagefind-body a second time, because the h1 has left the
-        // article and Pagefind indexes only what sits inside a body region.
-        // meta.title survives without this, since Pagefind reads the page's
-        // first h1 wherever it is, so the regression is invisible in the
-        // results list. What is lost is the title's WORDS, which drop out of
-        // the searchable text and take every title-only term with them.
-        // Pagefind concatenates multiple body regions into one fragment, so
-        // this restores the index to exactly what it held before the move.
-        <h1
-          data-pagefind-body
-          className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty"
-        >
-          {widont(post.title)}
-        </h1>
-      }
-    >
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
-      {/* data-pagefind-body scopes the Pagefind index to post content only.
-          Pages without this attribute are excluded from search entirely.
-          data-pagefind-meta="url" records the clean, extensionless route as the
-          result URL: Pagefind indexes the prerendered `<slug>.html` files, so
-          its derived url carries a `.html` that 404s on Next's routes. The
-          Component UI has no JS layer to rewrite it, so the fix lives in the
-          index — the result template reads `meta.url` in preference to that
-          derived url. */}
-      <article
-        data-pagefind-body
-        data-pagefind-meta="url[data-url]"
-        data-url={`/posts/${slug}`}
-        className="mx-auto max-w-5xl"
-      >
-        {/* relative so the cover paints above the band rather than under it.
-            The -mt-16 is the 64px the band's pb-24 was deepened to absorb, so
-            the body below sits exactly where it always did and only the navy
-            behind the cover's top is new. */}
-        {post.coverImage && (
-          <div className="relative -mt-16 mb-10">
-            <CoverImage
-              url={post.coverImage.url}
-              alt={post.coverImage.title ?? ""}
-              priority
-              transitionName={coverName(post.slug)}
-              sizes="(max-width: 768px) 100vw, 1024px"
-            />
-          </div>
-        )}
-        {/*
-          Grid begins AFTER the cover image. The header block above
-          (category, title, image) is full-width.
-          Below xl: single column — standfirst, then byline (with date), then body.
-          At xl+: sidebar (TOC + AI) in the left track, content in the right.
-        */}
-        <div className="xl:grid xl:grid-cols-[1fr_3fr] xl:gap-x-10">
-          {/* Sidebar zone — TOC always rendered (collapsed disclosure on
-              mobile, sticky open panel at xl+). ExploreWithAI stays xl-only
-              per the separate mobile-AI decision. */}
-          {/* TOC repeats every heading; excluded so headings are not
-              double-weighted in search. */}
-          <aside data-pagefind-ignore className="mb-4 xl:mb-0">
-            <div className="xl:sticky xl:top-20 space-y-8 xl:pb-4">
-              <TableOfContents headings={headings} />
-              <div className="hidden xl:block">
-                <ExploreWithAI slug={slug} />
-              </div>
-            </div>
-          </aside>
+      {/* Full bleed, directly under the sticky bar — no band, no inset. The
+          cover sets the header's height now rather than the header making
+          room for it, so the article begins immediately below. */}
+      {post.coverImage && (
+        <CoverImage
+          url={post.coverImage.url}
+          alt={post.coverImage.title ?? ""}
+          priority
+          transitionName={coverName(post.slug)}
+          sizes="100vw"
+        />
+      )}
+      <Container>
+        <Breadcrumb items={crumbs} />
+        {/* data-pagefind-body a second time, because the h1 sits outside the
+            <article> below and Pagefind indexes only what sits inside a body
+            region. meta.title survives without this, since Pagefind reads
+            the page's first h1 wherever it is, so the regression is invisible
+            in the results list. What is lost is the title's WORDS, which drop
+            out of the searchable text and take every title-only term with
+            them. Pagefind concatenates multiple body regions into one
+            fragment, so this restores the index to exactly what it held
+            before. */}
+        <h1
+          data-pagefind-body
+          className="mt-6 text-[72px] leading-none tracking-[-0.032em] font-bold text-pretty"
+        >
+          {widont(post.title)}
+        </h1>
+        {/* A listing standfirst describes a collection to someone deciding
+            whether to enter it; a post excerpt introduces an article to a
+            reader who has already arrived. Narrower than the h1's column on
+            purpose — a measure this wide reads badly at three lines. */}
+        <p className="mt-4 max-w-[780px] text-[23px] leading-[1.45] text-brand-muted text-pretty">
+          {post.excerpt}
+        </p>
+        <div className="mt-10 border-t border-hairline" />
 
-          <div className="mx-auto max-w-2xl xl:mx-0">
-            <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
-              {post.excerpt}
-            </p>
+        {/* data-pagefind-body scopes the Pagefind index to post content only.
+            Pages without this attribute are excluded from search entirely.
+            data-pagefind-meta="url" records the clean, extensionless route as
+            the result URL: Pagefind indexes the prerendered <slug>.html
+            files, so its derived url carries a .html that 404s on Next's
+            routes. The Component UI has no JS layer to rewrite it, so the fix
+            lives in the index — the result template reads meta.url in
+            preference to that derived url.
+
+            items-stretch (grid's own default, asserted rather than assumed)
+            is load-bearing: without it the sidebar column shrinks to its
+            content height (~370px) and the sticky Contents/AI block below has
+            no range to travel in as the reader scrolls the much taller
+            article column beside it. */}
+        <article
+          data-pagefind-body
+          data-pagefind-meta="url[data-url]"
+          data-url={`/posts/${slug}`}
+          className="mt-10 xl:grid xl:grid-cols-[210px_1fr] xl:items-stretch xl:gap-14"
+        >
+          <aside data-pagefind-ignore className="mb-8 xl:mb-0">
+            {/* Static — an attribution stamp, read once, that scrolls away
+                with the rest of the article. Deliberately not part of the
+                sticky block below: the avatar here is a reading companion,
+                the one on the author card at the foot of the article belongs
+                to the bio, and the two are allowed to differ (see
+                app/author-bio-card.tsx). */}
             {post.author && (
-              <div className="mb-10">
+              <div className="mb-8 xl:mb-0">
                 <Avatar
                   name={post.author.name}
                   slug={post.author.slug}
@@ -274,81 +260,83 @@ export default async function PostPage({
                 />
               </div>
             )}
+            {/* Sticky — this is the part that travels. top-20 (80px) must
+                equal globals.css's scroll-padding-top: 5rem, or a heading
+                reached from a Contents link lands underneath this pinned
+                panel. Read that one value; do not hard-code a second. TOC
+                repeats every heading; excluded so headings are not
+                double-weighted in search. */}
+            <div className="mt-8 xl:sticky xl:top-20 xl:mt-0 xl:pb-4">
+              <TableOfContents headings={headings} />
+              <div className="mt-[30px] hidden xl:block">
+                <ExploreWithAI slug={slug} />
+              </div>
+            </div>
+          </aside>
+
+          <div className="max-w-[43.75rem]">
             {/* text-pretty on the prose container inherits into every child —
                 paragraphs and in-body headings alike — so line breaking just
                 avoids a lone last word, without the aggressive re-balancing of
                 text-wrap: balance. One class covers the whole article body.
-
-                The heading sizes are em, so they track the prose base. h2 sits
-                at 1.6em rather than the 1.75em it carried before the base moved
-                to 1.125rem: the plugin keys a heading's margins to its own
-                font-size (2em above, 1em below), so an oversized h2 inflates
-                the space around it as well as the type. At 1.6em the gap above
-                lands at 57.6px, near where it sat before the bump, and the
-                h1-to-h2 step widens back out. */}
-            <div className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h4:text-[1.15em]">
+                prose-h2 overrides the plugin's own em-scaled default with the
+                absolute 34px this design calls for. */}
+            <div className="prose text-pretty prose-h2:text-[34px] prose-h2:tracking-[-0.02em] prose-h3:text-[1.375em] prose-h4:text-[1.15em]">
               <RichText
                 content={post.content}
                 headings={headings}
                 highlighted={highlighted}
               />
             </div>
-            {/* Below the body rather than in the sidebar: the sidebar is
-                xl-and-up only, so tags placed there would vanish on the
-                viewports most people read on. Every tag links into the /tags
-                glossary, and only tags that clear the threshold are rendered —
-                a hidden tag would otherwise link to an anchor that is not on
-                that page.
-
-                The gap below the tags is not set here — it comes from the
-                author block's top margin, which drops to mt-6 when tags are
-                present so both sides of the band are 24px. Changing pt-6 here
-                without changing that leaves the row lopsided. */}
+            {/* Below the body, in the same 700px column. Every tag links into
+                the /tags glossary, and only tags that clear the threshold are
+                rendered — a hidden tag would otherwise link to an anchor that
+                is not on that page. Plain text rather than the small-caps run
+                every other converted tag caller uses (see more-stories.tsx):
+                pills are already gone sitewide, and this is that same
+                treatment, crimson names separated by a middot rather than a
+                UI-face label run. */}
             {tags.length > 0 && (
               <nav
                 aria-label="Tags"
                 className="mt-12 border-t border-hairline pt-6"
               >
-                {/* A labelled row rather than the small-caps run every other
-                    converted tag caller uses (see more-stories.tsx): this is
-                    the one place tags render beside body prose rather than on
-                    a card, so they carry the same 15px/body-ink signature as
-                    a table-of-contents item instead of a UI-face treatment.
-                    The label alone stays sentence case and unstyled, which is
-                    still enough to keep it from reading as a fourth tag —
-                    a bare uppercase run was the thing tried and rejected
-                    before the small-caps treatment existed at all, and this
-                    is neither: bigger than the label, not letterspaced,
-                    not uppercase. */}
-                <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                  <li className="mr-2 text-sm text-brand-muted">Tagged</li>
-                  {tags.map((tag) => (
-                    <li key={tag.slug}>
+                <p className="mb-2 font-ui text-xs font-semibold uppercase tracking-[0.14em] text-brand-muted">
+                  Tagged
+                </p>
+                <p className="text-[15px]">
+                  {tags.map((tag, i) => (
+                    <span key={tag.slug}>
+                      {i > 0 && (
+                        <span className="text-separator" aria-hidden="true">
+                          {" "}
+                          &middot;{" "}
+                        </span>
+                      )}
                       <Link
                         href={`/tags/${tag.slug}`}
-                        className="text-[15px] leading-[1.35] font-semibold text-pretty transition-colors duration-200 hover:text-brand-crimson"
+                        className="text-brand-crimson hover:underline"
                       >
                         {tag.name}
                       </Link>
-                    </li>
+                    </span>
                   ))}
-                </ul>
+                </p>
               </nav>
             )}
             {post.author?.bio && (
-              // mt-6 after a tag row, mt-12 otherwise. This margin is the only
-              // thing setting the space beneath the pills, so it has to match
-              // the nav's pt-6 or the row sits off-centre in its band. Without
-              // tags there is no band and the usual mt-12 applies.
               <div
                 className={`${tags.length > 0 ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
               >
-                <AuthorBioCard author={post.author} />
+                <AuthorBioCard
+                  author={post.author}
+                  postCount={authorPostCount}
+                />
               </div>
             )}
           </div>
-        </div>
-      </article>
+        </article>
+      </Container>
       <div className="mt-section">
         <MoreStories
           morePosts={morePosts}
@@ -357,6 +345,6 @@ export default async function PostPage({
           coverName={coverName}
         />
       </div>
-    </WidePage>
+    </>
   );
 }

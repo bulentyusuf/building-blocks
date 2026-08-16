@@ -1,9 +1,21 @@
 import Link from "next/link";
 
-// Server component. Renders numbered page links plus prev/next.
 // basePath is "/" for the index or "/categories/<slug>" for a category.
 // Page 1 lives at basePath itself; pages 2+ live at basePath + "/page/<n>".
-export default function Pagination({
+const hrefFor = (basePath: string, page: number) => {
+  if (page <= 1) {
+    return basePath;
+  }
+  const prefix = basePath === "/" ? "" : basePath;
+  return `${prefix}/page/${page}`;
+};
+
+// Simple variant: two crimson small-caps text links, "Older posts" and
+// "Newer posts", rather than a numbered list. Home is the only caller —
+// a front page is not a listing a reader expects to jump around in by page
+// number, and the numbered variant's own visual weight would compete with
+// the plates above it in a way it never has to on a browse listing.
+function SimplePagination({
   currentPage,
   totalPages,
   basePath,
@@ -12,17 +24,68 @@ export default function Pagination({
   totalPages: number;
   basePath: string;
 }) {
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage < totalPages;
+  if (!hasPrev && !hasNext) return null;
+
+  const link =
+    "font-ui text-xs font-semibold uppercase tracking-[0.14em] text-brand-crimson hover:underline";
+
+  return (
+    <nav aria-label="Pagination" className="mx-auto max-w-5xl pt-10 md:pt-12">
+      <div className="flex items-center justify-between">
+        <div>
+          {hasPrev && (
+            <Link
+              href={hrefFor(basePath, currentPage - 1)}
+              rel="prev"
+              className={link}
+            >
+              &larr; Newer posts
+            </Link>
+          )}
+        </div>
+        <div>
+          {hasNext && (
+            <Link
+              href={hrefFor(basePath, currentPage + 1)}
+              rel="next"
+              className={link}
+            >
+              Older posts &rarr;
+            </Link>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// Server component. Renders numbered page links plus prev/next.
+export default function Pagination({
+  currentPage,
+  totalPages,
+  basePath,
+  variant = "numbered",
+}: {
+  currentPage: number;
+  totalPages: number;
+  basePath: string;
+  variant?: "numbered" | "simple";
+}) {
   if (totalPages <= 1) {
     return null;
   }
 
-  const hrefFor = (page: number) => {
-    if (page <= 1) {
-      return basePath;
-    }
-    const prefix = basePath === "/" ? "" : basePath;
-    return `${prefix}/page/${page}`;
-  };
+  if (variant === "simple") {
+    return (
+      <SimplePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        basePath={basePath}
+      />
+    );
+  }
 
   const hasPrev = currentPage > 1;
   const hasNext = currentPage < totalPages;
@@ -72,7 +135,7 @@ export default function Pagination({
         <li>
           {hasPrev ? (
             <Link
-              href={hrefFor(currentPage - 1)}
+              href={hrefFor(basePath, currentPage - 1)}
               rel="prev"
               aria-label="Go to previous page"
               className={`${cell} text-brand-muted hover:text-brand-crimson`}
@@ -108,7 +171,7 @@ export default function Pagination({
                 </span>
               ) : (
                 <Link
-                  href={hrefFor(item.page)}
+                  href={hrefFor(basePath, item.page)}
                   aria-label={`Go to page ${item.page}`}
                   className={`${cell} text-brand-muted hover:text-brand-crimson`}
                 >
@@ -122,7 +185,7 @@ export default function Pagination({
         <li>
           {hasNext ? (
             <Link
-              href={hrefFor(currentPage + 1)}
+              href={hrefFor(basePath, currentPage + 1)}
               rel="next"
               aria-label="Go to next page"
               className={`${cell} text-brand-muted hover:text-brand-crimson`}

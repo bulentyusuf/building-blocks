@@ -7,7 +7,19 @@ import type { Author } from "@/lib/types";
 // to the author's landing page. Renders nothing when the author has no bio —
 // the caller must also gate its border/spacing on the same condition so an
 // author without a bio leaves no empty shell.
-export default function AuthorBioCard({ author }: { author: Author }) {
+//
+// Its own 56px portrait, deliberately not app/avatar.tsx's 38px: the avatar
+// appears twice on a post, once in the sidebar as a reading companion and
+// once here as part of the bio, and the two components are allowed to differ
+// because the two appearances are not the same thing repeated.
+export default function AuthorBioCard({
+  author,
+  postCount,
+}: {
+  author: Author;
+  /** Total posts by this author, for the "All N posts" link. */
+  postCount: number;
+}) {
   if (!author.bio) return null;
 
   return (
@@ -15,30 +27,27 @@ export default function AuthorBioCard({ author }: { author: Author }) {
       {author.picture?.url && (
         <ContentfulImage
           alt=""
-          className="rounded-full object-cover h-18 w-18 shrink-0"
-          width={72}
-          height={72}
+          className="rounded-full object-cover h-14 w-14 shrink-0"
+          width={56}
+          height={56}
           src={author.picture.url}
         />
       )}
       <div>
-        <p className="font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
-          Written by
-        </p>
-        <p className="mt-1 text-xl font-bold text-brand-dark">{author.name}</p>
+        <p className="text-[22px] font-bold text-brand-dark">{author.name}</p>
         {/* text-base rather than text-sm. RichText returns bare elements with
             no prose wrapper of its own and this card sits outside the post's
             prose container, so the size set here is the size the bio's
             paragraphs render at. */}
-        <div className="mt-2 text-base text-brand-muted">
+        <div className="mt-2 text-base leading-[1.6] text-brand-muted">
           <RichText content={author.bio} headings={[]} />
         </div>
-        {author.slug && (
+        {author.slug && postCount > 0 && (
           <Link
             href={`/authors/${author.slug}`}
-            className="mt-3 inline-block text-sm text-brand-crimson hover:underline"
+            className="mt-3 inline-block font-ui text-xs font-semibold uppercase tracking-[0.14em] text-brand-crimson hover:underline"
           >
-            More posts by {author.name} →
+            All {postCount} {postCount === 1 ? "post" : "posts"} &rarr;
           </Link>
         )}
       </div>

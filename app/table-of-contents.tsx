@@ -186,7 +186,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
           >
             <path d="M3 4.75A.75.75 0 0 1 3.75 4h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 4.75Zm0 5A.75.75 0 0 1 3.75 9h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 9.75Zm0 5a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" />
           </svg>
-          On this page
+          Contents
         </span>
         <svg
           className="h-4 w-4 text-brand-muted motion-safe:transition-transform motion-safe:duration-200 group-open:rotate-180"
@@ -204,7 +204,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
       </summary>
       <nav aria-label="Table of contents" className="text-sm pt-3 xl:pt-0">
         <p className="mb-3 font-ui text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-muted hidden xl:block">
-          On this page
+          Contents
         </p>
         {/* No rail down the list — only the current item carries a border, so
             a reader is not looking at eleven inactive left edges to find the
@@ -221,7 +221,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
                 // position information sighted readers get.
                 aria-current={activeId === h.slug ? "location" : undefined}
                 onClick={() => onLinkClick(h.slug)}
-                className={`block border-l-2 -ml-[14px] pl-3 text-[15px] leading-[1.35] transition-colors duration-200 ${
+                className={`block border-l-2 -ml-[14px] pl-3 text-[15px] leading-[1.35] text-brand-muted transition-colors duration-200 ${
                   activeId === h.slug
                     ? "border-brand-crimson text-brand-crimson font-semibold"
                     : "border-transparent hover:text-brand-crimson"

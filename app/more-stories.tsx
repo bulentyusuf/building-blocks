@@ -129,18 +129,19 @@ function PostPreview({
     );
   }
 
-  // Full height and column flow so the tag row below can take the slack.
+  // This variant is the post page's Read Next teaser and nothing else now
+  // that home builds its own plates directly (see app/page.tsx) — so its
+  // sizing answers to that one brief rather than to a shared "card" ramp.
+  //
+  // Full height and column flow so the standfirst below can take the slack.
   // Grid items stretch to their row's height by default, and without this the
-  // pills sit directly under an excerpt whose length varies from card to
+  // standfirst sits directly under a title whose length varies from card to
   // card, so two cards in one row end at different heights and the shorter
-  // one leaves dead space above the listing's closing rule. Clamping the
-  // excerpt was the alternative and it is worse, because these are
-  // hand-written standfirsts and an ellipsis mid-sentence loses something a
-  // ragged bottom edge does not.
+  // one leaves dead space above the listing's closing rule.
   return (
     <article className="flex h-full flex-col">
       {coverImage && (
-        <div className="mb-4">
+        <div className="mb-3">
           <CoverImage
             slug={slug}
             url={coverImage.url}
@@ -152,17 +153,7 @@ function PostPreview({
           />
         </div>
       )}
-      {/* The list card's own ramp, so the two variants agree about how big a
-          card headline is. They did not before: this was a flat text-3xl,
-          the Vercel template's value from when the grid was only ever the
-          post page's Read Next teaser, and as home's main listing that put
-          the card headline within 6px of the hero at desktop and level with
-          it on mobile, with nothing showing because the two variants never
-          shared a page. It also stops all four cards forcing two lines at
-          the 428px cell this grid resolves to inside the 984px content cap. */}
-      {/* Same display-size rule as the list variant above: the post title,
-          not the page label, is the largest type a listing shows. */}
-      <Heading className="text-2xl md:text-[32px] tracking-[-0.02em] leading-[1.12] mb-3 text-pretty">
+      <Heading className="text-[27px] leading-[1.15] tracking-[-0.015em] mb-2 text-pretty">
         <Link
           href={`/posts/${slug}`}
           className="hover:text-brand-crimson transition-colors duration-200"
@@ -170,14 +161,10 @@ function PostPreview({
           {widont(title)}
         </Link>
       </Heading>
-      <div className="text-sm text-brand-muted mb-4 tabular-nums">
-        <DateComponent dateString={date} />
-      </div>
-      <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
-      {/* mt-auto takes the slack so every pill row in a grid row lands on the
-          same line; pt-4 keeps sixteen pixels above the pills on a card whose
-          excerpt happens to fill the cell, where mt-auto alone would resolve
-          to zero. */}
+      {/* No date here — a teaser at the foot of an article is a reason to
+          read, not a place in a sequence, and a date answers the second
+          question. See CLAUDE.md's standfirst-vs-date rule. */}
+      <p className="text-base leading-[1.5] text-pretty">{excerpt}</p>
       <TagRow tags={tags} className="mt-auto pt-4" />
     </article>
   );
@@ -287,9 +274,16 @@ export default function MoreStories({
   return (
     <section className="mx-auto max-w-5xl">
       {heading && (
-        <h2 className="mb-8 text-4xl md:text-5xl leading-tight text-pretty">
-          {widont(heading)}
-        </h2>
+        // The only live caller left is the post page's Read Next teaser, so
+        // this is a section label rather than the display-scale heading a
+        // browse page's own h1 already owns — a hairline runs to the right
+        // edge instead of a rule of its own beneath it.
+        <div className="mb-6 flex items-center gap-5">
+          <h2 className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted whitespace-nowrap">
+            {widont(heading)}
+          </h2>
+          <div aria-hidden="true" className="h-px flex-1 bg-hairline" />
+        </div>
       )}
       <div className={container}>
         {morePosts.map((post, i) => (
