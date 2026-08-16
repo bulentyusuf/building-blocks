@@ -57,9 +57,9 @@ export default async function AboutPage() {
 
   return (
     <Container>
-      {/* Constrained to the article's own measure. Container is max-w-5xl, so
-          an unwrapped breadcrumb starts 176px left of the heading it labels.
-          Every other breadcrumb page has max-w-5xl content and needs no wrap. */}
+      {/* Constrained to the article's own measure. Container is max-w-page, so
+          an unwrapped breadcrumb starts 264px left of the heading it labels.
+          Every other breadcrumb page has max-w-page content and needs no wrap. */}
       <div className="mx-auto max-w-2xl">
         <Breadcrumb items={crumbs} />
       </div>

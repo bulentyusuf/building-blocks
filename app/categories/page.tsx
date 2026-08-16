@@ -111,17 +111,21 @@ export default async function CategoriesPage() {
                 // link is hidden from assistive tech, so the h2 above it is
                 // still the single announced link to this category.
                 <div className="mb-5">
+                  {/* 4:3 — a browse-page card (round 3 §2), same as the
+                      thumbnails every other listing renders. */}
                   <CoverImage
                     url={thumbUrl}
                     alt={thumbAlt}
                     href={`/categories/${category.slug}`}
+                    ratio="4:3"
                     // Capped in px for the same reason as the listing covers in
                     // more-stories.tsx. This grid is two columns with a 40px
-                    // gap inside the 984px container, so a thumbnail tops out
-                    // at (984 - 40) / 2 = 472px. Left at 50vw it asked for
+                    // gap inside the 1160px container (max-w-page's 1200px
+                    // less Container's 2×20px px-5), so a thumbnail tops out
+                    // at (1160 - 40) / 2 = 560px. Left at 50vw it asked for
                     // 720px at a 1440px viewport, which at DPR 2 pulled the
                     // 1920 derivative instead of the 1080 that covers it.
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 472px"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 560px"
                     priority={index === 0}
                   />
                 </div>

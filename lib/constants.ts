@@ -138,8 +138,12 @@ export const SITE_REPO_URL =
   "https://github.com/bulentyusuf/building-blocks";
 
 // Posts shown per listing page (index and category). On page 1 of the index
-// the hero counts as one of these, so every page holds the same number of posts.
-export const POSTS_PER_PAGE = 5;
+// the three plates count as three of these (see PLATE_COUNT in app/page.tsx),
+// so every page holds the same number of posts. 10 rather than round 2's 5:
+// the "Earlier" list below the plates now runs seven rows (round 3 §3), and
+// 3 + 7 = 10 is what page 1 needs to hold for the /page/[page] route's own
+// slicing to stay in step with it.
+export const POSTS_PER_PAGE = 10;
 
 export const AUTHOR_EMAIL = `contact@${SITE_HOSTNAME}`;
 

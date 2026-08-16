@@ -89,20 +89,20 @@ export default function ListingPage({
         />
       )}
       {emptyMessage !== undefined && posts.length === 0 ? (
-        <p className="mx-auto max-w-5xl pt-6 text-lg text-brand-muted">
+        <p className="mx-auto max-w-page pt-6 text-lg text-brand-muted">
           {emptyMessage}
         </p>
       ) : (
         <>
           <MoreStories
             morePosts={posts}
-            variant="list"
             heading={null}
             priorityFirst
             visibleTags={visibleTags}
-            // The band closes the page above this list, so the listing's own
-            // opening rule would draw a second edge just below the first. It
-            // still closes at the bottom, which is what the pager sits under.
+            // WidePage's own header already draws the space above this list
+            // (see its mb-8/mb-14), so the listing's own opening rule would
+            // draw a second edge just below the first. It still closes at
+            // the bottom, which is what the pager sits under.
             openRule={false}
           />
           <Pagination

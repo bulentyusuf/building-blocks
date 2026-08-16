@@ -32,7 +32,7 @@ function SimplePagination({
     "font-ui text-xs font-semibold uppercase tracking-[0.14em] text-brand-crimson hover:underline";
 
   return (
-    <nav aria-label="Pagination" className="mx-auto max-w-5xl pt-10 md:pt-12">
+    <nav aria-label="Pagination" className="mx-auto max-w-page pt-10 md:pt-12">
       <div className="flex items-center justify-between">
         <div>
           {hasPrev && (
@@ -130,7 +130,7 @@ export default function Pagination({
     // No top border: every listing this follows draws its own closing hairline
     // (see the container note in more-stories.tsx). One here would sit in the
     // same row and print a double line.
-    <nav aria-label="Pagination" className="mx-auto max-w-5xl pt-10 md:pt-12">
+    <nav aria-label="Pagination" className="mx-auto max-w-page pt-10 md:pt-12">
       <ul className="flex items-center justify-center gap-2">
         <li>
           {hasPrev ? (

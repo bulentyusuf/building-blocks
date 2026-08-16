@@ -6,6 +6,7 @@ import DateComponent from "./date";
 import CoverImage from "./cover-image";
 import Container from "./container";
 import Pagination from "./pagination";
+import StoryCard, { CardMeta } from "./story-card";
 
 import { getAllPosts } from "@/lib/api";
 import {
@@ -24,52 +25,26 @@ export const metadata: Metadata = {
 };
 
 // How many of the page's posts render as plates (a lead spanning the full
-// width, then two more 2-up) before the rest fall into the dated "Earlier"
-// list. Fixed at three because the lead/grid split below is built for
-// exactly that shape — changing this needs a design pass, not a constant bump.
+// width, then two more 2-up StoryCards) before the rest fall into the dated
+// "Earlier" list. Fixed at three because the lead/grid split below is built
+// for exactly that shape — changing this needs a design pass, not a constant
+// bump.
 const PLATE_COUNT = 3;
 
-// Date first (a reader wants to know the blog is alive before anything else
-// on a plate), category after if the post has one — see CLAUDE.md's
-// standfirst-vs-date rule for why a plate carries both and an Earlier row
-// carries only the date.
-function PlateMeta({ post }: { post: ListPost }) {
-  return (
-    <p className="text-sm text-brand-muted tabular-nums">
-      <DateComponent dateString={post.date} />
-      {post.category && (
-        <>
-          <span className="text-separator" aria-hidden="true">
-            {" "}
-            &middot;{" "}
-          </span>
-          {post.category.name}
-        </>
-      )}
-    </p>
-  );
-}
-
-function Plate({
+// The lead plate spans the full width and splits into title (left) and
+// standfirst-plus-meta (right) — the one size distinction left in the
+// design once the masthead itself carries the site name. The two 2-up
+// plates below it are StoryCard (app/story-card.tsx), the same card the
+// post page's Read Next teaser uses (round 3 §5).
+function LeadPlate({
   post,
-  lead = false,
   priority = false,
   transitionName,
 }: {
   post: ListPost;
-  lead?: boolean;
   priority?: boolean;
   transitionName?: string;
 }) {
-  const title = (
-    <Link
-      href={`/posts/${post.slug}`}
-      className="hover:text-brand-crimson transition-colors duration-200"
-    >
-      {widont(post.title)}
-    </Link>
-  );
-
   const cover = post.coverImage && (
     <CoverImage
       slug={post.slug}
@@ -78,48 +53,31 @@ function Plate({
       priority={priority}
       hover
       transitionName={transitionName}
-      sizes={
-        lead
-          ? "(max-width: 768px) 100vw, 984px"
-          : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 472px"
-      }
+      // Capped in px above the point the container stops growing. Container
+      // is max-w-page with px-5, so content tops out at 1160px, and the lead
+      // plate spans the whole of it.
+      sizes="(max-width: 768px) 100vw, 1160px"
     />
   );
 
-  // The lead plate spans the full width and splits into title (left) and
-  // standfirst-plus-meta (right) — the one size distinction left in the
-  // design once the masthead itself carries the site name. The two grid
-  // plates below stack title, standfirst and meta in one column instead.
-  if (lead) {
-    return (
-      <article className="md:col-span-2">
-        {cover && <div className="mb-6">{cover}</div>}
-        <div className="grid gap-10 md:grid-cols-[1fr_380px]">
-          <h2 className="text-[56px] leading-[1.04] tracking-[-0.028em] font-bold text-pretty">
-            {title}
-          </h2>
-          <div>
-            <p className="text-lg leading-relaxed text-pretty">
-              {post.excerpt}
-            </p>
-            <div className="mt-3">
-              <PlateMeta post={post} />
-            </div>
+  return (
+    <article className="md:col-span-2">
+      {cover && <div className="mb-6">{cover}</div>}
+      <div className="grid gap-10 md:grid-cols-[1fr_380px]">
+        <h2 className="text-[56px] leading-[1.04] tracking-[-0.028em] font-bold text-pretty">
+          <Link
+            href={`/posts/${post.slug}`}
+            className="hover:text-brand-crimson transition-colors duration-200"
+          >
+            {widont(post.title)}
+          </Link>
+        </h2>
+        <div>
+          <p className="text-lg leading-relaxed text-pretty">{post.excerpt}</p>
+          <div className="mt-3">
+            <CardMeta date={post.date} category={post.category} />
           </div>
         </div>
-      </article>
-    );
-  }
-
-  return (
-    <article>
-      {cover && <div className="mb-4">{cover}</div>}
-      <h2 className="mb-2 text-[32px] leading-tight tracking-[-0.02em] font-bold text-pretty">
-        {title}
-      </h2>
-      <p className="text-[17px] leading-[1.55] text-pretty">{post.excerpt}</p>
-      <div className="mt-3">
-        <PlateMeta post={post} />
       </div>
     </article>
   );
@@ -157,15 +115,22 @@ export default async function Page() {
       <div className="mt-8 border-t-[3px] border-brand-dark" />
 
       <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2">
-        {platePosts.map((post, i) => (
-          <Plate
-            key={post.slug}
-            post={post}
-            lead={i === 0}
-            priority={i === 0}
-            transitionName={coverName(post.slug)}
-          />
-        ))}
+        {platePosts.map((post, i) =>
+          i === 0 ? (
+            <LeadPlate
+              key={post.slug}
+              post={post}
+              priority
+              transitionName={coverName(post.slug)}
+            />
+          ) : (
+            <StoryCard
+              key={post.slug}
+              post={post}
+              transitionName={coverName(post.slug)}
+            />
+          ),
+        )}
       </div>
 
       {earlierPosts.length > 0 && (

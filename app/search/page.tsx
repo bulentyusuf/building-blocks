@@ -26,8 +26,8 @@ export default async function SearchPage() {
 
   return (
     <Container>
-      {/* Constrained to the section's own measure. Container is max-w-5xl, so
-          an unwrapped breadcrumb starts 176px left of the heading it labels.
+      {/* Constrained to the section's own measure. Container is max-w-page, so
+          an unwrapped breadcrumb starts 264px left of the heading it labels.
           Must sit BEFORE the <section>: the empty-state emblem is hidden by a
           .pagefind-scope + .search-empty sibling selector, both inside the
           section — a breadcrumb placed within would break that adjacency. */}

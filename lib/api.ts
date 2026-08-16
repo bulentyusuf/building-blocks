@@ -125,16 +125,21 @@ const POST_GRAPHQL_FIELDS = `
   }
 `;
 
-// Slim fragment for listing previews (e.g. the categories landing page). Pulls
-// only what a card renders, so we don't fetch full rich-text content + links
-// for posts we're only teasing. Posts returned with this fragment are partial:
-// `content`, `author`, `updatedDate`, `category` are absent. Don't read them.
+// Slim fragment for listing previews (e.g. the categories landing page, the
+// post page's Read Next). Pulls only what a card renders, so we don't fetch
+// full rich-text content + links for posts we're only teasing. Posts returned
+// with this fragment are partial: `content`, `author`, `updatedDate` are
+// absent. Don't read them.
 //
 // `tagsCollection` is here because cards render pills on the index pages, and
-// it stays cheap: two short strings per tag, capped at 3. It is not the weight
-// this fragment exists to avoid — that is the rich-text body, its embedded
-// code blocks and assets, and the author bio. `description` is deliberately
-// not selected; see getAllTags on why the gloss stays out of listing queries.
+// it stays cheap: two short strings per tag, capped at 3. `category` is here
+// for the same reason — app/story-card.tsx's date-then-category meta, shared
+// by home's two-up plates and the post page's Read Next cards (round 3 §5) —
+// and it is just as cheap, a single linked name and slug. Neither is the
+// weight this fragment exists to avoid; that is the rich-text body, its
+// embedded code blocks and assets, and the author bio. `description` is
+// deliberately not selected; see getAllTags on why the gloss stays out of
+// listing queries.
 const CARD_GRAPHQL_FIELDS = `
   slug
   title
@@ -144,6 +149,10 @@ const CARD_GRAPHQL_FIELDS = `
   }
   date
   excerpt
+  category {
+    name
+    slug
+  }
   tagsCollection(limit: 3) {
     items {
       name
@@ -729,12 +738,12 @@ export const getCategoryBySlug = cache(
 //
 // Uses the card fragment, not POST_GRAPHQL_FIELDS. Both consumers pass the
 // result straight to <MoreStories morePosts={...}>, which takes CardPost[] —
-// five fields. Fetching the full fragment pulled every post's rich-text body,
+// six fields. Fetching the full fragment pulled every post's rich-text body,
 // every embedded CodeBlock's source, every linked asset and the author bio, and
 // then rendered an excerpt from it. That whole payload also sat in the ISR cache
 // entry for each category page.
 //
-// If a caller ever needs `category`, `author` or `updatedDate` here, add
+// If a caller ever needs `author` or `updatedDate` here, add
 // LIST_GRAPHQL_FIELDS rather than reaching back for the full one.
 export async function getPostsByCategory(
   slug: string,

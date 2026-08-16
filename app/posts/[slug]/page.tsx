@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Container from "../../container";
 import Breadcrumb, { type Crumb } from "../../breadcrumb";
-import MoreStories from "../../more-stories";
+import StoryCard from "../../story-card";
 import Avatar from "../../avatar";
 import Date from "../../date";
 import CoverImage from "../../cover-image";
@@ -185,18 +185,6 @@ export default async function PostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
-      {/* Full bleed, directly under the sticky bar — no band, no inset. The
-          cover sets the header's height now rather than the header making
-          room for it, so the article begins immediately below. */}
-      {post.coverImage && (
-        <CoverImage
-          url={post.coverImage.url}
-          alt={post.coverImage.title ?? ""}
-          priority
-          transitionName={coverName(post.slug)}
-          sizes="100vw"
-        />
-      )}
       <Container>
         <Breadcrumb items={crumbs} />
         {/* data-pagefind-body a second time, because the h1 sits outside the
@@ -207,10 +195,21 @@ export default async function PostPage({
             out of the searchable text and take every title-only term with
             them. Pagefind concatenates multiple body regions into one
             fragment, so this restores the index to exactly what it held
-            before. */}
+            before.
+
+            64px desktop, via a clamp rather than a fixed value: below it the
+            same 64px overflowed a 390px viewport outright. 34px is the mobile
+            floor, 8vw the fluid middle so it does not jump straight from one
+            end to the other, both expressed in rem (2.125rem / 4rem) for the
+            same user-font-scaling reason every fixed size on this site is —
+            vw alone cannot carry that, but the two ends it clamps between
+            still do. break-words (overflow-wrap) plus text-pretty
+            (text-wrap) are the other half of the mobile fix: without them a
+            single long word — a URL-shaped title, a compound noun — could
+            still push past the viewport regardless of the font size. */}
         <h1
           data-pagefind-body
-          className="mt-6 text-[72px] leading-none tracking-[-0.032em] font-bold text-pretty"
+          className="mt-6 text-[clamp(2.125rem,8vw,4rem)] leading-none tracking-[-0.03em] font-bold break-words text-pretty"
         >
           {widont(post.title)}
         </h1>
@@ -218,9 +217,28 @@ export default async function PostPage({
             whether to enter it; a post excerpt introduces an article to a
             reader who has already arrived. Narrower than the h1's column on
             purpose — a measure this wide reads badly at three lines. */}
-        <p className="mt-4 max-w-[780px] text-[23px] leading-[1.45] text-brand-muted text-pretty">
+        <p className="mt-4 max-w-[780px] text-[22px] leading-[1.45] text-brand-muted text-pretty">
           {post.excerpt}
         </p>
+        {/* Contained now, not full-bleed: the cover used to sit directly
+            under the sticky bar, above the breadcrumb, setting the header's
+            own height. It is too dominant there (round 3 §4) — it now reads
+            after the title and standfirst instead, at the same 1200px
+            measure as everything else on the page, and --color-cover-keyline
+            (globals.css) is no longer covering a navy edge here: the cover
+            sits on cream on all four sides like every other cover on the
+            site. */}
+        {post.coverImage && (
+          <div className="mt-8">
+            <CoverImage
+              url={post.coverImage.url}
+              alt={post.coverImage.title ?? ""}
+              priority
+              transitionName={coverName(post.slug)}
+              sizes="(max-width: 768px) 100vw, 1160px"
+            />
+          </div>
+        )}
         <div className="mt-10 border-t border-hairline" />
 
         {/* data-pagefind-body scopes the Pagefind index to post content only.
@@ -236,12 +254,16 @@ export default async function PostPage({
             is load-bearing: without it the sidebar column shrinks to its
             content height (~370px) and the sticky Contents/AI block below has
             no range to travel in as the reader scrolls the much taller
-            article column beside it. */}
+            article column beside it.
+
+            13.75rem (220px) sidebar, 3.75rem (60px) gap — both in rem, same
+            reasoning as the article column's own max-w-[43.75rem] below: a
+            fixed measure should still grow with the reader's font size. */}
         <article
           data-pagefind-body
           data-pagefind-meta="url[data-url]"
           data-url={`/posts/${slug}`}
-          className="mt-10 xl:grid xl:grid-cols-[210px_1fr] xl:items-stretch xl:gap-14"
+          className="mt-10 xl:grid xl:grid-cols-[13.75rem_1fr] xl:items-stretch xl:gap-[3.75rem]"
         >
           <aside data-pagefind-ignore className="mb-8 xl:mb-0">
             {/* Static — an attribution stamp, read once, that scrolls away
@@ -279,9 +301,14 @@ export default async function PostPage({
                 paragraphs and in-body headings alike — so line breaking just
                 avoids a lone last word, without the aggressive re-balancing of
                 text-wrap: balance. One class covers the whole article body.
-                prose-h2 overrides the plugin's own em-scaled default with the
-                absolute 34px this design calls for. */}
-            <div className="prose text-pretty prose-h2:text-[34px] prose-h2:tracking-[-0.02em] prose-h3:text-[1.375em] prose-h4:text-[1.15em]">
+                prose-h2 overrides the plugin's own em-scaled default with an
+                absolute clamp — 34px desktop ceiling, 26px mobile floor, 6vw
+                fluid middle — the same mobile-overflow fix and the same
+                rem-for-the-fixed-ends reasoning as the h1 above; prose-h2
+                also carries break-words for the same reason. prose-h3 and
+                prose-h4 stay em-scaled off the prose base, so they already
+                shrink with it below md (see globals.css's @utility prose). */}
+            <div className="prose text-pretty prose-h2:text-[clamp(1.625rem,6vw,2.125rem)] prose-h2:tracking-[-0.02em] prose-h2:break-words prose-h3:text-[1.375em] prose-h4:text-[1.15em]">
               <RichText
                 content={post.content}
                 headings={headings}
@@ -337,14 +364,40 @@ export default async function PostPage({
           </div>
         </article>
       </Container>
-      <div className="mt-section">
-        <MoreStories
-          morePosts={morePosts}
-          variant="grid"
-          heading="Read Next"
-          coverName={coverName}
-        />
-      </div>
+      {morePosts.length > 0 && (
+        <div className="mt-section">
+          {/* Its own Container rather than MoreStories: Read Next is StoryCard
+              now (round 3 §5), the same card the home page's two-up plates
+              use, not more-stories.tsx's PostPreview — see app/story-card.tsx.
+              pb-14 (56px) rather than Container's own pb-12 (48px) — a
+              className override wins here because Tailwind emits utilities in
+              ascending value order and this one is larger, see the note on
+              Container's `className` prop — for the clearance round 3 §8
+              calls for above the footer. */}
+          <Container topPad="none" className="pb-14">
+            <div className="mb-6 flex items-center gap-5">
+              <h2 className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted whitespace-nowrap">
+                Read Next
+              </h2>
+              <div aria-hidden="true" className="h-px flex-1 bg-hairline" />
+            </div>
+            {/* Single column below md at 32px gaps (round 3 §8's mobile fix —
+                the old fixed 2-up grid did not collapse and ran cards into
+                each other at narrow widths); the same gap-x-10 gap-y-14 as
+                the home page's own plate grid from md up. */}
+            <div className="grid grid-cols-1 gap-y-8 md:grid-cols-2 md:gap-x-10 md:gap-y-14">
+              {morePosts.map((post) => (
+                <StoryCard
+                  key={post.slug}
+                  post={post}
+                  as="h3"
+                  transitionName={coverName(post.slug)}
+                />
+              ))}
+            </div>
+          </Container>
+        </div>
+      )}
     </>
   );
 }
