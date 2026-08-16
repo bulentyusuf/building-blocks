@@ -25,9 +25,13 @@ export default function AuthorBioCard({
   return (
     <aside className="flex gap-5">
       {author.picture?.url && (
+        // 48px below md, 56px at md and up. width/height stay the larger
+        // figure regardless of breakpoint — see the same note on
+        // app/avatar.tsx, which renders this same author elsewhere on the
+        // page at its own, smaller, separately-responsive size.
         <ContentfulImage
           alt=""
-          className="rounded-full object-cover h-14 w-14 shrink-0"
+          className="rounded-full object-cover h-12 w-12 md:h-14 md:w-14 shrink-0"
           width={56}
           height={56}
           src={author.picture.url}
