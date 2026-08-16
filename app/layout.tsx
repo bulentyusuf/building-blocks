@@ -92,18 +92,25 @@ const literata = Literata({
   style: ["normal", "italic"],
   axes: ["opsz"],
 });
+// Every nav item — the four section links and the search icon — shares this
+// treatment: small-caps, muted by default so the wordmark stays the loudest
+// thing in the row, full white on hover/focus.
+const navLink =
+  "font-ui text-[11px] font-semibold uppercase tracking-[0.14em] text-white/80 hover:text-white transition-colors duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
+
 function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-brand-header shadow-xs">
-      {/* min-h-13 is 52px, which is py-3's 24px plus the 28px line box the
-          text-lg wordmark establishes. It is here because the bar's height
-          must not be a function of which of its children happen to render.
-          Nothing else in the row is as tall — the nav links are text-sm at 20px
-          — so on home, where the wordmark hides, the bar was rendering 8px
-          shorter and the chrome changed height as the reader navigated. */}
+      {/* min-h-13 is 52px, which is py-3's 24px plus the 28px line box
+          leading-7 sets on the wordmark explicitly (its 16px text carries no
+          default that tall). It is here because the bar's height must not be
+          a function of which of its children happen to render. Nothing else
+          in the row is as tall — the nav items are 11px — so on home, where
+          the wordmark hides, the bar was rendering 8px shorter and the chrome
+          changed height as the reader navigated. */}
       <div className="max-w-5xl mx-auto px-5 py-3 min-h-13 flex items-center justify-between gap-4">
-        {/* Both hide themselves on home, where the band names the site 60px
-            below and the bar would say it twice. The rule is a :has() in
+        {/* Both hide themselves on home, where the masthead names the site
+            60px below and the bar would say it twice. The rule is a :has() in
             globals.css rather than a usePathname, so this stays a server
             component and the site ships no JS for it.
 
@@ -117,25 +124,25 @@ function Header() {
         <div className="flex items-baseline gap-3">
           <Link
             href="/"
-            className="site-wordmark font-display text-lg font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            className="site-wordmark font-display text-[16px] leading-7 font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
           >
             {SITE_TITLE}
           </Link>
-          <p className="site-tagline hidden lg:block font-ui text-sm text-white/90">
+          <p className="site-tagline hidden lg:block text-xs text-white/72">
             {SITE_DESCRIPTION}
           </p>
         </div>
         <nav aria-label="Primary" className="flex items-center gap-4 md:gap-6">
-          <Link
-            href="/categories"
-            className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
+          <Link href="/categories" className={navLink}>
             Categories
           </Link>
-          <Link
-            href="/about"
-            className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
+          <Link href="/tags" className={navLink}>
+            Tags
+          </Link>
+          <Link href="/archive" className={navLink}>
+            Archive
+          </Link>
+          <Link href="/about" className={navLink}>
             About
           </Link>
           {/* Icon-only link: the accessible name comes from aria-label, and
@@ -146,7 +153,7 @@ function Header() {
             href="/search"
             aria-label="Search"
             title="Search"
-            className="p-2 -m-2 text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            className={`p-2 -m-2 ${navLink}`}
           >
             <svg
               aria-hidden="true"
@@ -168,12 +175,15 @@ function Header() {
 }
 // Shared link treatment for the footer: quiet by default, visible focus ring
 // matching the skip-link convention above.
+// Full white at rest, not the usual muted-then-full pattern the nav links
+// use: a footer column is nothing but links, so there is no louder sibling
+// for a quieter default to defer to. Dims slightly on hover instead.
 const footerLink =
-  "font-ui text-white/80 hover:text-white transition-colors duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
+  "font-ui text-white hover:text-white/80 transition-colors duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
 
 function Footer() {
   return (
-    <footer className="bg-footer-bg text-white">
+    <footer className="bg-brand-header text-white">
       <div className="max-w-5xl mx-auto px-5 py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
           {/* Column 1 — masthead + blurb */}
@@ -196,7 +206,7 @@ function Footer() {
               loses nothing as a <p>: the nav already carries aria-label="Browse",
               so the landmark is named either way. Same for Colophon below. */}
           <nav aria-label="Browse">
-            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/65">
+            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Browse
             </p>
             <ul className="mt-4 space-y-2 text-sm">
@@ -230,7 +240,7 @@ function Footer() {
 
           {/* Column 3 — colophon */}
           <nav aria-label="Colophon">
-            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/65">
+            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Colophon
             </p>
             <ul className="mt-4 space-y-2 text-sm">
@@ -266,7 +276,7 @@ function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 border-t border-white/10 pt-8">
-          <p className="font-ui text-xs text-white/65">
+          <p className="font-ui text-xs text-white/72">
             © {new Date().getFullYear()} Bulent Yusuf · Built with Next.js &
             Contentful · Type set in Bricolage Grotesque and Literata
           </p>

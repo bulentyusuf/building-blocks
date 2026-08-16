@@ -66,47 +66,19 @@ describe("a banded listing keeps its item padding", () => {
   });
 });
 
-describe("a banded page sits on the same grid as an unbanded one", () => {
+describe("a wide page sits on the same top inset as a narrow one", () => {
   // A browse page and a post are one navigation apart, and that navigation is
   // a full document load with a view transition over it — so a difference here
-  // is animated, not just present. Both values below were tightened on the
-  // band alone at one point, which moved the heading 16px on desktop and 20px
-  // on mobile every time the reader crossed between the two.
-
-  it("the band's top inset equals Container's default top padding", () => {
-    // Targeted at pt- specifically, which is the value this was always about.
-    // It read `py-` until the bottom became variable, and a py-only pattern
-    // fails open against a split inset: it matches nothing and passes, or it
-    // matches a py- that no longer describes the bottom at all.
-    const band = /px-5 pt-(\d+)/.exec(read("app/page-band.tsx"));
-    expect(band).not.toBeNull();
-    const container = /default: "pt-(\d+)"/.exec(read("app/container.tsx"));
-    expect(container).not.toBeNull();
-    // The same number, so the breadcrumb starts at the same distance below the
-    // sticky header on every page.
-    expect(band![1]).toBe(container![1]);
-  });
-
-  it("the bleed variant only ever deepens the bottom", () => {
-    // The overlap is the whole point of the variant, and it exists only while
-    // the bottom is bigger than the top. Equal values would still render, look
-    // almost right, and silently leave the cover with no navy to sit on.
-    const source = read("app/page-band.tsx");
-    const top = /px-5 pt-(\d+)/.exec(source);
-    const bleed = /bleed \? "pb-(\d+)" : "pb-(\d+)"/.exec(source);
-    expect(bleed).not.toBeNull();
-    // The unbled bottom stays equal to the top, which is what keeps every
-    // other banded route rendering the inset it always had.
-    expect(bleed![2]).toBe(top![1]);
-    expect(Number(bleed![1])).toBeGreaterThan(Number(top![1]));
-  });
-
-  it("both breadcrumb tones keep the same bottom margin", () => {
-    const navs = [
-      ...read("app/breadcrumb.tsx").matchAll(/nav: "([^"]*)"/g),
-    ].map((m) => m[1]);
-    expect(navs).toHaveLength(2);
-    expect(navs[0]).toBe(navs[1]);
+  // is animated, not just present. Now that the masthead band is retired,
+  // every wide route renders through Container's own top inset directly, same
+  // as a narrow page — one value, not two that have to be kept in step.
+  it("WidePage renders through Container's default top padding", () => {
+    const widePage = read("app/wide-page.tsx");
+    // No topPad override — the default ("pt-8") is what a narrow page also
+    // gets, so the breadcrumb starts at the same distance below the sticky
+    // header everywhere.
+    expect(widePage).toMatch(/<Container>/);
+    expect(widePage).not.toMatch(/topPad=/);
   });
 });
 
@@ -137,92 +109,37 @@ describe("the sticky bar's height does not depend on its contents", () => {
   });
 });
 
-describe("the home hero's title keeps a size step over a grid card's", () => {
-  // Same family as the rest of this file: a difference nothing else can see.
-  // The hero and the first card sit one scroll apart on home, both are h2 now
-  // that the listing renders no heading of its own, and from md up the headline
-  // is the only thing left saying which post leads — the cover and the
-  // full-measure excerpt do that job on mobile, where the two titles match on
-  // purpose. So the classes are allowed to agree at the base step and must
-  // diverge above it. They collapsed into a match once, and a rendering test
-  // cannot catch it, because jsdom applies no stylesheet and both are h2.
-  //
-  // The grid card, not the list card. Home renders MoreStories with
-  // variant="grid" now, so the grid heading is what actually sits under the
-  // hero; the list heading belongs to /page/2 and the other listing routes,
-  // which share no viewport with the hero at all. Checking the wrong branch
-  // would pass by accident, since the two ramps happen to agree at the base
-  // step regardless of which one is compared.
-  //
-  // Captures an lg: step as well as md:, because the hero carries one now and
-  // the card does not. Two ramps differing only at lg would otherwise filter
-  // to identical arrays and fail this test on class lists that genuinely
-  // differ, which is a false alarm one edit away from being live. So the lg:
-  // capture prevents a spurious red. It does not catch a missed collapse.
-  //
-  // What this cannot see: the comparison below is literal equality of filtered
-  // class tokens, not resolved cascade values, so two ramps whose token lists
-  // differ in LENGTH pass regardless of what they paint. A hero of
-  // text-3xl md:text-4xl lg:text-3xl against a card of text-2xl md:text-3xl
-  // renders both at 30px from lg up and this stays green, with or without the
-  // lg: capture. Resolving each list to a per-breakpoint size and asserting
-  // the hero is strictly larger at each is the fix, and it is not this one.
-  // The card's own md step moved to an arbitrary value (text-[32px]) so it
-  // could land on the exact display-scale figure rather than the nearest
-  // named step, so the pattern has to accept a bracketed value too — otherwise
-  // it silently stops matching that step, which is exactly the kind of
-  // shortened-list false pass the comment above warns about.
-  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl|\[[^\]]+\])$/;
-  const sizeSteps = (className: string) =>
-    className.split(/\s+/).filter((c) => SIZE_STEP.test(c));
-
-  it("the hero title and the grid card title do not carry the same ramp", () => {
-    // Matched on the tag and any attribute order rather than on `<h2 className=`
-    // exactly, so an attribute added before the class list cannot make this
-    // fail open.
-    const hero = [
-      ...read("app/page.tsx").matchAll(/<h2\s[^>]*className="([^"]*)"/g),
-    ];
-    expect(hero).toHaveLength(1);
-
-    // Matched across the whole file rather than split on a variant string,
-    // which would silently pick up whichever branch happens to come first in
-    // source order. The count assertion only establishes that there are two
-    // headings and no more, so a third variant added later fails loudly here
-    // rather than silently shifting the index underneath this comparison.
-    // Which of the two is the grid comes from source order instead: the list
-    // branch returns before the grid branch in app/more-stories.tsx, and that
-    // ordering is load-bearing rather than incidental. It matters more than
-    // it used to, because since #394 the two class lists differ only in mb-2
-    // against mb-3, so reordering the branches would swap what this test
-    // compares without changing the count and without anything looking wrong.
-    const headings = [
-      ...read("app/more-stories.tsx").matchAll(/<Heading className="([^"]*)"/g),
-    ];
-    expect(headings).toHaveLength(2);
-    const card = headings[1];
-
-    const heroSteps = sizeSteps(hero[0][1]);
-    const cardSteps = sizeSteps(card[1]);
-    // Non-vacuous: two empty lists are equal, so an unmatched ramp would
-    // otherwise fail this test rather than pass it, but a ramp that stopped
-    // being spelled in classes at all would sail through the comparison below.
-    expect(heroSteps.length).toBeGreaterThan(0);
-    expect(cardSteps.length).toBeGreaterThan(0);
-    expect(heroSteps).not.toEqual(cardSteps);
+describe("the home lead plate's title keeps a size step over a grid plate's", () => {
+  // Home no longer has a single hero compared against a shared MoreStories
+  // card — both the lead and the two grid plates are built directly in
+  // app/page.tsx (see Plate there) — but the underlying property this guarded
+  // still matters: the lead is the one size distinction left in the design,
+  // and a future edit that quietly collapsed the two ramps to the same value
+  // would be invisible to a rendering test, because jsdom applies no
+  // stylesheet and both are h2.
+  it("the lead and grid plate titles do not share a font-size class", () => {
+    const page = read("app/page.tsx");
+    // Matched as literal text rather than parsed as JSX, same tradeoff every
+    // other guard in this file makes: cheap and exact for a fixed pair of
+    // values, at the cost of needing an update if either literally changes.
+    const leadSize = /text-\[56px\]/.exec(page);
+    const gridSize = /text-\[32px\]/.exec(page);
+    expect(leadSize).not.toBeNull();
+    expect(gridSize).not.toBeNull();
+    expect(leadSize![0]).not.toBe(gridSize![0]);
   });
 });
 
-describe("the page under a band contributes no leading of its own", () => {
+describe("a ruled listing takes a smaller gap under its header than a section front does", () => {
   it("ListingPage declares contentOwnsLeading", () => {
-    // The other half. With both the gap and the item padding, band-to-post
-    // disagreed with post-to-post in the other direction.
+    // The other half. With both the gap and the item padding both full size,
+    // header-to-post would disagree with post-to-post in the other direction.
     expect(read("app/listing-page.tsx")).toMatch(/contentOwnsLeading/);
   });
 
-  it("WidePage maps that to no top padding", () => {
+  it("WidePage maps that to the smaller of its two header gaps", () => {
     expect(read("app/wide-page.tsx")).toMatch(
-      /contentOwnsLeading \? "none" : "tight"/,
+      /contentOwnsLeading \? "mb-8" : "mb-14"/,
     );
   });
 });

@@ -106,46 +106,28 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
   --default-font-family: var(--font-body);
 
   --color-brand-crimson: #9e2238;
-  --color-brand-header: #1e3a8a;
 
-  /* Masthead band on the browsing pages. Lifted in dark mode (below), and the
-     thing to understand before retuning either value is WHAT stays fixed.
-
-     What is fixed is the step between the sticky bar and the band: 1.60:1 in
-     light, 1.55:1 in dark, band darker in both. That relationship is the
-     design — the bar reads as the light end of a two-step ramp, and the seam
-     where they meet is deliberate rather than an artefact. The PAGE is the
-     thing that changes which side of the band it sits on, so two blues that
-     both moved between schemes have not drifted; they moved together to hold
-     that step while the ground under them inverted.
-
-     Why the dark value must be lifted at all: a dark block cannot read on a
-     dark page. At the light-mode #0F1C42 the band sits at 1.13:1 against the
-     #17110F page, which is no block at all — the bar would appear to float on
-     bare page with a large h1 beneath it. #1B2F6B gives 1.48:1. That makes the
-     band lighter than the page in dark and darker than it in light, which is
-     not an inconsistency: the header bar and the footer already run
-     chrome-lighter-than-content in dark, so this conforms to the scheme rather
-     than inverting it. lib/palette-contrast.test.ts holds the separation in
-     both schemes, which is the guard the 1.13:1 version would have failed.
-
-     A separate token rather than a reuse of --color-brand-header because the
-     two need different amounts of lift: brand-header rises to #2E4A9E so a
-     52px bar separates from a near-black page, and a 200px block needs less.
-     Not derived from it with color-mix either — see the note on
-     --color-cover-keyline for why a hand-carried literal beats a color-mix
-     over a var() in this file. The name says what it is rather than what it
-     is derived from, because palette work here is done across the whole
-     spectrum at once and a name encoding a derivation would promise
-     something nothing enforces. Where a relationship does need holding, a
-     test holds it.
-
-     White holds at 16.60:1 on the light value and 12.61:1 on the dark one. */
-  --color-brand-band: #0f1c42;
+  /* Chrome colour, now carried only by the sticky bar and the footer — the
+     masthead band is retired sitewide (was --color-brand-band; every page
+     sits on cream below the bar). Aubergine rather than the old blue, one
+     token for both surfaces: white on it is 15.66:1. */
+  --color-brand-header: #2b1c3f;
 
   --color-brand-dark: #241b1d;
   --color-brand-bg: #faf5f1;
-  --color-brand-muted: #6b5a52;
+
+  /* Raised from #6b5a52 (6.05:1) to clear AAA (7:1) on body text as well as
+     meta, not only the AA floor the old value cleared. 7.53:1 today. */
+  --color-brand-muted: #5c4c45;
+
+  /* Decorative separator — breadcrumb slashes, the middot between a plate's
+     date and category. Never carries text, so it is exempt from 1.4.3 and
+     free to sit well under AA. Derived by eye as brand-muted at roughly 44%
+     over brand-bg in each scheme, then hand-carried as two literals for the
+     same reason --color-cover-keyline is: a color-mix() over a var() falls
+     back to its light literal on an engine without color-mix support, which
+     would paint this light in dark mode too. */
+  --color-separator: #b6a9a2;
 
   /* Divider hairline. One token for every rule between list items, cards, and
      panels, so the value inverts with the scheme instead of each component
@@ -155,28 +137,15 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
 
   /* The edge around a cover image. A second edge role after dividers and
      image frames, and its only job is block visibility where a cover sits
-     on the band. The post cover crosses the band's bottom edge, so one image
-     has navy behind its top and cream behind the rest.
+     against surrounding chrome. The post cover is full-bleed directly under
+     the sticky bar, so its top edge needs to read against aubergine even
+     though the rest of the frame sits on cream.
 
      Why an edge is needed at all when covers already carry shadow-lg. That
      shadow is black at roughly 18% composited, which gives 1.52:1 on
-     --color-brand-bg and 1.06:1 on --color-brand-band. It does the whole job on
-     cream and none of it on navy, and navy is exactly the half this treatment
-     adds. In light mode the cover crosses from near-black to near-white, so no
-     single edge colour reads on both grounds. The two mechanisms split the job
-     and neither competes, because each is invisible where the other works.
-
-     The light value is cream, the same family as --color-brand-bg, so it is
-     near-invisible on the cream page where the shadow is working and reads at
-     9.06:1 where it crosses onto navy.
-
-     Dark mode used to carry this as dark:border-brand-dark/12 on the component,
-     which composites to 1.38:1 on the band and 1.34:1 on the page. Both sit
-     under the 1.4:1 block-visibility floor lib/palette-contrast.test.ts already
-     applies to the band itself. At 18% the same edge gives 1.63:1 on both,
-     which is near the crossover where the two grounds converge. Reading the
-     same on either ground is the property worth having for an element that
-     straddles a seam.
+     --color-brand-bg and 1.06:1 on --color-brand-header. It does the whole job
+     on cream and none of it on aubergine, which is exactly the half this
+     treatment adds.
 
      Two literal values with a dark override, exactly as hairline does,
      rather than color-mix() over a var(). That derivation reads better and
@@ -193,12 +162,6 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
      on the lifted-crimson prompt header — points here instead so it never flips
      to light. Deliberately excluded from the dark override. */
   --color-surface-dark: #241b1d;
-
-  /* Footer band. In light mode it equals surface-dark (#241B1D on the light
-     page). It gets its OWN token because dark mode raises it (below) for band
-     separation, whereas surface-dark must stay put to keep the on-crimson ink
-     contrast — the two roles diverge in dark mode. */
-  --color-footer-bg: #241b1d;
 
   /* Table treatment. Derived from the crimson token rather than the divider
      hairline, whose light value is a cool grey on a warm cream page and sits
@@ -239,30 +202,26 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
   :root {
     --color-brand-bg: #17110f; /* warm near-black page (not pure #000) */
     --color-brand-dark: #f2eae4; /* warm off-white ink */
-    --color-brand-muted: #b3a49c; /* lifted so meta text keeps AA on dark */
+    --color-brand-muted: #b3a49c; /* already AAA on dark (7.75:1); unchanged */
     --color-brand-crimson: #ec8494; /* lifted so links stay vivid + AAA on dark */
-    --color-brand-header: #2e4a9e; /* lifted so the bar reads distinct from page */
 
-    /* Lifted less than the bar above, holding the 1.55:1 step between them.
-       The light #0F1C42 would sit at 1.13:1 on this page and vanish. See the
-       full argument on the light value. */
-    --color-brand-band: #1b2f6b;
-
-    /* Raise the footer band so it reads as distinct above the page. Pinned to
-       surface-dark (#241B1D) it sat at only 1.11:1 vs the #17110F page and
-       dissolved into it; #2E2420 clears the ~1.2 separation threshold (1.24:1)
-       while footer white/60 text stays at 6.3:1. In light mode the footer is
-       darker than the page to stand out; in dark mode it must be lighter. */
-    --color-footer-bg: #2e2420;
+    /* Lifted for the same reason the old bar navy was: a dark block cannot
+       read on a dark page. #17110f behind it would be 1.02:1 — no separation
+       at all. #3b2a52 clears 1.46:1, over the 1.4 block-visibility floor
+       lib/palette-contrast.test.ts holds sitewide. White on it is 12.81:1. */
+    --color-brand-header: #3b2a52;
 
     /* Warm off-white at low alpha, matching the ink. The light #e5e7eb reads
        at ~15:1 on the #17110F page and glares. */
     --color-hairline: rgb(242 234 228 / 0.15);
 
-    /* The ink's own colour at 18%, which lands at 1.63:1 on both the band and
-       the page. The 12% this replaced read 1.38:1 and 1.34:1, both under the
-       floor. See the light value for why an edge is needed on navy at all. */
+    /* Ink at 18%, matching the light value's derivation against the header
+       rather than the retired band. */
     --color-cover-keyline: rgb(242 234 228 / 0.18);
+
+    /* Same ~44%-over-page derivation as the light value, run against the dark
+       muted and dark page instead — see the light value's note. */
+    --color-separator: #5c524d;
   }
 }
 
@@ -339,9 +298,9 @@ html {
 /*
   One focus indicator for the whole site. Crimson picks up the accent token, so
   it inverts with the scheme automatically (#9E2238 light, #EC8494 dark) and
-  clears 3:1 against both page backgrounds. Elements sitting on the coloured
-  header or footer bands override this locally with a white ring, because
-  crimson on navy does not clear contrast — see app/layout.tsx.
+  clears 3:1 against both page backgrounds. Elements sitting on the sticky bar
+  or the footer override this locally with a white ring, because crimson on
+  aubergine does not clear contrast — see app/layout.tsx.
 */
 @layer base {
   :focus-visible {
@@ -408,26 +367,6 @@ html {
 .sidenote-wrap {
   display: inline;
   counter-increment: sidenote;
-}
-
-/*
-  Rich text rendered inside the masthead band — today only an author's bio.
-
-  Everything RichText emits is fine on navy by inheriting the band's white:
-  emphasis is italic, lists are bullets, neither carries colour. Links are the
-  exception. They are the one thing the band cannot take from the palette,
-  because brand-crimson on brand-band is 1.35:1, so an underline identifies
-  them instead and the colour stays white.
-
-  That is a WCAG 1.4.1 requirement rather than a preference: with the accent
-  unavailable, colour cannot be the only thing distinguishing a link from the
-  prose around it. Unlayered on purpose, like the sidenote rules below — author
-  styles outrank the utilities layer, so this cannot be lost to a stray utility
-  on the wrapper.
-*/
-.band-prose a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 /* In-text marker: 2xl+ only. */
@@ -559,20 +498,23 @@ html {
      well — one number, one place. app/globals.measure.test.ts guards this. */
   max-width: none;
 
-  /* Bumped from the plugin's 1rem. Literata's x-height is 0.507em against
-     Inter's 0.546em, so it reads about 7% smaller at the same nominal size, and
-     the measure now comes from max-w-2xl in rem, which does not scale with this
-     value — at 1rem the 672px column ran to about 88 characters a line. At
-     1.125rem it lands near 78. The plugin's line-height is unitless and scales
-     with this, so it needs nothing here. Every size inside this column is em-
-     based for the same reason; do not pin one in rem. */
-  font-size: 1.125rem;
+  /* Bumped from the plugin's 1rem, then again from 1.125rem to 1.1875rem
+     (19px). Literata's x-height is 0.507em against Inter's 0.546em, so it
+     reads about 7% smaller at the same nominal size, and the measure comes
+     from the parent's own width in rem rather than from this value — the
+     article column is max-w-[43.75rem] (700px at the default root; see
+     app/posts/[slug]/page.tsx), same rem-not-px reasoning as everywhere
+     else this measure is set, and at that width 19px lands near 72
+     characters a line. The plugin's line-height is unitless and scales with
+     this, so it needs nothing here. Every size inside this column is
+     em-based for the same reason; do not pin one in rem. */
+  font-size: 1.1875rem;
 
   /* The plugin's td padding is 0.5714286em at its own 1rem scale. This block
-     raises prose to 1.125rem for Literata's x-height, and every em inside
-     inherits it, so a single-line row was landing near 78px. Pinned here in em
-     against the prose size so it still scales with user font settings, but at a
-     value chosen for this column rather than the plugin's.
+     raises prose to 1.1875rem for Literata's x-height, and every em inside
+     inherits it, so a single-line row was landing well past 78px. Pinned here
+     in em against the prose size so it still scales with user font settings,
+     but at a value chosen for this column rather than the plugin's.
 
      :not(:where([class~="not-prose"] *)) is required, not decorative: without
      it this is a plain descendant selector, so it reaches straight through the
@@ -613,8 +555,9 @@ html {
   --tw-prose-quote-borders: var(--color-brand-crimson);
   --tw-prose-captions: var(--color-brand-muted);
   /* Was brand-dark at 15%/10%, which composited to 1.22:1 (light) and 1.27:1
-     (dark) against the page — at or below the ~1.2 separation threshold noted
-     on --color-footer-bg, and the only dividers in the system that never got
+     (dark) against the page — at or below the ~1.2 block-visibility threshold
+     chrome separation is held to sitewide, and the only dividers in the
+     system that never got
      the dark-mode lift --color-hairline carries. Both now defer to that token,
      so table rules track every other rule on the site and there is one alpha to
      maintain rather than three. The header rule stays a step stronger than the
@@ -655,9 +598,9 @@ html {
        sat on the margin and the letterforms inside began 0.4em further right,
        so that line read as indented — and where a pill lands is not knowable
        from the CMS. The tint alone still separates: 12% lands at 1.22:1
-       (light) and 1.20:1 (dark) against the page, matching the ~1.2 threshold
-       used for --color-footer-bg, while ink on the fill stays above 12.7:1 in
-       both modes. */
+       (light) and 1.20:1 (dark) against the page, matching the ~1.2
+       block-visibility threshold chrome separation is held to sitewide,
+       while ink on the fill stays above 12.7:1 in both modes. */
     background-color: color-mix(
       in srgb,
       var(--color-brand-crimson) 12%,
@@ -666,13 +609,16 @@ html {
     color: var(--color-brand-dark);
     padding: 0.05em 0.3em;
     border-radius: 0.2rem;
-    /* 0.78em holds code at 14px against the 1.125rem prose base. The blocks in
-       lib/rich-text.tsx use the same value, so inline and block code match. The
-       value is a budget, not a preference: at 14px a 640px code content box
-       (the 672px column less p-4) fits about 76 mono columns, against
-       Prettier's 80-character print width. Raising it to 0.875em costs nine of
-       them, and overflow-x-auto means that scrolls quietly on every sample
-       rather than breaking loudly on one. */
+    /* 0.78em holds code at roughly 14-15px against the prose base (1.125rem
+       on the general max-w-2xl column most prose sits in, 1.1875rem on the
+       post article's own wider column — see app/globals.css's @utility
+       prose and app/posts/[slug]/page.tsx). The blocks in lib/rich-text.tsx
+       use the same value, so inline and block code match. The value is a
+       budget, not a preference: on the general column, a 640px code content
+       box (672px less p-4) fits about 76 mono columns at 14px, against
+       Prettier's 80-character print width. Raising it to 0.875em costs nine
+       of them, and overflow-x-auto means that scrolls quietly on every
+       sample rather than breaking loudly on one. */
     font-size: 0.78em;
   }
   & :where(code):not(:where([class~="not-prose"] *))::before {

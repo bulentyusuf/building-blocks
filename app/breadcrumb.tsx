@@ -4,69 +4,7 @@ import { jsonLdHtml } from "@/lib/json-ld";
 
 export type Crumb = { label: string; href?: string };
 
-/**
- * `tone` is the surface the trail sits on, not a colour scheme: "light" is the
- * cream page, "dark" is the navy masthead band (app/page-band.tsx). Both tones
- * invert with prefers-color-scheme as usual — brand-band simply does not, so
- * the dark tone's whites are constant.
- *
- * The hover swap is not cosmetic. brand-crimson on the band computes to 1.35:1,
- * so the crimson hover every other link on the site uses would be invisible
- * here; `hover:opacity-80` is what the header nav links already do on navy.
- *
- * Only the dark tone carries focus-visible utilities, and that asymmetry is the
- * rule rather than an oversight. The site has ONE focus indicator, set on
- * :focus-visible in @layer base, and components do not override it — the light
- * tone therefore names nothing and inherits the crimson outline, which clears
- * 3:1 on cream. The band is the documented exception, the same one the header
- * and footer bands take: crimson on this navy does not clear contrast, so the
- * white ring is required, and `outline-hidden` with it is load-bearing rather
- * than decorative because the base outline would otherwise still paint.
- */
-type Tone = "light" | "dark";
-
-const TONES: Record<
-  Tone,
-  {
-    nav: string;
-    list: string;
-    link: string;
-    current: string;
-    separator: string;
-  }
-> = {
-  light: {
-    // Unchanged from every unbanded page: post, about, privacy, search.
-    nav: "mb-4",
-    list: "text-brand-muted",
-    link: "hover:text-brand-crimson transition-colors duration-200",
-    current: "font-medium text-brand-dark",
-    separator: "text-brand-muted",
-  },
-  dark: {
-    // Identical to the light tone, and it must stay that way. A browse page
-    // and a post are one navigation apart, so any difference here moves the
-    // trail and the heading under it between two pages the reader treats as
-    // the same place. Tightening this on navy alone looked better in isolation
-    // and shifted the heading 8px on every browse-to-post step.
-    nav: "mb-4",
-    list: "text-white",
-    link: "hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white",
-    current: "font-medium text-white",
-    // The one translucent white in the band, and it is allowed: the separator
-    // is aria-hidden and purely decorative, so 1.4.3 does not reach it. Every
-    // text node in here is solid — see app/page-band.tsx.
-    separator: "text-white/50",
-  },
-};
-
-export default function Breadcrumb({
-  items,
-  tone = "light",
-}: {
-  items: Crumb[];
-  tone?: Tone;
-}) {
+export default function Breadcrumb({ items }: { items: Crumb[] }) {
   // Tone-independent: the structured data describes the trail, not its paint.
   const jsonLd = {
     "@context": "https://schema.org",
@@ -79,36 +17,43 @@ export default function Breadcrumb({
     })),
   };
 
-  const styles = TONES[tone];
-
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
-      <nav aria-label="Breadcrumb" className={styles.nav}>
-        <ol
-          className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-sm ${styles.list}`}
-        >
+      <nav aria-label="Breadcrumb" className="mb-4">
+        {/* 13px rather than the sitewide text-sm (14px): a trail is the
+            least informative line on the page, one step below meta. Links
+            are crimson by default, not the usual muted-then-hover-crimson —
+            with the band gone this is the one place the accent stands in for
+            what colour used to be doing on navy, marking every step of the
+            trail as a step rather than only naming the current page. */}
+        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px]">
           {items.map((item, i) => {
             const isLast = i === items.length - 1;
             return (
               <li key={i} className="flex items-center gap-x-2">
                 {item.href && !isLast ? (
-                  <Link href={item.href} className={styles.link}>
+                  <Link
+                    href={item.href}
+                    className="text-brand-crimson transition-opacity duration-200 hover:opacity-80"
+                  >
                     {item.label}
                   </Link>
                 ) : (
                   <span
-                    className={isLast ? styles.current : undefined}
+                    className={
+                      isLast ? "font-medium text-brand-dark" : undefined
+                    }
                     aria-current={isLast ? "page" : undefined}
                   >
                     {item.label}
                   </span>
                 )}
                 {!isLast && (
-                  <span aria-hidden="true" className={styles.separator}>
+                  <span aria-hidden="true" className="text-separator">
                     /
                   </span>
                 )}
