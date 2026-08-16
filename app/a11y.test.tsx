@@ -50,6 +50,7 @@ const MoreStories = (await import("@/app/more-stories")).default;
 const Breadcrumb = (await import("@/app/breadcrumb")).default;
 const ListingPage = (await import("@/app/listing-page")).default;
 const WidePage = (await import("@/app/wide-page")).default;
+const Container = (await import("@/app/container")).default;
 const Pagination = (await import("@/app/pagination")).default;
 const CoverImage = (await import("@/app/cover-image")).default;
 const Avatar = (await import("@/app/avatar")).default;
@@ -463,44 +464,40 @@ describe("the index listing, which carries a trail again", () => {
   });
 });
 
-describe("home, whose band carries the masthead as its h1", () => {
-  // The masthead is home's h1 and everything below it is an h2, hero and cards
-  // alike, because the listing renders no heading of its own. One flat list of
-  // siblings under one page title.
+describe("home, whose masthead is its h1", () => {
+  // Home no longer routes through WidePage/PageBand — it renders its own
+  // masthead directly in a Container, on cream, with no listing heading of
+  // its own above the plates below it. This fixture follows that shape
+  // (masthead h1, a couple of h2 plate titles as siblings) rather than
+  // WidePage's generic header/children split, which real home does not use.
   //
   // The assertions fail if any half is reverted on its own, which is the
-  // failure worth guarding: the masthead was a <p> precisely to protect a hero
-  // h1 that no longer exists, so putting one back without demoting the other
-  // gives the page two h1s and nothing complains at runtime. Reinstating the
-  // listing heading is the same shape of mistake from the other end, since
-  // MoreStories silently re-levels every card title when one is present.
+  // failure worth guarding: the masthead was a <p> precisely to protect a
+  // hero h1 that no longer exists, so putting one back without demoting a
+  // plate's own h2 gives the page two h1s and nothing complains at runtime.
   const render = () =>
     renderPage(
       <RootLayout>
-        <WidePage
-          header={
-            <>
-              <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-                {SITE_TITLE}
-              </h1>
-              <p className="max-w-3xl text-lg leading-relaxed">
-                A description of the site.
-              </p>
-            </>
-          }
-        >
-          <section className="mx-auto max-w-5xl mb-section">
+        <Container>
+          <h1 className="site-masthead text-[96px] leading-[0.86] tracking-[-0.04em] font-extrabold">
+            {SITE_TITLE}
+          </h1>
+          <p className="max-w-3xl text-xl leading-[1.45]">
+            A description of the site.
+          </p>
+          <article>
             <h2>
               <a href="/posts/a">Post a</a>
             </h2>
             <p>Excerpt for post a.</p>
-          </section>
-          <MoreStories
-            morePosts={[post("b"), post("c")]}
-            variant="grid"
-            heading={null}
-          />
-        </WidePage>
+          </article>
+          <article>
+            <h2>
+              <a href="/posts/b">Post b</a>
+            </h2>
+            <p>Excerpt for post b.</p>
+          </article>
+        </Container>
       </RootLayout>,
     );
 
@@ -508,19 +505,10 @@ describe("home, whose band carries the masthead as its h1", () => {
     expectNoViolations(await render());
   });
 
-  it("renders no Latest Posts heading", async () => {
-    // Text, not level. A bare level check passes if someone reinstates the
-    // heading as an h2, which is exactly what MoreStories would emit.
-    await render();
-    const headings = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
-      (h) => h.textContent?.trim(),
-    );
-    expect(headings).not.toContain("Latest Posts");
-  });
-
-  it("puts the hero and every card title at the same level", async () => {
-    // The point of dropping the heading. The hero stops being a section with
-    // its own level and becomes the first entry in one list.
+  it("puts every plate title at the same level", async () => {
+    // The point of home rendering no listing heading of its own: every plate
+    // is the first entry in one flat list under the masthead, not a section
+    // with its own level.
     await render();
     const main = document.querySelector("main")!;
     const levels = [...main.querySelectorAll("h2,h3")].map((h) =>
@@ -538,14 +526,14 @@ describe("home, whose band carries the masthead as its h1", () => {
     expect(h1s[0].classList.contains("site-masthead")).toBe(true);
   });
 
-  it("renders the hero title as an h2, still linked to its post", async () => {
+  it("renders a plate title as an h2, still linked to its post", async () => {
     await render();
-    const hero = document.querySelector("main h2 a");
-    expect(hero).not.toBeNull();
-    expect(hero!.getAttribute("href")).toBe("/posts/a");
+    const plate = document.querySelector("main h2 a");
+    expect(plate).not.toBeNull();
+    expect(plate!.getAttribute("href")).toBe("/posts/a");
   });
 
-  it("keeps heading levels contiguous below a band with no heading in it", async () => {
+  it("keeps heading levels contiguous with no band heading in the way", async () => {
     await render();
     const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
       (h) => Number(h.tagName[1]),

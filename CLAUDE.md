@@ -524,18 +524,28 @@ resizes on any body-face swap — Inter's zero is 0.6309em against Literata's
 ### One axis, and it is the header measure
 
 Whether a page's breadcrumb and `h1` sit at `max-w-5xl` or inside a
-`max-w-2xl` column decides three things at once: the breadcrumb wrapper, the
-`h1` ramp, and the band. A route is wide or narrow and everything follows.
-There is no second question and no route that can sit half in each.
+`max-w-2xl` column decides the breadcrumb wrapper and the `h1` treatment. A
+route is wide or narrow and everything follows. There is no second question
+and no route that can sit half in each. The band this axis used to also
+decide is gone (see above) — the axis survives it, because the measure was
+always the thing that changes the shape of the page, not the colour behind it.
 
-**Wide.** Header at `max-w-5xl`, `<Breadcrumb>` unwrapped, `h1` at
-`text-4xl leading-tight md:text-5xl lg:text-6xl`, navy band.
+**Wide.** Header at `max-w-5xl`, `<Breadcrumb>` unwrapped where the route has
+one at all.
 
-`/`, `/page/[page]`, `/posts/[slug]`, `/archive`, `/categories`, `/tags`,
-`/authors`, and the six taxonomy listings. Thirteen routes.
+Eleven of the thirteen wide routes share one `h1` ramp,
+`text-4xl leading-tight md:text-5xl lg:text-6xl`, via `app/wide-page.tsx`: the
+four section fronts, the six taxonomy `[slug]` routes (paginated and not), and
+the index listing at `/page/[page]`.
+
+`/` and `/posts/[slug]` are wide but bespoke, each sized for what it actually
+is rather than the shared ramp: home's 96px masthead and the post page's 72px
+headline. Both still sit at the `max-w-5xl` measure and neither goes through
+`WidePage` — home has nothing above it to wrap in a `<Breadcrumb>`, and the
+post's crumb sits above its own header, not inside the shared shell.
 
 **Narrow.** Header wrapped in `mx-auto max-w-2xl`, `h1` at
-`mb-6 text-4xl md:text-5xl` with no `leading-tight`, no band.
+`mb-6 text-4xl md:text-5xl` with no `leading-tight`.
 
 `/about`, `/privacy`, `/search`. Three routes.
 
@@ -546,41 +556,62 @@ labels, which is the same tell from the other end. Any new page picks its
 treatment from its own measure, not from the nearest existing h1.
 
 **The measure is the header's, not the prose's.** A post's body narrows to
-`max-w-2xl` inside an `xl:grid`, but its breadcrumb, `h1` and cover sit above
-that grid at the article's full `max-w-5xl`, so a post is a wide page whose
-body happens to be narrow. `/search` is the mirror case: it browses posts by
-function and is narrow by shape, and shape decides.
+`max-w-[43.75rem]` inside an `xl:grid`, but its breadcrumb, `h1` and cover sit
+above that grid at the article's full `max-w-5xl`, so a post is a wide page
+whose body happens to be narrow. `/search` is the mirror case: it browses
+posts by function and is narrow by shape, and shape decides.
 
-**Home's band carries the site masthead, and that masthead is its `h1`.**
-`SITE_TITLE` at the display ramp with `SITE_DESCRIPTION` as the standfirst
-beneath it, so home matches the ordinary `HEADING` and `STANDFIRST` signatures
-like every other route. It stays unlinked, because a link on `/` points at the
-page the reader is already on, the same reason the last crumb is plain text.
-Home is the index whose subject is the whole site, so naming itself is what
-every other index already does.
+**Home's masthead is its `h1`.** `SITE_TITLE` at 96px with `SITE_DESCRIPTION`
+as the standfirst beneath it, so home matches the ordinary `HEADING` and
+`STANDFIRST` signatures like every other route even though the sizes are its
+own. It stays unlinked, because a link on `/` points at the page the reader is
+already on, the same reason the last crumb is plain text elsewhere. Home is
+the index whose subject is the whole site, so naming itself is what every
+other index already does.
 
-The masthead shipped first as a `<p>`, to protect an `h1` that then sat on the
-hero post. That cost a weight bug as well as an outline: the base-layer rule in
-`app/globals.css` sets `font-weight: 700` on `h1, h2, h3` only, so a `<p>` in
-the display face rendered at 400 against the 700 of the headlines under it.
-**Do not add a weight class to fix that** — the element being a heading is the
-mechanism. The hero below is an `h2`, so the two halves must move together, and
-`app/a11y.test.tsx` fails if either is reverted on its own.
+The masthead shipped first as a `<p>`, to protect an `h1` that then sat on a
+hero post home no longer has. That cost a weight bug as well as an outline:
+the base-layer rule in `app/globals.css` sets `font-weight: 700` on
+`h1, h2, h3` only, so a `<p>` in the display face rendered at 400 against the
+700 of the headlines under it. **Do not add a weight class to fix that** — the
+element being a heading is the mechanism.
 
-**Home and `/page/[page]` now render the same listing shape and differ only in
-what the band says.** Home passes no listing heading, so its outline is the
-site name at `h1` and then the hero and every card at `h2`, one flat list of
-siblings rather than a section above a section. That is the claim the axis has
-been making since `/page/[page]` was banded, and it is finally true.
+**`MoreStories` sets its card titles to `h3` when it renders a section heading
+and `h2` when it does not.** Home no longer calls `MoreStories` at all — its
+plates are built directly in `app/page.tsx` — so today this only matters for
+the post page's Read Next teaser, whose `h3` cards sit correctly one level
+under the post's own `h2`s. Adding a heading back to a route that currently
+passes none would silently re-level every card on it, and removing one does
+the same in reverse; keep it in mind if `MoreStories` gains a new caller.
 
-The mechanism to know about: **`MoreStories` sets its card titles to `h3` when
-it renders a section heading and `h2` when it does not.** So adding a heading
-back to any route silently re-levels every card on it, and removing one does
-the same in reverse. `app/a11y.test.tsx` asserts home's headings by _text_ as
-well as by level, because a reinstated heading is a perfectly contiguous `h2`
-and a level-only check sails past it.
+All sixteen routes are still on the axis.
 
-All sixteen routes are now on the axis.
+### Standfirst where the reader is deciding; date where the reader is locating
+
+A recurring question worth settling once rather than per-surface. A
+standfirst helps a reader decide whether to read something; a date only helps
+them place it in a sequence once they already have. Do not fill an empty
+metadata slot with a date just because something else was removed from it —
+that answers a question nobody asked at that spot.
+
+Home's plates and the post page's Read Next teaser (`app/page.tsx`,
+`app/more-stories.tsx`) carry a standfirst, because the reader is deciding
+whether to read the post. Home's plates also carry a date, because a
+reader arriving at the front page wants to know the blog is alive — the one
+place both apply at once. The "Earlier" list on `/page/[page]`, and the
+archive, tags and search results elsewhere, carry a date and no standfirst:
+the title is the content there, the date is the index.
+
+**Category on cards was a considered exception, now reversed on request.**
+`app/page.tsx` used to carry a comment arguing against showing category on
+listing cards — the site has two categories, so the label mostly repeats
+itself down a page, and a per-route exception would be needed on
+`/categories/[slug]`, where the category is the page you are already on. Home's
+plates show it anyway now, in the meta line beside the date, at the site
+owner's explicit request. The argument against it was never wrong on its own
+terms; it was outweighed. Do not re-add it to any OTHER card without the same
+kind of explicit call — the per-route exception problem the original argument
+raised is still real everywhere but home's front page.
 
 ### The masthead band is retired; `app/wide-page.tsx` collapses to a header on cream
 
