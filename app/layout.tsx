@@ -15,6 +15,7 @@ import {
 } from "@/lib/constants";
 import BackToTop from "./back-to-top";
 import SidenoteEnterKey from "./sidenote-enter-key";
+import WordmarkFade from "./wordmark-fade";
 import NewWindowHint from "./new-window-hint";
 import Link from "next/link";
 import { draftMode } from "next/headers";
@@ -101,59 +102,58 @@ const navLink =
 function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-brand-header shadow-xs">
-      {/* min-h-13 is 52px, which is py-3's 24px plus the 28px line box
-          leading-7 sets on the wordmark explicitly (its 16px text carries no
-          default that tall). It is here because the bar's height must not be
-          a function of which of its children happen to render. Nothing else
-          in the row is as tall — the nav items are 11px — so on home, where
-          the wordmark hides, the bar was rendering 8px shorter and the chrome
-          changed height as the reader navigated. */}
-      <div className="max-w-5xl mx-auto px-5 py-3 min-h-13 flex items-center justify-between gap-4">
-        {/* Both hide themselves on home, where the masthead names the site
-            60px below and the bar would say it twice. The rule is a :has() in
-            globals.css rather than a usePathname, so this stays a server
-            component and the site ships no JS for it.
-
-            The cost, on the record rather than left to be quietly fixed later:
-            past the masthead, home's sticky bar is the nav and the search
-            control with no site name in it. The wordmark is wayfinding for a
-            reader deep in the site, and on home they are not deep in the site.
-            It returns the moment they navigate anywhere else. Do not add a
-            scroll listener or an IntersectionObserver to fill the gap, and do
-            not reach for a mark, because none exists in public/. */}
-        <div className="flex items-baseline gap-3">
-          <Link
-            href="/"
-            className="site-wordmark font-display text-[16px] leading-7 font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
-            {SITE_TITLE}
-          </Link>
-          <p className="site-tagline hidden lg:block text-xs text-white/72">
-            {SITE_DESCRIPTION}
-          </p>
-        </div>
-        <nav aria-label="Primary" className="flex items-center gap-4 md:gap-6">
-          <Link href="/categories" className={navLink}>
-            Categories
-          </Link>
-          <Link href="/tags" className={navLink}>
-            Tags
-          </Link>
-          <Link href="/archive" className={navLink}>
-            Archive
-          </Link>
-          <Link href="/about" className={navLink}>
-            About
-          </Link>
+      {/* min-h-12 (48px) below sm, min-h-13 (52px) at sm and up — each pair
+          is that breakpoint's py plus the 28px line box leading-7 sets on the
+          wordmark explicitly (its 16px text carries no default that tall):
+          20+28=48 below sm (py-2.5), 24+28=52 at sm+ (py-3). It is here
+          because the bar's height must not be a function of which of its
+          children happen to render. Nothing else in the row is as tall — the
+          nav items are 11px — so on home, where the wordmark hides, the bar
+          was rendering 8px shorter and the chrome changed height as the
+          reader navigated. Recompute both pairs if py or the wordmark's
+          leading-7 changes. */}
+      <div className="max-w-page mx-auto px-5 py-2.5 sm:py-3 min-h-12 sm:min-h-13 flex items-center justify-between gap-4">
+        {/* Hides itself on home, where the masthead names the site 60px below
+            and the bar would say it twice — until the reader scrolls the
+            masthead out of view, at which point app/wordmark-fade.tsx fades
+            it back in (see globals.css). The hide is a :has() rather than a
+            usePathname, so this stays a server component and ships no JS for
+            the state itself; the fade is the one enhancement that needs a
+            script. */}
+        <Link
+          href="/"
+          className="site-wordmark font-display text-[16px] leading-7 font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+        >
+          {SITE_TITLE}
+        </Link>
+        <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-4">
+          <div className="hidden md:flex items-center gap-4 md:gap-6">
+            <Link href="/categories" className={navLink}>
+              Categories
+            </Link>
+            <Link href="/tags" className={navLink}>
+              Tags
+            </Link>
+            <Link href="/archive" className={navLink}>
+              Archive
+            </Link>
+            <Link href="/about" className={navLink}>
+              About
+            </Link>
+          </div>
           {/* Icon-only link: the accessible name comes from aria-label, and
               the SVG is hidden from assistive tech so it is not announced as
               an unlabelled image. No icon library — inline SVG keeps the
-              dependency count at zero. */}
+              dependency count at zero. p-3 -m-3 is the WCAG 2.2 2.5.8 touch
+              target trick: padding grows the hit area to 44px (20px icon +
+              2×12px) while the matching negative margin cancels its
+              footprint in the row's own layout, so the bar's height
+              calculation above never sees it. */}
           <Link
             href="/search"
             aria-label="Search"
             title="Search"
-            className={`p-2 -m-2 ${navLink}`}
+            className={`p-3 -m-3 ${navLink}`}
           >
             <svg
               aria-hidden="true"
@@ -168,6 +168,45 @@ function Header() {
               <path d="m21 21-4.35-4.35" />
             </svg>
           </Link>
+          {/* Below md only — the four section links above switch from a row
+              to this single disclosure. A native <details>/<summary> rather
+              than useState: the panel needs no JS to open, matching every
+              other disclosure on the site (app/table-of-contents.tsx's
+              .toc-details). [&::-webkit-details-marker]:hidden clears
+              Safari's default marker; list-none clears every other engine's. */}
+          <details className="relative md:hidden">
+            <summary
+              aria-label="Menu"
+              title="Menu"
+              className={`list-none p-3 -m-3 cursor-pointer [&::-webkit-details-marker]:hidden ${navLink}`}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                className="h-5 w-5"
+              >
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              </svg>
+            </summary>
+            <div className="absolute right-0 top-full mt-3 flex w-44 flex-col gap-1 rounded-md bg-brand-header p-3 shadow-lg">
+              <Link href="/categories" className={`px-2 py-2 ${navLink}`}>
+                Categories
+              </Link>
+              <Link href="/tags" className={`px-2 py-2 ${navLink}`}>
+                Tags
+              </Link>
+              <Link href="/archive" className={`px-2 py-2 ${navLink}`}>
+                Archive
+              </Link>
+              <Link href="/about" className={`px-2 py-2 ${navLink}`}>
+                About
+              </Link>
+            </div>
+          </details>
         </nav>
       </div>
     </header>
@@ -184,7 +223,7 @@ const footerLink =
 function Footer() {
   return (
     <footer className="bg-brand-header text-white">
-      <div className="max-w-5xl mx-auto px-5 py-12 md:py-16">
+      <div className="max-w-page mx-auto px-5 py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
           {/* Column 1 — masthead + blurb */}
           <div>
@@ -323,6 +362,7 @@ export default async function RootLayout({
         {isEnabled && <ExitPreviewButton />}
         <BackToTop />
         <SidenoteEnterKey />
+        <WordmarkFade />
         <Analytics />
         <SpeedInsights />
       </body>

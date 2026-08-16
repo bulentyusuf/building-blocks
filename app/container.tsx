@@ -31,7 +31,7 @@ export default function Container({
   return (
     <div
       className={clsx(
-        "max-w-5xl mx-auto px-5 pb-12",
+        "max-w-page mx-auto px-5 pb-12",
         TOP_PAD[topPad],
         className,
       )}

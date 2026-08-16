@@ -19,6 +19,7 @@ export default async function CoverImage({
   sizes,
   priority = false,
   hover = false,
+  ratio = "16:9",
   transitionName,
 }: {
   url: string;
@@ -48,6 +49,13 @@ export default async function CoverImage({
   // land inside this group — see the note on the Link. Reduced-motion users
   // get no movement (motion-safe: prefix), no JS.
   hover?: boolean;
+  // Crops for browsing, the full frame for reading (see CLAUDE.md). Source
+  // art is authored at 16:9, so "16:9" is a stretch-to-fit no-op and "4:3"
+  // crops the sides via object-cover — see the note on the image's className
+  // below. Defaults to "16:9" so every caller that predates this prop (the
+  // home lead plate, the post hero) keeps rendering exactly as before without
+  // passing anything.
+  ratio?: "16:9" | "4:3";
   // Cross-document view-transition name for the cover morph. Set by callers
   // that want this cover to morph into its counterpart on the next page (a
   // card into the post hero). Must be unique per rendered page and match the
@@ -71,12 +79,14 @@ export default async function CoverImage({
       sizes={
         sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
       }
-      // No object-cover: the source art is authored at 16:9, the frame below
-      // is aspect-video, and the two ratios matching is what makes this a
-      // stretch-to-fit no-op rather than a crop. A wide focus-area crop
-      // belongs in the Contentful Images API request (fit=fill&f=…), never in
-      // this class.
-      className={cn({
+      // object-cover only on the 4:3 frame: the source art is authored at
+      // 16:9, so a 16:9 frame needs no crop (stretch-to-fit is a no-op at
+      // that ratio) and object-cover there would be a dead class. 4:3 is
+      // genuinely narrower than the source, so it needs the crop — centred,
+      // which is `object-cover`'s default position and matches every card
+      // this ships today. A wide focus-area crop belongs in the Contentful
+      // Images API request (fit=fill&f=…), never in this class.
+      className={cn(ratio === "4:3" && "object-cover", {
         // Hover only, no group-focus-within: the link below is removed from
         // the tab order (see there), so keyboard focus never lands inside this
         // group and the focus variant would be a dead rule claiming otherwise.
@@ -89,13 +99,13 @@ export default async function CoverImage({
   );
   return (
     // The shadow and the keyline below are complementary, not redundant. The
-    // shadow is black at roughly 18% composited, so it separates the image on
-    // the cream page at 1.52:1 and does nothing on the band at 1.06:1. The
-    // keyline is the other half, and it covers the ground the shadow cannot.
-    // Only the post cover crosses onto navy, but the border is unconditional
-    // because one rule beats a post-only exception and a cover on a listing is
-    // one navigation from the same cover on a banded post. On cream the light
-    // keyline is the page's own colour and near-invisible.
+    // shadow is black at roughly 18% composited, so it separates the image at
+    // 1.52:1 against the cream page — most of the job on its own. The keyline
+    // is the other half, and it is unconditional across every cover (ratio
+    // included) rather than a context-specific exception, because a cover is
+    // one navigation from the same cover in a different context and the two
+    // should share an edge treatment. On cream the light keyline is the
+    // page's own colour and near-invisible.
     <div
       className="shadow-lg sm:mx-0"
       style={
@@ -104,10 +114,11 @@ export default async function CoverImage({
     >
       <div
         className={cn(
-          // Every cover is 16:9, the source art's native ratio, on every
-          // breakpoint. Nothing here should crop it — see the note on the
-          // image's className above.
-          "relative overflow-hidden bg-brand-dark/5 border border-cover-keyline aspect-video",
+          // 16:9 (aspect-video) is the source art's own ratio and crops
+          // nothing; 4:3 is narrower and crops the sides via the image's own
+          // object-cover — see the note on its className above.
+          "relative overflow-hidden bg-brand-dark/5 border border-cover-keyline",
+          ratio === "4:3" ? "aspect-[4/3]" : "aspect-video",
           {
             "cursor-pointer": linkHref,
             group: hover,

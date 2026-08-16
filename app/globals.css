@@ -72,20 +72,46 @@
   view-transition-name: site-wordmark;
 }
 
-/* Home names itself in the band, so the bar would repeat it about 60px above.
-   A :has() rather than a usePathname keeps the header a server component and
-   ships no JS for it, which is the same trade the transitions above take.
-
-   display: none rather than visibility: hidden, and that is load-bearing. A
-   hidden element still carries its view-transition-name, so it would collide
-   with the masthead's and invalidate the transition. A display: none element
-   does not participate in one at all.
-
-   The tagline goes with it. Leaving a description in the bar underneath a
-   masthead repeating it is the duplication this exists to remove. Unlayered on
-   purpose, so it outranks the utilities the tagline carries. */
-body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
+/* Home names itself in the band, so the bar would repeat it about 60px above
+   — until the reader scrolls the masthead out of view, at which point the
+   wordmark is the only wayfinding left and app/wordmark-fade.tsx fades it
+   back in. A :has() rather than a usePathname keeps the header a server
+   component and ships no JS for the STATE this rule encodes; the fade is the
+   one enhancement that does need a script, and it degrades to this rule
+   exactly, so scripts-off and pre-hydration readers see the round 2 behaviour
+   (hidden throughout) rather than a broken half-state. */
+body:has(.site-masthead) .site-wordmark {
+  /* No-JS / pre-hydration fallback: hidden outright. */
   display: none;
+
+  /* Disconnects the wordmark from the shared view-transition-name while it
+     lives on home. This is what lets the fade rules below hold a real
+     (invisible) box instead of `display: none` once the observer mounts,
+     without colliding with the masthead's name: a view-transition-name must
+     be carried by at most one generated box per document, opacity: 0 still
+     generates a box the same as display: none does not, and the masthead
+     already claims this name on home. Off home, the general
+     `.site-wordmark` rule above still applies unchanged. */
+  view-transition-name: none;
+}
+
+/* app/wordmark-fade.tsx marks <body> .js-wordmark-observed as soon as its
+   IntersectionObserver mounts, which swaps the no-JS display: none fallback
+   above for an opacity fade, then toggles .wordmark-visible as the masthead
+   crosses the sticky bar's bottom edge. Both are unlayered, like the
+   fallback, so neither loses to the wordmark's own utility classes. */
+body:has(.site-masthead).js-wordmark-observed .site-wordmark {
+  display: inline;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  body:has(.site-masthead).js-wordmark-observed .site-wordmark {
+    transition: none;
+  }
 }
 
 @theme {
@@ -135,17 +161,21 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
      are a heavier, separate role and deliberately do not use this. */
   --color-hairline: #e5e7eb;
 
-  /* The edge around a cover image. A second edge role after dividers and
-     image frames, and its only job is block visibility where a cover sits
-     against surrounding chrome. The post cover is full-bleed directly under
-     the sticky bar, so its top edge needs to read against aubergine even
-     though the rest of the frame sits on cream.
+  /* The edge around every cover image, applied unconditionally in
+     app/cover-image.tsx regardless of ratio or context. Every cover now sits
+     on cream on all sides — even the post hero, which used to be full-bleed
+     directly under the aubergine bar and needed this edge to read against
+     that chrome specifically. That case is gone (round 3 §4), but the token
+     stays: it is still the half of the frame's edge that shadow-lg cannot
+     supply on its own, see below, and nothing about that half was ever
+     specific to the bar.
 
      Why an edge is needed at all when covers already carry shadow-lg. That
      shadow is black at roughly 18% composited, which gives 1.52:1 on
-     --color-brand-bg and 1.06:1 on --color-brand-header. It does the whole job
-     on cream and none of it on aubergine, which is exactly the half this
-     treatment adds.
+     --color-brand-bg. On cream that is most of the job already; the keyline
+     is the same token this repo has always used for the small remainder —
+     kept as one mechanism for every cover rather than a conditional that
+     would need re-deriving if a cover ever sits against chrome again.
 
      Two literal values with a dark override, exactly as hairline does,
      rather than color-mix() over a var(). That derivation reads better and
@@ -187,6 +217,15 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
   );
 
   --spacing-section: 4rem;
+
+  /* The one page measure. Every wide route — home, the six browse indexes,
+     and the post page's header band — renders through max-w-page rather than
+     a bare max-w-5xl, so the width lives in one place instead of the dozen
+     call sites that used to repeat Tailwind's own 64rem (1024px) scale step.
+     75rem (1200px) is the round-3 handoff's own number; nothing here is
+     derived. In rem, not px, for the same user-font-scaling reason every
+     other measure on the site is. */
+  --container-page: 75rem;
 }
 
 /*
@@ -499,16 +538,21 @@ html {
   max-width: none;
 
   /* Bumped from the plugin's 1rem, then again from 1.125rem to 1.1875rem
-     (19px). Literata's x-height is 0.507em against Inter's 0.546em, so it
-     reads about 7% smaller at the same nominal size, and the measure comes
-     from the parent's own width in rem rather than from this value — the
-     article column is max-w-[43.75rem] (700px at the default root; see
-     app/posts/[slug]/page.tsx), same rem-not-px reasoning as everywhere
-     else this measure is set, and at that width 19px lands near 72
-     characters a line. The plugin's line-height is unitless and scales with
-     this, so it needs nothing here. Every size inside this column is
+     (19px) — but only from the md breakpoint up now (see the @media block
+     below this utility). Below md the column is the full viewport width
+     minus the container's own gutters, not the deliberately measured
+     max-w-[43.75rem] the desktop value was tuned against, so 19px there
+     would run long lines rather than short ones; 1.125rem (18px) is the
+     mobile baseline instead. Literata's x-height is 0.507em against Inter's
+     0.546em, so it reads about 7% smaller at the same nominal size, and the
+     measure comes from the parent's own width in rem rather than from this
+     value — the article column is max-w-[43.75rem] (700px at the default
+     root; see app/posts/[slug]/page.tsx), same rem-not-px reasoning as
+     everywhere else this measure is set, and at that width 19px lands near
+     72 characters a line. The plugin's line-height is unitless and scales
+     with this, so it needs nothing here. Every size inside this column is
      em-based for the same reason; do not pin one in rem. */
-  font-size: 1.1875rem;
+  font-size: 1.125rem;
 
   /* The plugin's td padding is 0.5714286em at its own 1rem scale. This block
      raises prose to 1.1875rem for Literata's x-height, and every em inside
@@ -609,16 +653,15 @@ html {
     color: var(--color-brand-dark);
     padding: 0.05em 0.3em;
     border-radius: 0.2rem;
-    /* 0.78em holds code at roughly 14-15px against the prose base (1.125rem
-       on the general max-w-2xl column most prose sits in, 1.1875rem on the
-       post article's own wider column — see app/globals.css's @utility
-       prose and app/posts/[slug]/page.tsx). The blocks in lib/rich-text.tsx
+    /* 0.78em holds code at roughly 14-15px against the prose base — 1.125rem
+       below md, 1.1875rem at md and up, the same responsive pair everywhere
+       .prose renders (see the @utility above). The blocks in lib/rich-text.tsx
        use the same value, so inline and block code match. The value is a
-       budget, not a preference: on the general column, a 640px code content
-       box (672px less p-4) fits about 76 mono columns at 14px, against
-       Prettier's 80-character print width. Raising it to 0.875em costs nine
-       of them, and overflow-x-auto means that scrolls quietly on every
-       sample rather than breaking loudly on one. */
+       budget, not a preference: on the general max-w-2xl column (privacy,
+       about), a 640px code content box (672px less p-4) fits about 76 mono
+       columns at 14px, against Prettier's 80-character print width. Raising
+       it to 0.875em costs nine of them, and overflow-x-auto means that
+       scrolls quietly on every sample rather than breaking loudly on one. */
     font-size: 0.78em;
   }
   & :where(code):not(:where([class~="not-prose"] *))::before {
@@ -626,6 +669,21 @@ html {
   }
   & :where(code):not(:where([class~="not-prose"] *))::after {
     content: none;
+  }
+}
+
+/* The desktop half of @utility prose's responsive base (1.125rem below this,
+   1.1875rem here up). Unlayered, matching every other responsive override in
+   this file that has to outrank a component's own utility classes rather than
+   lose to them on source order within the same layer — @utility itself
+   compiles into Tailwind's utilities layer, so a plain `.prose { }` block
+   here sits above it regardless of where either is written, but stating the
+   breakpoint as a literal min-width (48rem, Tailwind's `md`) rather than an
+   `@utility` variant keeps this one override in the same place as the base
+   value instead of a second definition split across two block types. */
+@media (min-width: 48rem) {
+  .prose {
+    font-size: 1.1875rem;
   }
 }
 
