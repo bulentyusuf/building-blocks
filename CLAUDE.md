@@ -146,9 +146,9 @@ screen — the listing covers in `app/more-stories.tsx` and the thumbnails in
 `app/categories/page.tsx` each carry the arithmetic for their own track. The
 home and post hero covers are already capped in px and need nothing.
 
-### Three border roles, and they are not interchangeable
+### Two border roles, and they are not interchangeable
 
-All three are defined and argued in `app/globals.css`.
+Both are defined and argued in `app/globals.css`.
 
 - **`--color-hairline`** — every rule between list items, cards and panels, and
   the edges a listing draws around itself. It inverts on its own, so never add a
@@ -158,14 +158,12 @@ All three are defined and argued in `app/globals.css`.
   double line. Both files carry the note; the pager looking unattached is not a
   missing border. The listing's **closing** rule is the load-bearing half —
   banded pages drop the opening one via `openRule={false}`, never the other.
-- **`--color-control-edge`** — `app/tag-pill.tsx` only, and **not** a divider
-  despite having borrowed the divider token for a long time. It carries a
-  contrast floor (WCAG 1.4.11), which is why it is two literal values rather
-  than a `color-mix()`. `lib/tag-pill.test.ts` recomputes both ratios from the
-  stylesheet and asserts the tokens stay distinct, so "deduplicating" them fails
-  loudly.
 - **The `border-2` image frames** in `lib/rich-text.tsx` and
   `lib/lightbox-image.tsx` are a heavier role with their own pairing. Leave them.
+
+`--color-control-edge` was a third role, the closed boundary around the tag
+pill's outline. Retired along with the pill itself — see "Tags have their own
+pages" below for the small-caps text that replaced it.
 
 ### One focus indicator, set in `@layer base`
 
@@ -335,7 +333,7 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
   helper**, and they must stay on one helper. It gates three: the glossary, the
   sitemap, and `/tags/[slug]`, which **404s** below it. A test asserts they
   agree.
-- **`MoreStories` takes `visibleTags?: Set<string>`, not a boolean**, so pills
+- **`MoreStories` takes `visibleTags?: Set<string>`, not a boolean**, so tags
   cannot be switched on without answering which tags have a live page. Compute
   the set from **all** posts — category and author pages fetch only their own
   slice, and counting across a slice hides tags the glossary shows.
@@ -345,7 +343,7 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
 - The glossary is `data-pagefind-ignore`: it repeats every post title once per
   tag, so Pagefind would weight the repeats above the posts themselves — same
   reasoning as the table of contents.
-- Pills sit below the article body, not in the `xl`-and-up sidebar where they
+- Tags sit below the article body, not in the `xl`-and-up sidebar where they
   would vanish on the viewports most people read on. They also appear on listing
   cards on the home index and its pages and on category, author and tag pages,
   and on the home hero, which is a listing item in everything but its component
@@ -353,9 +351,14 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
   under that post's own tags and would say the same thing twice in one viewport.
   `/search` renders Pagefind's client-side templates and holds no tag data.
   There is one `TagRow`, exported from `app/more-stories.tsx`; the hero imports
-  it rather than carrying a second pill implementation. It sits **last** on the
-  hero and below the excerpt on a card, which is the same rule and not the same
-  position: a ragged pill count belongs at the foot, and the hero's byline is
+  it rather than carrying a second implementation. Rendered as small-caps text
+  rather than an outlined pill — the former tag-pill component and its
+  dedicated `--color-control-edge` border token are retired, and every caller
+  converted, because the outline added weight without hierarchy at low
+  contrast on every card, every post and every archive row. It sits **last** on
+  the hero and
+  below the excerpt on a card, which is the same rule and not the same
+  position: a ragged tag count belongs at the foot, and the hero's byline is
   below its excerpt where a card's date is above.
 - **Tag a post as part of publishing it.** The first untagged publish is the
   first ragged card.
@@ -475,7 +478,7 @@ utility any more — that class now silently does nothing.
 - **UI** — chrome that must not compete with prose, and this is the whole list:
   the two header nav links and the header tagline; the footer column labels,
   links and legal line; the two table-of-contents labels; the "Explore with AI"
-  label; the tag pill; the count spans in `app/archive/page.tsx` and
+  label; the tag links; the count spans in `app/archive/page.tsx` and
   `app/tags/page.tsx`; and every small uppercase letterspaced label — the error
   eyebrows in `app/error.tsx` and `app/not-found.tsx`, the one in
   `app/author-bio-card.tsx`, the "read more" links on the category and author
@@ -1035,8 +1038,9 @@ each gap has already let a defect through:
 - **`app/a11y.test.tsx`** cannot check `color-contrast` or `target-size`, and
   cannot be made to: both need a layout engine, and jsdom computes no boxes and
   applies no stylesheet, so axe would report a false pass. Contrast is covered
-  instead by `lib/tag-pill.test.ts` recomputing ratios from the stylesheet. A
-  finding that needs real layout needs a browser. Note it runs axe over the real
+  instead by `lib/palette-contrast.test.ts` recomputing ratios from the
+  stylesheet. A finding that needs real layout needs a browser. Note it runs
+  axe over the real
   components inside the real `RootLayout`, and adds a **duplicate
   announcement** check axe does not implement — two links inside `<main>`
   sharing a destination and an accessible name — scoped to `<main>` because the

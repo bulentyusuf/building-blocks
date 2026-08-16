@@ -1,5 +1,6 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import WidePage from "../../wide-page";
 import MoreStories from "../../more-stories";
 import Avatar from "../../avatar";
@@ -14,7 +15,6 @@ import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import AuthorBioCard from "../../author-bio-card";
-import TagPill from "../../tag-pill";
 import { type Crumb } from "../../breadcrumb";
 import {
   SITE_URL,
@@ -300,12 +300,12 @@ export default async function PostPage({
             </div>
             {/* Below the body rather than in the sidebar: the sidebar is
                 xl-and-up only, so tags placed there would vanish on the
-                viewports most people read on. Every pill links into the /tags
+                viewports most people read on. Every tag links into the /tags
                 glossary, and only tags that clear the threshold are rendered —
                 a hidden tag would otherwise link to an anchor that is not on
                 that page.
 
-                The gap below the pills is not set here — it comes from the
+                The gap below the tags is not set here — it comes from the
                 author block's top margin, which drops to mt-6 when tags are
                 present so both sides of the band are 24px. Changing pt-6 here
                 without changing that leaves the row lopsided. */}
@@ -314,16 +314,25 @@ export default async function PostPage({
                 aria-label="Tags"
                 className="mt-12 border-t border-hairline pt-6"
               >
-                {/* The label is sentence case and unstyled while the tags are
-                    bordered, so "Tagged" cannot be mistaken for a third tag.
-                    All three were previously uppercase muted text, which made
-                    the label look like one of them and gave the links no
-                    affordance at all. */}
-                <ul className="flex flex-wrap items-center gap-x-2 gap-y-2">
+                {/* The label is sentence case and unstyled; the tags are
+                    small-caps, bold and letterspaced. An outlined pill shape
+                    once carried that distinction instead — a bare uppercase
+                    tag list was tried before that and read as a third tag
+                    beside "Tagged" — but the current treatment sits at a
+                    different scale from the label as well as a different
+                    case (10px vs text-sm) and stays paired with the same
+                    hover affordance every other converted small-caps link on
+                    the site carries. */}
+                <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <li className="mr-2 text-sm text-brand-muted">Tagged</li>
                   {tags.map((tag) => (
                     <li key={tag.slug}>
-                      <TagPill tag={tag} />
+                      <Link
+                        href={`/tags/${tag.slug}`}
+                        className="font-ui text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+                      >
+                        {tag.name}
+                      </Link>
                     </li>
                   ))}
                 </ul>

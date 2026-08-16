@@ -20,9 +20,7 @@ export default async function SearchPage() {
   // groupPostsByTag already carries the visibility threshold and the A–Z
   // sort the glossary uses — reused here for its tag list alone, so a tag
   // linked from the empty state can never be one /tags/[slug] 404s on.
-  const tags = groupPostsByTag(await getAllPosts(isEnabled)).map(
-    (g) => g.tag,
-  );
+  const tags = groupPostsByTag(await getAllPosts(isEnabled)).map((g) => g.tag);
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Search" }];
 

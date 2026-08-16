@@ -133,11 +133,12 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
      two need different amounts of lift: brand-header rises to #2E4A9E so a
      52px bar separates from a near-black page, and a 200px block needs less.
      Not derived from it with color-mix either — see the note on
-     --color-control-edge for why a hand-carried literal beats a color-mix over
-     a var() in this file. The name says what it is rather than what it is
-     derived from, because palette work here is done across the whole spectrum
-     at once and a name encoding a derivation would promise something nothing
-     enforces. Where a relationship does need holding, a test holds it.
+     --color-cover-keyline for why a hand-carried literal beats a color-mix
+     over a var() in this file. The name says what it is rather than what it
+     is derived from, because palette work here is done across the whole
+     spectrum at once and a name encoding a derivation would promise
+     something nothing enforces. Where a relationship does need holding, a
+     test holds it.
 
      White holds at 16.60:1 on the light value and 12.61:1 on the dark one. */
   --color-brand-band: #0f1c42;
@@ -149,35 +150,13 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
   /* Divider hairline. One token for every rule between list items, cards, and
      panels, so the value inverts with the scheme instead of each component
      carrying its own dark: variant. Frame borders (the border-2 around images)
-     are a heavier, separate role and deliberately do not use this. Neither
-     does a control boundary — see --color-control-edge below. */
+     are a heavier, separate role and deliberately do not use this. */
   --color-hairline: #e5e7eb;
 
-  /* The closed boundary around an interactive control, currently only the tag
-     pills. A third role alongside dividers and image frames, and not a divider
-     despite looking like one: a rule BETWEEN things is decorative and exempt
-     from contrast rules, whereas this edge is the only thing identifying the
-     control. Pill text is brand-muted, the same colour as the dates and meta
-     beside it, so with the edge invisible a pill is indistinguishable from
-     static text. On --color-hairline it sat at 1.14:1 (light) and 1.47:1
-     (dark); at 70% of the muted ink it clears WCAG 1.4.11's 3:1 in both
-     (3.15:1 and 4.37:1), which lib/tag-pill.test.ts asserts against these very
-     tokens.
-
-     Two literal values with a dark override, exactly as hairline does, rather
-     than color-mix() over var(--color-brand-muted). That derivation reads
-     better and compiles worse: Tailwind flattens a var() inside color-mix()
-     into an @supports (color: color-mix(in lab, red, red)) block with a
-     LITERAL light-mode fallback outside it, so any engine without color-mix
-     would paint the light edge on the dark page and lose the contrast this
-     token exists for. These are brand-muted at 70% in each scheme; the test
-     recomputes them, so retuning brand-muted without following here fails. */
-  --color-control-edge: rgb(107 90 82 / 0.7);
-
-  /* The edge around a cover image. A fourth edge role after dividers, image
-     frames and control boundaries, and its only job is block visibility where a
-     cover sits on the band. The post cover crosses the band's bottom edge, so
-     one image has navy behind its top and cream behind the rest.
+  /* The edge around a cover image. A second edge role after dividers and
+     image frames, and its only job is block visibility where a cover sits
+     on the band. The post cover crosses the band's bottom edge, so one image
+     has navy behind its top and cream behind the rest.
 
      Why an edge is needed at all when covers already carry shadow-lg. That
      shadow is black at roughly 18% composited, which gives 1.52:1 on
@@ -199,8 +178,13 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
      same on either ground is the property worth having for an element that
      straddles a seam.
 
-     Two literal values rather than color-mix() over a var(), for the reason set
-     out on --color-control-edge above. */
+     Two literal values with a dark override, exactly as hairline does,
+     rather than color-mix() over a var(). That derivation reads better and
+     compiles worse: Tailwind flattens a var() inside color-mix() into an
+     @supports (color: color-mix(in lab, red, red)) block with a LITERAL
+     light-mode fallback outside it, so any engine without color-mix support
+     would paint the light edge on the dark page and lose the contrast this
+     token exists for. */
   --color-cover-keyline: rgb(250 245 241 / 0.75);
 
   /* Always-dark surface, in BOTH schemes. brand-dark doubles as body ink and,
@@ -274,10 +258,6 @@ body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
     /* Warm off-white at low alpha, matching the ink. The light #e5e7eb reads
        at ~15:1 on the #17110F page and glares. */
     --color-hairline: rgb(242 234 228 / 0.15);
-
-    /* brand-muted's dark value (#B3A49C) at the same 70%. Carried by hand for
-       the reason set out on the light value above. */
-    --color-control-edge: rgb(179 164 156 / 0.7);
 
     /* The ink's own colour at 18%, which lands at 1.63:1 on both the band and
        the page. The 12% this replaced read 1.38:1 and 1.34:1, both under the

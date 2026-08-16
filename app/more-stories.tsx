@@ -1,7 +1,6 @@
 import Link from "next/link";
 import DateComponent from "./date";
 import CoverImage from "./cover-image";
-import TagPill from "./tag-pill";
 import type { CardPost, CoverImage as CoverImageType, Tag } from "@/lib/types";
 import { createCoverNamer } from "@/lib/view-transition-name";
 import { postTags } from "@/lib/tags";
@@ -19,11 +18,11 @@ type Variant = "grid" | "list";
 //
 // aria-label rather than a visible "Tagged" label. The post page carries one
 // because it appears once there; repeated down a listing it is five identical
-// labels of pure noise, and the pill shape already reads as a tag. Screen
-// readers still need the row named, hence the label — without it this is an
-// unexplained list of links on every card.
+// labels of pure noise, and the small-caps treatment already reads as a tag.
+// Screen readers still need the row named, hence the label — without it this
+// is an unexplained list of links on every card.
 // Exported for the home hero, which is a listing item in everything but its
-// component. One pill implementation means the pill changes in one place.
+// component. One implementation means the tag treatment changes in one place.
 export function TagRow({
   tags,
   className,
@@ -34,10 +33,18 @@ export function TagRow({
   if (tags.length === 0) return null;
 
   return (
-    <ul aria-label="Tags" className={`flex flex-wrap gap-2 ${className}`}>
+    <ul
+      aria-label="Tags"
+      className={`flex flex-wrap gap-x-4 gap-y-1.5 ${className}`}
+    >
       {tags.map((tag) => (
         <li key={tag.slug}>
-          <TagPill tag={tag} size="compact" />
+          <Link
+            href={`/tags/${tag.slug}`}
+            className="font-ui text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+          >
+            {tag.name}
+          </Link>
         </li>
       ))}
     </ul>
