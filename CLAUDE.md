@@ -140,11 +140,12 @@ pending → instant/fade machine, and `lib/contentful-image.test.tsx` asserts bo
 halves. Do not collapse the branch back to one initial state.
 
 **A `sizes` value must stop growing where its container does.** `Container` is
-`max-w-5xl` with `px-5`, so content tops out at 984px, and a bare `vw` clause
-past that point buys a derivative one or two steps larger than anything on
-screen — the listing covers in `app/more-stories.tsx` and the thumbnails in
-`app/categories/page.tsx` each carry the arithmetic for their own track. The
-home and post hero covers are already capped in px and need nothing.
+`max-w-page` (75rem/1200px) with `px-5`, so content tops out at 1160px, and a
+bare `vw` clause past that point buys a derivative one or two steps larger than
+anything on screen — the listing covers in `app/more-stories.tsx`, the 4:3
+cards in `app/story-card.tsx` and the thumbnails in `app/categories/page.tsx`
+each carry the arithmetic for their own track. The home lead plate and the
+post hero cover are already capped in px and need nothing.
 
 ### Two border roles, and they are not interchangeable
 
@@ -230,12 +231,12 @@ accessibility audit; do not restore any. Each file carries its reasoning.
 
 ### Breadcrumbs, and the one page without them
 
-- **Constrained to their page's own measure.** `Container` is `max-w-5xl`. Pages
-  whose content is also `max-w-5xl` render `<Breadcrumb>` unwrapped; pages in a
-  `max-w-2xl` column wrap it in `<div className="mx-auto max-w-2xl">`, or it
-  starts 176px left of the heading it labels. Any new narrow page needs the
-  wrapper — same split as "One axis, and it is the header measure" below, which
-  is where the assignment lives.
+- **Constrained to their page's own measure.** `Container` is `max-w-page`.
+  Pages whose content is also `max-w-page` render `<Breadcrumb>` unwrapped;
+  pages in a `max-w-2xl` column wrap it in `<div className="mx-auto max-w-2xl">`,
+  or it starts 264px left of the heading it labels. Any new narrow page needs
+  the wrapper — same split as "One axis, and it is the header measure" below,
+  which is where the assignment lives.
 - **On `/search` the wrapper sits before the `<section>`**, not inside it:
   `.search-empty` must stay the immediate next sibling of `.pagefind-scope` for
   the emblem's `:has()` rule to fire.
@@ -523,15 +524,19 @@ resizes on any body-face swap — Inter's zero is 0.6309em against Literata's
 
 ### One axis, and it is the header measure
 
-Whether a page's breadcrumb and `h1` sit at `max-w-5xl` or inside a
+Whether a page's breadcrumb and `h1` sit at `max-w-page` or inside a
 `max-w-2xl` column decides the breadcrumb wrapper and the `h1` treatment. A
 route is wide or narrow and everything follows. There is no second question
 and no route that can sit half in each. The band this axis used to also
 decide is gone (see above) — the axis survives it, because the measure was
 always the thing that changes the shape of the page, not the colour behind it.
 
-**Wide.** Header at `max-w-5xl`, `<Breadcrumb>` unwrapped where the route has
-one at all.
+**Wide.** Header at `max-w-page` (75rem/1200px, `--container-page` in
+`app/globals.css`), `<Breadcrumb>` unwrapped where the route has one at all.
+`max-w-page` replaced a bare `max-w-5xl` (1024px) sitewide in round 3, once a
+missing container size in round 2's own handoff let every wide route render
+104px narrower than the design was drawn against — the type scale did not
+change, only the measure it sits in.
 
 Eleven of the thirteen wide routes share one `h1` ramp,
 `text-4xl leading-tight md:text-5xl lg:text-6xl`, via `app/wide-page.tsx`: the
@@ -539,8 +544,10 @@ four section fronts, the six taxonomy `[slug]` routes (paginated and not), and
 the index listing at `/page/[page]`.
 
 `/` and `/posts/[slug]` are wide but bespoke, each sized for what it actually
-is rather than the shared ramp: home's 96px masthead and the post page's 72px
-headline. Both still sit at the `max-w-5xl` measure and neither goes through
+is rather than the shared ramp: home's 96px masthead and the post page's
+headline, `clamp(2.125rem,8vw,4rem)` (34px mobile floor, 64px desktop
+ceiling — round 2 shipped a fixed 72px that simply overflowed a 390px
+viewport). Both still sit at the `max-w-page` measure and neither goes through
 `WidePage` — home has nothing above it to wrap in a `<Breadcrumb>`, and the
 post's crumb sits above its own header, not inside the shared shell.
 
@@ -551,15 +558,18 @@ post's crumb sits above its own header, not inside the shared shell.
 
 A 6xl heading in a 42rem measure looks enormous despite carrying identical
 classes, and that mismatch is the tell that a page took the wrong treatment. An
-unwrapped breadcrumb on a narrow page starts 176px left of the heading it
+unwrapped breadcrumb on a narrow page starts 264px left of the heading it
 labels, which is the same tell from the other end. Any new page picks its
 treatment from its own measure, not from the nearest existing h1.
 
 **The measure is the header's, not the prose's.** A post's body narrows to
-`max-w-[43.75rem]` inside an `xl:grid`, but its breadcrumb, `h1` and cover sit
-above that grid at the article's full `max-w-5xl`, so a post is a wide page
-whose body happens to be narrow. `/search` is the mirror case: it browses
-posts by function and is narrow by shape, and shape decides.
+`max-w-[43.75rem]` inside an `xl:grid` (sidebar `13.75rem`/220px, gap
+`3.75rem`/60px), but its breadcrumb, `h1`, standfirst and cover sit above that
+grid at the article's full `max-w-page`, so a post is a wide page whose body
+happens to be narrow. The cover is part of that header block now, not a
+full-bleed element outside `Container` — see "The masthead band is retired"
+below for why it moved. `/search` is the mirror case: it browses posts by
+function and is narrow by shape, and shape decides.
 
 **Home's masthead is its `h1`.** `SITE_TITLE` at 96px with `SITE_DESCRIPTION`
 as the standfirst beneath it, so home matches the ordinary `HEADING` and
@@ -576,13 +586,15 @@ the base-layer rule in `app/globals.css` sets `font-weight: 700` on
 700 of the headlines under it. **Do not add a weight class to fix that** — the
 element being a heading is the mechanism.
 
-**`MoreStories` sets its card titles to `h3` when it renders a section heading
-and `h2` when it does not.** Home no longer calls `MoreStories` at all — its
-plates are built directly in `app/page.tsx` — so today this only matters for
-the post page's Read Next teaser, whose `h3` cards sit correctly one level
-under the post's own `h2`s. Adding a heading back to a route that currently
-passes none would silently re-level every card on it, and removing one does
-the same in reverse; keep it in mind if `MoreStories` gains a new caller.
+**`app/story-card.tsx`'s `StoryCard` takes an explicit `as` prop (`"h2"` or
+`"h3"`) rather than deriving it from a heading, unlike `MoreStories`.** Home's
+two-up plates pass nothing (default `"h2"`, siblings of the masthead's plate
+list); the post page's Read Next teaser passes `"h3"`, one level under its own
+"Read Next" `h2`. The two call sites need different levels for different
+reasons — home has no section heading above its plates, Read Next does — so
+the level is each caller's own decision rather than something the card infers.
+`MoreStories`' own list cards still set `h3` under a heading and `h2` without
+one, for its remaining callers (the six taxonomy listings and the index).
 
 All sixteen routes are still on the axis.
 
@@ -595,7 +607,7 @@ metadata slot with a date just because something else was removed from it —
 that answers a question nobody asked at that spot.
 
 Home's plates and the post page's Read Next teaser (`app/page.tsx`,
-`app/more-stories.tsx`) carry a standfirst, because the reader is deciding
+`app/story-card.tsx`) carry a standfirst, because the reader is deciding
 whether to read the post. Home's plates also carry a date, because a
 reader arriving at the front page wants to know the blog is alive — the one
 place both apply at once. The "Earlier" list on `/page/[page]`, and the
@@ -633,7 +645,7 @@ never that.
 
 What `WidePage` does now: a breadcrumb (`app/breadcrumb.tsx`, one tone, since
 there is no second surface to vary it for), then the route's own header
-content at the same `max-w-5xl` measure `Container` uses everywhere, then the
+content at the same `max-w-page` measure `Container` uses everywhere, then the
 route's content. `contentOwnsLeading` still decides how much gap sits between
 the header and the first thing below it — `mb-8` for a ruled listing (whose
 own item padding, `py-10 md:py-12`, does the rest of the job) and `mb-14` for
@@ -652,9 +664,186 @@ Two mechanisms carried over unchanged and still matter:
   override can only ever _increase_ a value, which is why its top inset is the
   `topPad` prop and not a class. `WidePage` takes the default.
 
-`--color-cover-keyline` and the palette guards it fed now describe the post
-cover's edge against the sticky bar rather than a band it used to cross — see
-the post page section below and `lib/palette-contrast.test.ts`.
+`--color-cover-keyline` no longer describes an edge against the sticky bar.
+Round 2 made it describe the post cover's edge against the bar, since that
+cover was full-bleed directly under it; round 3 moved the post cover inside
+`Container`, below the standfirst, so it sits on cream on all four sides like
+every other cover on the site (see "The post cover is contained" below). The
+token stays — every `CoverImage` still carries the border unconditionally,
+regardless of ratio (see "Two cover ratios" below) — but the bar-specific
+contrast pairing `lib/palette-contrast.test.ts` once held is gone with the
+case it guarded; do not re-add a keyline-vs-bar test unless a cover actually
+sits against the bar again.
+
+### Two cover ratios: crops for browsing, the full frame for reading
+
+`app/cover-image.tsx`'s `ratio` prop (`"16:9"` default, or `"4:3"`) is the
+whole mechanism. Source art is authored at 16:9, so `"16:9"` is a
+stretch-to-fit no-op — nothing crops it — and `"4:3"` crops the sides via
+`object-cover` on the image itself, not a Contentful Images API transform (see
+"Image loader passes only `w`, `q`, `fm=webp`" above, unchanged by this).
+
+- **16:9** — the home lead plate, the post hero. The two places a cover reads
+  as the subject of the page rather than a way to recognise a card in a list.
+- **4:3** — every other cover on the site: home's two-up plates, the post
+  page's Read Next cards (both `app/story-card.tsx`'s `StoryCard`), and every
+  browse-page card (`app/more-stories.tsx`'s list-variant `PostPreview`, the
+  categories index thumbnail).
+
+Passing neither prop keeps a caller written before this existed rendering
+exactly as it did — `ratio` defaults to `"16:9"`, the site's original and only
+ratio before round 3. A new caller should pass `ratio="4:3"` explicitly if it
+is a card in a list; the default favours not silently cropping art nobody
+asked to have cropped.
+
+### The post cover is contained, not full-bleed
+
+Round 2 shipped the post hero full-bleed, directly under the sticky bar,
+above the breadcrumb — the cover set the header's own height. Round 3 found it
+too dominant there and moved it inside `Container`, at the article's own
+`max-w-page` measure, below the title and standfirst rather than above the
+breadcrumb. Order at the top of `app/posts/[slug]/page.tsx` now: breadcrumb,
+`h1`, standfirst, cover, then the hairline into the article grid. Do not move
+it back above the breadcrumb — that reintroduces the case
+`--color-cover-keyline`'s bar-contrast test used to guard, which round 3
+deliberately retired (see above).
+
+### `StoryCard` is the one 4:3 card, shared by two callers
+
+`app/story-card.tsx` exports `StoryCard` (cover, 30px title, 17px Literata
+standfirst, `CardMeta`'s date-then-category line) and `CardMeta` itself,
+factored out because home's two-up plates and the post page's Read Next used
+to be two components that had quietly drifted apart — a 32px title on one, a
+27px title with no meta at all on the other. Round 3 §5 replaced both with
+this one card:
+
+- `app/page.tsx`'s `Page` renders it directly for the two non-lead plates
+  (the lead is `LeadPlate`, its own component in the same file — the one
+  size distinction the design keeps, see "One axis" above).
+- `app/posts/[slug]/page.tsx`'s Read Next section renders it directly too, in
+  its own `Container` rather than through `MoreStories` — `MoreStories` is
+  list-only now (see below).
+
+`CardPost` (`lib/types.ts`) gained a `category` field for this — `CardMeta`
+needs it and `CARD_GRAPHQL_FIELDS` (`lib/api.ts`) now selects it, a single
+linked name and slug, as cheap as the `tagsCollection` already riding along.
+Every `CardPost`-typed fetch carries it now; nothing reads it except
+`StoryCard`.
+
+**`MoreStories` lost its grid variant.** Read Next was its only caller, and
+with `StoryCard` replacing that usage, `app/more-stories.tsx` dropped the
+`variant` prop, the grid branch of `PostPreview`, and the `ruled` prop (no
+remaining caller ever passed it `false`) entirely — it renders one shape now,
+the bordered list every taxonomy listing and the index use. Do not add a
+`variant` back for a future grid caller; build it as its own component the way
+`StoryCard` is, or extend `StoryCard` itself if the shape is genuinely the
+same card.
+
+### Wordmark fade-in, once the masthead scrolls out of view
+
+`app/wordmark-fade.tsx` is the one client component this design needed.
+Round 2 hid the bar's wordmark on home outright, for the whole visit, via the
+`body:has(.site-masthead) .site-wordmark` rule in `app/globals.css`. Round 3
+keeps that rule as the no-JS / pre-hydration fallback and layers a fade on top
+of it: an `IntersectionObserver` on the masthead marks `<body>`
+`.js-wordmark-observed` once it mounts (swapping the fallback's `display: none`
+for an opacity transition) and toggles `.wordmark-visible` as the masthead
+crosses the bar.
+
+**The fallback rule also sets `view-transition-name: none` on the wordmark
+while it lives on home.** This is load-bearing, not incidental: the spec
+requires a `view-transition-name` to be carried by at most one generated box
+per document, `opacity: 0` still generates a box the same as `display: none`
+does not, and the masthead already claims `site-wordmark` on home (see "Cross
+document view transitions" above). Without the override, the moment the
+observer gives the wordmark a real box to fade, it would collide with the
+masthead's name and the pairing that mechanism was built to guarantee would
+break exactly on the page it matters most. Off home, the general
+`.site-wordmark` rule keeps the name, unaffected.
+
+Do not reach for a scroll listener or a second observer to replace this — one
+`IntersectionObserver`, `rootMargin` accounting for the bar's height, is the
+whole mechanism, and `prefers-reduced-motion` is handled in CSS (the
+transition itself is removed; the state change still happens instantly).
+
+### Mobile fixes: fluid headline clamps, a responsive prose base, a disclosure nav
+
+Four round-3 fixes, all at the same `md` breakpoint the rest of the responsive
+chrome uses:
+
+- **The post `h1` and in-body `h2` are `clamp()`, not fixed sizes.** Round 2's
+  fixed 72px `h1` overflowed a 390px viewport outright. Both clamps
+  (`clamp(2.125rem,8vw,4rem)` on the `h1`, `clamp(1.625rem,6vw,2.125rem)` on
+  `prose-h2`) express their floor and ceiling in rem — the same
+  user-font-scaling reason every fixed size on this site is in rem, not px —
+  with `vw` carrying only the fluid middle, which a rem value alone cannot do.
+  Both also carry `break-words` (`overflow-wrap`) alongside the existing
+  `text-pretty` (`text-wrap`): a single long word can still overflow a narrow
+  viewport regardless of font size, which the wrap properties catch and the
+  clamp alone does not.
+- **`.prose`'s base size is responsive**: 1.125rem (18px) below `md`,
+  1.1875rem (19px) at `md` and up, the second declared in an unlayered
+  `@media (min-width: 48rem) { .prose { … } }` block right after the
+  `@utility prose` definition in `app/globals.css` — unlayered so it outranks
+  `@utility`'s own generated (layered) declaration regardless of source order,
+  the same mechanism the `.sidenote-*` responsive rules use. Every size inside
+  `.prose` is `em`-based off this, so the whole column (including inline and
+  block code, both pinned in `em` against the prose base) scales with it
+  automatically; nothing else needed touching.
+- **The sticky bar has a mobile-only nav disclosure.** Below `md`, the four
+  section links (`app/layout.tsx`) collapse from a row into a native
+  `<details>`/`<summary>` hamburger — no client JS, same pattern
+  `app/table-of-contents.tsx`'s `.toc-details` already uses for its own mobile
+  collapse. The search icon and the hamburger's touch targets are both 44px
+  (`p-3 -m-3`: the padding grows the hit area, the matching negative margin
+  cancels its footprint in the row's own height calculation) — WCAG 2.2
+  2.5.8, previously unmet at `p-2 -m-2` (36px) and invisible to
+  `app/a11y.test.tsx`, which cannot check `target-size` (see "What the guards
+  catch" below).
+- **The bar itself is two heights**: 48px below `sm`, 52px at `sm` and up
+  (`py-2.5 sm:py-3 min-h-12 sm:min-h-13`), each still derived the same way the
+  original single height was — that breakpoint's `py` plus the wordmark's
+  fixed 28px `leading-7` line box. Recompute both pairs, not one, if either
+  `py` or the line box changes.
+
+Avatars are responsive on the same axis: `app/avatar.tsx`'s sidebar byline is
+34px below `md`, 38px at `md` and up (a single inline "Name · Date" row below
+`md`, the existing two-line stacked name-then-date layout above it — `flex …
+md:block` on the wrapper, the mobile row's own middot separator hidden at
+`md` since the stacked layout needs none); `app/author-bio-card.tsx`'s portrait
+is 48px below `md`, 56px at `md` and up. Both keep their `width`/`height`
+props at the larger, desktop figure regardless of breakpoint — those size
+Next/Image's request, not the rendered box, which each wrapper's own
+`h-`/`w-` utilities control.
+
+### Tags glossary: a rule marks a section boundary, never a row boundary
+
+`/tags` used to close each tag's section with a hairline below it
+(`border-b`), which read as a break between POSTS — the eye met the rule
+right after the last post row of a group, not before the next tag name, so
+the page looked divided in the wrong places. Round 3 §9 moved the rule: one
+2px `border-brand-dark` rule sits **above** each tag name instead, `mt-11`
+(44px) between groups except the first (whose gap above already comes from
+`WidePage`'s own header margin), and post rows within a group are separated by
+plain 14px space (`space-y-[14px]`) with no rule at all, including the mobile
+`border-t` that used to sit above the post list itself. The same principle
+generalises: **a rule belongs at a section boundary, and a listing that wants
+to mark one should reach for the section's own edge, not a divider between the
+rows inside it.** `/tags` is the only glossary-style listing on the site
+today; apply this the next time one exists rather than reusing the row-hairline
+pattern `app/archive/page.tsx` and the taxonomy listings use, which is correct
+for THEM — a chronological or filtered list, not a glossary of terms.
+
+### The index listing's page size grew, and one constant governs it everywhere
+
+`POSTS_PER_PAGE` (`lib/constants.ts`) went from 5 to 10 in round 3, because
+home's "Earlier" list grew from two rows to seven (round 3 §3) and the three
+plates above it plus those seven is what page 1 needs to hold for
+`/page/[page]`'s own slicing (`lib/paginate.ts`'s `pageItems`) to stay in step
+with it — the same constant sizes every taxonomy listing's pages too, by the
+comment's own original design ("every page holds the same number of posts"),
+so category, tag and author pages now show ten posts per page rather than
+five as a direct, intended consequence of the one shared value.
 
 ### The taxonomy listings and the index listing share one shell
 

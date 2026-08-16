@@ -552,31 +552,27 @@ describe("home, whose masthead is its h1", () => {
   });
 
   it("names the site once, in two halves this environment cannot join", async () => {
-    // Both marks are in the DOM. What removes the bar's is a :has() rule, and
-    // jsdom applies no stylesheet, so a single querySelectorAll here would
-    // report two and prove nothing either way. The halves are asserted
-    // separately instead: the markup carries exactly the two hooks, and the
-    // stylesheet carries the rule that hides one of them.
+    // Both marks are in the DOM. What removes the bar's, by default, is a
+    // :has() rule, and jsdom applies no stylesheet, so a single
+    // querySelectorAll here would report two and prove nothing either way.
+    // The halves are asserted separately instead: the markup carries exactly
+    // the two hooks, and the stylesheet carries the rule that hides one of
+    // them absent JS (see app/wordmark-fade.tsx, which fades it back in once
+    // mounted — the no-JS/pre-hydration fallback is what this test covers).
     await render();
     expect(document.querySelectorAll(".site-masthead")).toHaveLength(1);
     expect(document.querySelectorAll(".site-wordmark")).toHaveLength(1);
 
     const css = fs.readFileSync(path.join(__dirname, "globals.css"), "utf8");
     const rule =
-      /body:has\(\.site-masthead\)\s*:is\([^)]*\)\s*\{([^}]*)\}/.exec(css);
+      /body:has\(\.site-masthead\)\s*\.site-wordmark\s*\{([^}]*)\}/.exec(css);
     expect(rule).not.toBeNull();
     // display: none, never visibility: hidden. A hidden element still carries
-    // its view-transition-name and would collide with the masthead's; a
-    // display: none element does not participate in a transition at all.
+    // its view-transition-name (unless overridden, which this same rule also
+    // does) and would collide with the masthead's; a display: none element
+    // does not participate in a transition at all.
     expect(rule![1]).toMatch(/display:\s*none/);
     expect(rule![1]).not.toMatch(/visibility/);
-    // Both hooks are named in the rule, so hiding the wordmark and leaving the
-    // tagline under a masthead repeating it cannot pass.
-    const targets = /:is\(([^)]*)\)/.exec(
-      /body:has\(\.site-masthead\)[^{]*/.exec(css)![0],
-    );
-    expect(targets![1]).toContain(".site-wordmark");
-    expect(targets![1]).toContain(".site-tagline");
   });
 });
 

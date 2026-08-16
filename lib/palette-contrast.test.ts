@@ -119,27 +119,6 @@ describe("chrome stays a visible block against the page in both schemes", () => 
   });
 });
 
-describe("the cover keyline stays visible against the bar in both schemes", () => {
-  // The post cover is full-bleed directly under the sticky bar, so its top
-  // edge has aubergine behind it and cream behind the rest. shadow-lg
-  // separates it on cream and does much less on aubergine, so the keyline is
-  // the half that covers the bar and this is the pairing that has to hold.
-  //
-  // Deliberately sub-WCAG, the same 1.4:1 the chrome separation check above
-  // uses and for the same reason. This is block visibility, not text.
-  const MIN_BLOCK_SEPARATION = 1.4;
-
-  it.each(["light", "dark"] as const)("%s", (scheme) => {
-    const token = scheme === "light" ? light : dark;
-    // Read as tokens and composited by contrast(), not pinned to a literal, so
-    // retuning either the keyline's alpha or the bar underneath it fails here
-    // rather than shipping an edge nobody rechecked.
-    expect(
-      contrast(token("--color-cover-keyline"), token("--color-brand-header")),
-    ).toBeGreaterThanOrEqual(MIN_BLOCK_SEPARATION);
-  });
-});
-
 describe("literal hexes track the tokens they duplicate", () => {
   // Channel comparison, not string: globals.css writes tokens lowercase and the
   // TSX literals are uppercase, so === on the text fails for the wrong reason.

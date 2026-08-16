@@ -25,15 +25,11 @@ describe("a banded listing keeps its item padding", () => {
 
   it("still sets a symmetric item padding to be the rhythm", () => {
     // Non-vacuous: the check above passes trivially if the padding is gone.
-    //
-    // Matched on an article carrying py-10 specifically, not on every classed
-    // article. The grid variant's article carries a class list of its own now
-    // too (flex h-full flex-col, so its tag row can sit on mt-auto), but no
-    // padding, so a bare className match would count two and the assertion
-    // below would need loosening to fit — which is exactly the kind of guard
-    // that stops guarding. The list item is still the only article whose
-    // padding IS the rhythm, and the count assertion keeps that true rather
-    // than assumed.
+    // MoreStories renders one shape now — the grid variant it once also had
+    // is gone (round 3 §5 replaced its only caller, the post page's Read
+    // Next, with app/story-card.tsx's StoryCard) — so a plain count of one is
+    // enough; it no longer has to distinguish this article from a second,
+    // unpadded one.
     const items = [
       ...moreStories.matchAll(/<article className="([^"]*py-10[^"]*)"/g),
     ];
@@ -41,28 +37,10 @@ describe("a banded listing keeps its item padding", () => {
     expect(items[0][1]).toMatch(/py-10[^"]*md:py-12/);
   });
 
-  it("gives a ruled grid that same inset in place of item padding", () => {
-    // The other half of the rhythm, and nothing else asserts it. A grid cell
-    // has no padding of its own, so the container supplies it, and only when
-    // the run is ruled. Without it the opening rule on home sits flush against
-    // the first row of covers while every list on the site keeps a full item's
-    // padding under its own hairline.
-    const grid = /`grid grid-cols-1[\s\S]*?`;/.exec(moreStories);
-    expect(grid).not.toBeNull();
-    expect(grid![0]).toMatch(/py-10 md:py-12/);
-  });
-
   it("drops only the rule when openRule is false", () => {
-    // Both branches, not whichever exec happened to find first. The list and
-    // the grid each build this ternary now, so a single exec checked one and
-    // left the other free to drift to border-t with nothing noticing.
-    const ternaries = [
-      ...moreStories.matchAll(/openRule \? "border-y" : "([^"]*)"/g),
-    ];
-    expect(ternaries).toHaveLength(2);
-    for (const ternary of ternaries) {
-      expect(ternary[1].trim()).toBe("border-b");
-    }
+    const ternary = /openRule \? "border-y" : "([^"]*)"/.exec(moreStories);
+    expect(ternary).not.toBeNull();
+    expect(ternary![1].trim()).toBe("border-b");
   });
 });
 
@@ -88,42 +66,57 @@ describe("the sticky bar's height does not depend on its contents", () => {
   // row, so on home — where a :has() rule hides it — the bar rendered 8px
   // shorter and the chrome resized as the reader navigated. Nothing rendered
   // wrongly, which is why only a measurement finds it.
+  //
+  // Two pairs now, not one: round 3 gave the bar a shorter mobile height
+  // (48px) alongside the original desktop one (52px), each still derived from
+  // its own py plus the wordmark's fixed 28px line box.
   const layout = read("app/layout.tsx");
 
-  it("pins a minimum height on the bar's inner row", () => {
-    expect(layout).toMatch(/px-5 py-3 min-h-13\b/);
+  it("pins a minimum height on the bar's inner row, mobile and desktop", () => {
+    expect(layout).toMatch(/px-5 py-2\.5 sm:py-3 min-h-12 sm:min-h-13\b/);
   });
 
-  it("that minimum is the padding plus the wordmark's line box", () => {
-    // Derivation, not a magic number: py-3 is 24px and the text-lg wordmark
-    // sets a 28px line box, so the row is 52px with or without it. Recompute
-    // this if either moves.
-    const pad = /py-(\d+) min-h-/.exec(layout);
-    const min = /min-h-(\d+)\b/.exec(layout);
-    expect(pad).not.toBeNull();
-    expect(min).not.toBeNull();
+  it("both minimums are their own padding plus the wordmark's line box", () => {
+    // Derivation, not a magic number: every Tailwind spacing step is
+    // 0.25rem (4px) per unit, fractional steps (py-2.5) included, so one
+    // toPx below covers both pairs. Recompute if either pair's py, the
+    // wordmark's leading-7, or the breakpoint changes.
     const WORDMARK_LINE_BOX_PX = 28;
-    expect(Number(min![1]) * 4).toBe(
-      Number(pad![1]) * 4 * 2 + WORDMARK_LINE_BOX_PX,
+    const toPx = (n: string) => Number(n) * 4;
+
+    const mobilePad = /\bpy-([\d.]+) /.exec(layout);
+    const mobileMin = /\bmin-h-([\d.]+)\b/.exec(layout);
+    expect(mobilePad).not.toBeNull();
+    expect(mobileMin).not.toBeNull();
+    expect(toPx(mobileMin![1])).toBe(
+      toPx(mobilePad![1]) * 2 + WORDMARK_LINE_BOX_PX,
+    );
+
+    const desktopPad = /\bsm:py-([\d.]+)\b/.exec(layout);
+    const desktopMin = /\bsm:min-h-([\d.]+)\b/.exec(layout);
+    expect(desktopPad).not.toBeNull();
+    expect(desktopMin).not.toBeNull();
+    expect(toPx(desktopMin![1])).toBe(
+      toPx(desktopPad![1]) * 2 + WORDMARK_LINE_BOX_PX,
     );
   });
 });
 
 describe("the home lead plate's title keeps a size step over a grid plate's", () => {
-  // Home no longer has a single hero compared against a shared MoreStories
-  // card — both the lead and the two grid plates are built directly in
-  // app/page.tsx (see Plate there) — but the underlying property this guarded
-  // still matters: the lead is the one size distinction left in the design,
-  // and a future edit that quietly collapsed the two ramps to the same value
-  // would be invisible to a rendering test, because jsdom applies no
-  // stylesheet and both are h2.
+  // Home's lead plate is built directly in app/page.tsx (LeadPlate); the two
+  // grid plates beside it are app/story-card.tsx's StoryCard, the same card
+  // the post page's Read Next teaser uses (round 3 §5). The underlying
+  // property this guards still matters regardless of which file each side
+  // lives in: the lead is the one size distinction left in the design, and a
+  // future edit that quietly collapsed the two ramps to the same value would
+  // be invisible to a rendering test, because jsdom applies no stylesheet and
+  // both are h2.
   it("the lead and grid plate titles do not share a font-size class", () => {
-    const page = read("app/page.tsx");
     // Matched as literal text rather than parsed as JSX, same tradeoff every
     // other guard in this file makes: cheap and exact for a fixed pair of
     // values, at the cost of needing an update if either literally changes.
-    const leadSize = /text-\[56px\]/.exec(page);
-    const gridSize = /text-\[32px\]/.exec(page);
+    const leadSize = /text-\[56px\]/.exec(read("app/page.tsx"));
+    const gridSize = /text-\[30px\]/.exec(read("app/story-card.tsx"));
     expect(leadSize).not.toBeNull();
     expect(gridSize).not.toBeNull();
     expect(leadSize![0]).not.toBe(gridSize![0]);
