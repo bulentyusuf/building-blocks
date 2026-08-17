@@ -607,6 +607,26 @@ describe("home, whose band carries the masthead as its h1", () => {
     expect(css).toMatch(
       /prefers-reduced-motion:\s*reduce[\s\S]{0,200}js-wordmark-observed/,
     );
+
+    // The faded-out state must not be operable. opacity alone leaves a box
+    // that takes a tab stop and a click, which is what shipped first: an
+    // invisible link over the blank space in the bar. Asserted on the rule
+    // rather than the DOM because jsdom applies no stylesheet.
+    const faded =
+      /body:has\(\.site-masthead\)\.js-wordmark-observed\s+\.site-wordmark\s*\{([^}]*)\}/.exec(
+        css,
+      );
+    expect(faded).not.toBeNull();
+    expect(faded![1]).toMatch(/visibility:\s*hidden/);
+
+    // And the faded-in state must restore it, or the wordmark would be
+    // permanently unreachable rather than permanently reachable.
+    const shown =
+      /\.js-wordmark-observed\.wordmark-visible\s+\.site-wordmark\s*\{([^}]*)\}/.exec(
+        css,
+      );
+    expect(shown).not.toBeNull();
+    expect(shown![1]).toMatch(/visibility:\s*visible/);
   });
 });
 

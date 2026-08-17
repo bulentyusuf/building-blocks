@@ -112,17 +112,43 @@ body:has(.site-masthead) .site-wordmark {
    IntersectionObserver mounts, which swaps the fallback above for an opacity
    fade, then toggles .wordmark-visible as the masthead crosses the sticky
    bar's bottom edge. Both are unlayered, like the fallback, so neither loses
-   to the wordmark's own utility classes. */
+   to the wordmark's own utility classes.
+
+   visibility travels with opacity, and it is not decoration. An element at
+   opacity: 0 still generates a box, so it keeps hit testing, a tab stop and
+   its place in the accessibility tree — which put an invisible link over the
+   blank space in the bar and a focus ring around nothing. visibility: hidden
+   removes all three. It is animatable only discretely, so the transition
+   delays it by the fade's own duration on the way out and applies it
+   immediately on the way in: the element stays operable while it is still
+   partly visible, and stops being operable the moment it is not.
+
+   This is not the visibility the fallback rule above refuses. That one is
+   about the view-transition-name collision, and the fallback still resolves
+   it with display: none plus view-transition-name: none. By the time these
+   rules apply, the name is already disconnected. */
 body:has(.site-masthead).js-wordmark-observed .site-wordmark {
   display: inline;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  visibility: hidden;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
 }
 body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
   opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0s;
 }
+/* Both states, not just the hidden one. With only the first selector listed
+   here the visible state kept its own transition and the fade still ran for
+   readers who asked for no motion. */
 @media (prefers-reduced-motion: reduce) {
-  body:has(.site-masthead).js-wordmark-observed .site-wordmark {
+  body:has(.site-masthead).js-wordmark-observed .site-wordmark,
+  body:has(.site-masthead).js-wordmark-observed.wordmark-visible
+    .site-wordmark {
     transition: none;
   }
 }
