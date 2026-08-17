@@ -123,6 +123,86 @@ The header colour is a CSS token in `app/globals.css` **and**
 DRY violation: the viewport `themeColor` and the web manifest are generated in
 JS and cannot read CSS custom properties. Any change touches both files.
 
+### A settled design call is reopened in writing, not in a branch
+
+Each of the six entries below was answered twice during 2026, once here and
+once inside PR #398, and the second answer went unrecorded until twenty-two
+commits had built on top of it. Changing any of them starts with an edit to
+this file, in its own commit, before the implementing branch opens.
+
+A branch that edits this file and the code it governs in the same push has
+removed the only check on itself. PR #398 is the worked example. It carried
+three different values for `POSTS_PER_PAGE`, rebuilt the authors and categories
+indexes then reverted them then rebuilt them, and its final commit had to
+correct sections of this file that had gone stale describing a home page the
+same branch had already replaced.
+
+### The masthead band stays
+
+`app/wide-page.tsx` is the shell, and the band's arithmetic lives there and in
+`app/page.tsx`'s own bleed note. Retiring it sitewide was proposed and
+rejected.
+
+It carries the site masthead on home and the trail and title on every other
+wide route, and both bleed cases, home's hero cover and the post cover, are
+built around its deepened inset. The unbuilt cover-tint feature assumes it as
+well. Nothing replaces the band until that feature is either built or dropped.
+
+### Chrome is navy, and both literals move together
+
+`#1E3A8A` light, `#2E4A9E` dark. See "Brand colour exists in two places on
+purpose" above for why the value lives in `app/globals.css` and
+`lib/constants.ts` at once.
+
+A move to dark aubergine was proposed and rejected. Not on contrast, which was
+sound at 15.66:1 for white on the proposed value, but because the cover-tint
+design derives its per-post hue against a navy bar and does not survive the
+change.
+
+### Covers take one of two frames, chosen by `wide`
+
+`app/cover-image.tsx`. With `wide`, the frame is 3:2 on mobile and 16:9 from md
+up, which is the treatment for any cover off the 1920x1080 source, meaning
+every post cover. Without it the frame is 3:2 at every width.
+
+The mobile 3:2 is deliberate and is the single item most often re-raised as a
+finding, so read the prop's own comment before changing it. Two replacements
+have been proposed and both rejected, a 4:3 crop on cards and a uniform
+uncropped 16:9 everywhere.
+
+### `POSTS_PER_PAGE` is five, and changing it is a design pass
+
+`lib/constants.ts`. Home's hero counts toward the budget, so page 1 is a hero
+plus four cards and every later page holds five. Values of eight and ten have
+both been tried and reverted.
+
+The constant is not the whole change. Home's shape, the `/page/[page]` slice
+and every taxonomy listing read it, so a new number needs all four looked at
+in one pass rather than a constant bump.
+
+### A card's meta line is the date alone, above the excerpt
+
+`app/more-stories.tsx`, in `PostPreview`. Both variants carry it in that
+position.
+
+No category on cards. The reason is in `app/page.tsx`'s `HeroPost` comment.
+The site has two categories, so the label carries about one bit, and putting it
+on cards would need a per-route exception on `/categories/[slug]` and its
+paginated pages, where the category names the page the reader is already on.
+Adding `category` to `CardPost` was proposed and rejected, which also leaves
+`CARD_GRAPHQL_FIELDS` in `lib/api.ts` unchanged.
+
+### Tags render as pills, in one implementation
+
+`app/tag-pill.tsx`, wrapped by `TagRow` in `app/more-stories.tsx` and used
+directly on the post page. Pills sit below the excerpt on a card and below the
+body on a post, and `TagRow`'s comment carries the reason for both positions.
+
+Converting them to small-caps text links was proposed and rejected. If it is
+revisited, it is one change reaching both call sites, not a card change plus a
+post-page exception. The rejected version shipped exactly that split and left
+the site with two tag treatments.
+
 ### Image loader passes only `w`, `q`, `fm=webp` by design
 
 Cropping is CSS-side (`object-cover`). The absence of Contentful's
