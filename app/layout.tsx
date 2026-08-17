@@ -16,6 +16,7 @@ import {
 import BackToTop from "./back-to-top";
 import SidenoteEnterKey from "./sidenote-enter-key";
 import WordmarkFade from "./wordmark-fade";
+import SiteWordmark from "./site-wordmark";
 import NewWindowHint from "./new-window-hint";
 import Link from "next/link";
 import { draftMode } from "next/headers";
@@ -129,19 +130,17 @@ function Header() {
             the band was visible, which is the same reasoning that returns the
             wordmark.
 
-            The wordmark itself is losing its href in the next commit. It
-            shipped as a link to / on the assumption that clicking it while
-            already on / would return the reader to the top — checked against
-            Next 16's actual navigation code rather than assumed, and false.
-            A same-URL Link click is treated as a leaf-segment refresh, not a
-            route change, and only a route change is ever assigned a scroll
-            target. A link that silently does nothing on the one page it can
-            be clicked from is worse than no link, so it becomes a plain
-            element there, matching the band's own masthead below it. */}
+            The wordmark is a link on every route except home, where it is
+            plain text — see app/site-wordmark.tsx. In Next 16 a same-URL Link
+            click is a leaf-segment refresh rather than a route change, and
+            only a route change is assigned a scroll target, so on home the
+            link neither navigated nor returned the reader to the top. It does
+            navigate from everywhere else, which is most of the site and the
+            most conventional control on it, so it stays a link there. An
+            earlier commit on this branch removed the href on every route,
+            which fixed home by breaking the other twenty. */}
         <div className="flex items-baseline gap-3">
-          <span className="site-wordmark font-display text-lg font-[700] text-white">
-            {SITE_TITLE}
-          </span>
+          <SiteWordmark title={SITE_TITLE} />
           <p className="site-tagline hidden lg:block font-ui text-sm text-white/90">
             {SITE_DESCRIPTION}
           </p>

@@ -44,6 +44,13 @@ vi.mock("@vercel/speed-insights/next", () => ({ SpeedInsights: () => null }));
 // The blur fetch would hit Contentful. undefined is the component's real
 // "no LQIP underlay" branch, so this exercises a shipped path.
 vi.mock("@/lib/blur", () => ({ getBlurDataURL: async () => undefined }));
+// Both app/wordmark-fade.tsx and app/site-wordmark.tsx read the pathname.
+// These fixtures compose pages by hand rather than routing to them, so there
+// is no router to read. "/" matches the home fixture, which is the only one
+// whose assertions depend on it.
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+}));
 
 const RootLayout = (await import("@/app/layout")).default;
 const MoreStories = (await import("@/app/more-stories")).default;

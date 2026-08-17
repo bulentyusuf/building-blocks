@@ -769,6 +769,14 @@ at identical coordinates sitewide.
   reach for a mark, because none exists in `public/`.
   `app/a11y.test.tsx` asserts the rule in two halves, because jsdom applies no
   stylesheet and cannot evaluate `:has()` itself.
+- **The bar's wordmark is a link everywhere except home** (`app/site-wordmark.tsx`),
+  where it is plain text. Next 16 treats a same-URL `Link` click as a
+  leaf-segment refresh rather than a route change, and only a route change is
+  assigned a scroll target, so on home the link did nothing at all. It is the
+  one element in the header that knows its own route, which is why it is a
+  client component and `Header` is not. Removing the `href` on every route
+  instead was tried on the way here and it cost the site its "go home" control
+  on twenty pages to fix one.
 - **`crumbs` is optional on the band**, and `/` is the only route using that.
   Home is the root and has nothing above it, so without a trail its `h1` starts
   at the top of the band's inset instead of below a nav carrying `mb-4`, which
