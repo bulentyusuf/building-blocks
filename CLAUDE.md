@@ -761,8 +761,11 @@ at identical coordinates sitewide.
   it is the duplication the rule exists to remove. **The consequence is
   deliberate**: past the masthead, home's sticky bar is nav and search with no
   site name in it. The wordmark is wayfinding for a reader deep in the site,
-  and on home they are not; it returns on the next navigation. Do not add a
-  scroll listener, an `IntersectionObserver` or a mark to fill the gap.
+  and on home they are not; it returns on the next navigation. The wordmark
+  returns once the masthead scrolls out of view (app/wordmark-fade.tsx),
+  which reverses an earlier position that the gap be left alone. The tagline
+  does not return, at any scroll position. Do not reach for a mark, because
+  none exists in `public/`.
   `app/a11y.test.tsx` asserts the rule in two halves, because jsdom applies no
   stylesheet and cannot evaluate `:has()` itself.
 - **`crumbs` is optional on the band**, and `/` is the only route using that.

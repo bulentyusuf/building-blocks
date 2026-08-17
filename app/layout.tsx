@@ -105,15 +105,22 @@ function Header() {
         {/* Both hide themselves on home, where the band names the site 60px
             below and the bar would say it twice. The rule is a :has() in
             globals.css rather than a usePathname, so this stays a server
-            component and the site ships no JS for it.
+            component and the site ships no JS for the hidden state itself.
 
-            The cost, on the record rather than left to be quietly fixed later:
-            past the masthead, home's sticky bar is the nav and the search
-            control with no site name in it. The wordmark is wayfinding for a
-            reader deep in the site, and on home they are not deep in the site.
-            It returns the moment they navigate anywhere else. Do not add a
-            scroll listener or an IntersectionObserver to fill the gap, and do
-            not reach for a mark, because none exists in public/. */}
+            The wordmark now returns once the masthead scrolls out of view,
+            via app/wordmark-fade.tsx. That reverses the position this comment
+            used to record, which was that the gap should be left alone and
+            that no scroll listener or IntersectionObserver should fill it.
+            The reasoning behind it still holds for the top of the page, where
+            the masthead is visible and a second name would be duplication.
+            It stops holding once the masthead is gone, because past that
+            point the bar carries no site name at all and the reader has
+            nothing in the chrome telling them where they are. The old
+            position treated those two states as one.
+
+            The tagline is not part of the reversal. It stays hidden on home
+            throughout, because a description under a masthead repeating it is
+            duplication at every scroll position, not only at the top. */}
         <div className="flex items-baseline gap-3">
           <Link
             href="/"
