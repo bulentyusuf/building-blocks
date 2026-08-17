@@ -161,12 +161,19 @@ function Header() {
           {/* Icon-only link: the accessible name comes from aria-label, and
               the SVG is hidden from assistive tech so it is not announced as
               an unlabelled image. No icon library — inline SVG keeps the
-              dependency count at zero. */}
+              dependency count at zero.
+
+              p-3 -m-3 is the WCAG 2.5.5 touch target: padding grows the hit
+              area to 44px (a 20px icon plus 2×12px) while the matching
+              negative margin cancels its footprint in the row's layout, so
+              the bar's own height calculation never sees it. The 36px it
+              replaces already cleared 2.5.8's 24px AA floor — this is the
+              AAA-grade figure, not a defect being fixed. */}
           <Link
             href="/search"
             aria-label="Search"
             title="Search"
-            className="p-2 -m-2 text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            className="p-3 -m-3 text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
           >
             <svg
               aria-hidden="true"
