@@ -139,12 +139,9 @@ function Header() {
             be clicked from is worse than no link, so it becomes a plain
             element there, matching the band's own masthead below it. */}
         <div className="flex items-baseline gap-3">
-          <Link
-            href="/"
-            className="site-wordmark font-display text-lg font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
+          <span className="site-wordmark font-display text-lg font-[700] text-white">
             {SITE_TITLE}
-          </Link>
+          </span>
           <p className="site-tagline hidden lg:block font-ui text-sm text-white/90">
             {SITE_DESCRIPTION}
           </p>
