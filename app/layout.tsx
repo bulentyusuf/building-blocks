@@ -16,6 +16,7 @@ import {
 import BackToTop from "./back-to-top";
 import SidenoteEnterKey from "./sidenote-enter-key";
 import WordmarkFade from "./wordmark-fade";
+import SiteWordmark from "./site-wordmark";
 import NewWindowHint from "./new-window-hint";
 import Link from "next/link";
 import { draftMode } from "next/headers";
@@ -119,16 +120,27 @@ function Header() {
             nothing in the chrome telling them where they are. The old
             position treated those two states as one.
 
-            The tagline is not part of the reversal. It stays hidden on home
-            throughout, because a description under a masthead repeating it is
-            duplication at every scroll position, not only at the top. */}
+            The tagline returns with it, at lg and up where the bar renders one
+            at all. The claim this replaces was that a description under a
+            masthead is duplication at every scroll position. It is not: past
+            the masthead there is no masthead and no standfirst on screen, so a
+            bar carrying both marks is exactly what every other route shows,
+            and home's scrolled state should not be the one place the chrome
+            reads differently. The duplication argument only ever applied while
+            the band was visible, which is the same reasoning that returns the
+            wordmark.
+
+            The wordmark is a link on every route except home, where it is
+            plain text — see app/site-wordmark.tsx. In Next 16 a same-URL Link
+            click is a leaf-segment refresh rather than a route change, and
+            only a route change is assigned a scroll target, so on home the
+            link neither navigated nor returned the reader to the top. It does
+            navigate from everywhere else, which is most of the site and the
+            most conventional control on it, so it stays a link there. An
+            earlier commit on this branch removed the href on every route,
+            which fixed home by breaking the other twenty. */}
         <div className="flex items-baseline gap-3">
-          <Link
-            href="/"
-            className="site-wordmark font-display text-lg font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
-            {SITE_TITLE}
-          </Link>
+          <SiteWordmark title={SITE_TITLE} />
           <p className="site-tagline hidden lg:block font-ui text-sm text-white/90">
             {SITE_DESCRIPTION}
           </p>
