@@ -770,13 +770,40 @@ at identical coordinates sitewide.
   `app/a11y.test.tsx` asserts the rule in two halves, because jsdom applies no
   stylesheet and cannot evaluate `:has()` itself.
 - **The bar's wordmark is a link everywhere except home** (`app/site-wordmark.tsx`),
-  where it is plain text. Next 16 treats a same-URL `Link` click as a
-  leaf-segment refresh rather than a route change, and only a route change is
-  assigned a scroll target, so on home the link did nothing at all. It is the
-  one element in the header that knows its own route, which is why it is a
-  client component and `Header` is not. Removing the `href` on every route
-  instead was tried on the way here and it cost the site its "go home" control
-  on twenty pages to fix one.
+  where it is a button that scrolls the reader to the top. Next 16 treats a
+  same-URL `Link` click as a leaf-segment refresh rather than a route change,
+  and only a route change is assigned a scroll target, so an `href` on home
+  neither navigated nor scrolled. It is the one element in the header that
+  knows its own route, which is why it is a client component and `Header` is
+  not. Removing the `href` on every route instead was tried on the way here
+  and it cost the site its "go home" control on twenty pages to fix one.
+  Rendering it as plain text on home was tried next and left the control dead
+  rather than simply absent, at exactly the scroll position where "back to
+  top" is the one thing a reader might want from it.
+- **The bar's wordmark machinery is a known local optimum, not an ideal.** Six
+  mechanisms manage the visibility and behaviour of one word: the `:has()`
+  hide, a `view-transition-name` override, the opacity fade, a `visibility`
+  pair keeping the faded box out of hit testing and the tab order, a
+  `usePathname` re-attach for client-side navigation, and an `lg`-scoped rule
+  keeping the tagline off mobile. Plus `app/wordmark-fade.tsx`,
+  `app/site-wordmark.tsx` and about a dozen assertions in `app/a11y.test.tsx`.
+
+  All of it exists because home's band carries `SITE_TITLE` while the bar
+  carries it too, 100px apart. That is one editorial decision, and it is the
+  only reason any of this is here. Every mechanism above is downstream of it.
+
+  The exit, if it is ever wanted: give home's band the same job every other
+  band has, naming the route rather than the site — `Latest` plus the existing
+  `latest-posts` browseIntro standfirst, which `/page/[page]` already reads.
+  The bar then carries the wordmark everywhere with no rule at all and all six
+  mechanisms come out together, along with both components and the tests. The
+  cost is that home stops saying its own name at display size and reads more
+  like page 1 of a listing, which is what it is.
+
+  Recorded so this is a decision a future session can take deliberately rather
+  than a shape it has to reverse-engineer. It was weighed in August 2026 and
+  declined because the fade was already merged and working.
+
 - **`crumbs` is optional on the band**, and `/` is the only route using that.
   Home is the root and has nothing above it, so without a trail its `h1` starts
   at the top of the band's inset instead of below a nav carrying `mb-4`, which
