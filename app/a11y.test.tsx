@@ -576,7 +576,9 @@ describe("home, whose band carries the masthead as its h1", () => {
 
     const css = fs.readFileSync(path.join(__dirname, "globals.css"), "utf8");
 
-    // The tagline half is unconditional. It has no fade and must not gain one.
+    // The tagline's fallback half, which is also its state below lg. Still
+    // display: none, but no longer unconditional — see the lg-scoped fade
+    // asserted at the end of this test.
     const tagline =
       /body:has\(\.site-masthead\)\s+\.site-tagline\s*\{([^}]*)\}/.exec(css);
     expect(tagline).not.toBeNull();
@@ -627,6 +629,30 @@ describe("home, whose band carries the masthead as its h1", () => {
       );
     expect(shown).not.toBeNull();
     expect(shown![1]).toMatch(/visibility:\s*visible/);
+
+    // The tagline fades with the wordmark, and only at lg and up. Both halves
+    // matter. Without the media query these unlayered rules beat the markup's
+    // `hidden` and put a full site description in a phone's 52px bar; without
+    // the rules at all, home's scrolled bar is the one place on the site
+    // carrying a wordmark and no tagline.
+    const taglineFade =
+      /@media\s*\(min-width:\s*64rem\)\s*\{([\s\S]*?\.site-tagline[\s\S]*?)\n\}/.exec(
+        css,
+      );
+    expect(taglineFade).not.toBeNull();
+    expect(taglineFade![1]).toMatch(
+      /js-wordmark-observed[\s\S]*\.site-tagline/,
+    );
+    expect(taglineFade![1]).toMatch(/display:\s*block/);
+    expect(taglineFade![1]).toMatch(/visibility:\s*hidden/);
+    expect(taglineFade![1]).toMatch(/visibility:\s*visible/);
+
+    // The breakpoint is one decision in two places. If the markup's utility
+    // and the stylesheet's query ever disagree, the tagline either appears on
+    // mobile or never appears at all, and neither shows up in a unit test
+    // that only reads one of them.
+    const layout = fs.readFileSync(path.join(__dirname, "layout.tsx"), "utf8");
+    expect(layout).toMatch(/site-tagline[^"]*\blg:block\b/);
   });
 });
 

@@ -9,6 +9,11 @@ import { usePathname } from "next/navigation";
 // reader scrolls the masthead out of view, the wordmark is the only
 // wayfinding left in the row, so it fades back in.
 //
+// The tagline fades with it at lg and up, through the same two classes. This
+// component does not know about either mark by name — it observes the
+// masthead and reports whether it is on screen, and globals.css decides what
+// that means. Adding a third thing to the bar needs no change here.
+//
 // Renders on every page rather than only home. Off home the querySelector
 // below is a single failed lookup, and the cleanup has already cleared both
 // body classes, so nothing is left behind.
