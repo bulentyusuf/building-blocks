@@ -119,9 +119,25 @@ function Header() {
             nothing in the chrome telling them where they are. The old
             position treated those two states as one.
 
-            The tagline is not part of the reversal. It stays hidden on home
-            throughout, because a description under a masthead repeating it is
-            duplication at every scroll position, not only at the top. */}
+            The tagline returns with it, at lg and up where the bar renders one
+            at all. The claim this replaces was that a description under a
+            masthead is duplication at every scroll position. It is not: past
+            the masthead there is no masthead and no standfirst on screen, so a
+            bar carrying both marks is exactly what every other route shows,
+            and home's scrolled state should not be the one place the chrome
+            reads differently. The duplication argument only ever applied while
+            the band was visible, which is the same reasoning that returns the
+            wordmark.
+
+            The wordmark itself is losing its href in the next commit. It
+            shipped as a link to / on the assumption that clicking it while
+            already on / would return the reader to the top — checked against
+            Next 16's actual navigation code rather than assumed, and false.
+            A same-URL Link click is treated as a leaf-segment refresh, not a
+            route change, and only a route change is ever assigned a scroll
+            target. A link that silently does nothing on the one page it can
+            be clicked from is worse than no link, so it becomes a plain
+            element there, matching the band's own masthead below it. */}
         <div className="flex items-baseline gap-3">
           <Link
             href="/"
