@@ -72,8 +72,9 @@ export default async function CategoriesPage() {
         </>
       }
     >
-      {/* One card per category, two across on desktop, stacked on mobile. */}
-      <div className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10">
+      {/* One card per category, up to four across — the same grid step every
+          browse-card grid on the site uses (app/more-stories.tsx). */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
         {categories.map((category, index) => {
           const { items: posts } = postsBySlug.get(category.slug) ?? {
             items: [],
@@ -119,13 +120,10 @@ export default async function CategoriesPage() {
                     href={`/categories/${category.slug}`}
                     ratio="4:3"
                     // Capped in px for the same reason as the listing covers in
-                    // more-stories.tsx. This grid is two columns with a 40px
-                    // gap inside the 1160px container (max-w-page's 1200px
-                    // less Container's 2×20px px-5), so a thumbnail tops out
-                    // at (1160 - 40) / 2 = 560px. Left at 50vw it asked for
-                    // 720px at a 1440px viewport, which at DPR 2 pulled the
-                    // 1920 derivative instead of the 1080 that covers it.
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 560px"
+                    // more-stories.tsx / browse-card.tsx, same four-up grid
+                    // (sm:2 lg:3 xl:4, 32px gaps) so the same arithmetic
+                    // applies: a thumbnail tops out at (1160 - 96) / 4 = 266px.
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 266px"
                     priority={index === 0}
                   />
                 </div>

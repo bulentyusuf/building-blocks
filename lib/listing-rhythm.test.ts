@@ -17,24 +17,26 @@ const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
 describe("a banded listing keeps its item padding", () => {
   const moreStories = read("app/more-stories.tsx");
 
-  it("never zeroes the first item's top padding", () => {
+  it("never zeroes the row list's top padding", () => {
     // The regression: dropping this made the first post hug the band while
-    // every post after it kept a full item's padding under its hairline.
+    // every post after it kept a full item's padding under its hairline. The
+    // row tier (app/post-row.tsx) is what the pager and header now sit
+    // against, since the card tier is a grid with its own gap, not padding.
     expect(moreStories).not.toMatch(/first-child\]:pt-0/);
+    expect(read("app/post-row.tsx")).not.toMatch(/first-child\]:pt-0/);
   });
 
-  it("still sets a symmetric item padding to be the rhythm", () => {
+  it("still sets a symmetric item padding on the row tier", () => {
     // Non-vacuous: the check above passes trivially if the padding is gone.
-    // MoreStories renders one shape now — the grid variant it once also had
-    // is gone (round 3 §5 replaced its only caller, the post page's Read
-    // Next, with app/story-card.tsx's StoryCard) — so a plain count of one is
-    // enough; it no longer has to distinguish this article from a second,
-    // unpadded one.
+    // MoreStories renders two shapes now — a card grid (its own gap, not
+    // padding) and a row list (app/post-row.tsx) — so the padding rhythm this
+    // guards belongs to the row tier alone.
     const items = [
-      ...moreStories.matchAll(/<article className="([^"]*py-10[^"]*)"/g),
+      ...read("app/post-row.tsx").matchAll(
+        /<li className="([^"]*py-\[18px\][^"]*)"/g,
+      ),
     ];
     expect(items).toHaveLength(1);
-    expect(items[0][1]).toMatch(/py-10[^"]*md:py-12/);
   });
 
   it("drops only the rule when openRule is false", () => {

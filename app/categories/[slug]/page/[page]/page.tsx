@@ -110,14 +110,12 @@ export default async function CategoryPaginatedPage({
       visibleTags={visibleTags}
       basePath={`/categories/${slug}`}
     >
+      {/* No description here — identity (the standfirst) is stated once, on
+          page 1; a later page carries only the heading and PageContext's own
+          "Page N of M" caption. See CLAUDE.md's "identity is stated once". */}
       <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
         {widont(category.name)}
       </h1>
-      {category.description && (
-        <p className="max-w-3xl text-lg leading-relaxed text-pretty">
-          {category.description}
-        </p>
-      )}
     </ListingPage>
   );
 }

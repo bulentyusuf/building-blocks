@@ -16,7 +16,7 @@ const { default: MoreStories } = await import("./more-stories");
 
 afterEach(cleanup);
 
-// No coverImage on purpose. PostPreview renders CoverImage only when one is
+// No coverImage on purpose. BrowseCard renders CoverImage only when one is
 // present, so omitting it keeps next/image out of these tests entirely — the
 // tag row is what is under test, not image optimisation.
 function post(slug: string, tags: string[] = []): CardPost {
@@ -33,7 +33,7 @@ function post(slug: string, tags: string[] = []): CardPost {
 
 describe("MoreStories tag pills", () => {
   it("renders no tag row when visibleTags is not passed", () => {
-    render(<MoreStories morePosts={[post("a", ["Design"])]} heading={null} />);
+    render(<MoreStories morePosts={[post("a", ["Design"])]} />);
 
     // The post itself still renders — this is about the pills being absent,
     // not the card failing.
@@ -43,11 +43,7 @@ describe("MoreStories tag pills", () => {
 
   it("renders no tag row for a post carrying no tags", () => {
     render(
-      <MoreStories
-        morePosts={[post("a")]}
-        heading={null}
-        visibleTags={new Set(["design"])}
-      />,
+      <MoreStories morePosts={[post("a")]} visibleTags={new Set(["design"])} />,
     );
 
     expect(screen.queryByRole("list", { name: "Tags" })).toBeNull();
@@ -60,7 +56,6 @@ describe("MoreStories tag pills", () => {
     render(
       <MoreStories
         morePosts={[post("a", ["Design", "Orphan"])]}
-        heading={null}
         visibleTags={new Set(["design"])}
       />,
     );
@@ -73,7 +68,6 @@ describe("MoreStories tag pills", () => {
     render(
       <MoreStories
         morePosts={[post("a", ["Design"])]}
-        heading={null}
         visibleTags={new Set(["design"])}
       />,
     );
@@ -84,11 +78,10 @@ describe("MoreStories tag pills", () => {
     ).toBe("/tags/design");
   });
 
-  it("renders a row per post, not one for the whole list", () => {
+  it("renders a tag row per post, not one for the whole list", () => {
     render(
       <MoreStories
         morePosts={[post("a", ["Design"]), post("b", ["Design"])]}
-        heading={null}
         visibleTags={new Set(["design"])}
       />,
     );

@@ -4,7 +4,6 @@ import { notFound, redirect } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
 import ListingPage from "../../../../listing-page";
 import { type Crumb } from "../../../../breadcrumb";
-import { RichText } from "@/lib/rich-text";
 import {
   getAllAuthors,
   getAuthorBySlug,
@@ -126,14 +125,9 @@ export default async function AuthorPaginatedPage({
           {widont(author.name)}
         </h1>
       </div>
-      {author.bio && (
-        // Like every other browse page's standfirst, on cream now that there
-        // is no band: brand-crimson clears contrast here, so links need no
-        // special treatment beyond what RichText already gives them.
-        <div className="mt-4 max-w-3xl text-lg leading-relaxed text-pretty">
-          <RichText content={author.bio} headings={[]} />
-        </div>
-      )}
+      {/* No bio here — identity is stated once, on page 1; a later page
+          carries only the portrait, the heading and PageContext's own
+          "Page N of M" caption. See CLAUDE.md's "identity is stated once". */}
     </ListingPage>
   );
 }

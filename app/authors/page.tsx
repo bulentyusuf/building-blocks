@@ -53,7 +53,9 @@ export default async function AuthorsPage() {
         </>
       }
     >
-      <div className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10">
+      {/* One card per author, up to four across — the same grid step every
+          browse-card grid on the site uses (app/more-stories.tsx). */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
         {authors.map((author) => (
           <article
             key={author.slug ?? author.name}

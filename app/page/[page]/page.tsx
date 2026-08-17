@@ -89,8 +89,9 @@ export default async function IndexPage({
   }
 
   const { isEnabled } = await draftMode();
-  // Same arguments generateMetadata passes, so cache() collapses the two.
-  const intro = await getBrowseIntro(INTRO_SLUG, isEnabled);
+  // getBrowseIntro is fetched only by generateMetadata now — the component no
+  // longer has a standfirst to render (see the note in the header below), so
+  // there is no second call here for cache() to collapse.
   const allPosts = await getAllPosts(isEnabled);
   const totalPages = totalPagesFor(allPosts.length);
 
@@ -129,21 +130,11 @@ export default async function IndexPage({
       <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
         Latest Posts
       </h1>
-      {/* Never on / itself, where the band carries the site tagline instead. A
-          standfirst repeating across the pages of one listing is already how
-          every category reads.
-
-          Rendered only when the entry has one, which is what the four section
-          fronts do, and there is deliberately no fallback: hard-coded copy
-          appearing in the CMS's slot is how the entry stops being the source of
-          truth, with nothing on the page saying which of the two you are
-          looking at. A fresh fork takes this path, because the fork seed is not
-          being given a latest-posts entry in this change. */}
-      {intro?.standfirst && (
-        <p className="max-w-3xl text-lg leading-relaxed text-pretty">
-          {intro.standfirst}
-        </p>
-      )}
+      {/* No standfirst here, ever: /page/[page] only exists for page 2 and
+          up (page 1 lives at "/" itself, and redirects there above), and
+          identity — heading, description — is stated once, on page 1 of a
+          listing. This route has no page 1 of its own to state it on. See
+          CLAUDE.md's "identity is stated once". */}
     </ListingPage>
   );
 }

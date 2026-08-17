@@ -26,15 +26,16 @@ export default async function SearchPage() {
 
   return (
     <Container>
-      {/* Constrained to the section's own measure. Container is max-w-page, so
-          an unwrapped breadcrumb starts 264px left of the heading it labels.
+      {/* Constrained to the section's own measure, but not centred — every
+          route on the site starts its content at Container's left edge, and a
+          narrow page is no exception. Only the width is capped.
           Must sit BEFORE the <section>: the empty-state emblem is hidden by a
           .pagefind-scope + .search-empty sibling selector, both inside the
           section — a breadcrumb placed within would break that adjacency. */}
-      <div className="mx-auto max-w-2xl">
+      <div className="max-w-2xl">
         <Breadcrumb items={crumbs} />
       </div>
-      <section className="mx-auto max-w-2xl">
+      <section className="max-w-2xl">
         <h1 className="mb-6 text-4xl md:text-5xl">Search</h1>
         {/* Pagefind's UI is mounted in the browser, so with scripts off the
             input never appears and the page reads as broken rather than

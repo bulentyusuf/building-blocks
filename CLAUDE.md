@@ -231,12 +231,16 @@ accessibility audit; do not restore any. Each file carries its reasoning.
 
 ### Breadcrumbs, and the one page without them
 
-- **Constrained to their page's own measure.** `Container` is `max-w-page`.
-  Pages whose content is also `max-w-page` render `<Breadcrumb>` unwrapped;
-  pages in a `max-w-2xl` column wrap it in `<div className="mx-auto max-w-2xl">`,
-  or it starts 264px left of the heading it labels. Any new narrow page needs
-  the wrapper — same split as "One axis, and it is the header measure" below,
-  which is where the assignment lives.
+- **Constrained to their page's own measure, but never centred.** `Container`
+  is `max-w-page`. Pages whose content is also `max-w-page` render
+  `<Breadcrumb>` unwrapped; pages in a `max-w-2xl` column wrap it in
+  `<div className="max-w-2xl">` — no `mx-auto` — or it starts 264px left of the
+  heading it labels. A centred wrapper (`mx-auto max-w-2xl`) shipped briefly
+  and was wrong: it gave a narrow page's content a different left origin than
+  every wide page's, which a reader feels on any navigation between the two.
+  One horizontal origin sitewide, whatever the width cap. Any new narrow page
+  needs the (uncentred) wrapper — same split as "One axis, and it is the
+  header measure" below, which is where the assignment lives.
 - **On `/search` the wrapper sits before the `<section>`**, not inside it:
   `.search-empty` must stay the immediate next sibling of `.pagefind-scope` for
   the emblem's `:has()` rule to fire.
@@ -345,22 +349,24 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
   tag, so Pagefind would weight the repeats above the posts themselves — same
   reasoning as the table of contents.
 - Tags sit below the article body, not in the `xl`-and-up sidebar where they
-  would vanish on the viewports most people read on. They also appear on listing
-  cards on the home index and its pages and on category, author and tag pages,
-  and on the home hero, which is a listing item in everything but its component
-  — **not** on the "Read Next" block at the foot of a post, which sits directly
-  under that post's own tags and would say the same thing twice in one viewport.
-  `/search` renders Pagefind's client-side templates and holds no tag data.
-  There is one `TagRow`, exported from `app/more-stories.tsx`; the hero imports
-  it rather than carrying a second implementation. Rendered as small-caps text
-  rather than an outlined pill — the former tag-pill component and its
+  would vanish on the viewports most people read on. They also appear on the
+  card tier of every listing — the home index and its pages, and category,
+  author and tag pages — **not** on home's own plates (`LeadPlate` and the
+  grid `StoryCard`s in `app/page.tsx` carry no tags at all — there is no
+  per-post tag data on that path today) and **not** on the "Read Next" block
+  at the foot of a post, which sits directly under that post's own tags and
+  would say the same thing twice in one viewport. `/search` renders Pagefind's
+  client-side templates and holds no tag data. There is one `TagRow`
+  (`app/tag-row.tsx`), imported by `app/browse-card.tsx` rather than carrying
+  a second implementation — its own file rather than living inside
+  `BrowseCard` or `MoreStories`, so a future caller (home's plates, should
+  they ever carry tags) can reach it without a cycle. Rendered as small-caps
+  text rather than an outlined pill — the former tag-pill component and its
   dedicated `--color-control-edge` border token are retired, and every caller
   converted, because the outline added weight without hierarchy at low
-  contrast on every card, every post and every archive row. It sits **last** on
-  the hero and
-  below the excerpt on a card, which is the same rule and not the same
-  position: a ragged tag count belongs at the foot, and the hero's byline is
-  below its excerpt where a card's date is above.
+  contrast on every card, every post and every archive row. It sits **last**
+  below the excerpt on a card, which is the site's one rule for where a tag
+  row goes: a ragged tag count belongs at the foot.
 - **Tag a post as part of publishing it.** The first untagged publish is the
   first ragged card.
 
@@ -551,16 +557,20 @@ viewport). Both still sit at the `max-w-page` measure and neither goes through
 `WidePage` — home has nothing above it to wrap in a `<Breadcrumb>`, and the
 post's crumb sits above its own header, not inside the shared shell.
 
-**Narrow.** Header wrapped in `mx-auto max-w-2xl`, `h1` at
+**Narrow.** Header wrapped in `max-w-2xl` (no `mx-auto` — the column's left
+edge matches every wide route's, only its right edge comes in sooner), `h1` at
 `mb-6 text-4xl md:text-5xl` with no `leading-tight`.
 
 `/about`, `/privacy`, `/search`. Three routes.
 
 A 6xl heading in a 42rem measure looks enormous despite carrying identical
-classes, and that mismatch is the tell that a page took the wrong treatment. An
-unwrapped breadcrumb on a narrow page starts 264px left of the heading it
-labels, which is the same tell from the other end. Any new page picks its
-treatment from its own measure, not from the nearest existing h1.
+classes, and that mismatch is the tell that a page took the wrong treatment. A
+narrow page's `h1` deliberately stays off the wide ramp's `lg:text-6xl` step
+for exactly this reason — raising it to match the wide routes would reintroduce
+the oversized-heading mismatch this section warns against, not fix an
+inconsistency. A _centred_ narrow column was the real inconsistency (see
+"Breadcrumbs" above) and is fixed; the smaller ramp is not a bug. Any new page
+picks its treatment from its own measure, not from the nearest existing h1.
 
 **The measure is the header's, not the prose's.** A post's body narrows to
 `max-w-[43.75rem]` inside an `xl:grid` (sidebar `13.75rem`/220px, gap
@@ -587,14 +597,16 @@ the base-layer rule in `app/globals.css` sets `font-weight: 700` on
 element being a heading is the mechanism.
 
 **`app/story-card.tsx`'s `StoryCard` takes an explicit `as` prop (`"h2"` or
-`"h3"`) rather than deriving it from a heading, unlike `MoreStories`.** Home's
-two-up plates pass nothing (default `"h2"`, siblings of the masthead's plate
-list); the post page's Read Next teaser passes `"h3"`, one level under its own
-"Read Next" `h2`. The two call sites need different levels for different
-reasons — home has no section heading above its plates, Read Next does — so
-the level is each caller's own decision rather than something the card infers.
-`MoreStories`' own list cards still set `h3` under a heading and `h2` without
-one, for its remaining callers (the six taxonomy listings and the index).
+`"h3"`), unlike `app/browse-card.tsx`'s `BrowseCard`.** Home's three grid
+plates pass nothing (default `"h2"`, siblings of the masthead's plate list);
+the post page's Read Next teaser passes `"h3"`, one level under its own "Read
+Next" `h2`. The two call sites need different levels for different reasons —
+home has no section heading above its plates, Read Next does — so the level
+is each caller's own decision rather than something the card infers.
+`BrowseCard` has no such prop and is hardcoded `h2`, because every one of its
+callers (`app/more-stories.tsx`, for the six taxonomy listings and the index)
+renders directly under a page's own `h1` with nothing between — see "Eight
+posts per page" above.
 
 All sixteen routes are still on the axis.
 
@@ -717,27 +729,48 @@ to be two components that had quietly drifted apart — a 32px title on one, a
 27px title with no meta at all on the other. Round 3 §5 replaced both with
 this one card:
 
-- `app/page.tsx`'s `Page` renders it directly for the two non-lead plates
+- `app/page.tsx`'s `Page` renders it directly for the three non-lead plates
   (the lead is `LeadPlate`, its own component in the same file — the one
   size distinction the design keeps, see "One axis" above).
 - `app/posts/[slug]/page.tsx`'s Read Next section renders it directly too, in
-  its own `Container` rather than through `MoreStories` — `MoreStories` is
-  list-only now (see below).
+  its own `Container` rather than through `MoreStories`.
 
 `CardPost` (`lib/types.ts`) gained a `category` field for this — `CardMeta`
 needs it and `CARD_GRAPHQL_FIELDS` (`lib/api.ts`) now selects it, a single
 linked name and slug, as cheap as the `tagsCollection` already riding along.
 Every `CardPost`-typed fetch carries it now; nothing reads it except
-`StoryCard`.
+`StoryCard` and `BrowseCard` (below).
 
-**`MoreStories` lost its grid variant.** Read Next was its only caller, and
-with `StoryCard` replacing that usage, `app/more-stories.tsx` dropped the
-`variant` prop, the grid branch of `PostPreview`, and the `ruled` prop (no
-remaining caller ever passed it `false`) entirely — it renders one shape now,
-the bordered list every taxonomy listing and the index use. Do not add a
-`variant` back for a future grid caller; build it as its own component the way
-`StoryCard` is, or extend `StoryCard` itself if the shape is genuinely the
-same card.
+**`MoreStories` lost its grid variant in round 3, then gained a different one
+back in round 4 — deliberately not the same thing.** Round 3's `variant` prop
+was one component switching between two unrelated shapes for two different
+callers (Read Next's grid vs. every other caller's list), and the guidance
+that replaced it was to build a future grid caller as its own component
+rather than resurrect that switch. Round 4's card/row split is not that: every
+remaining caller of `MoreStories` (the six taxonomy listings and the index,
+via `app/listing-page.tsx`) now wants the SAME two-tier composition — a card
+grid for the leading posts, a row list for the rest — so there is no longer a
+per-caller choice to encode as a prop. `app/more-stories.tsx` takes a
+`cardCount` (how many of the leading posts render as cards; the remainder
+render as rows) and renders both tiers itself: `app/browse-card.tsx`'s
+`BrowseCard` for the grid, `app/post-row.tsx`'s `PostRow` for the rows — two
+small components built the way this section originally asked for, not a
+variant switch inside `MoreStories`. See "Eight posts per page, and the card
+grid" below.
+
+**`BrowseCard` is not `StoryCard` reused, on purpose.** Both are 4:3 cards
+with a `CardMeta` date-then-category line, but the order differs:
+`StoryCard`'s excerpt sits BEFORE its meta line (home's plates, Read Next),
+while a browse listing's card model puts the meta line immediately under the
+title and the excerpt last (cover → title → date-then-category → standfirst).
+Reusing `StoryCard` for both would mean threading that order through a prop
+into a component that has had exactly one order since round 3; building
+`BrowseCard` as its own small component (sharing `CardMeta`, not the whole
+card) touches neither `StoryCard` nor its other two callers. `BrowseCard`'s
+title also steps down at the grid's narrower tracks — 30px at one column,
+24px from `sm` up, where the grid always shows at least two — which
+`StoryCard` does not need, since its own callers never render narrower than
+two columns.
 
 ### Wordmark fade-in, once the masthead scrolls out of view
 
@@ -834,18 +867,95 @@ today; apply this the next time one exists rather than reusing the row-hairline
 pattern `app/archive/page.tsx` and the taxonomy listings use, which is correct
 for THEM — a chronological or filtered list, not a glossary of terms.
 
-### The index listing's page size grew, and one constant governs it everywhere
+### Eight posts per page, and the card grid a listing's cards sit in
 
-`POSTS_PER_PAGE` (`lib/constants.ts`) went from 5 to 10 in round 3, because
-home's "Earlier" list grew from two rows to seven (round 3 §3) and the three
-plates above it plus those seven is what page 1 needs to hold for
-`/page/[page]`'s own slicing (`lib/paginate.ts`'s `pageItems`) to stay in step
-with it — the same constant sizes every taxonomy listing's pages too, by the
-comment's own original design ("every page holds the same number of posts"),
-so category, tag and author pages now show ten posts per page rather than
-five as a direct, intended consequence of the one shared value.
+`POSTS_PER_PAGE` (`lib/constants.ts`) is 8 — round 3 had it at 10 (previously
+5), round 4 moved it again — because round 4 gave every listing page a fixed
+composition instead of a bare count:
 
-### The taxonomy listings and the index listing share one shell
+- **Home, page 1**: a lead plate plus three `StoryCard` plates
+  (`PLATE_COUNT` in `app/page.tsx`, 4), then four "Earlier" rows.
+- **Every other listing page** — page 2+ of the index, and every page of a
+  category, tag or author listing — renders all 8 as cards, no rows. That
+  includes page 1 of a category/tag/author listing too: `app/listing-page.tsx`
+  passes `MoreStories` a `cardCount` of 4 only when `currentPage === 1`
+  **on the index** (home has its own bespoke composition and does not use
+  `MoreStories` at all); every other page passes the full slice length, which
+  is `MoreStories`' own default and renders nothing but cards.
+
+`4 + 4 = 8` is what page 1 needs to hold for `/page/[page]`'s own slicing
+(`lib/paginate.ts`'s `pageItems`) to stay in step with it — the same constant
+sizes every taxonomy listing's pages too, by the comment's own original
+design ("every page holds the same number of posts").
+
+**The card tier is a 4-up grid**, `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+xl:grid-cols-4 gap-x-8 gap-y-12`, used identically by `app/more-stories.tsx`
+(the card portion of a taxonomy/index listing), `app/page.tsx`'s three grid
+plates (capped at `lg:grid-cols-3`, since there are only ever three of them —
+see "One axis" above for why the lead plate itself is not in this grid), and
+the `app/categories/page.tsx` / `app/authors/page.tsx` indexes. A short list
+not filling the last row is normal and not a special case — 14 posts is 8
+cards then 6, not 8 then a padded 8. Keep the literal class string identical
+at every call site rather than centralising it behind a constant: Tailwind's
+content scanner needs the literal utilities to appear in scanned files, and a
+shared string constant is one more indirection for the same handful of
+characters.
+
+**The row tier (`app/post-row.tsx`) is date-then-title only** — no cover, no
+excerpt, no category, no tags — shared between `MoreStories`' row list and
+home's "Earlier" list, which used the identical markup inline before round 4
+factored it out. See "Standfirst where the reader is deciding" above for why
+a row carries no standfirst: it is for locating a post in a sequence, not for
+deciding whether to read it. Rows carry no heading markup at all (a bare
+`<Link>`, not wrapped in an `h2`/`h3`), matching what home's "Earlier" list
+already shipped — `app/browse-card.tsx`'s `BrowseCard` titles are `h2`, since
+every remaining caller renders directly under a page's own `h1` with no
+section heading between (the same rule `app/more-stories.tsx` used to encode
+as `heading ? "h3" : "h2"`, now hardcoded rather than threaded through, since
+nothing has passed a truthy `heading` since round 3 retired `MoreStories`'
+section-label feature along with its grid variant).
+
+### Identity is stated once, on page 1
+
+A category, tag or author listing's description (or bio) renders on page 1
+only — `app/categories/[slug]/page.tsx`, `app/tags/[slug]/page.tsx` and
+`app/authors/[slug]/page.tsx` render it; their paginated siblings, each one
+route segment deeper at its own `page/[page]` (for instance
+`app/categories/[slug]/page/[page]/page.tsx`), do not. `/page/[page]` never
+renders the `latest-posts` standfirst at
+all, for the same reason: that route only ever exists for page 2 and up, page
+1 living at `/` and redirecting there, so it has no page 1 of its own to
+state anything on. A later page keeps its heading (so a reader landing there
+from a search result still knows what they are looking at) and
+`app/page-context.tsx`'s "Page N of M" caption, and drops only the prose.
+
+This does not extend to the breadcrumb trail: a later page's crumb is still
+just the section name, with no page number appended to it. See "Breadcrumbs"
+above — `app/page-context.tsx` already captions the list with its position,
+and adding it a second time to the trail is exactly what that section's "do
+not add page numbers to those chains" already rules out.
+
+### Pagination is one shape everywhere: Newer, a count, Older
+
+`app/pagination.tsx` no longer has a `variant` prop — round 3's numbered
+page-jump list and home's link-only "simple" variant are both gone, replaced
+by one component every listing (home and the six taxonomy pages) renders the
+same way. Two states, not three slots unconditionally:
+
+- **Page 1** has nothing before it and nothing to caption (a reader on page 1
+  does not need to be told they are on page 1), so it renders a single
+  left-aligned "Older posts →" link and nothing else — no Newer slot, no
+  count.
+- **Every later page** renders all three: "← Newer posts" on the left, a
+  muted "Page N of M" in the centre, "Older posts →" on the right.
+
+**The exhausted direction on the last page stays in its slot rather than
+disappearing.** Collapsing it would shift the count off-centre and reflow the
+row exactly on the page where a reader is most likely to stop; instead it
+renders unlinked, in `--color-separator` (the same "faint" token
+`text-separator` already uses for hairlines and the breadcrumb slash) rather
+than the link colour. `app/pagination.test.tsx` covers all four shapes:
+single-page (renders nothing), page 1, a middle page, and the last page.
 
 Category, tag and author pages — each paginated and not — and the index listing
 at `/page/[page]` render through `app/listing-page.tsx`, which owns the

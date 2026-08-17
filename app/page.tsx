@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 
-import DateComponent from "./date";
 import CoverImage from "./cover-image";
 import Container from "./container";
 import Pagination from "./pagination";
+import PostRow from "./post-row";
 import StoryCard, { CardMeta } from "./story-card";
 
 import { getAllPosts } from "@/lib/api";
@@ -25,15 +25,15 @@ export const metadata: Metadata = {
 };
 
 // How many of the page's posts render as plates (a lead spanning the full
-// width, then two more 2-up StoryCards) before the rest fall into the dated
-// "Earlier" list. Fixed at three because the lead/grid split below is built
-// for exactly that shape — changing this needs a design pass, not a constant
-// bump.
-const PLATE_COUNT = 3;
+// width, then three more StoryCards in the grid) before the rest fall into
+// the dated "Earlier" list. Fixed at four — 4 plates + 4 "Earlier" rows is
+// POSTS_PER_PAGE — because the lead/grid split below is built for exactly
+// that shape — changing this needs a design pass, not a constant bump.
+const PLATE_COUNT = 4;
 
 // The lead plate spans the full width and splits into title (left) and
 // standfirst-plus-meta (right) — the one size distinction left in the
-// design once the masthead itself carries the site name. The two 2-up
+// design once the masthead itself carries the site name. The three grid
 // plates below it are StoryCard (app/story-card.tsx), the same card the
 // post page's Read Next teaser uses (round 3 §5).
 function LeadPlate({
@@ -61,7 +61,7 @@ function LeadPlate({
   );
 
   return (
-    <article className="md:col-span-2">
+    <article>
       {cover && <div className="mb-6">{cover}</div>}
       <div className="grid gap-10 md:grid-cols-[1fr_380px]">
         <h2 className="text-[56px] leading-[1.04] tracking-[-0.028em] font-bold text-pretty">
@@ -87,8 +87,8 @@ export default async function Page() {
   const { isEnabled } = await draftMode();
   const allPosts = await getAllPosts(isEnabled);
 
-  // The first three posts render as plates — a lead, then two 2-up — and
-  // whatever else fits the page budget falls into the dated "Earlier" list.
+  // The first four posts render as plates — a lead, then three in the grid —
+  // and whatever else fits the page budget falls into the dated "Earlier" list.
   const platePosts = allPosts.slice(0, PLATE_COUNT);
   const earlierPosts = allPosts.slice(PLATE_COUNT, POSTS_PER_PAGE);
   const totalPages = totalPagesFor(allPosts.length);
@@ -114,24 +114,29 @@ export default async function Page() {
       </p>
       <div className="mt-8 border-t-[3px] border-brand-dark" />
 
-      <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-14 md:grid-cols-2">
-        {platePosts.map((post, i) =>
-          i === 0 ? (
-            <LeadPlate
-              key={post.slug}
-              post={post}
-              priority
-              transitionName={coverName(post.slug)}
-            />
-          ) : (
+      {platePosts.length > 0 && (
+        <LeadPlate
+          post={platePosts[0]}
+          priority
+          transitionName={coverName(platePosts[0].slug)}
+        />
+      )}
+
+      {/* The lead's own three siblings, in the same 4-up grid every browse
+          listing's card tier uses (app/more-stories.tsx) — three items never
+          fill the fourth column, which is normal (see CLAUDE.md's "eight
+          posts per page"). */}
+      {platePosts.length > 1 && (
+        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+          {platePosts.slice(1).map((post) => (
             <StoryCard
               key={post.slug}
               post={post}
               transitionName={coverName(post.slug)}
             />
-          ),
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {earlierPosts.length > 0 && (
         <section className="mt-16">
@@ -140,31 +145,18 @@ export default async function Page() {
           </h2>
           <ul className="divide-y divide-hairline">
             {earlierPosts.map((post) => (
-              <li
+              <PostRow
                 key={post.slug}
-                className="grid grid-cols-[132px_1fr] items-baseline gap-5 py-[18px]"
-              >
-                <span className="text-sm text-brand-muted tabular-nums">
-                  <DateComponent dateString={post.date} />
-                </span>
-                <Link
-                  href={`/posts/${post.slug}`}
-                  className="text-[21px] leading-[1.3] font-semibold text-pretty hover:text-brand-crimson transition-colors duration-200"
-                >
-                  {widont(post.title)}
-                </Link>
-              </li>
+                slug={post.slug}
+                title={post.title}
+                date={post.date}
+              />
             ))}
           </ul>
         </section>
       )}
 
-      <Pagination
-        currentPage={1}
-        totalPages={totalPages}
-        basePath="/"
-        variant="simple"
-      />
+      <Pagination currentPage={1} totalPages={totalPages} basePath="/" />
     </Container>
   );
 }

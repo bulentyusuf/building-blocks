@@ -303,7 +303,6 @@ describe("listing page", () => {
           </section>
           <MoreStories
             morePosts={[post("a", ["Design"]), post("b", ["Retro", "Code"])]}
-            heading="Latest Posts"
             visibleTags={new Set(["design", "retro", "code"])}
           />
           <Pagination currentPage={2} totalPages={5} basePath="/" />

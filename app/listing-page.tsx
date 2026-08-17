@@ -96,7 +96,12 @@ export default function ListingPage({
         <>
           <MoreStories
             morePosts={posts}
-            heading={null}
+            // Page 1 of a listing carries four cards and the rest as rows;
+            // every later page (which has no identity of its own — see
+            // CLAUDE.md's "eight posts per page") renders the whole slice as
+            // cards, so passing the full length here (the default) skips the
+            // row tier entirely.
+            cardCount={currentPage === 1 ? 4 : posts.length}
             priorityFirst
             visibleTags={visibleTags}
             // WidePage's own header already draws the space above this list
