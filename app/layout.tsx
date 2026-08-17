@@ -15,6 +15,7 @@ import {
 } from "@/lib/constants";
 import BackToTop from "./back-to-top";
 import SidenoteEnterKey from "./sidenote-enter-key";
+import WordmarkFade from "./wordmark-fade";
 import NewWindowHint from "./new-window-hint";
 import Link from "next/link";
 import { draftMode } from "next/headers";
@@ -320,6 +321,7 @@ export default async function RootLayout({
         {isEnabled && <ExitPreviewButton />}
         <BackToTop />
         <SidenoteEnterKey />
+        <WordmarkFade />
         <Analytics />
         <SpeedInsights />
       </body>

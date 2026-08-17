@@ -72,20 +72,59 @@
   view-transition-name: site-wordmark;
 }
 
-/* Home names itself in the band, so the bar would repeat it about 60px above.
-   A :has() rather than a usePathname keeps the header a server component and
-   ships no JS for it, which is the same trade the transitions above take.
-
-   display: none rather than visibility: hidden, and that is load-bearing. A
-   hidden element still carries its view-transition-name, so it would collide
-   with the masthead's and invalidate the transition. A display: none element
-   does not participate in one at all.
-
-   The tagline goes with it. Leaving a description in the bar underneath a
-   masthead repeating it is the duplication this exists to remove. Unlayered on
-   purpose, so it outranks the utilities the tagline carries. */
-body:has(.site-masthead) :is(.site-wordmark, .site-tagline) {
+/* The tagline never returns on home. A description sitting in the bar
+   underneath a masthead repeating it is duplication at every scroll position,
+   not only at the top, so this half stays unconditional. Unlayered on purpose,
+   so it outranks the utilities the tagline carries. */
+body:has(.site-masthead) .site-tagline {
   display: none;
+}
+
+/* The wordmark is the half that comes back. Home names itself in the band, so
+   the bar would repeat it about 60px above — until the reader scrolls the
+   masthead out of view, at which point the wordmark is the only wayfinding
+   left in the row and app/wordmark-fade.tsx fades it in.
+
+   A :has() rather than a usePathname keeps the header a server component and
+   ships no JS for the STATE this rule encodes. The fade is the one
+   enhancement that needs a script, and it degrades to exactly this rule, so
+   scripts-off and pre-hydration readers get the steady hidden state rather
+   than a broken half of the animated one. */
+body:has(.site-masthead) .site-wordmark {
+  /* No-JS and pre-hydration fallback: hidden outright. Never
+     visibility: hidden — a hidden element still carries its
+     view-transition-name and would collide with the masthead's, invalidating
+     the whole transition. A display: none element does not participate in one
+     at all. */
+  display: none;
+
+  /* Disconnects the wordmark from the shared view-transition-name while it
+     lives on home, which is what lets the fade rules below hold a real but
+     invisible box instead of display: none once the observer mounts. A
+     view-transition-name must be carried by at most one generated box per
+     document; opacity: 0 still generates a box where display: none does not,
+     and the masthead already claims this name on home. Off home the general
+     .site-wordmark rule above applies unchanged. */
+  view-transition-name: none;
+}
+
+/* app/wordmark-fade.tsx marks <body> .js-wordmark-observed as soon as its
+   IntersectionObserver mounts, which swaps the fallback above for an opacity
+   fade, then toggles .wordmark-visible as the masthead crosses the sticky
+   bar's bottom edge. Both are unlayered, like the fallback, so neither loses
+   to the wordmark's own utility classes. */
+body:has(.site-masthead).js-wordmark-observed .site-wordmark {
+  display: inline;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  body:has(.site-masthead).js-wordmark-observed .site-wordmark {
+    transition: none;
+  }
 }
 
 @theme {

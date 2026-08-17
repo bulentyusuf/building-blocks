@@ -564,32 +564,49 @@ describe("home, whose band carries the masthead as its h1", () => {
     ).toHaveLength(0);
   });
 
-  it("names the site once, in two halves this environment cannot join", async () => {
-    // Both marks are in the DOM. What removes the bar's is a :has() rule, and
+  it("names the site once, in halves this environment cannot join", async () => {
+    // Both marks are in the DOM. What hides the bar's is a :has() rule, and
     // jsdom applies no stylesheet, so a single querySelectorAll here would
     // report two and prove nothing either way. The halves are asserted
-    // separately instead: the markup carries exactly the two hooks, and the
-    // stylesheet carries the rule that hides one of them.
+    // separately: the markup carries exactly the two hooks, and the
+    // stylesheet carries the rules that govern them.
     await render();
     expect(document.querySelectorAll(".site-masthead")).toHaveLength(1);
     expect(document.querySelectorAll(".site-wordmark")).toHaveLength(1);
 
     const css = fs.readFileSync(path.join(__dirname, "globals.css"), "utf8");
-    const rule =
-      /body:has\(\.site-masthead\)\s*:is\([^)]*\)\s*\{([^}]*)\}/.exec(css);
-    expect(rule).not.toBeNull();
-    // display: none, never visibility: hidden. A hidden element still carries
-    // its view-transition-name and would collide with the masthead's; a
-    // display: none element does not participate in a transition at all.
-    expect(rule![1]).toMatch(/display:\s*none/);
-    expect(rule![1]).not.toMatch(/visibility/);
-    // Both hooks are named in the rule, so hiding the wordmark and leaving the
-    // tagline under a masthead repeating it cannot pass.
-    const targets = /:is\(([^)]*)\)/.exec(
-      /body:has\(\.site-masthead\)[^{]*/.exec(css)![0],
+
+    // The tagline half is unconditional. It has no fade and must not gain one.
+    const tagline =
+      /body:has\(\.site-masthead\)\s+\.site-tagline\s*\{([^}]*)\}/.exec(css);
+    expect(tagline).not.toBeNull();
+    expect(tagline![1]).toMatch(/display:\s*none/);
+
+    // The wordmark half is the fallback the fade degrades to. display: none,
+    // never visibility: hidden — a hidden element still carries its
+    // view-transition-name and would collide with the masthead's.
+    const wordmark =
+      /body:has\(\.site-masthead\)\s+\.site-wordmark\s*\{([^}]*)\}/.exec(css);
+    expect(wordmark).not.toBeNull();
+    expect(wordmark![1]).toMatch(/display:\s*none/);
+    // Stripped of comments first: the rule's own comment explains why not
+    // visibility, which would otherwise make this assertion match its own
+    // explanation instead of a real declaration.
+    expect(wordmark![1].replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(
+      /visibility/,
     );
-    expect(targets![1]).toContain(".site-wordmark");
-    expect(targets![1]).toContain(".site-tagline");
+    // Without this the fade's invisible box would claim the same
+    // view-transition-name the masthead already holds on home.
+    expect(wordmark![1]).toMatch(/view-transition-name:\s*none/);
+
+    // The fade itself, and its reduced-motion escape. Asserted so the
+    // component and the stylesheet cannot drift apart: app/wordmark-fade.tsx
+    // sets both class names and neither does anything without a rule here.
+    expect(css).toMatch(/\.js-wordmark-observed\s+\.site-wordmark/);
+    expect(css).toMatch(/\.wordmark-visible\s+\.site-wordmark/);
+    expect(css).toMatch(
+      /prefers-reduced-motion:\s*reduce[\s\S]{0,200}js-wordmark-observed/,
+    );
   });
 });
 
