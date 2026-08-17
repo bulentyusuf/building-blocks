@@ -49,6 +49,23 @@ describe("brand accent clears AAA in both schemes", () => {
   });
 });
 
+describe("muted small-caps labels clear AA in both schemes", () => {
+  // Every uppercase micro-label site-wide (tag pills, archive counts and
+  // categories, the TOC eyebrow, "read more" links, error eyebrows) renders in
+  // --color-brand-muted rather than the retired #8a7a70 (3.80:1, below AA).
+  // brand-muted is 6.04:1 today, comfortably past the 4.5:1 floor normal-size
+  // text needs, but nothing pinned that pairing to a threshold before this, so
+  // a retune could drift it back under AA with every other check green.
+  const MIN_AA_TEXT = 4.5;
+
+  it.each(["light", "dark"] as const)("%s", (scheme) => {
+    const token = scheme === "light" ? light : dark;
+    expect(
+      contrast(token("--color-brand-muted"), token("--color-brand-bg")),
+    ).toBeGreaterThanOrEqual(MIN_AA_TEXT);
+  });
+});
+
 describe("footer small print clears AAA in both schemes", () => {
   // Derived from the source rather than hardcoded, so this covers any footer
   // text added later without being edited. Scoped to `text-white/` on purpose:
