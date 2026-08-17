@@ -203,6 +203,13 @@ revisited, it is one change reaching both call sites, not a card change plus a
 post-page exception. The rejected version shipped exactly that split and left
 the site with two tag treatments.
 
+The distinction is what the tag is DOING on the page, not where it sits. A pill
+is for a tag as metadata, attached to something else — a card, a post. A link
+is for a tag as a destination, where the tag is the subject: the `/tags`
+glossary renders tag names as sized links rather than pills, and the search
+page's empty state does the same for the same reason. Neither is a third
+treatment. Adding a fourth would be.
+
 ### Image loader passes only `w`, `q`, `fm=webp` by design
 
 Cropping is CSS-side (`object-cover`). The absence of Contentful's
