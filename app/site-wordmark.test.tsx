@@ -23,12 +23,24 @@ describe("the sticky bar's wordmark", () => {
     pathname.current = "/";
   });
 
-  it("is plain text on home", () => {
+  it("is a button on home, not a link", () => {
     // A same-URL Link click in Next 16 is a leaf-segment refresh with no
     // scroll target, so an href here would be a control that does nothing.
+    // It scrolls to the top instead, which is the action a wordmark on a
+    // scrolled page is expected to perform.
     const html = render("/");
+    expect(html).toContain("<button");
     expect(html).not.toContain("<a");
+  });
+
+  it("keeps the site name as the start of its accessible name on home", () => {
+    // WCAG 2.5.3 Label in Name. An aria-label of "Back to top" would replace
+    // the visible string rather than extend it, so speech-input users could
+    // not say what they can see.
+    const html = render("/");
     expect(html).toContain("Be Useful.");
+    expect(html).toContain("sr-only");
+    expect(html).not.toContain("aria-label");
   });
 
   it.each([
@@ -54,8 +66,10 @@ describe("the sticky bar's wordmark", () => {
     expect(render("/about")).toContain("site-wordmark");
   });
 
-  it("carries a focus ring only where something can be focused", () => {
+  it("carries a focus ring on both branches", () => {
+    // Both are focusable now. The button replaced a span, which was not, and
+    // the ring was dropped with it at the time for that reason.
+    expect(render("/")).toContain("focus-visible:ring-white");
     expect(render("/about")).toContain("focus-visible:ring-white");
-    expect(render("/")).not.toContain("focus-visible");
   });
 });
