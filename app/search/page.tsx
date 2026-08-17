@@ -1,7 +1,11 @@
+import Link from "next/link";
+import { draftMode } from "next/headers";
 import Container from "../container";
 import Breadcrumb, { type Crumb } from "../breadcrumb";
 import SearchClient from "./search-client";
 import SearchEmblem from "./search-emblem";
+import { getAllPosts } from "@/lib/api";
+import { groupPostsByTag } from "@/lib/tags";
 
 // noindex: a search page is thin content by definition and search engines
 // should discover posts directly, not via this page.
@@ -11,7 +15,19 @@ export const metadata = {
   robots: { index: false },
 };
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  const { isEnabled } = await draftMode();
+
+  // The empty state offers tags as a second entry point. groupPostsByTag
+  // carries the MIN_POSTS_PER_TAG threshold, so a tag linked here can never be
+  // one /tags/[slug] 404s on. This makes /search a data-fetching route where it
+  // previously fetched nothing at all — unavoidable, since the threshold has to
+  // be computed from posts — but getAllPosts is cached under the same "posts"
+  // tag as every other route, so the page still revalidates on publish rather
+  // than adding a fetch pattern of its own.
+  const posts = await getAllPosts(isEnabled);
+  const tags = groupPostsByTag(posts).map((group) => group.tag);
+
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Search" }];
 
   return (
@@ -60,20 +76,64 @@ export default function SearchPage() {
         </noscript>
         <SearchClient />
         {/* Empty state. Hidden by CSS as soon as the input has text (see
-            globals.css). Inline SVG so currentColor picks up the ink colour.
-            Knockout artwork: the hat, face and eye are gaps where the ground
-            shows through the ink, which only reads on a light ground. In dark
-            mode the cream ground is the glass's own silhouette, drawn inside the
-            SVG (see search-emblem.tsx), so the whole magnifying glass is lit and
-            there is no floating plate. The ink is forced to the light crimson
-            #9E2238 in dark mode (never the token, which is lifted to #EC8494 for
-            link legibility and looks washed out on cream): the emblem is on
-            cream in both schemes, so it should be the same colour in both. p-8,
-            shared by both schemes, sets a single emblem size across light and
-            dark. */}
-        <figure className="search-empty mx-auto mt-10 max-w-[16rem] p-8 text-brand-crimson dark:text-[#9E2238]">
-          <SearchEmblem />
-        </figure>
+            globals.css). The tag list lives INSIDE this wrapper rather than
+            beside it, for the same reason: .search-empty must stay the
+            immediate next sibling of .pagefind-scope for the
+            `.pagefind-scope:has(input:not(:placeholder-shown)) + .search-empty`
+            rule to fire, so anything meant to disappear once the reader starts
+            typing has to be inside the one element carrying that class, not a
+            second sibling of its own. */}
+        <div className="search-empty">
+          {/* Inline SVG so currentColor picks up the ink colour. Knockout
+              artwork: the hat, face and eye are gaps where the ground shows
+              through the ink, which only reads on a light ground. In dark mode
+              the cream ground is the glass's own silhouette, drawn inside the
+              SVG (see search-emblem.tsx), so the whole magnifying glass is lit
+              and there is no floating plate. The ink is forced to the light
+              crimson #9E2238 in dark mode (never the token, which is lifted to
+              #EC8494 for link legibility and looks washed out on cream): the
+              emblem is on cream in both schemes, so it should be the same
+              colour in both. p-8, shared by both schemes, sets a single emblem
+              size across light and dark. */}
+          <figure className="mx-auto mt-10 max-w-[16rem] p-8 text-brand-crimson dark:text-[#9E2238]">
+            <SearchEmblem />
+          </figure>
+          {tags.length > 0 && (
+            <div className="flex flex-col gap-3.5">
+              <p
+                id="tag-entry-label"
+                className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted"
+              >
+                Or start from a tag
+              </p>
+              <ul
+                aria-labelledby="tag-entry-label"
+                className="flex flex-wrap gap-x-7 gap-y-3.5"
+              >
+                {tags.map((tag) => (
+                  <li key={tag.slug}>
+                    {/* The glossary's own size (app/tags/page.tsx's h2 runs
+                        text-xl md:text-2xl) and this page's own link
+                        treatment — the noscript block above uses exactly this
+                        crimson and this hover. font-display because the
+                        glossary gets it from the base layer's h1-h3 rule and
+                        these are the same thing in a different wrapper.
+
+                        Links rather than pills because the tag is the subject
+                        here, not metadata about something else. See
+                        CLAUDE.md's tag entry. */}
+                    <Link
+                      href={`/tags/${tag.slug}`}
+                      className="font-display text-xl md:text-2xl font-bold text-brand-crimson transition-opacity duration-200 hover:opacity-80"
+                    >
+                      {tag.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </section>
     </Container>
   );
