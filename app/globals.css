@@ -25,53 +25,6 @@
 
 @plugin '@tailwindcss/typography';
 
-/*
-  Opt into CSS-only cross-document view transitions. Navigations here are full
-  document loads, which is exactly what this animates — a card cover morphs into
-  the post hero cover (matched by viewTransitionName, set in cover-image.tsx).
-  Browsers without support navigate instantly, unchanged. No JS, no library.
-*/
-@view-transition {
-  navigation: auto;
-}
-
-/* Keep the morph quick and calm to match the site, and give the root crossfade
-   a shorter beat so it does not linger behind the cover morph. */
-::view-transition-group(*) {
-  animation-duration: 0.35s;
-  animation-timing-function: ease;
-}
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.2s;
-}
-
-/* Honour prefers-reduced-motion: no morph, no root fade — navigation is
-   instant for users who opt out. */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
-
-/* The site name, in its two places. Home carries it in the band as a masthead,
-   every other page carries it in the sticky bar, and the rule below means they
-   never coexist — so one name is unique per document, which is what the spec
-   requires and what a duplicate would otherwise invalidate the whole transition
-   over.
-
-   Set and left alone. Firefox ships no cross-document view transitions, the
-   block above disables the animation entirely under reduced motion, and the
-   design has to read from the two static states regardless, so tuning a
-   duration here would be guesswork against something a large share of readers
-   never see. */
-.site-masthead,
-.site-wordmark {
-  view-transition-name: site-wordmark;
-}
-
 /* The tagline's no-JS and pre-hydration fallback, and its state below lg.
    Hidden outright, for the same reason the wordmark's is: the band names the
    site directly below and repeats this line as its standfirst. The fade rules
@@ -92,21 +45,9 @@ body:has(.site-masthead) .site-tagline {
    scripts-off and pre-hydration readers get the steady hidden state rather
    than a broken half of the animated one. */
 body:has(.site-masthead) .site-wordmark {
-  /* No-JS and pre-hydration fallback: hidden outright. Never
-     visibility: hidden — a hidden element still carries its
-     view-transition-name and would collide with the masthead's, invalidating
-     the whole transition. A display: none element does not participate in one
-     at all. */
+  /* No-JS and pre-hydration fallback: hidden outright, so the bar does not
+     name the site twice before the observer mounts. */
   display: none;
-
-  /* Disconnects the wordmark from the shared view-transition-name while it
-     lives on home, which is what lets the fade rules below hold a real but
-     invisible box instead of display: none once the observer mounts. A
-     view-transition-name must be carried by at most one generated box per
-     document; opacity: 0 still generates a box where display: none does not,
-     and the masthead already claims this name on home. Off home the general
-     .site-wordmark rule above applies unchanged. */
-  view-transition-name: none;
 }
 
 /* app/wordmark-fade.tsx marks <body> .js-wordmark-observed as soon as its
@@ -122,12 +63,7 @@ body:has(.site-masthead) .site-wordmark {
    removes all three. It is animatable only discretely, so the transition
    delays it by the fade's own duration on the way out and applies it
    immediately on the way in: the element stays operable while it is still
-   partly visible, and stops being operable the moment it is not.
-
-   This is not the visibility the fallback rule above refuses. That one is
-   about the view-transition-name collision, and the fallback still resolves
-   it with display: none plus view-transition-name: none. By the time these
-   rules apply, the name is already disconnected. */
+   partly visible, and stops being operable the moment it is not. */
 body:has(.site-masthead).js-wordmark-observed .site-wordmark {
   display: inline;
   opacity: 0;

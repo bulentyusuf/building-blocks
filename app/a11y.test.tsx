@@ -591,22 +591,20 @@ describe("home, whose band carries the masthead as its h1", () => {
     expect(tagline).not.toBeNull();
     expect(tagline![1]).toMatch(/display:\s*none/);
 
-    // The wordmark half is the fallback the fade degrades to. display: none,
-    // never visibility: hidden — a hidden element still carries its
-    // view-transition-name and would collide with the masthead's.
+    // The wordmark half is the fallback the fade degrades to: display: none,
+    // so the bar does not name the site twice before the observer mounts.
     const wordmark =
       /body:has\(\.site-masthead\)\s+\.site-wordmark\s*\{([^}]*)\}/.exec(css);
     expect(wordmark).not.toBeNull();
     expect(wordmark![1]).toMatch(/display:\s*none/);
-    // Stripped of comments first: the rule's own comment explains why not
-    // visibility, which would otherwise make this assertion match its own
-    // explanation instead of a real declaration.
+    // Not visibility: hidden. That still reserves the wordmark's box in the
+    // bar for a no-JS reader, leaving a gap before the nav where display:
+    // none lets the nav sit properly. Stripped of comments first, or this
+    // assertion would match its own explanation instead of a real
+    // declaration.
     expect(wordmark![1].replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(
       /visibility/,
     );
-    // Without this the fade's invisible box would claim the same
-    // view-transition-name the masthead already holds on home.
-    expect(wordmark![1]).toMatch(/view-transition-name:\s*none/);
 
     // The fade itself, and its reduced-motion escape. Asserted so the
     // component and the stylesheet cannot drift apart: app/wordmark-fade.tsx

@@ -24,10 +24,9 @@ import { usePathname } from "next/navigation";
 export default function SiteWordmark({ title }: { title: string }) {
   const isHome = usePathname() === "/";
 
-  // .site-wordmark carries view-transition-name and is what globals.css's
-  // hide-and-fade rules target, so it must be present on BOTH branches. Losing
-  // it on either one breaks the fade on home or the name morph everywhere
-  // else, and neither fails loudly.
+  // .site-wordmark is what globals.css's hide-and-fade rules target, so it
+  // must be present on BOTH branches. Losing it on either one breaks the fade
+  // on home, and it fails silently.
   //
   // Both branches carry the focus ring now. The span this button replaces took
   // no focus, so it deliberately had none; a button does, and an unringed one
