@@ -59,9 +59,8 @@ describe("the sticky bar's wordmark", () => {
   });
 
   it("carries .site-wordmark on both branches", () => {
-    // globals.css targets this class for the home hide-and-fade and for
-    // view-transition-name. Losing it on either branch breaks the fade or the
-    // name morph, and neither fails loudly at runtime.
+    // globals.css targets this class for the home hide-and-fade. Losing it on
+    // either branch breaks the fade, and it fails silently at runtime.
     expect(render("/")).toContain("site-wordmark");
     expect(render("/about")).toContain("site-wordmark");
   });

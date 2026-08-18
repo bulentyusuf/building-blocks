@@ -20,7 +20,6 @@ export default async function CoverImage({
   wide,
   priority = false,
   hover = false,
-  transitionName,
 }: {
   url: string;
   // The asset's Contentful `title`, rendered as the image's alt text. Defaults
@@ -55,12 +54,6 @@ export default async function CoverImage({
   // land inside this group — see the note on the Link. Reduced-motion users
   // get no movement (motion-safe: prefix), no JS.
   hover?: boolean;
-  // Cross-document view-transition name for the cover morph. Set by callers
-  // that want this cover to morph into its counterpart on the next page (a
-  // card into the post hero). Must be unique per rendered page and match the
-  // name on the destination cover. Lives on the outer shadow wrapper — never
-  // on the scaling/transform-gpu inner wrapper, which would fight the morph.
-  transitionName?: string;
 }) {
   // Cold-cache LQIP: a tiny blurred preview underlays the frame so covers show a
   // full colour wash from first paint rather than a stark void. Undefined when
@@ -98,12 +91,7 @@ export default async function CoverImage({
     // because one rule beats a post-only exception and a cover on a listing is
     // one navigation from the same cover on a banded post. On cream the light
     // keyline is the page's own colour and near-invisible.
-    <div
-      className="shadow-lg sm:mx-0"
-      style={
-        transitionName ? { viewTransitionName: transitionName } : undefined
-      }
-    >
+    <div className="shadow-lg sm:mx-0">
       <div
         className={cn(
           "relative overflow-hidden bg-brand-dark/5 border border-cover-keyline",

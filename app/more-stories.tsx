@@ -3,7 +3,6 @@ import DateComponent from "./date";
 import CoverImage from "./cover-image";
 import TagPill from "./tag-pill";
 import type { CardPost, CoverImage as CoverImageType, Tag } from "@/lib/types";
-import { createCoverNamer } from "@/lib/view-transition-name";
 import { postTags } from "@/lib/tags";
 import { widont } from "@/lib/typography";
 
@@ -53,7 +52,6 @@ function PostPreview({
   variant,
   priority = false,
   as = "h3",
-  transitionName,
   tags = [],
 }: {
   title: string;
@@ -64,7 +62,6 @@ function PostPreview({
   variant: Variant;
   priority?: boolean;
   as?: "h2" | "h3";
-  transitionName?: string;
   tags?: Tag[];
 }) {
   const Heading = as;
@@ -85,7 +82,6 @@ function PostPreview({
               alt={coverImage.title ?? ""}
               priority={priority}
               hover
-              transitionName={transitionName}
               // Capped in px above the point the container stops growing.
               // Container is max-w-5xl with px-5, so content tops out at 984px,
               // and this grid is [2fr_3fr] with a 32px gap — the cover track is
@@ -141,7 +137,6 @@ function PostPreview({
             wide
             priority={priority}
             hover
-            transitionName={transitionName}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 450px"
           />
         </div>
@@ -181,7 +176,6 @@ export default function MoreStories({
   ruled = variant === "list",
   heading,
   priorityFirst = false,
-  coverName = createCoverNamer(),
   visibleTags,
   openRule = true,
 }: {
@@ -200,11 +194,6 @@ export default function MoreStories({
   // heroless listing pages (index page 2+, category pages) where that image is
   // the LCP. Leave false where a hero already owns priority (index page 1).
   priorityFirst?: boolean;
-  // Per-render view-transition-name allocator. Pages with a hero pass their own
-  // namer so the hero and any repeated card share one name only once (see
-  // lib/view-transition-name.ts). Standalone listings get a fresh namer by
-  // default, which is enough to dedupe within this list.
-  coverName?: (slug: string) => string | undefined;
   // Pass to show tag pills; omit for no pills. It is the visibility set rather
   // than a boolean on purpose: a pill links to `/tags/[slug]`, and that route
   // 404s for a tag below MIN_POSTS_PER_TAG, so an unfiltered pill can point at
@@ -295,7 +284,6 @@ export default function MoreStories({
             variant={variant}
             priority={priorityFirst && i === 0}
             as={titleAs}
-            transitionName={coverName(post.slug)}
             tags={
               visibleTags
                 ? postTags(post).filter((t) => visibleTags.has(t.slug))

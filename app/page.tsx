@@ -18,7 +18,6 @@ import {
   SITE_DESCRIPTION,
 } from "@/lib/constants";
 import { totalPagesFor } from "@/lib/paginate";
-import { createCoverNamer } from "@/lib/view-transition-name";
 
 export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
@@ -35,7 +34,6 @@ function HeroPost({
   author,
   slug,
   tags,
-  transitionName,
 }: {
   title: string;
   coverImage?: CoverImageType;
@@ -46,7 +44,6 @@ function HeroPost({
   slug: string;
   /** Already filtered to tags with a live page, exactly as a card's are. */
   tags: Tag[];
-  transitionName?: string;
 }) {
   const showUpdated = updatedDate && updatedDate !== date;
 
@@ -113,7 +110,6 @@ function HeroPost({
             alt={coverImage.title ?? ""}
             wide
             priority
-            transitionName={transitionName}
             sizes="(max-width: 768px) 100vw, 1024px"
           />
         </div>
@@ -187,11 +183,6 @@ export default async function Page() {
   const morePosts = allPosts.slice(1, POSTS_PER_PAGE);
   const totalPages = totalPagesFor(allPosts.length);
 
-  // One name allocator for the whole page so the hero and the cards below can
-  // never emit the same cover-{slug} twice (a duplicate would invalidate the
-  // entire view transition). First occurrence — the hero — wins.
-  const coverName = createCoverNamer();
-
   // Computed once and shared. The hero and the cards must agree on which tags
   // have a live page, and two calls could only ever diverge — a tag hidden on
   // a card and shown on the hero would be worse than showing none at all.
@@ -256,7 +247,6 @@ export default async function Page() {
           slug={heroPost.slug}
           excerpt={heroPost.excerpt}
           tags={postTags(heroPost).filter((t) => visibleTags.has(t.slug))}
-          transitionName={coverName(heroPost.slug)}
         />
       )}
       {/* No `heading`. With the hero already an h2 the heading was furniture
@@ -279,7 +269,6 @@ export default async function Page() {
         variant="grid"
         ruled
         heading={null}
-        coverName={coverName}
         visibleTags={visibleTags}
       />
       <Pagination currentPage={1} totalPages={totalPages} basePath="/" />
