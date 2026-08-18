@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { scrollToTop } from "@/lib/scroll-to-top";
 
 // The site name in the sticky bar. A link to home on every route, and on home
 // itself a button that returns the reader to the top.
@@ -35,32 +36,10 @@ export default function SiteWordmark({ title }: { title: string }) {
     "site-wordmark font-display text-lg font-[700] text-white rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
 
   if (isHome) {
-    // Duplicated from app/back-to-top.tsx rather than shared. Two call sites
-    // of four lines is under this repo's own threshold for abstracting, and
-    // the two controls are free to diverge — that one is a fixed overlay with
-    // its own visibility rules, this one is chrome. If a third appears, pull
-    // it into lib/.
-    const toTop = () => {
-      const reduced = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
-
-      // Focus has to move, and this is not optional. Scrolling to the top puts
-      // the masthead back on screen, the observer fires, and the fade takes
-      // this very button to visibility: hidden about 300ms later. A focused
-      // element becoming hidden drops focus to <body>, so a keyboard reader
-      // who activated this would lose their place in the tab order entirely.
-      // #main is already tabIndex={-1} for the skip link, so it takes focus
-      // programmatically without adding a tab stop, and it is where a reader
-      // arriving at the top of the page wants to be anyway.
-      document.getElementById("main")?.focus({ preventScroll: true });
-    };
-
     return (
       <button
         type="button"
-        onClick={toTop}
+        onClick={scrollToTop}
         className={`${shared} cursor-pointer`}
       >
         {title}

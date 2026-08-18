@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { scrollToTop } from "@/lib/scroll-to-top";
 
 export default function BackToTop() {
   const [visible, setVisible] = useState(false);
@@ -13,16 +14,6 @@ export default function BackToTop() {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  function scrollToTop() {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    window.scrollTo({
-      top: 0,
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-    });
-  }
 
   return (
     /* A deliberate exception to the sitewide crimson focus outline, and the
@@ -38,7 +29,14 @@ export default function BackToTop() {
     /* opacity-0 and pointer-events-none hide it visually but leave it in the
        tab order, so keyboard users landed on an invisible control near the top
        of every page. inert removes it from both the tab order and the
-       accessibility tree while it is hidden. */
+       accessibility tree while it is hidden.
+
+       inert is also why the click handler moves focus. The button goes inert
+       the moment scrollY drops under 600, which happens while the smooth
+       scroll it just started is still running — so the element holding focus
+       becomes unfocusable a beat after it was activated, and focus falls to
+       <body>. lib/scroll-to-top.ts moves it to #main first. Removing that call
+       looks harmless and ejects every keyboard reader who uses this button. */
     <button
       type="button"
       aria-label="Back to top"
