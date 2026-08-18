@@ -176,9 +176,12 @@ export default async function PostPage({
     // where it is, in the body column below. A listing standfirst describes a
     // collection to someone deciding whether to enter it, whereas a post
     // excerpt introduces an article to a reader who has already arrived.
+    // No contentOwnsLeading, for the same reason home dropped it: the cover
+    // used to pull up 64px across the band's bottom edge and supply its own
+    // leading, and the pull-up went with the band. The article opens with a
+    // bare cover carrying no top margin, so it takes the shell's gap.
     <WidePage
       crumbs={crumbs}
-      contentOwnsLeading
       header={
         // data-pagefind-body a second time, because the h1 has left the
         // article and Pagefind indexes only what sits inside a body region.

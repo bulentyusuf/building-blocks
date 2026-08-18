@@ -59,7 +59,7 @@ export default async function TagsPage() {
             results and repeats the site name, which reads oddly next to the
             h1 and collides with the full stop in "Be Useful." */}
           {intro?.standfirst && (
-            <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
               {intro.standfirst}
             </p>
           )}

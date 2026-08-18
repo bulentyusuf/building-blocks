@@ -140,7 +140,7 @@ export default async function IndexPage({
           looking at. A fresh fork takes this path, because the fork seed is not
           being given a latest-posts entry in this change. */}
       {intro?.standfirst && (
-        <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+        <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
           {intro.standfirst}
         </p>
       )}

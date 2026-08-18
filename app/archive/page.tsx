@@ -61,12 +61,12 @@ export default async function ArchivePage() {
             Intro entry can override it, but leaving that field empty is the
             better default — typed prose here would be stale by the next post. */}
           {intro?.standfirst ? (
-            <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
               {intro.standfirst}
             </p>
           ) : (
             oldest && (
-              <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+              <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
                 {posts.length} {posts.length === 1 ? "post" : "posts"} since{" "}
                 {format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })},
                 newest first.

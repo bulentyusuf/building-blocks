@@ -46,7 +46,7 @@ export default async function AuthorsPage() {
             Authors
           </h1>
           {intro?.standfirst && (
-            <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
               {intro.standfirst}
             </p>
           )}

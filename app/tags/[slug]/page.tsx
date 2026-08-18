@@ -96,7 +96,7 @@ export default async function TagPage({
         {widont(tag.name)}
       </h1>
       {tag.description && (
-        <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+        <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
           {tag.description}
         </p>
       )}

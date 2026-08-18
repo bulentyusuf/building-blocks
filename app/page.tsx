@@ -205,14 +205,13 @@ export default async function Page() {
     // post headlines under it, which is what a per-component override would
     // have papered over.
     //
-    // contentOwnsLeading gates on the cover, the same as the post page: a
-    // hero with an image supplies its own leading under the header the way
-    // every listing item does; a hero with nothing to pull up takes the
-    // larger gap the section fronts use. Every post carries a cover today, so
-    // this is insurance rather than a live case — but it is the difference
-    // between a guard and an assumption.
+    // No contentOwnsLeading. It gated on the cover while the cover pulled up
+    // across the band's bottom edge and supplied its own leading that way. The
+    // pull-up is gone with the band, so the hero brings no top margin at all
+    // and takes WidePage's own gap below the rule like every other route whose
+    // content opens with a bare element. Setting it here would leave the cover
+    // flush against a 3px line.
     <WidePage
-      contentOwnsLeading={Boolean(heroPost?.coverImage)}
       header={
         <>
           {/* The full stop is wrapped in crimson when the title carries a
@@ -231,7 +230,7 @@ export default async function Page() {
               SITE_TITLE
             )}
           </h1>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed">
+          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted">
             {SITE_DESCRIPTION}
           </p>
         </>

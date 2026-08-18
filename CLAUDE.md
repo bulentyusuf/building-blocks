@@ -147,11 +147,28 @@ the PR #398 salvage plan.
 
 `app/wide-page.tsx` is the shell every wide route renders through, and it now
 carries the full argument for what replaced the band in its own docstring: a
-`<header>` element holding one spacing value in place of the band's old
-two-part inset (its own `pt-8`/`pb-8` plus `Container`'s separate `pt-6`
-"tight" gap), and a 3px `border-brand-dark` rule standing in for the colour
+`<header>` closed by a 3px `border-brand-dark` rule standing in for the colour
 boundary the band drew for free. Read that docstring before touching either
 piece.
+
+**The band's inset stays two numbers, one on each side of the rule.** It was
+two because it was two colours — `pb-8` of navy below the header, then
+`Container`'s `pt-6` of cream below the band's edge — and one surface does not
+merge them, because the rule now sits where the colour step used to and which
+side each number falls on is the whole point. Folding both into the header's
+bottom margin preserves the total and puts all of it above the boundary, which
+leaves the first content element flush against a 3px line on home, the post
+page and the four section fronts. The ruled listings hide it, because their
+items carry `py-10 md:py-12` of their own, so a green suite is not evidence
+either way — `lib/listing-rhythm.test.ts` asserts both halves separately.
+
+`contentOwnsLeading` therefore suppresses the gap **below** the rule, never
+the header's margin above it. A prop meaning "the content below supplies its
+own space" cannot be spent on the space above the boundary. Only
+`app/listing-page.tsx` sets it. Home and the post page set it before the
+retirement, because their covers pulled up across the band's edge and supplied
+their own leading that way; the pull-ups went with the band and the flag had
+to follow.
 
 What went with the band: the `bleed` prop and the `-mt-16` cover pull-up on
 home and the post page — covers are contained now, like every other cover on

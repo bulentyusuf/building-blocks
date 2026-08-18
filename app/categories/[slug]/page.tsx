@@ -85,7 +85,7 @@ export default async function CategoryPage({
         {widont(category.name)}
       </h1>
       {category.description && (
-        <p className="max-w-3xl text-lg leading-relaxed text-pretty">
+        <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
           {category.description}
         </p>
       )}

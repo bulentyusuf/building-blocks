@@ -125,10 +125,70 @@ describe("footer small print clears AAA in both schemes", () => {
 //     ordinary body ink reads fine on the cream WidePage now renders on.
 //   - "no route paints body ink inside the band" was the same guard from the
 //     per-route end: an explicit text-brand-muted on a standfirst used to
-//     beat white inheritance and land dark ink on navy. With no white
-//     inheritance to beat, a standfirst naming brand-muted is just an
-//     ordinary meta-text treatment, the same as a byline or a breadcrumb —
-//     not a defect to guard against.
+//     beat white inheritance and land dark ink on navy.
+//
+// Four of those five lapse. The fifth INVERTS, and it is the one that matters,
+// because the rule it encoded did not go away — it reversed. Under the band a
+// standfirst naming NO colour was correct, because it took solid white from
+// the band's root. On cream, naming no colour means body ink, which is not the
+// Standfirst role (audit role 4: text-lg, muted, roman) and leaves the
+// standfirst competing with the h1 above it instead of sitting under it. That
+// is a thirteen-route defect that looks merely slightly heavy rather than
+// broken, which is exactly the class of thing a guard is for. Retiring this
+// one without reversing it is how it shipped.
+
+describe("every wide route's standfirst takes the Standfirst role", () => {
+  // Anchored on the standfirst signature rather than on a route's structure.
+  // The retired guard recorded why: slicing on <PageBand> broke the moment
+  // routes started passing their header through WidePage, and a guard that
+  // silently stops covering anything when markup is recomposed is worse than
+  // none.
+  const STANDFIRST = /className="[^"]*max-w-3xl text-lg leading-relaxed[^"]*"/g;
+
+  it.each([
+    "app/page.tsx",
+    "app/page/[page]/page.tsx",
+    "app/categories/page.tsx",
+    "app/tags/page.tsx",
+    "app/authors/page.tsx",
+    "app/archive/page.tsx",
+    "app/categories/[slug]/page.tsx",
+    "app/categories/[slug]/page/[page]/page.tsx",
+    "app/tags/[slug]/page.tsx",
+    "app/tags/[slug]/page/[page]/page.tsx",
+    // The author routes carry theirs as a RichText wrapper rather than a <p>,
+    // and it matches the same signature.
+    "app/authors/[slug]/page.tsx",
+    "app/authors/[slug]/page/[page]/page.tsx",
+  ])("%s", (file) => {
+    const found = [...(read(file).match(STANDFIRST) ?? [])];
+    // Non-vacuous: every route listed renders one, so an empty list means the
+    // signature stopped matching, not that the page is clean.
+    expect(found.length).toBeGreaterThan(0);
+    for (const className of found)
+      expect(className).toMatch(/text-brand-muted/);
+  });
+
+  it("the position caption takes it too", () => {
+    // It named no colour in the band, separating by size alone because the
+    // band forbade tinted text. On cream it is a meta line like any other.
+    expect(read("app/page-context.tsx")).toMatch(/text-brand-muted/);
+  });
+
+  it("home's masthead accents the stop with the TOKEN, never a literal", () => {
+    // The light crimson on the dark page is 2.44:1. brand-crimson lifts to the
+    // dark scheme's own value on its own, so the class is the only safe way to
+    // write this.
+    //
+    // The negative half looks for an arbitrary-value colour utility rather
+    // than for a hex anywhere in the file, because hexes appear in comments
+    // explaining exactly this, and a guard that fails on its own rationale is
+    // a guard nobody keeps.
+    const home = read("app/page.tsx");
+    expect(home).toMatch(/<span className="text-brand-crimson">/);
+    expect(home).not.toMatch(/text-\[#[0-9a-fA-F]{3,8}\]/);
+  });
+});
 
 describe("literal hexes track the tokens they duplicate", () => {
   // Channel comparison, not string: globals.css writes tokens lowercase and the

@@ -100,14 +100,22 @@ describe("a wide page sits on the same grid as a narrow one", () => {
     expect(read("app/container.tsx")).toMatch(/max-w-5xl mx-auto px-5 pt-8/);
   });
 
-  it("WidePage's header carries exactly one spacing value, not two", () => {
-    // The replacement for the band's own two-part inset: contentOwnsLeading
-    // still selects between a smaller and a larger gap, but each is now a
-    // single margin on the header rather than a band inset plus a separate
-    // Container top padding.
-    expect(read("app/wide-page.tsx")).toMatch(
-      /contentOwnsLeading \? "mb-8" : "mb-14"/,
-    );
+  it("WidePage keeps the band's two insets on their own sides of the rule", () => {
+    // The band's inset was two numbers because it was two colours: pb-8 of
+    // navy below the header, then Container's pt-6 of cream below the band's
+    // edge. One surface does not merge them, because the rule now sits where
+    // the colour step used to, and which side each number falls on is the
+    // whole point.
+    //
+    // Folding both into the header's bottom margin preserves the TOTAL and
+    // moves all of it above the boundary, which leaves the first content
+    // element flush against a 3px line on home, the post page and the four
+    // section fronts. The ruled listings hide it, because their items carry
+    // py-10 md:py-12 of their own — which is why a green suite is not evidence
+    // here and why this asserts both halves separately.
+    const wide = read("app/wide-page.tsx");
+    expect(wide).toMatch(/<header className="mb-8">/);
+    expect(wide).toMatch(/contentOwnsLeading \? undefined : "pt-6"/);
   });
 
   it("the 3px rule that replaced the band's edge inherits the ink token", () => {
@@ -224,9 +232,31 @@ describe("a listing under the header contributes no leading of its own", () => {
     expect(read("app/listing-page.tsx")).toMatch(/contentOwnsLeading/);
   });
 
-  it("WidePage maps that to the smaller header margin", () => {
+  it("WidePage maps that to no gap below the rule", () => {
+    // Below, not above. A prop meaning "the content below supplies its own
+    // space" cannot be spent on the space above the boundary — doing that
+    // makes the header-to-rule distance depend on what the content does,
+    // which is backwards, and leaves the gap it was meant to suppress at zero
+    // for every route that never set the flag.
     expect(read("app/wide-page.tsx")).toMatch(
-      /contentOwnsLeading \? "mb-8" : "mb-14"/,
+      /contentOwnsLeading \? undefined : "pt-6"/,
     );
+  });
+
+  it("only the ruled listing claims it", () => {
+    // Home and the post page set it before the retirement, because their
+    // covers pulled up across the band's edge and supplied their own leading
+    // that way. The pull-ups went with the band and the flag had to follow,
+    // or both open flush against the rule.
+    //
+    // Anchored on the JSX prop form — start of line, then the name, then `=`
+    // or end of line — rather than on the bare word. Both files explain in a
+    // comment why they no longer pass it, and a guard that fails on its own
+    // rationale is a guard nobody keeps. A `//` comment cannot match this.
+    const PASSED = /^\s*contentOwnsLeading(=|\s*$)/m;
+    expect(read("app/page.tsx")).not.toMatch(PASSED);
+    expect(read("app/posts/[slug]/page.tsx")).not.toMatch(PASSED);
+    // Non-vacuous: the one route that DOES claim it still does.
+    expect(read("app/listing-page.tsx")).toMatch(PASSED);
   });
 });

@@ -135,7 +135,7 @@ export default async function AuthorPaginatedPage({
         // RichText on cream needs no link treatment of its own — brand-crimson
         // reads fine here, which is what every other prose link on the site
         // already relies on.
-        <div className="mt-4 max-w-3xl text-lg leading-relaxed text-pretty">
+        <div className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
           <RichText content={author.bio} headings={[]} />
         </div>
       )}
