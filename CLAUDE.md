@@ -1067,6 +1067,22 @@ The major is not arbitrary: Node 20 reached end-of-life on 30 April 2026, and
 Vercel was warning that deployments created on or after 2026-10-01 would fail to
 build on it.
 
+### Two copies of `@contentful/rich-text-types`, and only one ships
+
+The app resolves `17.x`. `contentful-management`, pulled in by the
+`contentful-import` devDependency for the CMS import scripts, requires
+`^16.6.1` and nests its own copy, marked `dev` in the lockfile. Checked
+August 2026: no released `contentful-management` accepts `17.x`, so this
+cannot be deduped. `npm ls --omit=dev` shows one copy, which is the check
+that matters. Do not force a resolution to tidy it — that breaks the import
+scripts.
+
+The repo carried `legacy-peer-deps=true` in a committed `.npmrc` until the
+same change, which suppressed every peer conflict rather than just this one.
+Vercel reads that file too, so installs and deployments now fail loudly on an
+incompatible dependency instead of accepting it silently. That is the point.
+Resolve the conflict; do not restore the file.
+
 ### The content model lives in two spaces, and a schema change must reach both
 
 `rczsnwq9z69e` is the live space. `18c3oqmr28q0` is **Demo Site**, which the
