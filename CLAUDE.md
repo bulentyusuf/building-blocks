@@ -382,18 +382,33 @@ Four constraints. `lib/sidenote.tsx` argues the first two in full:
 `lib/rich-text.test.tsx` guards the phrasing-content rule, the absent `<button>`
 and the numbering.
 
-### Cross-document view transitions are CSS-only, and names must stay unique
+### Cross-document view transitions were removed, and why they never ran
 
-`@view-transition { navigation: auto }` in `app/globals.css` opts in.
-Navigations here are full document loads, which is exactly what this animates —
-no JS, no library, and browsers without support navigate instantly.
+The site opted in with `@view-transition { navigation: auto }` in
+`app/globals.css`, plus `view-transition-name` on every cover and on the
+wordmark, and a deleted `view-transition-name.ts` in `lib/` allocating unique
+names per page. None of it ever animated anything.
 
-The spec requires unique names per page, so `createCoverNamer()` in
-`lib/view-transition-name.ts` hands out `cover-{slug}` at most once per render
-pass: a post appearing twice, hero plus list, would otherwise name the same
-cover twice, and a duplicate invalidates the entire transition. Reset per
-request, do not memoise across requests. The 0.35s group and 0.2s root durations
-are tuned, and the `prefers-reduced-motion` block disables the animation.
+`@view-transition` is the CROSS-document API. It fires only when one document
+replaces another. Every link here is a Next `<Link>`, which intercepts the
+click and navigates client-side, so no document is ever replaced and the
+transition never starts. The mechanism and the router were never compatible.
+It shipped dead and stayed dead, unnoticed, for months.
+
+The App Router's own mechanism is React's `<ViewTransition>` component, which
+does SAME-document transitions and is activated by React Transitions, which
+Next route navigations are. Migrating to it is a real option and was declined
+in August 2026 on the grounds that a feature nobody missed for months is not
+one worth rebuilding. If it is ever revisited: wrap the listing card's cover
+and the post hero's cover in `<ViewTransition name={...}>` with `share="morph"`
+and `default="none"` on both, drop `default="none"` at your peril since the
+pair silently stops morphing without an explicit `share`, and note the morph
+only plays when the destination is prefetched and renders in the same commit
+as the navigation.
+
+Nothing in the codebase should now name a view transition. If a
+`view-transition-name`, a `viewTransitionName` or a `transitionName` prop
+reappears without this entry being rewritten first, it is dead code again.
 
 ### Tags have their own pages, and `/tags` is the index
 
@@ -787,13 +802,13 @@ at identical coordinates sitewide.
   Rendering it as plain text on home was tried next and left the control dead
   rather than simply absent, at exactly the scroll position where "back to
   top" is the one thing a reader might want from it.
-- **The bar's wordmark machinery is a known local optimum, not an ideal.** Six
+- **The bar's wordmark machinery is a known local optimum, not an ideal.** Five
   mechanisms manage the visibility and behaviour of one word: the `:has()`
-  hide, a `view-transition-name` override, the opacity fade, a `visibility`
-  pair keeping the faded box out of hit testing and the tab order, a
-  `usePathname` re-attach for client-side navigation, and an `lg`-scoped rule
-  keeping the tagline off mobile. Plus `app/wordmark-fade.tsx`,
-  `app/site-wordmark.tsx` and about a dozen assertions in `app/a11y.test.tsx`.
+  hide, the opacity fade, a `visibility` pair keeping the faded box out of hit
+  testing and the tab order, a `usePathname` re-attach for client-side
+  navigation, and an `lg`-scoped rule keeping the tagline off mobile. Plus
+  `app/wordmark-fade.tsx`, `app/site-wordmark.tsx` and about a dozen
+  assertions in `app/a11y.test.tsx`.
 
   All of it exists because home's band carries `SITE_TITLE` while the bar
   carries it too, 100px apart. That is one editorial decision, and it is the
