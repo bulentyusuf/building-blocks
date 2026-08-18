@@ -25,3 +25,15 @@ describe("prose measure", () => {
     expect(declarations).not.toMatch(/max-width:\s*[\d.]+ch/);
   });
 });
+
+describe("scrollbar gutter", () => {
+  it("reserves the scrollbar gutter, so short pages do not shift sideways", () => {
+    // Without this, /search with an empty query has no scrollbar, a viewport
+    // ~15px wider than every page that scrolls, and every mx-auto element on it
+    // lands ~7.5px right of where it sits elsewhere. Nothing about the markup
+    // differs between those pages, so nothing else would catch a regression.
+    const html = /\bhtml\s*\{([^}]*)\}/.exec(css);
+    expect(html).not.toBeNull();
+    expect(html![1]).toMatch(/scrollbar-gutter:\s*stable/);
+  });
+});
