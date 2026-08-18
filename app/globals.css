@@ -143,41 +143,27 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
   --default-font-family: var(--font-body);
 
   --color-brand-crimson: #9e2238;
-  --color-brand-header: #1e3a8a;
+  /* Chrome colour, carried by the sticky bar AND the footer. One token for
+     both, which is the point of the aubergine: the bar was #1E3A8A and the
+     footer #241B1D, 1.62 apart and in different hue families, so the top and
+     bottom of every page read as two unrelated surfaces. White on this is
+     15.66:1.
 
-  /* Masthead band on the browsing pages. Lifted in dark mode (below), and the
-     thing to understand before retuning either value is WHAT stays fixed.
+     Retired with this change: --color-brand-band (the masthead band, #0F1C42
+     light / #1B2F6B dark) and --color-footer-bg (#241B1D light / #2E2420
+     dark). Three chrome tokens across two hue families become one.
 
-     What is fixed is the step between the sticky bar and the band: 1.60:1 in
-     light, 1.55:1 in dark, band darker in both. That relationship is the
-     design — the bar reads as the light end of a two-step ramp, and the seam
-     where they meet is deliberate rather than an artefact. The PAGE is the
-     thing that changes which side of the band it sits on, so two blues that
-     both moved between schemes have not drifted; they moved together to hold
-     that step while the ground under them inverted.
+     The band could not survive this colour, and that is why it went first
+     rather than as a matter of taste. The repo's chrome ramp is a 1.60:1 step
+     between bar and band, band darker. #2B1C3F is dark enough that pure black
+     beneath it reaches only 1.34:1, so no band value fits under it at any hue.
+     Dark mode fails from the other side — see the dark override below.
 
-     Why the dark value must be lifted at all: a dark block cannot read on a
-     dark page. At the light-mode #0F1C42 the band sits at 1.13:1 against the
-     #17110F page, which is no block at all — the bar would appear to float on
-     bare page with a large h1 beneath it. #1B2F6B gives 1.48:1. That makes the
-     band lighter than the page in dark and darker than it in light, which is
-     not an inconsistency: the header bar and the footer already run
-     chrome-lighter-than-content in dark, so this conforms to the scheme rather
-     than inverting it. lib/palette-contrast.test.ts holds the separation in
-     both schemes, which is the guard the 1.13:1 version would have failed.
-
-     A separate token rather than a reuse of --color-brand-header because the
-     two need different amounts of lift: brand-header rises to #2E4A9E so a
-     52px bar separates from a near-black page, and a 200px block needs less.
-     Not derived from it with color-mix either — see the note on
-     --color-control-edge for why a hand-carried literal beats a color-mix over
-     a var() in this file. The name says what it is rather than what it is
-     derived from, because palette work here is done across the whole spectrum
-     at once and a name encoding a derivation would promise something nothing
-     enforces. Where a relationship does need holding, a test holds it.
-
-     White holds at 16.60:1 on the light value and 12.61:1 on the dark one. */
-  --color-brand-band: #0f1c42;
+     Literal twins live in lib/constants.ts as BRAND_HEADER_COLOR and
+     BRAND_HEADER_COLOR_DARK, because the viewport themeColor and the PWA
+     manifest cannot read a custom property. lib/palette-contrast.test.ts holds
+     them to these values. */
+  --color-brand-header: #2b1c3f;
 
   --color-brand-dark: #241b1d;
   --color-brand-bg: #faf5f1;
@@ -212,17 +198,18 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
   --color-control-edge: rgb(107 90 82 / 0.7);
 
   /* The edge around a cover image. A fourth edge role after dividers, image
-     frames and control boundaries, and its only job is block visibility where a
-     cover sits on the band. The post cover crosses the band's bottom edge, so
-     one image has navy behind its top and cream behind the rest.
+     frames and control boundaries. Its original job was block visibility where
+     a cover sat on the masthead band, whose bottom edge the post cover crossed
+     — one image with navy behind its top and cream behind the rest. The band
+     is retired and no cover crosses a seam now.
 
      Why an edge is needed at all when covers already carry shadow-lg. That
      shadow is black at roughly 18% composited, which gives 1.52:1 on
-     --color-brand-bg and 1.06:1 on --color-brand-band. It does the whole job on
-     cream and none of it on navy, and navy is exactly the half this treatment
-     adds. In light mode the cover crosses from near-black to near-white, so no
-     single edge colour reads on both grounds. The two mechanisms split the job
-     and neither competes, because each is invisible where the other works.
+     --color-brand-bg. That is most of the job on cream but not all of it, and
+     this is the remainder. The two mechanisms split the work and neither
+     competes, because each is invisible where the other works. Nothing about
+     the half the shadow cannot do was ever specific to navy, which is why the
+     token outlived the band.
 
      The light value is cream, the same family as --color-brand-bg, so it is
      near-invisible on the cream page where the shadow is working and reads at
@@ -246,12 +233,6 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
      on the lifted-crimson prompt header — points here instead so it never flips
      to light. Deliberately excluded from the dark override. */
   --color-surface-dark: #241b1d;
-
-  /* Footer band. In light mode it equals surface-dark (#241B1D on the light
-     page). It gets its OWN token because dark mode raises it (below) for band
-     separation, whereas surface-dark must stay put to keep the on-crimson ink
-     contrast — the two roles diverge in dark mode. */
-  --color-footer-bg: #241b1d;
 
   /* Table treatment. Derived from the crimson token rather than the divider
      hairline, whose light value is a cool grey on a warm cream page and sits
@@ -294,19 +275,18 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
     --color-brand-dark: #f2eae4; /* warm off-white ink */
     --color-brand-muted: #b3a49c; /* lifted so meta text keeps AA on dark */
     --color-brand-crimson: #ec8494; /* lifted so links stay vivid + AAA on dark */
-    --color-brand-header: #2e4a9e; /* lifted so the bar reads distinct from page */
+    /* Lifted for the same reason the old bar navy was: a dark block cannot
+       read on a dark page. #2B1C3F behind it would sit at 1.02:1 against the
+       #17110F page, which is no block at all. #3B2A52 gives 1.46:1, clearing
+       the 1.4 block-visibility floor by 0.06 — the narrowest margin anywhere
+       in this palette, which is why lib/palette-contrast.test.ts asserts it.
+       White on it is 12.81:1.
 
-    /* Lifted less than the bar above, holding the 1.55:1 step between them.
-       The light #0F1C42 would sit at 1.13:1 on this page and vanish. See the
-       full argument on the light value. */
-    --color-brand-band: #1b2f6b;
-
-    /* Raise the footer band so it reads as distinct above the page. Pinned to
-       surface-dark (#241B1D) it sat at only 1.11:1 vs the #17110F page and
-       dissolved into it; #2E2420 clears the ~1.2 separation threshold (1.24:1)
-       while footer white/60 text stays at 6.3:1. In light mode the footer is
-       darker than the page to stand out; in dark mode it must be lighter. */
-    --color-footer-bg: #2e2420;
+       That 0.06 is also the second half of why the band went first: a band a
+       1.55 step darker than this would sit BELOW the page and invert. Making
+       room for one would mean lifting this to roughly 2.18 against the page,
+       which is a markedly louder violet. */
+    --color-brand-header: #3b2a52;
 
     /* Warm off-white at low alpha, matching the ink. The light #e5e7eb reads
        at ~15:1 on the #17110F page and glares. */
@@ -414,9 +394,9 @@ html {
 /*
   One focus indicator for the whole site. Crimson picks up the accent token, so
   it inverts with the scheme automatically (#9E2238 light, #EC8494 dark) and
-  clears 3:1 against both page backgrounds. Elements sitting on the coloured
-  header or footer bands override this locally with a white ring, because
-  crimson on navy does not clear contrast — see app/layout.tsx.
+  clears 3:1 against both page backgrounds. Elements sitting on the sticky bar
+  or the footer override this locally with a white ring, because crimson on the
+  aubergine chrome does not clear contrast (2.04:1) — see app/layout.tsx.
 */
 @layer base {
   :focus-visible {
@@ -483,26 +463,6 @@ html {
 .sidenote-wrap {
   display: inline;
   counter-increment: sidenote;
-}
-
-/*
-  Rich text rendered inside the masthead band — today only an author's bio.
-
-  Everything RichText emits is fine on navy by inheriting the band's white:
-  emphasis is italic, lists are bullets, neither carries colour. Links are the
-  exception. They are the one thing the band cannot take from the palette,
-  because brand-crimson on brand-band is 1.35:1, so an underline identifies
-  them instead and the colour stays white.
-
-  That is a WCAG 1.4.1 requirement rather than a preference: with the accent
-  unavailable, colour cannot be the only thing distinguishing a link from the
-  prose around it. Unlayered on purpose, like the sidenote rules below — author
-  styles outrank the utilities layer, so this cannot be lost to a stray utility
-  on the wrapper.
-*/
-.band-prose a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 /* In-text marker: 2xl+ only. */
@@ -688,8 +648,8 @@ html {
   --tw-prose-quote-borders: var(--color-brand-crimson);
   --tw-prose-captions: var(--color-brand-muted);
   /* Was brand-dark at 15%/10%, which composited to 1.22:1 (light) and 1.27:1
-     (dark) against the page — at or below the ~1.2 separation threshold noted
-     on --color-footer-bg, and the only dividers in the system that never got
+     (dark) against the page — at or below the ~1.2 block-separation threshold
+     chrome is held to sitewide, and the only dividers in the system that never got
      the dark-mode lift --color-hairline carries. Both now defer to that token,
      so table rules track every other rule on the site and there is one alpha to
      maintain rather than three. The header rule stays a step stronger than the
@@ -730,8 +690,9 @@ html {
        sat on the margin and the letterforms inside began 0.4em further right,
        so that line read as indented — and where a pill lands is not knowable
        from the CMS. The tint alone still separates: 12% lands at 1.22:1
-       (light) and 1.20:1 (dark) against the page, matching the ~1.2 threshold
-       used for --color-footer-bg, while ink on the fill stays above 12.7:1 in
+       (light) and 1.20:1 (dark) against the page, matching the ~1.2
+       block-separation threshold chrome is held to sitewide, while ink on the
+       fill stays above 12.7:1 in
        both modes. */
     background-color: color-mix(
       in srgb,

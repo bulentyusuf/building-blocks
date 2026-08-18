@@ -143,14 +143,20 @@ export const POSTS_PER_PAGE = 5;
 
 export const AUTHOR_EMAIL = `contact@${SITE_HOSTNAME}`;
 
-// Header band colour. CSS twin lives in app/globals.css as --color-brand-header;
-// keep both at #1E3A8A (CSS @theme cannot import from TS).
-export const BRAND_HEADER_COLOR = "#1E3A8A";
+// Chrome colour, carried by the sticky bar and the footer. CSS twin lives in
+// app/globals.css as --color-brand-header; keep both at #2B1C3F (CSS @theme
+// cannot import from TS). Feeds the light-scheme viewport themeColor and the
+// PWA manifest's theme_color.
+export const BRAND_HEADER_COLOR = "#2B1C3F";
 
-// Dark-scheme header band, used for the scheme-aware viewport themeColor so the
-// mobile address bar matches the header in dark mode. CSS twin is the
+// Dark-scheme chrome, used for the scheme-aware viewport themeColor so the
+// mobile address bar matches the bar in dark mode. CSS twin is the
 // --color-brand-header override under prefers-color-scheme: dark in globals.css.
-export const BRAND_HEADER_COLOR_DARK = "#2E4A9E";
+//
+// Both were navy (#1E3A8A / #2E4A9E) until the aubergine change. They are the
+// only copies of the chrome colour that live outside globals.css, so
+// lib/palette-contrast.test.ts holds each against its own scheme's token.
+export const BRAND_HEADER_COLOR_DARK = "#3B2A52";
 
 // BCP-47 default locale for html lang and hreflang. Matches the renamed
 // Contentful default locale (en-GB). Phase 1 localisation makes this per-route.

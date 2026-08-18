@@ -172,19 +172,16 @@ export default async function PostPage({
     : [{ label: "Home", href: "/" }, { label: post.title }];
 
   return (
-    // The band's contents are the trail and the title, and the excerpt stays
-    // where it is. A listing standfirst describes a collection to someone
-    // deciding whether to enter it, whereas a post excerpt introduces an
-    // article to a reader who has already arrived. With the cover crossing the
-    // edge the band reads as trail, title, top of the picture, which is a
-    // complete masthead rather than a shortened one.
-    //
-    // `bleed` tracks the cover, because it exists to make room for one. A post
-    // without a cover has nothing to pull up and takes the ordinary inset.
+    // The masthead's contents are the trail and the title; the excerpt stays
+    // where it is, in the body column below. A listing standfirst describes a
+    // collection to someone deciding whether to enter it, whereas a post
+    // excerpt introduces an article to a reader who has already arrived.
+    // No contentOwnsLeading, for the same reason home dropped it: the cover
+    // used to pull up 64px across the band's bottom edge and supply its own
+    // leading, and the pull-up went with the band. The article opens with a
+    // bare cover carrying no top margin, so it takes the shell's gap.
     <WidePage
       crumbs={crumbs}
-      bleed={Boolean(post.coverImage)}
-      contentOwnsLeading
       header={
         // data-pagefind-body a second time, because the h1 has left the
         // article and Pagefind indexes only what sits inside a body region.
@@ -220,12 +217,8 @@ export default async function PostPage({
         data-url={`/posts/${slug}`}
         className="mx-auto max-w-5xl"
       >
-        {/* relative so the cover paints above the band rather than under it.
-            The -mt-16 is the 64px the band's pb-24 was deepened to absorb, so
-            the body below sits exactly where it always did and only the navy
-            behind the cover's top is new. */}
         {post.coverImage && (
-          <div className="relative -mt-16 mb-10">
+          <div className="mb-10">
             <CoverImage
               url={post.coverImage.url}
               alt={post.coverImage.title ?? ""}

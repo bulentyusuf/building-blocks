@@ -2,19 +2,21 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-// The band-to-list rhythm, which has broken twice and is invisible to every
+// The header-to-list rhythm, which has broken twice and is invisible to every
 // other suite: jsdom applies no stylesheet, so nothing here can be caught by
 // rendering. Both halves are asserted as source text instead.
 //
-// The rule: whatever sits above a list item — a hairline between items, or the
-// bottom edge of the masthead band — belongs the same distance from the cover
-// below it. That distance is the item's own top padding. So exactly one of the
-// two may contribute space, never both and never neither.
+// The rule: whatever sits above a list item — a hairline between items, or
+// WidePage's own 3px rule (formerly the masthead band's bottom edge; see
+// CLAUDE.md, "The masthead band was retired in favour of a 3px rule") —
+// belongs the same distance from the cover below it. That distance is the
+// item's own top padding. So exactly one of the two may contribute space,
+// never both and never neither.
 
 const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
 
-describe("a banded listing keeps its item padding", () => {
+describe("a listing under WidePage's header keeps its item padding", () => {
   const moreStories = read("app/more-stories.tsx");
 
   it("never zeroes the first item's top padding", () => {
@@ -66,47 +68,62 @@ describe("a banded listing keeps its item padding", () => {
   });
 });
 
-describe("a banded page sits on the same grid as an unbanded one", () => {
+describe("a wide page sits on the same grid as a narrow one", () => {
   // A browse page and a post are one navigation apart, and that navigation is
   // a full document load with a view transition over it — so a difference here
-  // is animated, not just present. Both values below were tightened on the
-  // band alone at one point, which moved the heading 16px on desktop and 20px
-  // on mobile every time the reader crossed between the two.
+  // is animated, not just present.
+  //
+  // Three assertions retired here, from before Phase 1 of the band retirement
+  // (CLAUDE.md, "The masthead band was retired in favour of a 3px rule"):
+  //
+  // "the band's top inset equals Container's default top padding" compared
+  // app/page-band.tsx's own pt-8 against Container's — both gone now that
+  // WidePage renders one Container carrying a single pt-8 for every wide
+  // route, replaced by the assertion below that this value is the one every
+  // page, banded or not, ever had.
+  //
+  // "the bleed variant only ever deepens the bottom" tested the arithmetic
+  // behind the `bleed` prop, which pulled a cover up across the band's
+  // bottom edge. Covers are contained now (see "Covers take one of two
+  // frames" in CLAUDE.md) and WidePage no longer accepts the prop at all.
+  //
+  // "both breadcrumb tones keep the same bottom margin" guarded against the
+  // dark (on-band) and light (on-cream) trail treatments in app/breadcrumb.tsx
+  // drifting apart. There is only one treatment now — the `tone` prop is
+  // gone — so the two values this compared no longer exist to disagree.
 
-  it("the band's top inset equals Container's default top padding", () => {
-    // Targeted at pt- specifically, which is the value this was always about.
-    // It read `py-` until the bottom became variable, and a py-only pattern
-    // fails open against a split inset: it matches nothing and passes, or it
-    // matches a py- that no longer describes the bottom at all.
-    const band = /px-5 pt-(\d+)/.exec(read("app/page-band.tsx"));
-    expect(band).not.toBeNull();
-    const container = /default: "pt-(\d+)"/.exec(read("app/container.tsx"));
-    expect(container).not.toBeNull();
-    // The same number, so the breadcrumb starts at the same distance below the
-    // sticky header on every page.
-    expect(band![1]).toBe(container![1]);
+  it("Container's top padding is the one every wide and narrow page shares", () => {
+    // WidePage no longer varies its own top inset — see the retirement note
+    // above — so the single pt-8 in app/container.tsx is what every route on
+    // the site, banded or not, has always used to sit the same distance below
+    // the sticky header.
+    expect(read("app/container.tsx")).toMatch(/max-w-5xl mx-auto px-5 pt-8/);
   });
 
-  it("the bleed variant only ever deepens the bottom", () => {
-    // The overlap is the whole point of the variant, and it exists only while
-    // the bottom is bigger than the top. Equal values would still render, look
-    // almost right, and silently leave the cover with no navy to sit on.
-    const source = read("app/page-band.tsx");
-    const top = /px-5 pt-(\d+)/.exec(source);
-    const bleed = /bleed \? "pb-(\d+)" : "pb-(\d+)"/.exec(source);
-    expect(bleed).not.toBeNull();
-    // The unbled bottom stays equal to the top, which is what keeps every
-    // other banded route rendering the inset it always had.
-    expect(bleed![2]).toBe(top![1]);
-    expect(Number(bleed![1])).toBeGreaterThan(Number(top![1]));
+  it("WidePage keeps the band's two insets on their own sides of the rule", () => {
+    // The band's inset was two numbers because it was two colours: pb-8 of
+    // navy below the header, then Container's pt-6 of cream below the band's
+    // edge. One surface does not merge them, because the rule now sits where
+    // the colour step used to, and which side each number falls on is the
+    // whole point.
+    //
+    // Folding both into the header's bottom margin preserves the TOTAL and
+    // moves all of it above the boundary, which leaves the first content
+    // element flush against a 3px line on home, the post page and the four
+    // section fronts. The ruled listings hide it, because their items carry
+    // py-10 md:py-12 of their own — which is why a green suite is not evidence
+    // here and why this asserts both halves separately.
+    const wide = read("app/wide-page.tsx");
+    expect(wide).toMatch(/<header className="mb-8">/);
+    expect(wide).toMatch(/contentOwnsLeading \? undefined : "pt-6"/);
   });
 
-  it("both breadcrumb tones keep the same bottom margin", () => {
-    const navs = [
-      ...read("app/breadcrumb.tsx").matchAll(/nav: "([^"]*)"/g),
-    ].map((m) => m[1]);
-    expect(navs).toHaveLength(2);
-    expect(navs[0]).toBe(navs[1]);
+  it("the 3px rule that replaced the band's edge inherits the ink token", () => {
+    // Not a literal hex — it has to invert with the scheme exactly as body
+    // ink does, which a hand-picked colour would not do for free.
+    expect(read("app/wide-page.tsx")).toMatch(
+      /border-t-\[3px\] border-brand-dark/,
+    );
   });
 });
 
@@ -208,16 +225,38 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   });
 });
 
-describe("the page under a band contributes no leading of its own", () => {
+describe("a listing under the header contributes no leading of its own", () => {
   it("ListingPage declares contentOwnsLeading", () => {
-    // The other half. With both the gap and the item padding, band-to-post
-    // disagreed with post-to-post in the other direction.
+    // The other half. With both a page-level gap and the item's own padding,
+    // rule-to-post would disagree with post-to-post in the other direction.
     expect(read("app/listing-page.tsx")).toMatch(/contentOwnsLeading/);
   });
 
-  it("WidePage maps that to no top padding", () => {
+  it("WidePage maps that to no gap below the rule", () => {
+    // Below, not above. A prop meaning "the content below supplies its own
+    // space" cannot be spent on the space above the boundary — doing that
+    // makes the header-to-rule distance depend on what the content does,
+    // which is backwards, and leaves the gap it was meant to suppress at zero
+    // for every route that never set the flag.
     expect(read("app/wide-page.tsx")).toMatch(
-      /contentOwnsLeading \? "none" : "tight"/,
+      /contentOwnsLeading \? undefined : "pt-6"/,
     );
+  });
+
+  it("only the ruled listing claims it", () => {
+    // Home and the post page set it before the retirement, because their
+    // covers pulled up across the band's edge and supplied their own leading
+    // that way. The pull-ups went with the band and the flag had to follow,
+    // or both open flush against the rule.
+    //
+    // Anchored on the JSX prop form — start of line, then the name, then `=`
+    // or end of line — rather than on the bare word. Both files explain in a
+    // comment why they no longer pass it, and a guard that fails on its own
+    // rationale is a guard nobody keeps. A `//` comment cannot match this.
+    const PASSED = /^\s*contentOwnsLeading(=|\s*$)/m;
+    expect(read("app/page.tsx")).not.toMatch(PASSED);
+    expect(read("app/posts/[slug]/page.tsx")).not.toMatch(PASSED);
+    // Non-vacuous: the one route that DOES claim it still does.
+    expect(read("app/listing-page.tsx")).toMatch(PASSED);
   });
 });

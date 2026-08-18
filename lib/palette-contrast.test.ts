@@ -67,6 +67,13 @@ describe("muted small-caps labels clear AA in both schemes", () => {
 });
 
 describe("footer small print clears AAA in both schemes", () => {
+  // Reads --color-brand-header, not the retired --color-footer-bg. The footer
+  // shared surface-dark's value in light and lifted away from it in dark, which
+  // is why it had a token of its own; it now shares the bar's aubergine in both
+  // schemes and the separate token is gone.
+  //
+  // white/65 on #2B1C3F is 7.35, so the existing tint ladder clears AAA
+  // unchanged. #398 raised these to white/72 and that was never required.
   // Derived from the source rather than hardcoded, so this covers any footer
   // text added later without being edited. Scoped to `text-white/` on purpose:
   // the bottom bar's border-white/10 is a divider, decorative and exempt.
@@ -90,135 +97,65 @@ describe("footer small print clears AAA in both schemes", () => {
 
   it("light", () => {
     expect(
-      contrast(faintest(), light("--color-footer-bg")),
+      contrast(faintest(), light("--color-brand-header")),
     ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
   });
 
   it("dark", () => {
     expect(
-      contrast(faintest(), dark("--color-footer-bg")),
+      contrast(faintest(), dark("--color-brand-header")),
     ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
   });
 });
 
-describe("the browse band carries solid white text", () => {
-  // Read through schemeTokens rather than hardcoded, so a retune of the band
-  // is caught here rather than shipping a band nobody rechecked. 16.60:1 light
-  // and 12.61:1 dark today, which is the whole reason the band's text is
-  // solid: white/85 on the old header navy was 7.93 light and 6.38 dark, and
-  // the second of those missed this floor.
-  it.each(["light", "dark"] as const)("%s", (scheme) => {
-    const token = scheme === "light" ? light : dark;
-    expect(
-      contrast({ r: 255, g: 255, b: 255, a: 1 }, token("--color-brand-band")),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
-});
+// Five describe blocks retired here, by Phase 1 of the band retirement
+// (CLAUDE.md, "The masthead band was retired in favour of a 3px rule"):
+//
+//   - "the browse band carries solid white text" and "the browse band stays a
+//     visible block in both schemes" checked --color-brand-band against white
+//     text and against the page. Nothing rendered bg-brand-band any more, so a
+//     passing or failing pairing for it said nothing about the shipped site.
+//     Phase 2 deleted the token itself. The block-visibility check did NOT
+//     lapse with it — it moved to --color-brand-header, which inherited the
+//     job and had no guard of its own. See "the chrome stays a visible block
+//     in both schemes" below.
+//   - "the cover keyline stays visible on the band in both schemes" checked
+//     --color-cover-keyline against --color-brand-band specifically, because
+//     the post cover used to cross the band's bottom edge. Every cover is
+//     contained now (see "Covers take one of two frames" in CLAUDE.md), so
+//     there is no seam left for the keyline to cross — the token stays,
+//     serving the shadow's other half against the page as it always did, but
+//     the band-specific pairing this asserted no longer describes anything
+//     that renders.
+//   - "the browse band's markup" read app/page-band.tsx directly for its root
+//     text colour and its absence of translucent white. The file is deleted;
+//     the white-text-on-root mechanism it guarded went with it, because
+//     ordinary body ink reads fine on the cream WidePage now renders on.
+//   - "no route paints body ink inside the band" was the same guard from the
+//     per-route end: an explicit text-brand-muted on a standfirst used to
+//     beat white inheritance and land dark ink on navy.
+//
+// Four of those five lapse. The fifth INVERTS, and it is the one that matters,
+// because the rule it encoded did not go away — it reversed. Under the band a
+// standfirst naming NO colour was correct, because it took solid white from
+// the band's root. On cream, naming no colour means body ink, which is not the
+// Standfirst role (audit role 4: text-lg, muted, roman) and leaves the
+// standfirst competing with the h1 above it instead of sitting under it. That
+// is a thirteen-route defect that looks merely slightly heavy rather than
+// broken, which is exactly the class of thing a guard is for. Retiring this
+// one without reversing it is how it shipped.
 
-describe("the browse band stays a visible block in both schemes", () => {
-  // Not a text pairing, so the bar is deliberately far below any WCAG
-  // threshold: this asserts only that the masthead is still a block rather
-  // than bare page. It is the assertion the first cut of this feature would
-  // have failed — the band shipped with no dark override, which left the
-  // light #0F1C42 sitting at 1.13:1 on the #17110F dark page, invisible, with
-  // a large h1 apparently floating on nothing. Every text-contrast assertion
-  // above stayed green throughout, because white on the band was never the
-  // problem.
-  //
-  // 15.33:1 light and 1.48:1 dark today. The band is darker than the page in
-  // light and lighter than it in dark; only the separation is asserted,
-  // because which side it sits on is the page's doing, not the band's.
-  const MIN_BLOCK_SEPARATION = 1.4;
-
-  it.each(["light", "dark"] as const)("%s", (scheme) => {
-    const token = scheme === "light" ? light : dark;
-    expect(
-      contrast(token("--color-brand-band"), token("--color-brand-bg")),
-    ).toBeGreaterThanOrEqual(MIN_BLOCK_SEPARATION);
-  });
-});
-
-describe("the cover keyline stays visible on the band in both schemes", () => {
-  // The post cover crosses the band's bottom edge, so one image has navy
-  // behind its top and cream behind the rest. shadow-lg separates it on cream
-  // and vanishes on navy, at 1.52:1 and 1.06:1, so the keyline is the half
-  // that covers navy and this is the pairing that has to hold.
-  //
-  // Deliberately sub-WCAG, the same 1.4:1 the band's own separation check uses
-  // and for the same reason. This is block visibility, not text.
-  //
-  // Nothing that existed before this could catch it. Every other edge
-  // assertion here asks what an edge does against the PAGE, and the page is
-  // not the ground that fails. The dark value this replaced sat at 1.38:1 on
-  // the band with every check green.
-  const MIN_BLOCK_SEPARATION = 1.4;
-
-  it.each(["light", "dark"] as const)("%s", (scheme) => {
-    const token = scheme === "light" ? light : dark;
-    // Read as tokens and composited by contrast(), not pinned to a literal, so
-    // retuning either the keyline's alpha or the band underneath it fails here
-    // rather than shipping an edge nobody rechecked.
-    expect(
-      contrast(token("--color-cover-keyline"), token("--color-brand-band")),
-    ).toBeGreaterThanOrEqual(MIN_BLOCK_SEPARATION);
-  });
-});
-
-describe("the browse band's markup", () => {
-  const band = read("app/page-band.tsx");
-
-  it("sets a text colour on its root, so children inherit it", () => {
-    // The gap every other guard here missed. <body> carries text-brand-dark,
-    // so an element placed in the band without a colour class of its own
-    // inherits BODY INK, not white — which is how the h1 shipped at 1.01:1 on
-    // the light band. Nothing above caught it: the contrast assertions all ask
-    // what white does on the band, and white was never what the h1 rendered in.
-    //
-    // It is invisible in dark mode, too, because there brand-dark IS the warm
-    // off-white ink and lands at 10.61:1. A reviewer on a dark-themed machine
-    // sees a perfectly good masthead.
-    //
-    // Asserted on the ROOT specifically: inheritance is what makes this hold
-    // for markup that does not exist yet, which per-element classes cannot.
-    const root = /<div className="bg-brand-band([^"]*)"/.exec(band);
-    expect(root).not.toBeNull();
-    expect(root![1]).toContain("text-white");
-  });
-
-  it("uses no translucent white anywhere inside", () => {
-    // Same regex the footer block above scrapes out of layout.tsx, pointed at
-    // the band. Without this, a `text-white/70` added to the dek later passes
-    // every check — the footer block only ever reads layout.tsx — and the AAA
-    // floor quietly breaks across ten routes.
-    expect([...band.matchAll(/text-white\/(\d+)/g)]).toEqual([]);
-  });
-});
-
-describe("no route paints body ink inside the band", () => {
-  // The companion to the root-inherits-white check above, from the other end.
-  // Inheritance only holds while nothing overrides it, and an explicit
-  // text-brand-muted beats it — which is what left the category and tag
-  // standfirsts dark on navy after the h1 was fixed. Same failure, same
-  // invisibility in dark mode, one component further out.
-  //
-  // brand-muted and brand-dark are body ink; brand-crimson is 1.35:1 on this
-  // navy. None of the three has an on-band treatment, so the band's contents
-  // name no colour at all and take white from the root.
-  const INK = /text-brand-(muted|dark|crimson)/;
-
-  // Targeted at the two elements that go in the band rather than at the
-  // wrapper around them. Slicing on `<PageBand>` was the obvious approach and
-  // it broke the moment the routes started passing their header through
-  // WidePage instead — a guard that silently stops covering anything when
-  // markup is recomposed is worse than none. An h1 and the standfirst
-  // signature survive that; they are what the band actually renders.
+describe("every wide route's standfirst takes the Standfirst role", () => {
+  // Anchored on the standfirst signature rather than on a route's structure.
+  // The retired guard recorded why: slicing on <PageBand> broke the moment
+  // routes started passing their header through WidePage, and a guard that
+  // silently stops covering anything when markup is recomposed is worse than
+  // none.
   const STANDFIRST = /className="[^"]*max-w-3xl text-lg leading-relaxed[^"]*"/g;
-  // Attributes may precede className, and on the post page one does. Anchored
-  // on `<h1 ` alone this failed OPEN, matching nothing and reporting a clean
-  // page, which the non-vacuous assertion below is what caught.
-  const HEADING = /<h1[^>]*className="([^"]*)"/g;
 
   it.each([
+    "app/page.tsx",
+    "app/page/[page]/page.tsx",
     "app/categories/page.tsx",
     "app/tags/page.tsx",
     "app/authors/page.tsx",
@@ -227,50 +164,88 @@ describe("no route paints body ink inside the band", () => {
     "app/categories/[slug]/page/[page]/page.tsx",
     "app/tags/[slug]/page.tsx",
     "app/tags/[slug]/page/[page]/page.tsx",
-    // The author routes used to be exempt: their bio rendered on cream through
-    // an `intro` slot and was legitimately muted. It is in the band now, so
-    // they are held to the same rule as the other eight.
+    // The author routes carry theirs as a RichText wrapper rather than a <p>,
+    // and it matches the same signature.
     "app/authors/[slug]/page.tsx",
     "app/authors/[slug]/page/[page]/page.tsx",
-    // The index listing has an h1 in the band and no standfirst. The check
-    // wants at least one match rather than both, so it holds here too.
-    "app/page/[page]/page.tsx",
-    // Same shape. The post's excerpt stays in the body column, so the h1 is
-    // the only signature here.
-    "app/posts/[slug]/page.tsx",
-    // Home's masthead is its h1 now that the hero below is an h2, so it
-    // matches on the ordinary signatures like every other route. It needed a
-    // bespoke MASTHEAD pattern while it was a <p>, and that pattern is gone
-    // rather than left matching nothing.
-    "app/page.tsx",
   ])("%s", (file) => {
-    const source = read(file);
-    const inBand = [
-      ...(source.match(STANDFIRST) ?? []),
-      ...(source.match(HEADING) ?? []),
-    ];
-    // Non-vacuous: every one of these routes renders something in the band, so
-    // an empty list means the signatures stopped matching, not that the page is
-    // clean.
-    expect(inBand.length).toBeGreaterThan(0);
-    for (const className of inBand) expect(className).not.toMatch(INK);
+    const found = [...(read(file).match(STANDFIRST) ?? [])];
+    // Non-vacuous: every route listed renders one, so an empty list means the
+    // signature stopped matching, not that the page is clean.
+    expect(found.length).toBeGreaterThan(0);
+    for (const className of found)
+      expect(className).toMatch(/text-brand-muted/);
   });
 
-  it("home's only h1 is the one in its band", () => {
-    // This used to need a bespoke signature, because home's h1 was the HERO
-    // post title on cream and it satisfied the non-vacuous check from outside
-    // the band. The hero is an h2 now, so the file's only h1 is the masthead
-    // and the general check covers home the way it covers everything else.
-    // Asserted rather than assumed, because a second h1 anywhere in this file
-    // would quietly reopen that hole.
-    expect(read("app/page.tsx").match(/<h1[^>]*className="/g)).toHaveLength(1);
+  it("the position caption takes it too", () => {
+    // It named no colour in the band, separating by size alone because the
+    // band forbade tinted text. On cream it is a meta line like any other.
+    expect(read("app/page-context.tsx")).toMatch(/text-brand-muted/);
   });
 
-  it("the position caption names no colour either", () => {
-    // It moved into the band and lost its text-brand-muted. Same failure as the
-    // standfirsts if it comes back — body ink on navy, invisible in light mode
-    // and fine in dark.
-    expect(read("app/page-context.tsx")).not.toMatch(INK);
+  it("home's masthead accents the stop with the TOKEN, never a literal", () => {
+    // The light crimson on the dark page is 2.44:1. brand-crimson lifts to the
+    // dark scheme's own value on its own, so the class is the only safe way to
+    // write this.
+    //
+    // The negative half looks for an arbitrary-value colour utility rather
+    // than for a hex anywhere in the file, because hexes appear in comments
+    // explaining exactly this, and a guard that fails on its own rationale is
+    // a guard nobody keeps.
+    const home = read("app/page.tsx");
+    expect(home).toMatch(/<span className="text-brand-crimson">/);
+    expect(home).not.toMatch(/text-\[#[0-9a-fA-F]{3,8}\]/);
+  });
+});
+
+describe("the chrome stays a visible block in both schemes", () => {
+  // The guard the masthead band used to carry, moved to the surface that
+  // inherited its job. --color-brand-header has never had one of its own: the
+  // band's version was retired with the band in Phase 1, and grepping this file
+  // before Phase 2 found no assertion on the bar token at all.
+  //
+  // Not a text pairing, so this sits far below any WCAG threshold. It asserts
+  // only that the chrome is still a block rather than bare page. It is the
+  // check the band's first cut would have failed — it shipped with no dark
+  // override, leaving the light value at 1.13:1 on the dark page, invisible,
+  // while every text-contrast assertion here stayed green because white on it
+  // was never the problem.
+  //
+  // 14.47:1 light and 1.46:1 dark today. The chrome is darker than the page in
+  // light and lighter than it in dark; only the separation is asserted, because
+  // which side it sits on is the page's doing. The dark margin is 0.06 over the
+  // floor, the narrowest anywhere in this palette, which is what makes this the
+  // assertion most worth having and the one a retune is most likely to break.
+  const MIN_BLOCK_SEPARATION = 1.4;
+
+  it.each(["light", "dark"] as const)("%s", (scheme) => {
+    const token = scheme === "light" ? light : dark;
+    expect(
+      contrast(token("--color-brand-header"), token("--color-brand-bg")),
+    ).toBeGreaterThanOrEqual(MIN_BLOCK_SEPARATION);
+  });
+
+  it("white on the chrome clears AAA in both schemes", () => {
+    // One surface for the bar and the footer now, so this covers both. 15.66:1
+    // light and 12.81:1 dark.
+    for (const token of [light, dark])
+      expect(
+        contrast(
+          { r: 255, g: 255, b: 255, a: 1 },
+          token("--color-brand-header"),
+        ),
+      ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  });
+
+  it("the accent still cannot be used on the chrome", () => {
+    // 2.04:1 light. The reason the trail, the nav and the footer identify
+    // links by weight and underline rather than colour, and the reason
+    // elements on chrome override the sitewide crimson focus ring with a white
+    // one. Asserted so the exception is not quietly dropped if the chrome is
+    // ever lightened — at which point the override becomes the bug.
+    expect(
+      contrast(light("--color-brand-crimson"), light("--color-brand-header")),
+    ).toBeLessThan(3);
   });
 });
 
@@ -293,6 +268,24 @@ describe("literal hexes track the tokens they duplicate", () => {
     ["BRAND_CRIMSON", "--color-brand-crimson"],
   ])("OG card's %s equals %s", (constant, token) => {
     expect(sameColour(named(og, constant), light(token))).toBe(true);
+  });
+
+  it.each([
+    ["BRAND_HEADER_COLOR", "light"],
+    ["BRAND_HEADER_COLOR_DARK", "dark"],
+  ] as const)("%s equals the %s --color-brand-header", (constant, scheme) => {
+    // The viewport themeColor and the PWA manifest cannot read a custom
+    // property, so the chrome colour exists twice outside globals.css. A drift
+    // here paints the mobile address bar and the installed app's chrome in the
+    // OLD colour, which no desktop review would ever surface. Both were navy
+    // until the aubergine change and neither was guarded before it.
+    const token = scheme === "light" ? light : dark;
+    expect(
+      sameColour(
+        named(read("lib/constants.ts"), constant),
+        token("--color-brand-header"),
+      ),
+    ).toBe(true);
   });
 
   it("the search emblem's dark-mode figure equals the LIGHT crimson", () => {

@@ -92,18 +92,17 @@ function HeroPost({
   return (
     <section className="mx-auto max-w-5xl mb-10 md:mb-12">
       {coverImage && (
-        // Same device as the post page, and home was the only wide route not
-        // using it. relative so the cover paints above the band rather than
-        // under it; the -mt-16 is the 64px the band's pb-24 was deepened to
-        // absorb, so the band's VISIBLE inset stays symmetric at 32 top and 32
-        // bottom and the extra 64 is the part the cover covers. The arithmetic
-        // lives in page-band.tsx; this is the half that consumes it.
+        // Same device as the post page. No pull-up any more: Phase 1 of the
+        // band retirement (CLAUDE.md) dropped the full-bleed band the cover
+        // used to cross, so it renders as an ordinary block sitting directly
+        // under WidePage's 3px rule, the same as any other wide route's first
+        // element.
         //
         // mb-8 md:mb-10 rather than the post page's flat mb-10. What sits below
         // differs — a post's cover is followed by its body column, this one by a
         // headline — and the hero's own rhythm under the cover is not what this
         // change is about.
-        <div className="relative -mt-16 mb-8 md:mb-10">
+        <div className="mb-8 md:mb-10">
           <CoverImage
             slug={slug}
             url={coverImage.url}
@@ -189,49 +188,49 @@ export default async function Page() {
   const visibleTags = visibleTagSlugs(allPosts);
 
   return (
-    // No crumbs, because this is the root. It bleeds, so the hero's cover
-    // crosses the band's bottom edge rather than starting below it on cream.
-    // This said the opposite until the design call it was waiting on was taken:
-    // home led with a cover and still ended its band above it, which left the
-    // band reading as an empty slab on the one route whose band carries the
-    // masthead.
+    // No crumbs, because this is the root — the last breadcrumb crumb is
+    // never a link either, for the same reason: both would point at the page
+    // the reader is already on.
     //
-    // The band carries the site masthead, which is what every other index does
+    // The masthead carries the site name, which is what every other index does
     // with the site as its subject. It is home's h1 now that the hero below is
     // an h2, so the outline and the visual hierarchy finally say the same
-    // thing. It stays unlinked, because a link on / points at the page the
-    // reader is already on, which is why the last breadcrumb crumb is plain
-    // text too. The bar's own wordmark hides itself here through a rule in
-    // globals.css, so the name is said once rather than twice within 100px.
+    // thing. The bar's own wordmark hides itself here through a rule in
+    // globals.css keyed on .site-masthead, so the name is said once rather
+    // than twice within 100px — see that rule's comment for why the class has
+    // to move WITH the heading if this markup changes again.
     //
     // No font-display and no weight class. The base-layer rule in globals.css
     // gives h1 both, and as a <p> this rendered at 400 against the 700 of the
     // post headlines under it, which is what a per-component override would
     // have papered over.
     //
-    // Neither element names a colour. Both take white from the band's root, as
-    // every other band's contents do.
-    //
-    // Both flags below gate on the cover, for the same reason the post page
-    // gates its own bleed: the deepened inset exists to make room for an image.
-    // A hero with nothing to pull up would take a 96px bottom band with no
-    // cover filling it and an h2 hard against the edge, which is worse than the
-    // ordinary inset it would otherwise have had. Every post carries a cover
-    // today, so this is insurance rather than a live case — but it is the
-    // difference between a guard and an assumption.
-    //
-    // contentOwnsLeading gates too, not just bleed. Without a cover the
-    // container's pt-6 is the only leading the hero gets, and dropping it
-    // unconditionally would take that away on exactly the branch that needs it.
+    // No contentOwnsLeading. It gated on the cover while the cover pulled up
+    // across the band's bottom edge and supplied its own leading that way. The
+    // pull-up is gone with the band, so the hero brings no top margin at all
+    // and takes WidePage's own gap below the rule like every other route whose
+    // content opens with a bare element. Setting it here would leave the cover
+    // flush against a 3px line.
     <WidePage
-      bleed={Boolean(heroPost?.coverImage)}
-      contentOwnsLeading={Boolean(heroPost?.coverImage)}
       header={
         <>
-          <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-            {SITE_TITLE}
+          {/* The full stop is wrapped in crimson when the title carries a
+              literal trailing one — true for the default "Be Useful." and for
+              any fork that keeps the convention, but not guaranteed: a
+              NEXT_PUBLIC_SITE_TITLE override (see lib/constants.ts) may not
+              end in a full stop, and this degrades to a plain heading rather
+              than assuming one. */}
+          <h1 className="site-masthead text-5xl leading-[0.95] tracking-[-0.025em] md:text-6xl lg:text-7xl">
+            {SITE_TITLE.endsWith(".") ? (
+              <>
+                {SITE_TITLE.slice(0, -1)}
+                <span className="text-brand-crimson">.</span>
+              </>
+            ) : (
+              SITE_TITLE
+            )}
           </h1>
-          <p className="max-w-3xl text-lg leading-relaxed">
+          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted">
             {SITE_DESCRIPTION}
           </p>
         </>
