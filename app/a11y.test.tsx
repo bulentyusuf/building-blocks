@@ -597,9 +597,11 @@ describe("home, whose band carries the masthead as its h1", () => {
       /body:has\(\.site-masthead\)\s+\.site-wordmark\s*\{([^}]*)\}/.exec(css);
     expect(wordmark).not.toBeNull();
     expect(wordmark![1]).toMatch(/display:\s*none/);
-    // Stripped of comments first: the rule's own comment explains why not
-    // visibility, which would otherwise make this assertion match its own
-    // explanation instead of a real declaration.
+    // Not visibility: hidden. That still reserves the wordmark's box in the
+    // bar for a no-JS reader, leaving a gap before the nav where display:
+    // none lets the nav sit properly. Stripped of comments first, or this
+    // assertion would match its own explanation instead of a real
+    // declaration.
     expect(wordmark![1].replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(
       /visibility/,
     );
