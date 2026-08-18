@@ -137,16 +137,38 @@ indexes then reverted them then rebuilt them, and its final commit had to
 correct sections of this file that had gone stale describing a home page the
 same branch had already replaced.
 
-### The masthead band stays
+### The masthead band was retired in favour of a 3px rule
 
-`app/wide-page.tsx` is the shell, and the band's arithmetic lives there and in
-`app/page.tsx`'s own bleed note. Retiring it sitewide was proposed and
-rejected.
+Retiring it sitewide was proposed and rejected once — the entry directly
+above this one used to say so. CLAUDE.md's own convention is that a settled
+call is reopened in writing before a branch touches it, so this rewrite is
+that reopening, landing in the same commit as the code it governs: Phase 1 of
+the PR #398 salvage plan.
 
-It carries the site masthead on home and the trail and title on every other
-wide route, and both bleed cases, home's hero cover and the post cover, are
-built around its deepened inset. The unbuilt cover-tint feature assumes it as
-well. Nothing replaces the band until that feature is either built or dropped.
+`app/wide-page.tsx` is the shell every wide route renders through, and it now
+carries the full argument for what replaced the band in its own docstring: a
+`<header>` element holding one spacing value in place of the band's old
+two-part inset (its own `pt-8`/`pb-8` plus `Container`'s separate `pt-6`
+"tight" gap), and a 3px `border-brand-dark` rule standing in for the colour
+boundary the band drew for free. Read that docstring before touching either
+piece.
+
+What went with the band: the `bleed` prop and the `-mt-16` cover pull-up on
+home and the post page — covers are contained now, like every other cover on
+the site (see "Covers take one of two frames" below); the `tone` prop on
+`app/breadcrumb.tsx` — one surface now takes one style, and the accent link
+colour that could not clear contrast on navy is back on every trail; and
+`.band-prose` in `app/globals.css` — ordinary crimson links read fine on
+cream and need no underline substitute. The unbuilt cover-tint feature
+assumed the band's deepened inset; it never shipped, so nothing live depended
+on it, but it needs re-deriving against a contained cover if it is ever
+picked up.
+
+`--color-brand-band` and its dark-mode lift stay in `app/globals.css` for
+now, unreferenced by any component. Phase 2 of the salvage plan removes the
+token itself — deliberately a token-only diff with no layout in it, following
+Phase 1 rather than bundled with it. Do not "clean up" the dead token ahead of
+that phase.
 
 ### Chrome is navy, and both literals move together
 
@@ -244,7 +266,9 @@ All three are defined and argued in `app/globals.css`.
   above it closes itself, so a rule here would land in the same row and print a
   double line. Both files carry the note; the pager looking unattached is not a
   missing border. The listing's **closing** rule is the load-bearing half —
-  banded pages drop the opening one via `openRule={false}`, never the other.
+  a listing under a wide-page header drops the opening one via
+  `openRule={false}`, never the other (see "How the wide-page header is
+  built").
 - **`--color-control-edge`** — `app/tag-pill.tsx` only, and **not** a divider
   despite having borrowed the divider token for a long time. It carries a
   contrast floor (WCAG 1.4.11), which is why it is two literal values rather
@@ -624,17 +648,19 @@ resizes on any body-face swap — Inter's zero is 0.6309em against Literata's
 
 Whether a page's breadcrumb and `h1` sit at `max-w-5xl` or inside a
 `max-w-2xl` column decides three things at once: the breadcrumb wrapper, the
-`h1` ramp, and the band. A route is wide or narrow and everything follows.
-There is no second question and no route that can sit half in each.
+`h1` ramp, and whether the header closes with `app/wide-page.tsx`'s 3px rule.
+A route is wide or narrow and everything follows. There is no second question
+and no route that can sit half in each.
 
 **Wide.** Header at `max-w-5xl`, `<Breadcrumb>` unwrapped, `h1` at
-`text-4xl leading-tight md:text-5xl lg:text-6xl`, navy band.
+`text-4xl leading-tight md:text-5xl lg:text-6xl` (home's is larger still —
+see below), closed by the 3px rule.
 
 `/`, `/page/[page]`, `/posts/[slug]`, `/archive`, `/categories`, `/tags`,
 `/authors`, and the six taxonomy listings. Thirteen routes.
 
 **Narrow.** Header wrapped in `mx-auto max-w-2xl`, `h1` at
-`mb-6 text-4xl md:text-5xl` with no `leading-tight`, no band.
+`mb-6 text-4xl md:text-5xl` with no `leading-tight`, no rule.
 
 `/about`, `/privacy`, `/search`. Three routes.
 
@@ -650,13 +676,14 @@ that grid at the article's full `max-w-5xl`, so a post is a wide page whose
 body happens to be narrow. `/search` is the mirror case: it browses posts by
 function and is narrow by shape, and shape decides.
 
-**Home's band carries the site masthead, and that masthead is its `h1`.**
-`SITE_TITLE` at the display ramp with `SITE_DESCRIPTION` as the standfirst
-beneath it, so home matches the ordinary `HEADING` and `STANDFIRST` signatures
-like every other route. It stays unlinked, because a link on `/` points at the
-page the reader is already on, the same reason the last crumb is plain text.
-Home is the index whose subject is the whole site, so naming itself is what
-every other index already does.
+**Home's header carries the site masthead, and that masthead is its `h1`.**
+`SITE_TITLE` at a raised ramp (`text-5xl md:text-6xl lg:text-7xl`, its trailing
+full stop in crimson when the title ends in one) with `SITE_DESCRIPTION` as
+the standfirst beneath it, so home carries the same heading-plus-standfirst
+shape as every other route's header. It stays unlinked, because a link on `/`
+points at the page the reader is already on, the same reason the last crumb is
+plain text. Home is the index whose subject is the whole site, so naming
+itself is what every other index already does.
 
 The masthead shipped first as a `<p>`, to protect an `h1` that then sat on the
 hero post. That cost a weight bug as well as an outline: the base-layer rule in
@@ -667,10 +694,11 @@ mechanism. The hero below is an `h2`, so the two halves must move together, and
 `app/a11y.test.tsx` fails if either is reverted on its own.
 
 **Home and `/page/[page]` now render the same listing shape and differ only in
-what the band says.** Home passes no listing heading, so its outline is the
+what the header says.** Home passes no listing heading, so its outline is the
 site name at `h1` and then the hero and every card at `h2`, one flat list of
 siblings rather than a section above a section. That is the claim the axis has
-been making since `/page/[page]` was banded, and it is finally true.
+been making since `/page/[page]` joined the shared header shell, and it is
+finally true.
 
 The mechanism to know about: **`MoreStories` sets its card titles to `h3` when
 it renders a section heading and `h2` when it does not.** So adding a heading
@@ -681,95 +709,51 @@ and a level-only check sails past it.
 
 All sixteen routes are now on the axis.
 
-### How the band is built
+### How the wide-page header is built
 
 **`app/wide-page.tsx` is the one shell every wide route renders
 through** — the four section fronts, the six taxonomy listings, the index
-listing at `/page/[page]` and the post page, the middle seven via
-`app/listing-page.tsx`. It
-owns the band, the container and the whole vertical rhythm, and it exists
-because ten of those pages were previously two implementations of one design:
-every tuning pass had to be applied twice, and the half that got missed
-drifted. The raised `h1` ramp and the standfirst colour each shipped to one
-half only. Do not add a browse route that assembles `PageBand` and `Container`
-itself.
+listing at `/page/[page]`, the post page and home, the middle seven via
+`app/listing-page.tsx`. It owns the header, the container and the whole
+vertical rhythm, and it exists because ten of those pages were previously two
+implementations of one design: every tuning pass had to be applied twice, and
+the half that got missed drifted. The raised `h1` ramp and the standfirst
+colour each shipped to one half only. Do not add a browse route that
+assembles a header and `Container` itself.
 
-`app/page-band.tsx` is the full-bleed masthead inside that shell, holding the
-breadcrumb, `h1` and standfirst. Which routes wear it is settled by "One axis,
-and it is the header measure" above, not here.
+Which routes render through it is settled by "One axis, and it is the header
+measure" above, not here.
 
 That axis replaced an earlier one, browsing versus reading, and the reason is
-worth keeping. The browsing-reading distinction is real, but the reader does not
-need a 200px colour field to perceive it because the content says it on arrival.
-What colour can usefully mark is the measure, because the measure is the thing
-that changes the shape of the page. Under the old axis a navy-to-cream step
-meant either the column narrowed or the reader crossed from a list into an
-article, two things that correlate on most navigations but not all. That is the
-inconsistency a reader feels before they can name it.
+worth keeping — it is also why the masthead band did not survive it once the
+band itself was reopened for removal. The browsing-reading distinction is
+real, but the reader does not need a 200px colour field to perceive it because
+the content says it on arrival. What colour could usefully mark was the
+measure, because the measure is the thing that changes the shape of the page.
+Under the axis-plus-band era a navy-to-cream step meant either the column
+narrowed or the reader crossed from a list into an article, two things that
+correlate on most navigations but not all — an inconsistency a reader feels
+before they can name it. Retiring the band removes the step entirely rather
+than fixing its meaning, which is the simpler resolution once the band's own
+palette stopped being viable (see "The masthead band was retired" above).
 
-Do not reintroduce a second axis, and **do not band a narrow route**. Giving
-`PageBand` a narrow `measure` prop so `/about` could band was proposed and
-rejected: it would push the band across the only boundary the band exists to
-mark. The band's inner column is always `max-w-5xl`, which matches `Container`
-on every page it appears on, and that is what makes the trail and heading land
-at identical coordinates sitewide.
+Do not reintroduce a second axis, and **do not give a narrow route the wide
+header**. A `measure` prop letting `/about` opt into `app/wide-page.tsx` was
+proposed and rejected before the band retired and the reasoning still holds
+after it: doing so would apply the wide column to a page whose whole point is
+the narrow one. `WidePage`'s inner column is always `max-w-5xl`, matching
+`Container` on every page it appears on, which is what makes the trail and
+heading land at identical coordinates sitewide.
 
-- **`--color-brand-band` is lifted in dark mode, and what stays fixed is the
-  step between the bar and the band** — 1.60:1 light, 1.55:1 dark, band darker
-  in both. The page is what changes which side of the band it sits on, so two
-  blues that both moved have not drifted. It is _not_ derived from
-  `--color-brand-header`; the two need different amounts of lift, a 52px bar
-  more than a 200px block. This began life with no dark override at all, which
-  left the light value at 1.13:1 on the dark page — no block, a large `h1`
-  floating on bare page — so `lib/palette-contrast.test.ts` now asserts the
-  band separates from `--color-brand-bg` in **both** schemes, at a deliberately
-  sub-WCAG 1.4:1. That is a block-visibility guard, not a text one, and it is
-  the check every text-contrast assertion missed.
-- **Every text node inside the band is solid white, inherited from the band's
-  root.** `<body>` carries `text-brand-dark`, so anything placed in the band
-  without a colour class of its own inherits body ink — which is how the `h1`
-  first shipped at 1.01:1 on the light band while looking perfect in dark,
-  where `brand-dark` _is_ the off-white ink. A test asserts the root sets the
-  colour; a second forbids `text-white/N`. Hierarchy comes from size and face,
-  not tint. The crumb separators and the author portrait's ring are the only
-  translucent whites and are decorative, so 1.4.3 does not reach them.
-- **No crimson inside the band**, which is why `app/breadcrumb.tsx` takes a
-  `tone` prop rather than being forked: crimson on this navy is 1.35:1. Dark
-  tone is also the one place a breadcrumb overrides the sitewide focus ring,
-  the same exception the header and footer bands take.
-- **The band's top inset is invariant and only its bottom can be spent.**
-  `pt-8` is `Container`'s own `pt-8` and never varies, which is the whole
-  reason the trail starts the same distance below the sticky header on every
-  page. The bottom is `pb-8` everywhere except under `bleed`, which the post
-  page sets and which gives `pb-24`. The arithmetic is a derivation rather than
-  a taste value — the cover pulls up 64px, so 96 minus 64 is 32, which is
-  `pt-8` again, leaving the band's _visible_ inset symmetric and the extra 64
-  as the part the cover covers. The 64 itself is a preview call.
-  `lib/listing-rhythm.test.ts` holds the top against `Container` and asserts
-  the bled bottom stays strictly greater, because equal values still render and
-  silently leave the cover with no navy to sit on.
-- **The cover crosses the band's bottom edge on a post, and needs two edge
-  mechanisms to do it.** `shadow-lg` is black at roughly 18% composited, so it
-  separates the image at 1.52:1 on `--color-brand-bg` and 1.06:1 on
-  `--color-brand-band` — the whole job on cream, none of it on navy, which is
-  exactly the half this treatment adds. `--color-cover-keyline` is the other
-  half. In light mode the cover crosses from near-black to near-white, so no
-  single edge colour reads on both grounds and neither mechanism competes,
-  because each is invisible where the other works. The border is on **every**
-  cover, not only the post's, because one rule beats a post-only exception and
-  a listing cover is one navigation from the same cover on a banded post.
-  `lib/palette-contrast.test.ts` holds the keyline against the band at the same
-  sub-WCAG 1.4:1 the band's own separation check uses. The dark value this
-  replaced, `brand-dark/12`, sat at 1.38:1 there with every check green,
-  because every other edge assertion asks what an edge does against the page
-  and the page is not the ground that fails.
-- **A post's `h1` carries `data-pagefind-body` of its own.** It sits in the
-  band now, outside the `<article>` that scopes the index, and Pagefind indexes
-  only what a body region contains. `meta.title` survives regardless, since
-  Pagefind reads the page's first `h1` wherever it is, so a results list looks
-  perfectly correct while every title-only term has silently dropped out of the
-  searchable text. Pagefind concatenates multiple body regions into one
-  fragment, so the second tag restores exactly what the index held before.
+- **A post's `h1` carries `data-pagefind-body` of its own.** It sits in
+  `WidePage`'s header now, outside the `<article>` that scopes the index, and
+  Pagefind indexes only what a body region contains. `meta.title` survives
+  regardless, since Pagefind reads the page's first `h1` wherever it is, so a
+  results list looks perfectly correct while every title-only term has
+  silently dropped out of the searchable text. Pagefind concatenates multiple
+  body regions into one fragment, so the second tag restores exactly what the
+  index held before. This held true through the band's retirement — the h1
+  never moved relative to `<article>`, only the surface under it changed.
 - **The bar's wordmark hides itself on home, through a `:has()` rule** in
   `app/globals.css`, so the site is named once rather than twice within 100px.
   A rule rather than `usePathname` keeps the header a server component and
@@ -810,82 +794,46 @@ at identical coordinates sitewide.
   `app/wordmark-fade.tsx`, `app/site-wordmark.tsx` and about a dozen
   assertions in `app/a11y.test.tsx`.
 
-  All of it exists because home's band carries `SITE_TITLE` while the bar
+  All of it exists because home's header carries `SITE_TITLE` while the bar
   carries it too, 100px apart. That is one editorial decision, and it is the
-  only reason any of this is here. Every mechanism above is downstream of it.
+  only reason any of this is here. Every mechanism above is downstream of it,
+  and none of it depended on the masthead sitting on navy — the class it keys
+  off, `.site-masthead`, moved with the heading into the retired band's
+  replacement unchanged, and every rule in `app/globals.css` and assertion in
+  `app/a11y.test.tsx` reads that class rather than anything about the band.
 
-  The exit, if it is ever wanted: give home's band the same job every other
-  band has, naming the route rather than the site — `Latest` plus the existing
-  `latest-posts` browseIntro standfirst, which `/page/[page]` already reads.
-  The bar then carries the wordmark everywhere with no rule at all and all six
-  mechanisms come out together, along with both components and the tests. The
-  cost is that home stops saying its own name at display size and reads more
-  like page 1 of a listing, which is what it is.
+  The exit, if it is ever wanted: give home's header the same job every other
+  header has, naming the route rather than the site — `Latest` plus the
+  existing `latest-posts` browseIntro standfirst, which `/page/[page]` already
+  reads. The bar then carries the wordmark everywhere with no rule at all and
+  all six mechanisms come out together, along with both components and the
+  tests. The cost is that home stops saying its own name at display size and
+  reads more like page 1 of a listing, which is what it is.
 
   Recorded so this is a decision a future session can take deliberately rather
   than a shape it has to reverse-engineer. It was weighed in August 2026 and
   declined because the fade was already merged and working.
 
-- **`crumbs` is optional on the band**, and `/` is the only route using that.
-  Home is the root and has nothing above it, so without a trail its `h1` starts
-  at the top of the band's inset instead of below a nav carrying `mb-4`, which
-  is the honest position rather than a regression. `app/a11y.test.tsx` asserts a
-  trail-less band emits no breadcrumb landmark. Keep the prop optional;
-  `/page/[page]` carries a trail again, but that is the route changing its mind,
-  not the prop losing its reason.
-- **An author's bio renders in the band**, like every other browse page's
-  standfirst. The only thing `RichText` needs on navy is a link treatment:
-  crimson is 1.35:1 here, so `.band-prose` in `app/globals.css` underlines
-  links and lets them take the band's white. That is WCAG 1.4.1, not taste —
-  with the accent unavailable, colour cannot be the only thing marking a link.
-  An earlier `intro` prop routed the bio onto cream to dodge this; it is gone.
-  The `intro` still in `app/categories/page.tsx` and its three siblings is
-  unrelated — it is the `getBrowseIntro` standfirst fetched from the CMS, not
-  the removed slot.
-- **The position caption is the band's last line**, not a line floating above
-  the list. `app/page-context.tsx` carries why, including why the reasoning
-  that once moved it out of the header no longer applies.
-- **Nothing inside the band names a text colour**, so everything takes white
-  from the root. A `text-brand-muted` on a standfirst beats that inheritance
-  and is the same defect one component further out — it left the category and
-  tag standfirsts dark on navy. The guard in `lib/palette-contrast.test.ts`
-  matches the `h1` and standfirst signatures across all ten browse routes,
-  author pages included. It does **not** slice `<PageBand>`; that approach was
-  tried and stopped covering anything the moment the routes began composing
-  through `WidePage`, which is why it also asserts it found something rather
-  than passing on an empty match.
-- **Nothing inside the band changes the type or the spacing the page already
-  had** — the `h1` ramp stays `text-4xl md:text-5xl lg:text-6xl`, the `h1`
-  keeps its `mb-3`, and both breadcrumb tones keep `mb-4`. The band's `py-8` is
-  `Container`'s own `pt-8`, so the trail and heading land at identical
-  coordinates on **every** page, banded or not. That matters more than it
-  looks: a browse page and a post are one navigation apart, and these are full
-  document loads with a view transition over them, so a difference is animated
-  rather than merely present. A tighter band and a tighter dark-tone trail both
-  looked better in isolation and together shifted the heading 16px on every
-  browse-to-post step. `lib/listing-rhythm.test.ts` holds both. The band
-  contributes exactly one thing, its flat `py-8` inset. A raised ramp and an
-  extra `mt` on the header were both tried and reverted: the brief was a colour
-  band behind the existing masthead, and resizing the headings was scope nobody
-  asked for.
-- **The listing under a band drops its opening rule and nothing else**
+- **`crumbs` is optional on `WidePage`**, and `/` is the only route using
+  that. Home is the root and has nothing above it, so without a trail its `h1`
+  starts at the top of the header rather than below a nav carrying `mb-4`,
+  which is the honest position rather than a regression. `app/a11y.test.tsx`
+  asserts a trail-less header emits no breadcrumb landmark. Keep the prop
+  optional; `/page/[page]` carries a trail again, but that is the route
+  changing its mind, not the prop losing its reason.
+- **The position caption is the header's last line**, not a line floating
+  above the list. `app/page-context.tsx` carries why, including why the
+  reasoning that once moved it out of the header no longer applies.
+- **The listing under a header drops its opening rule and nothing else**
   (`openRule={false}` on `MoreStories`). The item padding stays, and the page
   contributes no gap of its own instead (`contentOwnsLeading` on
   `WidePage`) — every item is `py-10 md:py-12`, which is how far a hairline
-  sits from the cover below it, and the band's bottom edge plays a hairline's
-  part. Zeroing that padding made the first post hug the band while every post
-  after it breathed; adding the gap on top made band-to-first-post disagree
-  with post-to-post. One or the other, never both. The closing rule stays, and
-  `app/pagination.tsx` still has no top border of its own.
-- **The vertical rhythm is set in one place**, `app/wide-page.tsx`: a
-  symmetric `py-8` band inset, then a `pt-6` cream gap on the section fronts
-  only, because the band has already drawn the boundary and
-  that space only has to stop the content touching it. The two are different
-  colours so they cannot collapse into one number, but they add up in the eye —
-  at `pb-14` against a `pt-10` they summed to 96px and read as a hole. Note
-  `Container`'s `className` appends rather than merges, so a spacing override
-  can only ever _increase_ a value; that is why its top inset is the `topPad`
-  prop and not a class.
+  sits from the cover below it, and `WidePage`'s own 3px rule plays a
+  hairline's part now, exactly as the retired band's bottom edge did before
+  it. Zeroing that item padding made the first post hug the rule while every
+  post after it breathed; adding a page-level gap on top made rule-to-first-post
+  disagree with post-to-post. One or the other, never both. The closing rule
+  stays, and `app/pagination.tsx` still has no top border of its own.
 
 ### The taxonomy listings and the index listing share one shell
 

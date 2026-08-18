@@ -485,26 +485,6 @@ html {
   counter-increment: sidenote;
 }
 
-/*
-  Rich text rendered inside the masthead band — today only an author's bio.
-
-  Everything RichText emits is fine on navy by inheriting the band's white:
-  emphasis is italic, lists are bullets, neither carries colour. Links are the
-  exception. They are the one thing the band cannot take from the palette,
-  because brand-crimson on brand-band is 1.35:1, so an underline identifies
-  them instead and the colour stays white.
-
-  That is a WCAG 1.4.1 requirement rather than a preference: with the accent
-  unavailable, colour cannot be the only thing distinguishing a link from the
-  prose around it. Unlayered on purpose, like the sidenote rules below — author
-  styles outrank the utilities layer, so this cannot be lost to a stray utility
-  on the wrapper.
-*/
-.band-prose a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
 /* In-text marker: 2xl+ only. */
 .sidenote-ref {
   display: none;

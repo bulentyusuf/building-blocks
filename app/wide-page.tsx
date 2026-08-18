@@ -1,83 +1,78 @@
 import type { ReactNode } from "react";
 import Container from "./container";
-import PageBand from "./page-band";
-import { type Crumb } from "./breadcrumb";
+import Breadcrumb, { type Crumb } from "./breadcrumb";
 
 /**
  * The shell every wide route renders through — the four section fronts, all six
- * taxonomy listings, the index listing at /page/[page] and the post page. Which
- * routes are wide is settled by the header measure, not here.
+ * taxonomy listings, the index listing at /page/[page], the post page and home.
+ * Which routes are wide is settled by the header measure, not here — see "One
+ * axis, and it is the header measure" in CLAUDE.md.
  *
- * It exists because ten of those pages were two implementations of one design.
- * ListingPage owned six of them; the four fronts each hand-rolled the same
- * `<><PageBand/><Container/></>` pair. Every tuning pass then had to be applied
- * twice and the halves drifted every time one was missed — the raised h1 ramp
- * reached the fronts and not the listings, and the standfirst colour was fixed
- * on the fronts while the listings still painted body ink on navy. Neither was
- * a typo; both were the second copy nobody edited.
+ * Until Phase 1 of the band retirement (CLAUDE.md) this rendered the trail and
+ * `header` inside a full-bleed navy `<PageBand>`, a sibling of `<Container>`
+ * rather than a child of it. That band is gone: `#2b1c3f` (Phase 2's aubergine)
+ * cannot carry it, since pure black beneath it reaches only 1.34:1 against the
+ * chrome ramp `lib/palette-contrast.test.ts` still enforces, so retiring the
+ * band had to happen regardless of the palette and had to happen first.
  *
- * So the vertical rhythm of a wide page is defined once, here:
+ * Everything the band drew now happens on one cream surface, inside one
+ * `<Container>`:
  *
- *   band      py-8            flat, and equal to Container's own pt-8 so the
- *                             breadcrumb starts the same distance below the
- *                             sticky header on every page, banded or not.
- *                             lib/listing-rhythm.test.ts holds the two equal
- *   gap       pt-6            cream, band edge to first content. Deliberately
- *                             SMALLER than the band's own inset: the band has
- *                             already drawn the boundary, so this space only
- *                             has to stop the content touching it. It used to
- *                             be Container's pt-8 on top of a pb-14 band, and
- *                             the two summed to 96px, which read as a hole.
- *   close     pb-12           Container's own, unchanged, down to the footer
+ *   - The breadcrumb, if any.
+ *   - `header` — the h1, a standfirst, whatever sits beside them — wrapped in
+ *     a `<header>` carrying the one spacing value below that replaces the
+ *     band's own two-part inset (its `pt-8`/`pb-8` plus Container's separate
+ *     `pt-6` "tight" gap, which summed to two numbers because they were two
+ *     colours). `contentOwnsLeading` still selects between them: `mb-8` when
+ *     the content brings its own leading (every listing, whose items carry
+ *     `py-10 md:py-12` of their own), `mb-14` when it does not (the four
+ *     section fronts, whose grids have none).
+ *   - A 3px rule, `border-brand-dark`, standing in for the band's own
+ *     boundary — the colour step from navy to cream that once marked "the
+ *     masthead ends here" for free. On one cream surface that step is gone,
+ *     so every wide route needs an explicit line where the band's edge used
+ *     to fall. One rule at one surface, not two hundred pixels of colour, and
+ *     it is what keeps this from being a home special case: without it, home
+ *     alone would need something marking where its masthead stops and the
+ *     hero begins, since every other route already draws a hairline of its
+ *     own somewhere in its listing. This is that same idea done once, here,
+ *     for the one boundary no route already draws — the header's own close.
+ *     It inherits `--color-brand-dark`, so it inverts with the scheme exactly
+ *     as the ink itself does and needs no dark-mode override.
+ *   - `children`, immediately after.
  *
- * The band's bottom inset and this gap are different colours, so they cannot
- * collapse into a single number — one is navy and belongs to the band, the
- * other is cream and belongs to the page. They do add up in the eye, which is
- * why they are set here together rather than in two files.
- *
- * `header` is the band's contents and `children` is everything on cream. The
- * split is by SURFACE, not by importance: anything that cannot render on navy
- * belongs in children, which is why an author's RichText bio is passed down
- * there rather than into the band beside the portrait.
+ * Do not invent anything richer than the 3px rule. Any further replacement is
+ * the band again with extra steps.
  */
 export default function WidePage({
   crumbs,
   header,
   children,
   contentOwnsLeading = false,
-  bleed = false,
 }: {
-  /** Passed straight to the band, which omits the trail when there is none. */
+  /** Omitted, or empty, on a wide route with nothing above it (home, and the
+   * index listing at page 1 — though only home renders through this shell
+   * unpaginated; see app/listing-page.tsx for the paginated case). */
   crumbs?: Crumb[];
-  /** Band contents — the h1, a standfirst, whatever sits beside them. */
+  /** The masthead's contents — the h1, a standfirst, whatever sits beside them. */
   header: ReactNode;
-  /** Everything below the band, on cream. */
-  children: ReactNode;
   /**
    * Set when the content already carries its own space above its first
-   * element, so the shell adds none. The ruled listing does: every item is
-   * `py-10 md:py-12`, which is the distance a hairline keeps from the cover
-   * below it, and the band's bottom edge is playing a hairline's part. Adding
-   * the gap on top made the band-to-first-post distance differ from every
-   * post-to-post distance under it, which is the inconsistency you see before
-   * you can name it. The section fronts do not, so they take the gap.
+   * element — every listing does, since each item is `py-10 md:py-12`. The
+   * four section fronts do not, so they take the larger gap.
    */
   contentOwnsLeading?: boolean;
-  /**
-   * Passed to the band, which deepens its bottom inset. Set by the post page,
-   * whose cover pulls up across the band's edge. The band carries the
-   * arithmetic.
-   */
-  bleed?: boolean;
+  /** Everything below the header. */
+  children: ReactNode;
 }) {
   return (
-    <>
-      <PageBand crumbs={crumbs} bleed={bleed}>
+    <Container>
+      {crumbs && crumbs.length > 0 && <Breadcrumb items={crumbs} />}
+      <header className={contentOwnsLeading ? "mb-8" : "mb-14"}>
         {header}
-      </PageBand>
-      <Container topPad={contentOwnsLeading ? "none" : "tight"}>
-        {children}
-      </Container>
-    </>
+      </header>
+      <div className="border-t-[3px] border-brand-dark" />
+      {children}
+    </Container>
   );
 }
