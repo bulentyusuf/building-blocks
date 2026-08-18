@@ -391,6 +391,24 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
 */
 html {
   scroll-padding-top: 5rem;
+
+  /* Reserve the scrollbar's column whether or not one is showing. Without
+     this, a page short enough not to overflow has no scrollbar and so a
+     viewport about 15px wider than every page that does — and since the bar,
+     the breadcrumb and every content column are centred with mx-auto, all of
+     them land ~7.5px right of where they sit elsewhere. The whole layout
+     steps sideways as the reader navigates. /search with an empty query is
+     the page that exposes it, being the only one that reliably fits.
+
+     stable, not overflow-y: scroll. That older fix works but paints an empty
+     track on every platform with classic scrollbars. This reserves the space
+     and draws nothing.
+
+     No effect where scrollbars are overlays, macOS by default, because
+     nothing takes layout space there and the shift does not happen either.
+     Safari below 18.2 does not support it and keeps the old behaviour, which
+     is the current state rather than a regression. */
+  scrollbar-gutter: stable;
 }
 
 /*
