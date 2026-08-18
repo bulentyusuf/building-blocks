@@ -181,22 +181,59 @@ assumed the band's deepened inset; it never shipped, so nothing live depended
 on it, but it needs re-deriving against a contained cover if it is ever
 picked up.
 
-`--color-brand-band` and its dark-mode lift stay in `app/globals.css` for
-now, unreferenced by any component. Phase 2 of the salvage plan removes the
-token itself — deliberately a token-only diff with no layout in it, following
-Phase 1 rather than bundled with it. Do not "clean up" the dead token ahead of
-that phase.
+`--color-brand-band` and its dark-mode lift were left in `app/globals.css`
+through Phase 1, unreferenced, and Phase 2 removed them along with
+`--color-footer-bg`.
 
-### Chrome is navy, and both literals move together
+### Chrome is aubergine, one token for the bar and the footer
 
-`#1E3A8A` light, `#2E4A9E` dark. See "Brand colour exists in two places on
-purpose" above for why the value lives in `app/globals.css` and
-`lib/constants.ts` at once.
+`#2B1C3F` light, `#3B2A52` dark, carried by `--color-brand-header` and by its
+literal twins `BRAND_HEADER_COLOR` / `BRAND_HEADER_COLOR_DARK` in
+`lib/constants.ts`. See "Brand colour exists in two places on purpose" above
+for why it lives in both files, and note that the literals now feed the
+manifest's `theme_color` as well as the viewport `themeColor` — a drift there
+paints the mobile address bar and the installed app in the old colour, which
+no desktop review surfaces. `lib/palette-contrast.test.ts` holds each literal
+against its own scheme's token.
 
-A move to dark aubergine was proposed and rejected. Not on contrast, which was
-sound at 15.66:1 for white on the proposed value, but because the cover-tint
-design derives its per-post hue against a navy bar and does not survive the
-change.
+**This reopens a call recorded here as settled.** The previous entry said
+chrome was navy and that a move to dark aubergine had been rejected — not on
+contrast, which was sound, but because the unbuilt cover-tint design derives
+its per-post hue against a navy bar. That objection no longer stands on its
+own: Phase 1 already broke the cover-tint's other assumption, the band's
+deepened inset, so the feature needs re-deriving whether or not the chrome
+moves. A blocker that is already blocked cannot also block this.
+
+What the change buys: the bar was `#1E3A8A` and the footer `#241B1D`, 1.62
+apart and in different hue families, so the top and bottom of every page read
+as two unrelated surfaces. Three chrome tokens across two families collapse to
+one.
+
+- **The band had to go first, and that ordering is not a preference.** The
+  repo's chrome ramp is a 1.60:1 step between bar and band, band darker.
+  `#2B1C3F` is dark enough that pure black beneath it reaches only 1.34:1, so
+  no band value fits under it at any hue. In dark it fails from the other side:
+  `#3B2A52` clears the 1.4 block-visibility floor by 0.06, and a band a 1.55
+  step under that would sit below the page and invert. Making room for one
+  means lifting the bar to roughly 2.18 against the page, a markedly louder
+  violet. The alternative — keeping the band and inverting the assignment, with
+  `#2B1C3F` as the band and a lifted `#503872` bar — was costed and rejected:
+  the footer then matches either the bar (and its small print fails AAA) or the
+  band (and the header-to-footer split reopens one surface over).
+- **The footer's faintest tint is `white/72`, and this is not a rider.** It was
+  `white/65` against the old `#2E2420` dark footer, where it gave 7.21. The
+  footer shares the bar's `#3B2A52` now, which is lighter, and `white/65` there
+  is 6.37 — under the 7:1 floor the test enforces on footer small print. The
+  light surface alone would not have needed the change (`white/65` on `#2B1C3F`
+  is 7.35), which is exactly how it gets missed: the scheme that fails is the
+  one nobody has open. The Phase 2 briefing called this bump unnecessary on
+  light-mode arithmetic and was wrong; the guard caught it.
+- **The accent still cannot be used on chrome.** `brand-crimson` on the
+  aubergine is 2.04:1, so the trail, the nav and the footer identify links by
+  weight and underline rather than colour, and anything sitting on chrome
+  overrides the sitewide crimson focus ring with a white one. Asserted, so the
+  exception is not silently dropped if the chrome is ever lightened — at which
+  point the override becomes the bug rather than the fix.
 
 ### Covers take one of two frames, chosen by `wide`
 

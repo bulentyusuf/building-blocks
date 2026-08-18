@@ -60,8 +60,15 @@ export const metadata = {
   },
 };
 export const viewport = {
-  // Scheme-aware so the mobile address bar matches the header band in both
+  // Scheme-aware so the mobile address bar matches the sticky bar in both
   // modes. colorScheme lets the UA theme native controls and scrollbars.
+  //
+  // These are TS literals rather than the CSS token, because neither the
+  // viewport export nor the PWA manifest can read a custom property. That
+  // makes them the one place the chrome colour can silently fall out of step
+  // with the bar it is meant to match — a mobile address bar still painting
+  // the old navy is invisible on every desktop. lib/palette-contrast.test.ts
+  // holds both against --color-brand-header in their own schemes.
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: BRAND_HEADER_COLOR },
     { media: "(prefers-color-scheme: dark)", color: BRAND_HEADER_COLOR_DARK },
@@ -195,12 +202,23 @@ function Header() {
 }
 // Shared link treatment for the footer: quiet by default, visible focus ring
 // matching the skip-link convention above.
+//
+// The footer's faintest tint is white/72, raised from white/65 by the aubergine
+// change. Not a taste call and not a rider: the footer used to sit on #2E2420
+// in dark, where white/65 gave 7.21 and cleared AAA. It shares the bar's
+// #3B2A52 now, which is lighter, and white/65 there is 6.37 — under the 7:1
+// floor lib/palette-contrast.test.ts enforces on footer small print. white/72
+// gives 7.44 dark and 8.71 light.
+//
+// The light surface alone would not have needed this (white/65 on #2B1C3F is
+// 7.35), which is exactly how it gets missed: the scheme that fails is the one
+// nobody has open.
 const footerLink =
   "font-ui text-white/80 hover:text-white transition-colors duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
 
 function Footer() {
   return (
-    <footer className="bg-footer-bg text-white">
+    <footer className="bg-brand-header text-white">
       <div className="max-w-5xl mx-auto px-5 py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
           {/* Column 1 — masthead + blurb */}
@@ -223,7 +241,7 @@ function Footer() {
               loses nothing as a <p>: the nav already carries aria-label="Browse",
               so the landmark is named either way. Same for Colophon below. */}
           <nav aria-label="Browse">
-            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/65">
+            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Browse
             </p>
             <ul className="mt-4 space-y-2 text-sm">
@@ -257,7 +275,7 @@ function Footer() {
 
           {/* Column 3 — colophon */}
           <nav aria-label="Colophon">
-            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/65">
+            <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Colophon
             </p>
             <ul className="mt-4 space-y-2 text-sm">
@@ -293,7 +311,7 @@ function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 border-t border-white/10 pt-8">
-          <p className="font-ui text-xs text-white/65">
+          <p className="font-ui text-xs text-white/72">
             © {new Date().getFullYear()} Bulent Yusuf · Built with Next.js &
             Contentful · Type set in Bricolage Grotesque and Literata
           </p>

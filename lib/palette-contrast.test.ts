@@ -67,6 +67,13 @@ describe("muted small-caps labels clear AA in both schemes", () => {
 });
 
 describe("footer small print clears AAA in both schemes", () => {
+  // Reads --color-brand-header, not the retired --color-footer-bg. The footer
+  // shared surface-dark's value in light and lifted away from it in dark, which
+  // is why it had a token of its own; it now shares the bar's aubergine in both
+  // schemes and the separate token is gone.
+  //
+  // white/65 on #2B1C3F is 7.35, so the existing tint ladder clears AAA
+  // unchanged. #398 raised these to white/72 and that was never required.
   // Derived from the source rather than hardcoded, so this covers any footer
   // text added later without being edited. Scoped to `text-white/` on purpose:
   // the bottom bar's border-white/10 is a divider, decorative and exempt.
@@ -90,13 +97,13 @@ describe("footer small print clears AAA in both schemes", () => {
 
   it("light", () => {
     expect(
-      contrast(faintest(), light("--color-footer-bg")),
+      contrast(faintest(), light("--color-brand-header")),
     ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
   });
 
   it("dark", () => {
     expect(
-      contrast(faintest(), dark("--color-footer-bg")),
+      contrast(faintest(), dark("--color-brand-header")),
     ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
   });
 });
@@ -106,11 +113,12 @@ describe("footer small print clears AAA in both schemes", () => {
 //
 //   - "the browse band carries solid white text" and "the browse band stays a
 //     visible block in both schemes" checked --color-brand-band against white
-//     text and against the page. The token stays in app/globals.css,
-//     unreferenced, until Phase 2 removes it — see the retirement note in
-//     CLAUDE.md — but nothing renders bg-brand-band any more, so a passing or
-//     failing contrast pairing for it would say nothing about the shipped
-//     site either way.
+//     text and against the page. Nothing rendered bg-brand-band any more, so a
+//     passing or failing pairing for it said nothing about the shipped site.
+//     Phase 2 deleted the token itself. The block-visibility check did NOT
+//     lapse with it — it moved to --color-brand-header, which inherited the
+//     job and had no guard of its own. See "the chrome stays a visible block
+//     in both schemes" below.
 //   - "the cover keyline stays visible on the band in both schemes" checked
 //     --color-cover-keyline against --color-brand-band specifically, because
 //     the post cover used to cross the band's bottom edge. Every cover is
@@ -190,6 +198,57 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   });
 });
 
+describe("the chrome stays a visible block in both schemes", () => {
+  // The guard the masthead band used to carry, moved to the surface that
+  // inherited its job. --color-brand-header has never had one of its own: the
+  // band's version was retired with the band in Phase 1, and grepping this file
+  // before Phase 2 found no assertion on the bar token at all.
+  //
+  // Not a text pairing, so this sits far below any WCAG threshold. It asserts
+  // only that the chrome is still a block rather than bare page. It is the
+  // check the band's first cut would have failed — it shipped with no dark
+  // override, leaving the light value at 1.13:1 on the dark page, invisible,
+  // while every text-contrast assertion here stayed green because white on it
+  // was never the problem.
+  //
+  // 14.47:1 light and 1.46:1 dark today. The chrome is darker than the page in
+  // light and lighter than it in dark; only the separation is asserted, because
+  // which side it sits on is the page's doing. The dark margin is 0.06 over the
+  // floor, the narrowest anywhere in this palette, which is what makes this the
+  // assertion most worth having and the one a retune is most likely to break.
+  const MIN_BLOCK_SEPARATION = 1.4;
+
+  it.each(["light", "dark"] as const)("%s", (scheme) => {
+    const token = scheme === "light" ? light : dark;
+    expect(
+      contrast(token("--color-brand-header"), token("--color-brand-bg")),
+    ).toBeGreaterThanOrEqual(MIN_BLOCK_SEPARATION);
+  });
+
+  it("white on the chrome clears AAA in both schemes", () => {
+    // One surface for the bar and the footer now, so this covers both. 15.66:1
+    // light and 12.81:1 dark.
+    for (const token of [light, dark])
+      expect(
+        contrast(
+          { r: 255, g: 255, b: 255, a: 1 },
+          token("--color-brand-header"),
+        ),
+      ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  });
+
+  it("the accent still cannot be used on the chrome", () => {
+    // 2.04:1 light. The reason the trail, the nav and the footer identify
+    // links by weight and underline rather than colour, and the reason
+    // elements on chrome override the sitewide crimson focus ring with a white
+    // one. Asserted so the exception is not quietly dropped if the chrome is
+    // ever lightened — at which point the override becomes the bug.
+    expect(
+      contrast(light("--color-brand-crimson"), light("--color-brand-header")),
+    ).toBeLessThan(3);
+  });
+});
+
 describe("literal hexes track the tokens they duplicate", () => {
   // Channel comparison, not string: globals.css writes tokens lowercase and the
   // TSX literals are uppercase, so === on the text fails for the wrong reason.
@@ -209,6 +268,24 @@ describe("literal hexes track the tokens they duplicate", () => {
     ["BRAND_CRIMSON", "--color-brand-crimson"],
   ])("OG card's %s equals %s", (constant, token) => {
     expect(sameColour(named(og, constant), light(token))).toBe(true);
+  });
+
+  it.each([
+    ["BRAND_HEADER_COLOR", "light"],
+    ["BRAND_HEADER_COLOR_DARK", "dark"],
+  ] as const)("%s equals the %s --color-brand-header", (constant, scheme) => {
+    // The viewport themeColor and the PWA manifest cannot read a custom
+    // property, so the chrome colour exists twice outside globals.css. A drift
+    // here paints the mobile address bar and the installed app's chrome in the
+    // OLD colour, which no desktop review would ever surface. Both were navy
+    // until the aubergine change and neither was guarded before it.
+    const token = scheme === "light" ? light : dark;
+    expect(
+      sameColour(
+        named(read("lib/constants.ts"), constant),
+        token("--color-brand-header"),
+      ),
+    ).toBe(true);
   });
 
   it("the search emblem's dark-mode figure equals the LIGHT crimson", () => {
