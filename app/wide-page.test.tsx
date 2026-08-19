@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
@@ -11,7 +11,14 @@ import path from "node:path";
 // it — jsdom applies no stylesheet, so this asserts the branch WidePage takes
 // and the classes it emits, not that flexbox actually resolves them.
 
+// ListingPage renders CoverImage (via MoreStories), which imports lib/blur —
+// "server-only" — so both need stubbing here even though the tests below
+// never render an image. Same pattern as app/more-stories.test.tsx.
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/blur", () => ({ getBlurDataURL: async () => undefined }));
+
 const { default: WidePage } = await import("./wide-page");
+const { default: ListingPage } = await import("./listing-page");
 
 afterEach(cleanup);
 
@@ -30,6 +37,38 @@ describe("WidePage's split masthead", () => {
     // beside a standfirst on a 390px phone. See app/wide-page.tsx.
     expect(row?.className).toMatch(/flex-col/);
     expect(row?.className).toMatch(/md:flex-row/);
+  });
+
+  it("keeps the row at two children whatever the caller passes", () => {
+    // The regression this exists for. app/listing-page.tsx pairs a standfirst
+    // with the pagination caption, and passed them as a FRAGMENT. A fragment
+    // generates no box, so its children became direct children of this row —
+    // three, not two. justify-between then spread all three across the full
+    // measure, stranding the standfirst mid-row and pushing "Page 2 of 3" to
+    // the right margin.
+    //
+    // It shipped because it is invisible on page 1, where PageContext renders
+    // null and the row genuinely has two children, and because the
+    // left-flowing layout it was written against had no justify-between to
+    // expose it.
+    //
+    // So the standfirst slot is passed a fragment here on purpose. If WidePage
+    // stops wrapping it, this goes to 3 and fails.
+    render(
+      <WidePage
+        heading={heading}
+        standfirst={
+          <>
+            <p>A standfirst.</p>
+            <p>Page 2 of 3</p>
+          </>
+        }
+      >
+        <p>Body</p>
+      </WidePage>,
+    );
+    const row = screen.getByText("A heading").parentElement;
+    expect(row?.children).toHaveLength(2);
   });
 
   it("carries the fixed gap, the one distance that repeats across routes", () => {
@@ -77,6 +116,49 @@ describe("WidePage's split masthead", () => {
       </WidePage>,
     );
     expect(screen.getByText("A heading").parentElement?.tagName).toBe("HEADER");
+  });
+});
+
+describe("ListingPage aligns the pagination caption with the standfirst above it", () => {
+  // ListingPage's own `splitHeader` destructuring had no default, unlike
+  // WidePage's `= true`. Only the two author routes pass the prop explicitly,
+  // so on every other listing route it arrived as `undefined` — falsy — and
+  // the text-right check on the caption's wrapper div read that local value
+  // rather than the `true` WidePage was actually rendering with. The caption
+  // rendered left-aligned under a right-aligned standfirst on every paginated
+  // category, tag and index listing from page 2 on. Fixed by giving
+  // ListingPage's own `splitHeader` the same `= true` default.
+  it("gives the caption text-right when splitHeader is left at its default", () => {
+    render(
+      <ListingPage
+        posts={[]}
+        currentPage={2}
+        totalPages={3}
+        visibleTags={new Set()}
+        basePath="/categories/design"
+        heading={<h1>Design</h1>}
+        emptyMessage="none"
+      />,
+    );
+    const caption = screen.getByText(/Page 2 of 3/);
+    expect(caption.parentElement?.className).toContain("text-right");
+  });
+
+  it("leaves the caption left-aligned on the author routes (splitHeader=false)", () => {
+    render(
+      <ListingPage
+        posts={[]}
+        currentPage={2}
+        totalPages={3}
+        visibleTags={new Set()}
+        basePath="/authors/jane"
+        heading={<h1>Jane</h1>}
+        emptyMessage="none"
+        splitHeader={false}
+      />,
+    );
+    const caption = screen.getByText(/Page 2 of 3/);
+    expect(caption.parentElement?.className).not.toContain("text-right");
   });
 });
 

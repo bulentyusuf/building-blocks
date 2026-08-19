@@ -41,7 +41,12 @@ export default function ListingPage({
   crumbs,
   heading,
   standfirst,
-  splitHeader,
+  // Defaulted here too, matching WidePage's own default — not left implicit.
+  // Every route but the two author ones omits this prop, so without a local
+  // default the text-right check below reads `undefined` for them and never
+  // fires: the caption would render left-aligned under a right-aligned
+  // standfirst on every category, tag and index listing page 2 and later.
+  splitHeader = true,
   posts,
   currentPage,
   totalPages,
@@ -87,10 +92,15 @@ export default function ListingPage({
       heading={heading}
       standfirst={
         standfirst || caption ? (
-          <>
+          // text-right only under the split. The caption sits beneath the
+          // standfirst inside the right-hand block, so it has to share its
+          // alignment or it hangs off the left edge of a right-aligned block.
+          // The author routes render with splitHeader={false} and keep the
+          // pre-split left alignment, caption included.
+          <div className={splitHeader ? "text-right" : undefined}>
             {standfirst}
             <PageContext currentPage={currentPage} totalPages={totalPages} />
-          </>
+          </div>
         ) : undefined
       }
       splitHeader={splitHeader}

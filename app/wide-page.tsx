@@ -139,7 +139,19 @@ export default function WidePage({
         {splitHeader && standfirst ? (
           <div className="flex flex-col gap-3 md:flex-row md:items-baseline-last md:justify-between md:gap-10">
             {heading}
-            {standfirst}
+            {/* Wrapped, and that wrapper is load-bearing rather than tidy
+                markup. A caller passing a FRAGMENT of two elements here — as
+                app/listing-page.tsx did, pairing a standfirst with the
+                pagination caption — puts three children in this row instead of
+                two, because a fragment generates no box of its own. Under the
+                left-flowing layout that shipped in #414 the three simply flowed
+                left and nothing looked wrong. Under justify-between they spread
+                across the full measure, stranding the standfirst in the middle
+                and pushing the caption to the right margin. It only showed on
+                page 2 and later, because PageContext renders null on page 1.
+                The wrapper makes the row two children whatever a caller
+                passes. */}
+            <div>{standfirst}</div>
           </div>
         ) : (
           <>
