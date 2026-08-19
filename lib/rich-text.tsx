@@ -217,6 +217,20 @@ export function RichText({
         );
       },
       [BLOCKS.HEADING_1]: coalesceToH2,
+      [BLOCKS.PARAGRAPH]: (node: Block | Inline, children: ReactNode) => {
+        // Apply widont only when the paragraph is a single plain-text run,
+        // matching the heading guard above. Paragraphs carrying inline marks
+        // (links, bold, code) keep their original children so the formatting
+        // survives — widont() takes a plain string and would otherwise flatten
+        // them. This covers author bios, browse standfirsts, and any other
+        // plain-text rich-text field where a widow word is visible.
+        const isPlainRun =
+          node.content?.length === 1 && node.content[0]?.nodeType === "text";
+        const text = isPlainRun
+          ? (node.content[0] as { value?: string })?.value?.trim()
+          : undefined;
+        return <p>{isPlainRun && text ? widont(text) : children}</p>;
+      },
       [BLOCKS.QUOTE]: (_node: Block | Inline, children: ReactNode) => (
         // Pull quote: crimson rule, display face. not-prose so the typography
         // plugin's blockquote styling doesn't fight ours; inner paragraphs are

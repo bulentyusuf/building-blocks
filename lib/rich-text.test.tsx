@@ -266,7 +266,9 @@ describe("blockquote handling", () => {
     );
 
     expect(html).toContain("<blockquote");
-    expect(html).toContain("The medium is the message.");
+    // widont() glues the last two words with NBSP — plain-text paragraphs
+    // in the rich text renderer now receive it, including those inside quotes.
+    expect(html).toContain("The medium is the\u00a0message.");
   });
 });
 
