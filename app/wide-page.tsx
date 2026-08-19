@@ -83,6 +83,15 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  * FIRST baselines, which would hang the standfirst's second line below the
  * heading; last baseline closes both blocks at the bottom instead.
  *
+ * The standfirst's own `max-w-[20rem]` and `text-right` carry `md:` prefixes
+ * for the same reason. Both classes exist to close the gap `justify-between`
+ * leaves in the ROW; below `md` there is no row, so unprefixed they instead
+ * shrank the standfirst to a 320px box and right-aligned its text inside
+ * that box — a phantom right margin well short of the actual page edge,
+ * under a left-aligned heading. Every route passing a standfirst carries
+ * this pair; `lib/palette-contrast.test.ts`'s Standfirst-role guard requires
+ * both `md:` prefixes in its pattern.
+ *
  * `standfirst` is optional — the post page's `h1` carries none — and the row
  * only renders when both `splitHeader` and `standfirst` are true, so a route
  * with nothing beside its heading falls back to the plain stack every narrow

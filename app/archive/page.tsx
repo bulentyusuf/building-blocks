@@ -65,12 +65,12 @@ export default async function ArchivePage() {
       // app/wide-page.tsx for what the two classes are doing.
       standfirst={
         intro?.standfirst ? (
-          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
-            {intro.standfirst}
+          <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
+            {widont(intro.standfirst)}
           </p>
         ) : (
           oldest && (
-            <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
+            <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
               {posts.length} {posts.length === 1 ? "post" : "posts"} since{" "}
               {format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })},
               newest first.

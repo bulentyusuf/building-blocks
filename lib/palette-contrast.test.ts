@@ -152,17 +152,25 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // silently stops covering anything when markup is recomposed is worse than
   // none.
   //
-  // Re-anchored twice since. First for the split masthead's left-flowing
-  // version, which dropped max-w-3xl because a standfirst filling the
-  // remaining width needed no max-width of its own. That version shipped and
-  // was rejected on sight for a different reason (CLAUDE.md, "The masthead
-  // splits into heading and standfirst") — the row is right-anchored now, via
-  // M5 — and M5 brought a max-width BACK, `max-w-[20rem]`, this time to force
-  // a two-line wrap rather than to cap a stray one. It also added
+  // Re-anchored three times since. First for the split masthead's
+  // left-flowing version, which dropped max-w-3xl because a standfirst
+  // filling the remaining width needed no max-width of its own. That version
+  // shipped and was rejected on sight for a different reason (CLAUDE.md, "The
+  // masthead splits into heading and standfirst") — the row is right-anchored
+  // now, via M5 — and M5 brought a max-width BACK, `max-w-[20rem]`, this time
+  // to force a two-line wrap rather than to cap a stray one. It also added
   // `text-right`. Both are required in the pattern below, not just checked
   // afterwards, for the same reason text-brand-muted already was: a
   // standfirst that loses either one stops MATCHING rather than failing a
   // later assertion, and the guard exists to catch exactly that regression.
+  //
+  // Second, for the mobile masthead fix: both classes now carry `md:`, since
+  // unprefixed they described a row that only exists at md and up, and below
+  // it they shrank the standfirst to a 320px box and right-aligned its text
+  // inside that box rather than the page. The pattern requires both prefixes
+  // for the same reason it required the classes themselves — an unprefixed
+  // text-right shipping again is exactly this regression, and it must stop
+  // matching rather than pass silently.
   //
   // The author routes are the one exception and are checked separately below,
   // against the OLD signature — max-w-3xl, no text-right — because they render
@@ -171,7 +179,7 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // route that correctly kept the old style from one that regressed out of
   // the new one.
   const STANDFIRST_M5 =
-    /className="[^"]*max-w-\[20rem\] text-lg leading-relaxed text-right text-brand-muted[^"]*"/g;
+    /className="[^"]*md:max-w-\[20rem\] text-lg leading-relaxed md:text-right text-brand-muted[^"]*"/g;
 
   // Because text-brand-muted is inside the pattern, a standfirst that loses it
   // stops MATCHING rather than failing the per-match check. That is fine while a

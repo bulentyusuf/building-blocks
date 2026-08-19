@@ -47,8 +47,8 @@ export default async function AuthorsPage() {
       }
       standfirst={
         intro?.standfirst && (
-          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
-            {intro.standfirst}
+          <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
+            {widont(intro.standfirst)}
           </p>
         )
       }

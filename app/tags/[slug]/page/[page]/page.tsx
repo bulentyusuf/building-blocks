@@ -117,8 +117,8 @@ export default async function TagPaginatedPage({
       }
       standfirst={
         tag.description && (
-          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
-            {tag.description}
+          <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
+            {widont(tag.description)}
           </p>
         )
       }
