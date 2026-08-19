@@ -140,8 +140,15 @@ function HeroPost({
           (more-stories.tsx, the taxonomy card index) widen their gutter at
           lg because their columns are already wide enough to spare the
           space; this one cannot afford to, since the extra width bought by a
-          narrower gutter is what keeps the headline at two lines. */}
-      <div className="md:grid md:grid-cols-[3fr_2fr] md:gap-x-16">
+          narrower gutter is what keeps the headline at two lines.
+
+          Base-level grid, not md:grid — below md the two children stack as a
+          single column, and gap-y-6 is the join between them (the byline
+          block and the excerpt), a clear step above the h2's own mb-4 to the
+          byline so the mobile stack reads as two groups rather than four
+          equally-weighted items. md:gap-y-0 drops it once the grid goes
+          two-column, where gap-x-16 is the only gap this row has. */}
+      <div className="grid gap-y-6 md:grid-cols-[3fr_2fr] md:gap-x-16 md:gap-y-0">
         <div>
           {/* An h2, and so is every card title below, because the listing no
               longer renders a heading of its own. Home's outline is the site
@@ -254,8 +261,17 @@ export default async function Page() {
       // like every other route's. max-w-[20rem] plus text-right is M5 — see
       // app/wide-page.tsx — and SITE_DESCRIPTION is written to hold two lines
       // at that width, same as every other route's standfirst.
+      //
+      // md: on both max-w-[20rem] and text-right: below md there is no split
+      // row for either to be anchored against (WidePage stacks with flex-col),
+      // so unprefixed they shrank this standfirst to a 320px box and
+      // right-aligned its text inside it — a phantom right margin 30px short
+      // of the page edge, sitting under a left-aligned h1. Full-width,
+      // left-aligned on mobile instead. No text-pretty here, unlike the other
+      // ten standfirsts sharing this signature — pre-existing, not touched by
+      // this fix.
       standfirst={
-        <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted">
+        <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted">
           {SITE_DESCRIPTION}
         </p>
       }

@@ -294,3 +294,44 @@ describe("a listing under the header contributes no leading of its own", () => {
     expect(read("app/listing-page.tsx")).toMatch(PASSED);
   });
 });
+
+describe("the hero's two-column split carries a gap at every width", () => {
+  // The regression: md:grid md:grid-cols-[3fr_2fr] md:gap-x-16 declares no
+  // grid at all below md, so the two children rendered as plain stacked block
+  // divs with nothing between them — the byline block and the excerpt sat
+  // 0px apart on a phone, the largest join on the page carrying the smallest
+  // gap of any listing on the site. Every other two-column grid on the site
+  // (categories, authors, more-stories' two variants, the footer) declares a
+  // single-column grid with a base gap and widens at md; this is the hero
+  // rejoining that pattern rather than a new one.
+  //
+  // Anchored on the JSX className at line start, the same reason the leading
+  // guard above anchors on the prop form: a comment mentioning these classes
+  // cannot make this pass by accident. Anchored further on grid-cols-[3fr_2fr]
+  // specifically — the file has two other bare `<div className="...">` lines
+  // (the cover wrapper, the byline row) that a looser pattern would match
+  // first, since .exec() returns whichever occurs earliest in source order.
+  const HERO_GRID =
+    /^\s*<div className="([^"]*grid-cols-\[3fr_2fr\][^"]*)">\s*$/m;
+
+  it("declares a base-level grid, not a base stack that only grids at md", () => {
+    const match = HERO_GRID.exec(read("app/page.tsx"));
+    expect(match).not.toBeNull();
+    const classes = match![1].split(/\s+/);
+    // Non-vacuous: the pre-fix class list also contains "grid" as a substring
+    // of "md:grid", so a bare .includes/.toMatch on the string would pass on
+    // the regression this guards against. Split into tokens and check for the
+    // exact, unprefixed utility instead.
+    expect(classes).toContain("grid");
+    expect(classes).not.toContain("md:grid");
+  });
+
+  it("carries a base gap that the two-column step zeroes out", () => {
+    const match = HERO_GRID.exec(read("app/page.tsx"));
+    expect(match).not.toBeNull();
+    const classes = match![1].split(/\s+/);
+    expect(classes).toContain("gap-y-6");
+    expect(classes).toContain("md:gap-y-0");
+    expect(classes).toContain("md:gap-x-16");
+  });
+});
