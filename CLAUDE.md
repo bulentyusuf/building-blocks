@@ -220,14 +220,29 @@ route with no standfirst — the post page's `h1` — falls back to the plain
 stack automatically, and `app/listing-page.tsx` passes both props straight
 through from its own `heading`/`standfirst` API.
 
-**Every standfirst carries `max-w-[20rem] text-lg leading-relaxed text-right
-text-brand-muted`.** `text-right` sets both block edges flush against the
-container, chosen over ragged-right knowing that ragged-left text reads worse
-— an accepted, small cost at two lines and 18px. `lib/palette-contrast.test.ts`'s
-Standfirst-role guard requires all four classes in its pattern, not just
-`text-brand-muted`: a standfirst that loses `max-w-[20rem]` or `text-right`
-stops matching the guard rather than failing a later assertion, so both have
-to be part of the anchor itself.
+**Every standfirst carries `md:max-w-[20rem] text-lg leading-relaxed
+md:text-right text-brand-muted`.** `text-right` sets both block edges flush
+against the container, chosen over ragged-right knowing that ragged-left text
+reads worse — an accepted, small cost at two lines and 18px.
+`lib/palette-contrast.test.ts`'s Standfirst-role guard requires all four
+classes in its pattern, not just `text-brand-muted`: a standfirst that loses
+`max-w-[20rem]` or `text-right` stops matching the guard rather than failing a
+later assertion, so both have to be part of the anchor itself.
+
+**`max-w-[20rem]` and `text-right` carry `md:`, and shipped without it once.**
+Both classes exist to close the gap `justify-between` leaves in the ROW — see
+above — and the row is a `md:flex-row` construct that does not exist below
+that breakpoint, where `WidePage` stacks with `flex-col` instead. Unprefixed,
+the two classes still applied on their own: a phone-width standfirst shrank to
+a 320px box and had its text right-aligned inside that box, landing its right
+edge a fixed distance short of the actual page edge — under a left-aligned
+`h1`, above a left-aligned hero. It read as a typesetting mistake because it
+was one: aligned to a boundary nothing else on the page drew. `md:` on both
+classes turns them on at the same breakpoint the row itself appears at, so
+mobile gets a full-width, left-aligned standfirst instead — `justify-between`
+and `items-baseline-last` are no-ops below `md` regardless, since the flex row
+itself only renders there. Fixed August 2026; the guard's pattern requires
+both `md:` prefixes now, not just the two classes.
 
 **The 320px cap sets a hard copy budget: roughly 37 characters a line, 74 for
 two.** Every standfirst on the site — the four browse intros and the twelve
@@ -268,6 +283,28 @@ guards against on every future caller, not just the one that caused it.
 in one column under the cover. It now splits into two from `md` up:
 `md:grid-cols-[3fr_2fr]` at a flat `gap-x-16` (no `lg:` step). Left carries
 the headline and the byline; right carries the standfirst and the tag row.
+
+**The container is a base-level `grid`, not `md:grid`.** It shipped as
+`md:grid md:grid-cols-[3fr_2fr] md:gap-x-16` with no grid at all below `md`,
+so the two columns fell back to plain stacked block divs with nothing between
+them — `gap-x-16` is a horizontal gap, which does nothing to a stack, so the
+byline block and the excerpt sat flush against each other on mobile, a 0px
+join on the largest element on the page. It is `grid gap-y-6
+md:grid-cols-[3fr_2fr] md:gap-x-16 md:gap-y-0` now: a single-column grid with
+its own gap at the base, widened to two columns at `md`, matching every other
+two-column grid on the site (`app/categories/page.tsx`, `app/authors/page.tsx`,
+`more-stories.tsx`'s two variants, the footer) — the hero was the one
+component on that list built the other way round. `gap-y-6` (24px) is a
+judgement call, not a measurement: it has to read as a clear step above the
+`h2`'s own `mb-4` (16px) to the byline directly above it, so the mobile stack
+reads as two groups of two rather than four equally-weighted lines: `gap-5`
+(20px), the nearest sibling precedent, is not quite that step. `md:gap-y-0` is
+required alongside it — without it the base gap survives into the two-column
+layout and adds height under a row that only has one child per side. Fixed
+August 2026, alongside the standfirst `md:` fix above — same root cause, a
+class describing the split row applied below the breakpoint where that row
+does not exist. `lib/listing-rhythm.test.ts` asserts the base-level `grid` and
+both gap classes.
 
 **This replaced an equal-column version that shipped first and ran to four
 lines on a real headline.** The first cut measured wrap against the seed's
