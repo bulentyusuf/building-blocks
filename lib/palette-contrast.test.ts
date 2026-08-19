@@ -108,6 +108,33 @@ describe("footer small print clears AAA in both schemes", () => {
   });
 });
 
+describe("nav text on chrome clears AAA in both schemes", () => {
+  // The nav links render at text-white/80 on the aubergine bar. text-white/80
+  // on #2B1C3F is 10.44 light and on #3B2A52 is 8.79 dark, both well above
+  // the 7:1 floor. Asserted so the nav tint cannot drift below AAA if the
+  // chrome is ever lightened — at which point the existing footer guard would
+  // also catch it, but this records the nav's own intent separately.
+  const navAlpha = 0.8;
+
+  it("light", () => {
+    expect(
+      contrast(
+        { r: 255, g: 255, b: 255, a: navAlpha },
+        light("--color-brand-header"),
+      ),
+    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  });
+
+  it("dark", () => {
+    expect(
+      contrast(
+        { r: 255, g: 255, b: 255, a: navAlpha },
+        dark("--color-brand-header"),
+      ),
+    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  });
+});
+
 // Five describe blocks retired here, by Phase 1 of the band retirement
 // (CLAUDE.md, "The masthead band was retired in favour of a 3px rule"):
 //

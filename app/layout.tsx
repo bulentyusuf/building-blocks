@@ -111,31 +111,16 @@ function Header() {
           — so on home, where the wordmark hides, the bar was rendering 8px
           shorter and the chrome changed height as the reader navigated. */}
       <div className="max-w-5xl mx-auto px-5 py-3 min-h-13 flex items-center justify-between gap-4">
-        {/* Both hide themselves on home, where the band names the site 60px
-            below and the bar would say it twice. The rule is a :has() in
+        {/* The wordmark hides itself on home, where the masthead names the site
+            60px below and the bar would say it twice. The rule is a :has() in
             globals.css rather than a usePathname, so this stays a server
             component and the site ships no JS for the hidden state itself.
 
-            The wordmark now returns once the masthead scrolls out of view,
-            via app/wordmark-fade.tsx. That reverses the position this comment
-            used to record, which was that the gap should be left alone and
-            that no scroll listener or IntersectionObserver should fill it.
-            The reasoning behind it still holds for the top of the page, where
-            the masthead is visible and a second name would be duplication.
-            It stops holding once the masthead is gone, because past that
-            point the bar carries no site name at all and the reader has
-            nothing in the chrome telling them where they are. The old
-            position treated those two states as one.
-
-            The tagline returns with it, at lg and up where the bar renders one
-            at all. The claim this replaces was that a description under a
-            masthead is duplication at every scroll position. It is not: past
-            the masthead there is no masthead and no standfirst on screen, so a
-            bar carrying both marks is exactly what every other route shows,
-            and home's scrolled state should not be the one place the chrome
-            reads differently. The duplication argument only ever applied while
-            the band was visible, which is the same reasoning that returns the
-            wordmark.
+            The wordmark returns once the masthead scrolls out of view, via
+            app/wordmark-fade.tsx — past that point the bar carries no site name
+            at all and the reader has nothing in the chrome telling them where
+            they are. The tagline was retired in favour of the expanded nav
+            links, which carry the same wayfinding information on every route.
 
             The wordmark is a link on every route except home, where it is
             plain text — see app/site-wordmark.tsx. In Next 16 a same-URL Link
@@ -143,28 +128,110 @@ function Header() {
             only a route change is assigned a scroll target, so on home the
             link neither navigated nor returned the reader to the top. It does
             navigate from everywhere else, which is most of the site and the
-            most conventional control on it, so it stays a link there. An
-            earlier commit on this branch removed the href on every route,
-            which fixed home by breaking the other twenty. */}
+            most conventional control on it, so it stays a link there. */}
         <div className="flex items-baseline gap-3">
           <SiteWordmark title={SITE_TITLE} />
-          <p className="site-tagline hidden lg:block font-ui text-sm text-white/90">
-            {SITE_DESCRIPTION}
-          </p>
         </div>
-        <nav aria-label="Primary" className="flex items-center gap-4 md:gap-6">
-          <Link
-            href="/categories"
-            className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
-            Categories
-          </Link>
-          <Link
-            href="/about"
-            className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-          >
-            About
-          </Link>
+        {/* On mobile the full nav sits inside a <details> disclosure so the
+            bar stays at one row of links. At md+ the disclosure is forced open
+            and the summary hidden, so the links sit inline. The <details>
+            pattern is borrowed from app/table-of-contents.tsx — same
+            progressive-enhancement shape, different breakpoint. */}
+        <nav aria-label="Primary" className="flex items-center">
+          <details className="md:hidden">
+            <summary
+              aria-label="Menu"
+              className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-1 -m-1"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                className="h-5 w-5"
+              >
+                <path d="M3 6h18M3 12h18M3 18h18" />
+              </svg>
+            </summary>
+            <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-lg border border-white/10 bg-brand-header px-4 py-3 shadow-lg">
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/categories"
+                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    Categories
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/tags"
+                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    Tags
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/authors"
+                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    Authors
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/archive"
+                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    Archive
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/about"
+                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+                  >
+                    About
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </details>
+          <div className="hidden md:flex items-center gap-4 md:gap-6">
+            <Link
+              href="/categories"
+              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Categories
+            </Link>
+            <Link
+              href="/tags"
+              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Tags
+            </Link>
+            <Link
+              href="/authors"
+              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Authors
+            </Link>
+            <Link
+              href="/archive"
+              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Archive
+            </Link>
+            <Link
+              href="/about"
+              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+            >
+              About
+            </Link>
+          </div>
           {/* Icon-only link: the accessible name comes from aria-label, and
               the SVG is hidden from assistive tech so it is not announced as
               an unlabelled image. No icon library — inline SVG keeps the
