@@ -34,6 +34,6 @@ describe("scrollbar gutter", () => {
     // differs between those pages, so nothing else would catch a regression.
     const html = /\bhtml\s*\{([^}]*)\}/.exec(css);
     expect(html).not.toBeNull();
-    expect(html![1]).toMatch(/scrollbar-gutter:\s*stable/);
+    expect(html![1]).toMatch(/overflow-y:\s*scroll/);
   });
 });

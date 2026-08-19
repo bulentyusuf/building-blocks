@@ -337,15 +337,17 @@ html {
      steps sideways as the reader navigates. /search with an empty query is
      the page that exposes it, being the only one that reliably fits.
 
-     stable, not overflow-y: scroll. That older fix works but paints an empty
-     track on every platform with classic scrollbars. This reserves the space
-     and draws nothing.
-
-     No effect where scrollbars are overlays, macOS by default, because
-     nothing takes layout space there and the shift does not happen either.
-     Safari below 18.2 does not support it and keeps the old behaviour, which
-     is the current state rather than a regression. */
-  scrollbar-gutter: stable;
+     overflow-y: scroll, not scrollbar-gutter: stable. The modern property
+     reserves the space without painting a track in Safari and Chrome (overlay
+     scrollbars), but Firefox on macOS renders a visible empty gutter even
+     though scrollbars are overlays there — a solid line along the right edge
+     on every short page. overflow-y: scroll achieves the same layout
+     reservation: on overlay-scrollbar platforms the track is invisible when
+     there is no overflow, and on classic-scrollbar platforms it paints an
+     empty track — the same visual Firefox was already forcing. Safari below
+     18.2 did not support scrollbar-gutter and kept the old behaviour, so
+     those users saw this already. */
+  overflow-y: scroll;
 }
 
 /*
