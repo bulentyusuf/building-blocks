@@ -1396,7 +1396,12 @@ showing:
 git push origin main:demo
 ```
 
-A fast-forward inside one repo, so it cannot conflict. **Do not automate this on
+A fast-forward inside one repo, so it cannot conflict when main's history is
+linear. A non-squash PR merge adds a merge commit that makes `main:demo` a
+non-fast-forward update; the demo branch's `non_fast_forward` protection rule
+blocks it. In that case, open a PR from `main` to `demo` and merge it on
+GitHub — the UI merge creates a merge commit on demo that advances it without
+triggering the non-fast-forward rule. **Do not automate this on
 push to `main`** — that reinstates the per-merge build these settings exist to
 remove; a scheduled workflow is the middle ground if the demo goes stale.
 Vercel's deployment caps are scoped to the **account**, not the project, and the
