@@ -169,6 +169,25 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   const STANDFIRST =
     /className="[^"]*text-lg leading-relaxed text-brand-muted[^"]*"/g;
 
+  // Because text-brand-muted is inside the pattern, a standfirst that loses it
+  // stops MATCHING rather than failing the per-match check. That is fine while a
+  // file has one standfirst — the count drops to zero and the assertion below
+  // fails. It is not fine where a file has two, because the surviving sibling
+  // keeps the count above zero and the regression ships green. Demonstrated by
+  // removing text-brand-muted from one of Archive's two standfirsts: the whole
+  // file stayed green.
+  //
+  // So the count is asserted exactly, not just as non-zero. Three files carry
+  // two standfirsts: Categories and Authors each pair a heading blurb with a
+  // per-item gloss, and Archive pairs its CMS standfirst with the generated
+  // oldest-post fallback. Update this map when a route gains or loses one, and
+  // treat an unexpected count as the guard doing its job rather than as noise.
+  const EXPECTED_STANDFIRSTS: Record<string, number> = {
+    "app/categories/page.tsx": 2,
+    "app/authors/page.tsx": 2,
+    "app/archive/page.tsx": 2,
+  };
+
   it.each([
     "app/page.tsx",
     "app/page/[page]/page.tsx",
@@ -186,9 +205,9 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     "app/authors/[slug]/page/[page]/page.tsx",
   ])("%s", (file) => {
     const found = [...(read(file).match(STANDFIRST) ?? [])];
-    // Non-vacuous: every route listed renders one, so an empty list means the
-    // signature stopped matching, not that the page is clean.
-    expect(found.length).toBeGreaterThan(0);
+    // Exact, not non-zero. See the note on EXPECTED_STANDFIRSTS: a zero-floor
+    // check cannot see one of two standfirsts regressing.
+    expect(found.length).toBe(EXPECTED_STANDFIRSTS[file] ?? 1);
     for (const className of found)
       expect(className).toMatch(/text-brand-muted/);
   });
