@@ -50,20 +50,18 @@ export default async function TagsPage() {
   return (
     <WidePage
       crumbs={crumbs}
-      header={
-        <>
-          <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-            Tags
-          </h1>
-          {/* Not the metadata description: that one is written for search
-            results and repeats the site name, which reads oddly next to the
-            h1 and collides with the full stop in "Be Useful." */}
-          {intro?.standfirst && (
-            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-              {intro.standfirst}
-            </p>
-          )}
-        </>
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">Tags</h1>
+      }
+      // Not the metadata description: that one is written for search
+      // results and repeats the site name, which reads oddly next to the
+      // h1 and collides with the full stop in "Be Useful."
+      standfirst={
+        intro?.standfirst && (
+          <p className="text-lg leading-relaxed text-brand-muted text-pretty">
+            {intro.standfirst}
+          </p>
+        )
       }
     >
       {groups.length === 0 ? (

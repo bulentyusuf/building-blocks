@@ -19,9 +19,9 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  * `<Container>`:
  *
  *   - The breadcrumb, if any.
- *   - `header` — the h1, a standfirst, whatever sits beside them — wrapped in
- *     a `<header>` carrying a fixed `mb-8`, which is what the band's own
- *     `pb-8` was.
+ *   - `heading` and `standfirst`, side by side — see the split masthead note
+ *     below — wrapped in a `<header>` carrying a fixed `mb-8`, which is what
+ *     the band's own `pb-8` was.
  *   - A 3px rule, `border-brand-dark`, standing in for the band's own
  *     boundary — the colour step from navy to cream that once marked "the
  *     masthead ends here" for free. On one cream surface that step is gone,
@@ -52,10 +52,40 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  *
  * Do not invent anything richer than the 3px rule. Any further replacement is
  * the band again with extra steps.
+ *
+ * **The split masthead.** `heading` and `standfirst` used to be one opaque
+ * `header: ReactNode` a route assembled itself. They are two props now so
+ * this shell can lay them out left-flowing on one row — heading, a fixed
+ * `gap-10` (40px), standfirst — rather than stacked, on every route that has
+ * both. The left edge is meant to wander with the heading: that is the point,
+ * not a defect, and it is why this is not `justify-between` with a
+ * fixed-width right column. A right-anchored row was measured and rejected —
+ * a 216px heading beside a 31-character standfirst left roughly 640px of
+ * empty middle inside 984px of content, which reads as an accident far more
+ * than a moving edge does.
+ *
+ * `flex-col` below `md` is required, not decorative: a 60px heading is 330px
+ * wide at its widest, and a 390px phone has 350px of content, so there is no
+ * room for a standfirst beside it there. `items-baseline-last` rather than
+ * `items-baseline` — plain baseline aligns FIRST baselines, which leaves a
+ * two-line standfirst hanging below the heading; last baseline closes both at
+ * the bottom.
+ *
+ * `standfirst` is optional — the post page's `h1` carries none — and the row
+ * only renders when both `splitHeader` and `standfirst` are true, so a route
+ * with nothing beside its heading falls back to the plain stack every narrow
+ * route already uses. `splitHeader` defaults to true; the one place it is set
+ * false is the author page, whose `h1` already sits in a flex row beside a
+ * 112px portrait — a third element across that line is one too many, so it
+ * keeps the stacked fallback instead. Do not reintroduce a fixed-width right
+ * column, and do not give a narrow route this prop at all — see "One axis,
+ * and it is the header measure" in CLAUDE.md.
  */
 export default function WidePage({
   crumbs,
-  header,
+  heading,
+  standfirst,
+  splitHeader = true,
   children,
   contentOwnsLeading = false,
 }: {
@@ -63,8 +93,15 @@ export default function WidePage({
    * index listing at page 1 — though only home renders through this shell
    * unpaginated; see app/listing-page.tsx for the paginated case). */
   crumbs?: Crumb[];
-  /** The masthead's contents — the h1, a standfirst, whatever sits beside them. */
-  header: ReactNode;
+  /** The h1, plus anything meant to sit inline with it (a portrait, on the
+   * author routes). */
+  heading: ReactNode;
+  /** The standfirst, when the route has one. Sits beside `heading` on one row
+   * at `md` and up, stacked below it on mobile — see the split masthead note
+   * above. Omit entirely for a route with nothing to say beside its heading. */
+  standfirst?: ReactNode;
+  /** False only on the author routes — see the split masthead note above. */
+  splitHeader?: boolean;
   /**
    * Set when the content already carries its own space above its first
    * element, so the shell adds none below the rule. Every ruled listing does,
@@ -87,7 +124,19 @@ export default function WidePage({
   return (
     <Container>
       {crumbs && crumbs.length > 0 && <Breadcrumb items={crumbs} />}
-      <header className="mb-8">{header}</header>
+      <header className="mb-8">
+        {splitHeader && standfirst ? (
+          <div className="flex flex-col gap-3 md:flex-row md:items-baseline-last md:gap-10">
+            {heading}
+            {standfirst}
+          </div>
+        ) : (
+          <>
+            {heading}
+            {standfirst}
+          </>
+        )}
+      </header>
       <div className="border-t-[3px] border-brand-dark" />
       <div className={contentOwnsLeading ? undefined : "pt-6"}>{children}</div>
     </Container>

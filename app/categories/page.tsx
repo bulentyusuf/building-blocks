@@ -59,17 +59,17 @@ export default async function CategoriesPage() {
   return (
     <WidePage
       crumbs={crumbs}
-      header={
-        <>
-          <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-            Categories
-          </h1>
-          {intro?.standfirst && (
-            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-              {intro.standfirst}
-            </p>
-          )}
-        </>
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">
+          Categories
+        </h1>
+      }
+      standfirst={
+        intro?.standfirst && (
+          <p className="text-lg leading-relaxed text-brand-muted text-pretty">
+            {intro.standfirst}
+          </p>
+        )
       }
     >
       {/* One card per category, two across on desktop, stacked on mobile. */}

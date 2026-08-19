@@ -185,6 +185,68 @@ picked up.
 through Phase 1, unreferenced, and Phase 2 removed them along with
 `--color-footer-bg`.
 
+### The masthead splits into heading and standfirst, left-flowing
+
+Every wide route's header used to stack its heading and standfirst. It now
+lays them out on one row from `md` up — heading, a fixed `gap-10` (40px),
+standfirst — and stacks them below `md`, where a 60px heading has no room
+beside one. `app/wide-page.tsx` carries the full argument, including why the
+row is left-flowing rather than `justify-between` with a fixed-width right
+column: a right-anchored row was measured against a 216px heading and a
+31-character standfirst and left roughly 640px of empty middle inside 984px
+of content, which reads as an accident far more than a moving left edge does.
+Do not reintroduce a fixed-width right column.
+
+`WidePage` took one opaque `header: ReactNode` before this; it now takes
+`heading`, an optional `standfirst`, and `splitHeader` (default true). The
+row only renders when both `splitHeader` and `standfirst` are truthy, so a
+route with no standfirst — the post page's `h1` — falls back to the plain
+stack automatically, and `app/listing-page.tsx` passes both props straight
+through from its own `heading`/`standfirst` API. Every standfirst dropped
+`max-w-3xl`: in a left-flowing row the remaining width is the constraint, so
+a max-width only risks an early wrap. `lib/palette-contrast.test.ts`'s
+Standfirst-role guard is anchored on `text-lg leading-relaxed
+text-brand-muted` for exactly this reason — text-brand-muted has to stay in
+the anchor itself, not just the assertion, because the hero's excerpt (see
+below) now carries the same `text-lg leading-relaxed` prefix without it.
+
+**The author routes are the one exception**, via `splitHeader={false}`: their
+`h1` already sits in a flex row beside a 112px portrait, and a third element
+across that line is one too many. They render exactly as they did before this
+change — bio included, `max-w-3xl` and all — because the stacked fallback
+`WidePage` takes when `splitHeader` is false is the same markup shape the
+author routes always used. `app/wide-page.test.tsx` asserts only the two
+author route files set the prop, anchored on the JSX form at line start so a
+comment explaining the exception cannot be mistaken for the prop itself.
+
+The position caption (`app/page-context.tsx`) folds into the `standfirst`
+slot rather than becoming a third `WidePage` prop, so it stays the header's
+last line exactly as it was before the split — trailing the standfirst on the
+row's right side. `app/listing-page.tsx` passes a standfirst node whenever
+either the route has one or the page is paginated, so "Page 2 of 5" still has
+something to attach to on a route with no description of its own.
+
+### The home hero takes the split too, in the card's element order
+
+`HeroPost` in `app/page.tsx` used to stack headline, excerpt, byline and tags
+in one column under the cover. It now splits into two from `md` up
+(`md:grid md:grid-cols-2 md:gap-x-16 lg:gap-x-32`, matching the gutter
+`more-stories.tsx` already uses — not the Vercel starter's `lg:gap-x-8`,
+which shrinks as the viewport grows), and the split follows the list card's
+own element order — headline, date, standfirst, tags — read down each column
+rather than across the row: left carries the headline and its date, right
+the standfirst and its tags.
+
+The date comes out of `Avatar`'s `meta` prop and becomes its own line
+(`text-sm text-brand-muted mb-3 tabular-nums`), the card's exact treatment,
+because in the card order it is not part of the byline. `Avatar` itself is
+otherwise unchanged. The byline sits under the date in the left column —
+the one placement here that is a judgement call rather than a mirror of an
+existing card, since no card carries a byline. Putting it after the tag row
+instead would break `TagRow`'s own rule that a pill count varying from one to
+three sits at the foot of the block precisely so nothing sits below it and
+gets pushed around.
+
 ### Chrome is aubergine, one token for the bar and the footer
 
 `#2B1C3F` light, `#3B2A52` dark, carried by `--color-brand-header` and by its

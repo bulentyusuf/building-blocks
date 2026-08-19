@@ -40,17 +40,17 @@ export default async function AuthorsPage() {
   return (
     <WidePage
       crumbs={crumbs}
-      header={
-        <>
-          <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-            Authors
-          </h1>
-          {intro?.standfirst && (
-            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-              {intro.standfirst}
-            </p>
-          )}
-        </>
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">
+          Authors
+        </h1>
+      }
+      standfirst={
+        intro?.standfirst && (
+          <p className="text-lg leading-relaxed text-brand-muted text-pretty">
+            {intro.standfirst}
+          </p>
+        )
       }
     >
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10">

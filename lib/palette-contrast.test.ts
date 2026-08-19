@@ -151,7 +151,23 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // routes started passing their header through WidePage, and a guard that
   // silently stops covering anything when markup is recomposed is worse than
   // none.
-  const STANDFIRST = /className="[^"]*max-w-3xl text-lg leading-relaxed[^"]*"/g;
+  //
+  // Re-anchored for the split masthead (CLAUDE.md, "The split masthead"):
+  // max-w-3xl came out of the signature because a standfirst in a left-flowing
+  // row is constrained by the remaining width, not a max-width of its own — see
+  // app/wide-page.tsx. The one route still carrying max-w-3xl is the author
+  // page's bio, which keeps its pre-split rendering under splitHeader={false},
+  // and this substring match still finds it: dropping max-w-3xl from the
+  // required prefix widens what matches rather than narrowing it.
+  //
+  // text-brand-muted stays IN the required prefix, though it is also checked
+  // per match below — dropping it here would make the pattern match the
+  // hero's excerpt paragraph too (app/page.tsx now carries a second
+  // `text-lg leading-relaxed` element, the standfirst's right-column sibling
+  // in the split hero), which is body ink by design and would fail the very
+  // check this guard exists to run.
+  const STANDFIRST =
+    /className="[^"]*text-lg leading-relaxed text-brand-muted[^"]*"/g;
 
   it.each([
     "app/page.tsx",

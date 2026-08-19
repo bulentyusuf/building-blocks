@@ -111,34 +111,40 @@ export default async function AuthorPaginatedPage({
       totalPages={totalPages}
       visibleTags={visibleTags}
       basePath={`/authors/${slug}`}
-    >
-      <div className="flex items-center gap-6">
-        {author.picture?.url && (
-          // No ring. This used to carry ring-white/25 so a dark-toned
-          // portrait kept an edge against the navy band; on cream, like the
-          // authors index card's own 80px portrait, a plain circle already
-          // separates from the page.
-          <ContentfulImage
-            alt=""
-            className="rounded-full object-cover h-28 w-28 shrink-0"
-            width={112}
-            height={112}
-            src={author.picture.url}
-          />
-        )}
-        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-          {widont(author.name)}
-        </h1>
-      </div>
-      {author.bio && (
-        // In the header, like every other browse page's standfirst. Ordinary
-        // RichText on cream needs no link treatment of its own — brand-crimson
-        // reads fine here, which is what every other prose link on the site
-        // already relies on.
-        <div className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-          <RichText content={author.bio} headings={[]} />
+      // The one exception to the split masthead — see app/wide-page.tsx and
+      // the unpaginated author page.
+      splitHeader={false}
+      heading={
+        <div className="flex items-center gap-6">
+          {author.picture?.url && (
+            // No ring. This used to carry ring-white/25 so a dark-toned
+            // portrait kept an edge against the navy band; on cream, like the
+            // authors index card's own 80px portrait, a plain circle already
+            // separates from the page.
+            <ContentfulImage
+              alt=""
+              className="rounded-full object-cover h-28 w-28 shrink-0"
+              width={112}
+              height={112}
+              src={author.picture.url}
+            />
+          )}
+          <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
+            {widont(author.name)}
+          </h1>
         </div>
-      )}
-    </ListingPage>
+      }
+      standfirst={
+        author.bio && (
+          // In the header, like every other browse page's standfirst. Ordinary
+          // RichText on cream needs no link treatment of its own — brand-crimson
+          // reads fine here, which is what every other prose link on the site
+          // already relies on.
+          <div className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
+            <RichText content={author.bio} headings={[]} />
+          </div>
+        )
+      }
+    />
   );
 }
