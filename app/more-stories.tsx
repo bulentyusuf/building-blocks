@@ -106,7 +106,9 @@ function PostPreview({
           <div className="text-sm text-brand-muted mb-3 tabular-nums">
             <DateComponent dateString={date} />
           </div>
-          <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
+          <p className="text-lg leading-relaxed text-pretty">
+            {widont(excerpt)}
+          </p>
           <TagRow tags={tags} className="mt-3" />
         </div>
       </article>
@@ -160,7 +162,7 @@ function PostPreview({
       <div className="text-sm text-brand-muted mb-4 tabular-nums">
         <DateComponent dateString={date} />
       </div>
-      <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
+      <p className="text-lg leading-relaxed text-pretty">{widont(excerpt)}</p>
       {/* mt-auto takes the slack so every pill row in a grid row lands on the
           same line; pt-4 keeps sixteen pixels above the pills on a card whose
           excerpt happens to fill the cell, where mt-auto alone would resolve
