@@ -25,15 +25,6 @@
 
 @plugin '@tailwindcss/typography';
 
-/* The tagline's no-JS and pre-hydration fallback, and its state below lg.
-   Hidden outright, for the same reason the wordmark's is: the band names the
-   site directly below and repeats this line as its standfirst. The fade rules
-   further down lift it at lg and up once the masthead has gone. Unlayered on
-   purpose, so it outranks the utilities the tagline carries. */
-body:has(.site-masthead) .site-tagline {
-  display: none;
-}
-
 /* The wordmark is the half that comes back. Home names itself in the band, so
    the bar would repeat it about 60px above — until the reader scrolls the
    masthead out of view, at which point the wordmark is the only wayfinding
@@ -80,47 +71,13 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
     visibility 0s linear 0s;
 }
 
-/* The tagline rides the wordmark's two classes rather than gaining its own.
-   They are named for the wordmark because it came first; both now govern the
-   pair, and app/wordmark-fade.tsx sets them once for both.
-
-   Scoped to lg because the tagline is `hidden lg:block` in the markup and
-   these rules are unlayered, so an unscoped `display` here would beat that
-   `hidden` and leak a full site description into a phone's 52px bar. The
-   breakpoint is stated as a literal min-width rather than reached for through
-   a utility, matching the responsive prose override further down this file:
-   the override belongs next to the value it overrides, not in a second
-   definition somewhere else.
-
-   64rem is Tailwind's own `lg`. If the tagline's breakpoint moves in
-   app/layout.tsx, this moves with it — the two are one decision in two
-   places, and app/a11y.test.tsx holds them together. */
-@media (min-width: 64rem) {
-  body:has(.site-masthead).js-wordmark-observed .site-tagline {
-    display: block;
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 0.3s ease,
-      visibility 0s linear 0.3s;
-  }
-  body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-tagline {
-    opacity: 1;
-    visibility: visible;
-    transition:
-      opacity 0.3s ease,
-      visibility 0s linear 0s;
-  }
-}
-
 /* Both states, not just the hidden one. With only the first selector listed
    here the visible state kept its own transition and the fade still ran for
    readers who asked for no motion. */
 @media (prefers-reduced-motion: reduce) {
-  body:has(.site-masthead).js-wordmark-observed
-    :is(.site-wordmark, .site-tagline),
+  body:has(.site-masthead).js-wordmark-observed .site-wordmark,
   body:has(.site-masthead).js-wordmark-observed.wordmark-visible
-    :is(.site-wordmark, .site-tagline) {
+    .site-wordmark {
     transition: none;
   }
 }
