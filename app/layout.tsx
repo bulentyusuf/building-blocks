@@ -18,6 +18,7 @@ import SidenoteEnterKey from "./sidenote-enter-key";
 import WordmarkFade from "./wordmark-fade";
 import SiteWordmark from "./site-wordmark";
 import NewWindowHint from "./new-window-hint";
+import NavDisclosure from "./nav-disclosure";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 import { ExitPreviewButton } from "./exit-preview-button";
@@ -138,7 +139,7 @@ function Header() {
             pattern is borrowed from app/table-of-contents.tsx — same
             progressive-enhancement shape, different breakpoint. */}
         <nav aria-label="Primary" className="flex items-center gap-4">
-          <details className="md:hidden">
+          <NavDisclosure>
             <summary
               aria-label="Menu"
               className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-1 -m-1"
@@ -199,7 +200,7 @@ function Header() {
                 </li>
               </ul>
             </div>
-          </details>
+          </NavDisclosure>
           <div className="hidden md:flex items-center gap-4 md:gap-6">
             <Link
               href="/categories"
