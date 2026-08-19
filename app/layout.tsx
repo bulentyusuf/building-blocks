@@ -137,7 +137,7 @@ function Header() {
             and the summary hidden, so the links sit inline. The <details>
             pattern is borrowed from app/table-of-contents.tsx — same
             progressive-enhancement shape, different breakpoint. */}
-        <nav aria-label="Primary" className="flex items-center">
+        <nav aria-label="Primary" className="flex items-center gap-4">
           <details className="md:hidden">
             <summary
               aria-label="Menu"
