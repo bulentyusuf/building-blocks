@@ -267,11 +267,9 @@ export default async function Page() {
       // so unprefixed they shrank this standfirst to a 320px box and
       // right-aligned its text inside it — a phantom right margin 30px short
       // of the page edge, sitting under a left-aligned h1. Full-width,
-      // left-aligned on mobile instead. No text-pretty here, unlike the other
-      // ten standfirsts sharing this signature — pre-existing, not touched by
-      // this fix.
+      // left-aligned on mobile instead.
       standfirst={
-        <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted">
+        <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
           {SITE_DESCRIPTION}
         </p>
       }
