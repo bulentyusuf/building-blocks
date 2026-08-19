@@ -116,7 +116,7 @@ export default async function CategoryPaginatedPage({
       }
       standfirst={
         category.description && (
-          <p className="text-lg leading-relaxed text-brand-muted text-pretty">
+          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
             {category.description}
           </p>
         )

@@ -61,14 +61,17 @@ function HeroPost({
   // The byline stays. It is the hero's other difference from a card and it
   // earns the space, because the site has three author personas and the film
   // and games posts are bylined to different ones. There is one hero, so unlike
-  // the category it never repeats. It sits under the date in the left column
-  // rather than after the tag row: the card order (headline, date, standfirst,
-  // tags) says nothing about where a byline goes, since no card has one, so
-  // date-plus-author as one attribution block is a judgement call, not a
-  // mirror of something that already exists. Putting it after the tags instead
-  // would break the rule in TagRow's own comment — a pill count from one to
-  // three sits at the foot of the block precisely because nothing should sit
-  // below it and get pushed around.
+  // the category it never repeats.
+  //
+  // It renders through Avatar with the date still inside `meta`, exactly as it
+  // did before the split — not pulled out onto its own line the way a card's
+  // date is. An earlier version of this component did pull it out, to mirror
+  // the card's element order (headline, date, standfirst, tags) exactly. That
+  // was reverted: Avatar already takes name, picture and meta and the date was
+  // already doing the right job inside it, so keeping the component whole beat
+  // matching the card's sequence one field at a time. The date is grouped with
+  // the author rather than standing alone as a deliberate, stated deviation
+  // from the card mirror — not an oversight.
   const dateline = (
     <>
       <Date dateString={date} />
@@ -120,18 +123,25 @@ function HeroPost({
           />
         </div>
       )}
-      {/* Below the cover, the hero takes the card's own element order —
-          headline, date, standfirst, tags — read down each column rather than
-          across the whole block: left carries the headline and its date,
-          right the standfirst and its tags. Not a hero-specific order; see
-          the list variant of PostPreview in more-stories.tsx, which is the
-          one being mirrored here.
+      {/* Below the cover, an asymmetric split rather than an even one: the
+          headline needs more room than the standfirst does. Left carries the
+          headline and the byline; right the standfirst and the tag row.
 
-          md:grid-cols-2 with the listing's own gap-x-16 lg:gap-x-32, not the
-          Vercel starter's lg:gap-x-8 — that shrinks the gutter as the
-          viewport grows, which reads as a mistake next to a page whose other
-          two-column grid (the taxonomy card index) widens instead. */}
-      <div className="md:grid md:grid-cols-2 md:gap-x-16 lg:gap-x-32">
+          md:grid-cols-[3fr_2fr] at gap-x-16 measures a 566px left column
+          inside the 984px container — measured against the six most recently
+          published post titles (38 to 57 characters), not the seed's
+          placeholder titles (17 to 31), which is what let an earlier version
+          of this column ship four lines deep. An even 2fr/2fr split with the
+          listing's own lg:gap-x-32 measured a 428px left column, which held
+          only 30px text to two lines; the wider, asymmetric column is what
+          the 40px cap below actually needs.
+
+          gap-x-16 only, no lg: step. The listing's own two-column grids
+          (more-stories.tsx, the taxonomy card index) widen their gutter at
+          lg because their columns are already wide enough to spare the
+          space; this one cannot afford to, since the extra width bought by a
+          narrower gutter is what keeps the headline at two lines. */}
+      <div className="md:grid md:grid-cols-[3fr_2fr] md:gap-x-16">
         <div>
           {/* An h2, and so is every card title below, because the listing no
               longer renders a heading of its own. Home's outline is the site
@@ -139,26 +149,17 @@ function HeroPost({
               makes the masthead structurally the top of the page rather than
               only visually it.
 
-              One step above the card's ramp and one below the masthead's at
-              every width: the masthead runs 36/48/60, this runs 30/36/48, a
-              card runs 24/30/30. The lg step is the fix, not decoration. The
-              masthead keeps climbing to lg:text-6xl while this used to stop
-              at md, so the gap above the hero widened to 24px at desktop
-              while the gap below it stayed at 6px, and the hero read as a
-              slightly large card rather than as the thing leading the page.
-
-              It stops at text-5xl rather than climbing with the masthead.
-              Above the masthead's own md step it starts competing with the
-              site name, and going that far was tried once already: at the
-              wide h1 ramp this carried before, it was the same size as a
-              post page's own headline, which is the whole reason home read
-              as a preview of an article rather than as the top of a list.
-              Bringing it down fixed that, and this change does not undo it.
-
-              mb-2 and leading-snug are the list card's own values, copied
-              along with its date-below-headline order; only the size ramp
-              stays the hero's own, larger than any card's. */}
-          <h2 className="mb-2 text-3xl md:text-4xl lg:text-5xl leading-snug text-pretty">
+              Caps at 40px (lg:text-[2.5rem], off Tailwind's scale on
+              purpose) rather than climbing to the 48px a full-width hero
+              headline used to reach. Measured against the six most recently
+              published titles in this 566px column: 48px holds two lines for
+              a short title but runs to four for a long one, and three lines
+              is already the four-line failure's twin as far as a hero
+              reads. 40px holds every one of the six to two lines. lg:text-4xl
+              (36px, on-scale) also clears two lines in this column and is
+              the fallback if 2.5rem is ever found objectionable; do not go
+              back to 48px in a split column at this container width. */}
+          <h2 className="mb-4 text-2xl md:text-3xl lg:text-[2.5rem] leading-tight text-pretty">
             <Link
               href={`/posts/${slug}`}
               className="hover:text-brand-crimson transition-colors duration-200"
@@ -166,30 +167,24 @@ function HeroPost({
               {widont(title)}
             </Link>
           </h2>
-          {/* The card's own date treatment exactly, including tabular-nums —
-              without it a column of dates jitters as the digits change width.
-              It used to ride inside Avatar's meta prop as part of `dateline`;
-              in the card order it is its own line, so it comes out of meta
-              and Avatar renders with none. */}
-          <div className="text-sm text-brand-muted mb-3 tabular-nums">
-            {dateline}
-          </div>
           {author && (
-            <div className="mt-4">
+            <div className="flex items-center">
               <Avatar
                 name={author.name}
                 slug={author.slug}
                 picture={author.picture}
+                meta={dateline}
               />
             </div>
           )}
         </div>
         <div>
           <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
-          {/* mt-3, the card's own value — not the mt-6 this carried when the
-              pills followed a 40px avatar block in the same column. The
-              avatar is in the left column now, so what sits above the pills
-              here is a text baseline, exactly as it is on a card. */}
+          {/* mt-3, not the mt-6 this carried before the split, which was
+              tuned against a 40px avatar block sitting directly above the
+              pills in the same column. The avatar is in the left column now,
+              so what sits above the pills here is a text baseline — the
+              excerpt — exactly as it is on a card. */}
           <TagRow tags={tags} className="mt-3" />
         </div>
       </div>
@@ -256,11 +251,11 @@ export default async function Page() {
         </h1>
       }
       // The split masthead's standfirst: text-lg (18px) and text-brand-muted
-      // like every other route's, with no max-w-3xl. In a left-flowing row
-      // the remaining width is the constraint, so a max-width does nothing
-      // but risk an early wrap.
+      // like every other route's. max-w-[20rem] plus text-right is M5 — see
+      // app/wide-page.tsx — and SITE_DESCRIPTION is written to hold two lines
+      // at that width, same as every other route's standfirst.
       standfirst={
-        <p className="text-lg leading-relaxed text-brand-muted">
+        <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted">
           {SITE_DESCRIPTION}
         </p>
       }

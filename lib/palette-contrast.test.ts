@@ -152,22 +152,26 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // silently stops covering anything when markup is recomposed is worse than
   // none.
   //
-  // Re-anchored for the split masthead (CLAUDE.md, "The split masthead"):
-  // max-w-3xl came out of the signature because a standfirst in a left-flowing
-  // row is constrained by the remaining width, not a max-width of its own — see
-  // app/wide-page.tsx. The one route still carrying max-w-3xl is the author
-  // page's bio, which keeps its pre-split rendering under splitHeader={false},
-  // and this substring match still finds it: dropping max-w-3xl from the
-  // required prefix widens what matches rather than narrowing it.
+  // Re-anchored twice since. First for the split masthead's left-flowing
+  // version, which dropped max-w-3xl because a standfirst filling the
+  // remaining width needed no max-width of its own. That version shipped and
+  // was rejected on sight for a different reason (CLAUDE.md, "The masthead
+  // splits into heading and standfirst") — the row is right-anchored now, via
+  // M5 — and M5 brought a max-width BACK, `max-w-[20rem]`, this time to force
+  // a two-line wrap rather than to cap a stray one. It also added
+  // `text-right`. Both are required in the pattern below, not just checked
+  // afterwards, for the same reason text-brand-muted already was: a
+  // standfirst that loses either one stops MATCHING rather than failing a
+  // later assertion, and the guard exists to catch exactly that regression.
   //
-  // text-brand-muted stays IN the required prefix, though it is also checked
-  // per match below — dropping it here would make the pattern match the
-  // hero's excerpt paragraph too (app/page.tsx now carries a second
-  // `text-lg leading-relaxed` element, the standfirst's right-column sibling
-  // in the split hero), which is body ink by design and would fail the very
-  // check this guard exists to run.
-  const STANDFIRST =
-    /className="[^"]*text-lg leading-relaxed text-brand-muted[^"]*"/g;
+  // The author routes are the one exception and are checked separately below,
+  // against the OLD signature — max-w-3xl, no text-right — because they render
+  // through splitHeader={false} and were never touched by M5. A single
+  // pattern loose enough to match both signatures would not distinguish a
+  // route that correctly kept the old style from one that regressed out of
+  // the new one.
+  const STANDFIRST_M5 =
+    /className="[^"]*max-w-\[20rem\] text-lg leading-relaxed text-right text-brand-muted[^"]*"/g;
 
   // Because text-brand-muted is inside the pattern, a standfirst that loses it
   // stops MATCHING rather than failing the per-match check. That is fine while a
@@ -177,14 +181,20 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // removing text-brand-muted from one of Archive's two standfirsts: the whole
   // file stayed green.
   //
-  // So the count is asserted exactly, not just as non-zero. Three files carry
-  // two standfirsts: Categories and Authors each pair a heading blurb with a
-  // per-item gloss, and Archive pairs its CMS standfirst with the generated
-  // oldest-post fallback. Update this map when a route gains or loses one, and
-  // treat an unexpected count as the guard doing its job rather than as noise.
+  // So the count is asserted exactly, not just as non-zero. Requiring
+  // max-w-[20rem] and text-right in the pattern itself, rather than checking
+  // them per match the way text-brand-muted is, is what keeps this map short:
+  // Categories' and Authors' per-item card blurbs (a category description, an
+  // author bio, both ordinary left-aligned body prose) share the OLD
+  // `text-lg leading-relaxed text-brand-muted` prefix with their page's real
+  // standfirst, which is why those two files carried a count of 2 under the
+  // left-flowing pattern. Neither blurb is part of the masthead and neither
+  // takes M5's own classes, so the tighter pattern stops matching them and
+  // both files are back to a plain, un-mapped 1. Archive is the one file
+  // still mapped, because both its standfirsts — the CMS entry and the
+  // generated oldest-post fallback — are real header content and both do
+  // carry the M5 classes.
   const EXPECTED_STANDFIRSTS: Record<string, number> = {
-    "app/categories/page.tsx": 2,
-    "app/authors/page.tsx": 2,
     "app/archive/page.tsx": 2,
   };
 
@@ -199,17 +209,34 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     "app/categories/[slug]/page/[page]/page.tsx",
     "app/tags/[slug]/page.tsx",
     "app/tags/[slug]/page/[page]/page.tsx",
-    // The author routes carry theirs as a RichText wrapper rather than a <p>,
-    // and it matches the same signature.
-    "app/authors/[slug]/page.tsx",
-    "app/authors/[slug]/page/[page]/page.tsx",
   ])("%s", (file) => {
-    const found = [...(read(file).match(STANDFIRST) ?? [])];
+    const found = [...(read(file).match(STANDFIRST_M5) ?? [])];
     // Exact, not non-zero. See the note on EXPECTED_STANDFIRSTS: a zero-floor
     // check cannot see one of two standfirsts regressing.
     expect(found.length).toBe(EXPECTED_STANDFIRSTS[file] ?? 1);
     for (const className of found)
       expect(className).toMatch(/text-brand-muted/);
+  });
+
+  // The old, pre-M5 signature — no text-right, and max-w-3xl rather than
+  // max-w-[20rem] — because these two routes render through splitHeader={false}
+  // and were never brought into the row. "Render as they do today" is the
+  // acceptance criterion for these two files specifically.
+  const STANDFIRST_AUTHOR =
+    /className="[^"]*max-w-3xl text-lg leading-relaxed text-brand-muted[^"]*"/g;
+
+  it.each([
+    // The author routes carry theirs as a RichText wrapper rather than a <p>,
+    // and it matches the same signature.
+    "app/authors/[slug]/page.tsx",
+    "app/authors/[slug]/page/[page]/page.tsx",
+  ])("%s (pre-M5 signature)", (file) => {
+    const found = [...(read(file).match(STANDFIRST_AUTHOR) ?? [])];
+    expect(found.length).toBe(1);
+    for (const className of found) {
+      expect(className).toMatch(/text-brand-muted/);
+      expect(className).not.toMatch(/text-right/);
+    }
   });
 
   it("the position caption takes it too", () => {

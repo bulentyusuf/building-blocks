@@ -55,21 +55,33 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  *
  * **The split masthead.** `heading` and `standfirst` used to be one opaque
  * `header: ReactNode` a route assembled itself. They are two props now so
- * this shell can lay them out left-flowing on one row — heading, a fixed
- * `gap-10` (40px), standfirst — rather than stacked, on every route that has
- * both. The left edge is meant to wander with the heading: that is the point,
- * not a defect, and it is why this is not `justify-between` with a
- * fixed-width right column. A right-anchored row was measured and rejected —
- * a 216px heading beside a 31-character standfirst left roughly 640px of
- * empty middle inside 984px of content, which reads as an accident far more
- * than a moving edge does.
+ * this shell can lay them out on one row — heading left, standfirst pinned to
+ * the container's right edge via `justify-between` — rather than stacked, on
+ * every route that has both.
+ *
+ * **This is M5 from a five-option mockup, chosen after a left-flowing row
+ * shipped and was rejected on sight.** The left-flowing version put a fixed
+ * `gap-10` between the heading and a standfirst that started wherever the
+ * heading ended, on the reasoning that a wandering left edge was the point
+ * rather than a defect. It looked like a mistake in review: a short heading
+ * left the standfirst stranded in the middle of the row with nothing
+ * anchoring it. `justify-between` is the fix — the standfirst's right edge is
+ * now constant on every route — but `justify-between` alone reintroduces the
+ * objection that sank right-anchoring the first time: a one-line standfirst
+ * beside a short heading leaves a large empty gap in the middle. **The
+ * standfirst's own `max-w-[20rem]` closes that gap**, by forcing most
+ * standfirsts to wrap to two lines rather than trailing off as one short
+ * line at the far margin — see the standfirst's own note in each route for
+ * the character budget that keeps the wrap at two lines and not three. The
+ * wrap and the anchor are one decision, not two; do not ship one without the
+ * other.
  *
  * `flex-col` below `md` is required, not decorative: a 60px heading is 330px
  * wide at its widest, and a 390px phone has 350px of content, so there is no
- * room for a standfirst beside it there. `items-baseline-last` rather than
- * `items-baseline` — plain baseline aligns FIRST baselines, which leaves a
- * two-line standfirst hanging below the heading; last baseline closes both at
- * the bottom.
+ * room for a standfirst beside it there. `items-baseline-last` matters more
+ * with a two-line standfirst than it would with one: plain `baseline` aligns
+ * FIRST baselines, which would hang the standfirst's second line below the
+ * heading; last baseline closes both blocks at the bottom instead.
  *
  * `standfirst` is optional — the post page's `h1` carries none — and the row
  * only renders when both `splitHeader` and `standfirst` are true, so a route
@@ -77,9 +89,8 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  * route already uses. `splitHeader` defaults to true; the one place it is set
  * false is the author page, whose `h1` already sits in a flex row beside a
  * 112px portrait — a third element across that line is one too many, so it
- * keeps the stacked fallback instead. Do not reintroduce a fixed-width right
- * column, and do not give a narrow route this prop at all — see "One axis,
- * and it is the header measure" in CLAUDE.md.
+ * keeps the stacked fallback instead. Do not give a narrow route this prop at
+ * all — see "One axis, and it is the header measure" in CLAUDE.md.
  */
 export default function WidePage({
   crumbs,
@@ -126,7 +137,7 @@ export default function WidePage({
       {crumbs && crumbs.length > 0 && <Breadcrumb items={crumbs} />}
       <header className="mb-8">
         {splitHeader && standfirst ? (
-          <div className="flex flex-col gap-3 md:flex-row md:items-baseline-last md:gap-10">
+          <div className="flex flex-col gap-3 md:flex-row md:items-baseline-last md:justify-between md:gap-10">
             {heading}
             {standfirst}
           </div>

@@ -58,7 +58,7 @@ export default async function TagsPage() {
       // h1 and collides with the full stop in "Be Useful."
       standfirst={
         intro?.standfirst && (
-          <p className="text-lg leading-relaxed text-brand-muted text-pretty">
+          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
             {intro.standfirst}
           </p>
         )

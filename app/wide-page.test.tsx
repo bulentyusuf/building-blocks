@@ -43,6 +43,22 @@ describe("WidePage's split masthead", () => {
     expect(row?.className).toMatch(/md:gap-10/);
   });
 
+  it("pins the standfirst to the container's right edge (M5)", () => {
+    // The row shipped left-flowing first and was rejected on sight for
+    // stranding a short standfirst in the middle of the row — see
+    // CLAUDE.md, "The masthead splits into heading and standfirst".
+    // justify-between is what anchors the standfirst's right edge instead;
+    // the standfirst's own max-w-[20rem] (checked per route, not here) is
+    // what stops that anchor reintroducing the empty-middle problem.
+    render(
+      <WidePage heading={heading} standfirst={standfirst}>
+        <p>Body</p>
+      </WidePage>,
+    );
+    const row = screen.getByText("A heading").parentElement;
+    expect(row?.className).toMatch(/md:justify-between/);
+  });
+
   it("falls back to the plain stack when there is no standfirst", () => {
     render(
       <WidePage heading={heading}>
