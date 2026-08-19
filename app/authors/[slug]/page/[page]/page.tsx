@@ -3,6 +3,7 @@ import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
 import ListingPage from "../../../../listing-page";
+import PageCounter from "../../../../page-counter";
 import { type Crumb } from "../../../../breadcrumb";
 import { RichText } from "@/lib/rich-text";
 import {
@@ -130,7 +131,8 @@ export default async function AuthorPaginatedPage({
             />
           )}
           <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-            {widont(author.name)}
+            {widont(author.name)}{" "}
+            <PageCounter currentPage={pageNumber} totalPages={totalPages} />
           </h1>
         </div>
       }

@@ -119,49 +119,6 @@ describe("WidePage's split masthead", () => {
   });
 });
 
-describe("ListingPage aligns the pagination caption with the standfirst above it", () => {
-  // ListingPage's own `splitHeader` destructuring had no default, unlike
-  // WidePage's `= true`. Only the two author routes pass the prop explicitly,
-  // so on every other listing route it arrived as `undefined` — falsy — and
-  // the text-right check on the caption's wrapper div read that local value
-  // rather than the `true` WidePage was actually rendering with. The caption
-  // rendered left-aligned under a right-aligned standfirst on every paginated
-  // category, tag and index listing from page 2 on. Fixed by giving
-  // ListingPage's own `splitHeader` the same `= true` default.
-  it("gives the caption text-right when splitHeader is left at its default", () => {
-    render(
-      <ListingPage
-        posts={[]}
-        currentPage={2}
-        totalPages={3}
-        visibleTags={new Set()}
-        basePath="/categories/design"
-        heading={<h1>Design</h1>}
-        emptyMessage="none"
-      />,
-    );
-    const caption = screen.getByText(/Page 2 of 3/);
-    expect(caption.parentElement?.className).toContain("text-right");
-  });
-
-  it("leaves the caption left-aligned on the author routes (splitHeader=false)", () => {
-    render(
-      <ListingPage
-        posts={[]}
-        currentPage={2}
-        totalPages={3}
-        visibleTags={new Set()}
-        basePath="/authors/jane"
-        heading={<h1>Jane</h1>}
-        emptyMessage="none"
-        splitHeader={false}
-      />,
-    );
-    const caption = screen.getByText(/Page 2 of 3/);
-    expect(caption.parentElement?.className).not.toContain("text-right");
-  });
-});
-
 describe("only the author routes opt out of the split masthead", () => {
   const ROOT = path.join(__dirname, "..");
   const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -192,5 +149,42 @@ describe("only the author routes opt out of the split masthead", () => {
     "app/authors/page.tsx",
   ])("%s does not", (file) => {
     expect(read(file)).not.toMatch(PASSED);
+  });
+});
+
+describe("every paginated route renders PageCounter inside its heading", () => {
+  // CLAUDE.md, "The page counter moves inline, into the heading". The single
+  // call site inside ListingPage/PageContext is gone; each of these seven
+  // routes now renders <PageCounter> itself, inline in its own <h1>. Without
+  // this guard a route can silently lose its counter — a typo, a refactor
+  // that drops the fragment — and nothing would notice, which is exactly the
+  // failure mode the one call site used to make impossible.
+  //
+  // Anchored on the JSX at line start, never on the bare word "PageCounter":
+  // app/page-counter.tsx's own name and app/listing-page.tsx's docstring both
+  // say it in prose, and a guard that fails on its own documentation is a
+  // guard nobody keeps.
+  const ROOT = path.join(__dirname, "..");
+  const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
+  const RENDERED = /^\s*<PageCounter\b/m;
+
+  it.each([
+    "app/page/[page]/page.tsx",
+    "app/categories/[slug]/page.tsx",
+    "app/categories/[slug]/page/[page]/page.tsx",
+    "app/tags/[slug]/page.tsx",
+    "app/tags/[slug]/page/[page]/page.tsx",
+    "app/authors/[slug]/page.tsx",
+    "app/authors/[slug]/page/[page]/page.tsx",
+  ])("%s", (file) => {
+    expect(read(file)).toMatch(RENDERED);
+  });
+
+  it("app/listing-page.tsx no longer imports it", () => {
+    // Anchored on the import line, not the bare word — the docstring that
+    // explains the removal names the component too.
+    expect(read("app/listing-page.tsx")).not.toMatch(
+      /^import PageCounter from/m,
+    );
   });
 });

@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import WidePage from "./wide-page";
 import MoreStories from "./more-stories";
 import Pagination from "./pagination";
-import PageContext from "./page-context";
 import { type Crumb } from "./breadcrumb";
 import { jsonLdHtml } from "@/lib/json-ld";
 import type { CardPost } from "@/lib/types";
@@ -12,41 +11,36 @@ import type { CardPost } from "@/lib/types";
  * either its paginated or its unpaginated form, and the index listing at
  * /page/[page].
  *
- * Those six routes rendered the same tree with the same props and differed only
- * in their `<header>`: a plain heading for a category or tag, a heading beside a
- * portrait for an author. So the header is `children` rather than a set of
- * props. Passing `name`, `description` and `avatar` and reassembling them here
- * would mean a conditional per difference, which is how a shared component
- * becomes harder to read than the six copies it replaced.
+ * Those seven routes rendered the same tree with the same props and differed
+ * only in their `<header>`: a plain heading for a category or tag, a heading
+ * beside a portrait for an author. So the header is `children` rather than a
+ * set of props. Passing `name`, `description` and `avatar` and reassembling
+ * them here would mean a conditional per difference, which is how a shared
+ * component becomes harder to read than the seven copies it replaced.
  *
- * What is genuinely uniform lives here: the band, the position caption, the
- * listing itself, the pager, and the empty state.
+ * What is genuinely uniform lives here: the band, the listing itself, the
+ * pager, and the empty state.
  *
  * `heading` and `standfirst` are therefore purely editorial — nothing
  * navigational — and pass straight through to WidePage, which is what lays
  * them out side by side; `splitHeader` passes through too, for the author
- * routes' exception (see app/wide-page.tsx). The "Page N of M" caption is
- * rendered here rather than passed in, because it belongs to the list and
- * this component already holds the two numbers. PageContext returns null on
- * page 1, so it is appended after `standfirst` unconditionally and no route
- * decides whether its own page counts as paginated — folded into the
- * `standfirst` slot itself (rather than a third WidePage prop) so it stays
- * the header's last line exactly as it was before the split, trailing the
- * standfirst on the row's right side rather than floating separately.
- * `caption` below covers the one case `standfirst` alone would miss: a
- * route with no standfirst text of its own that is nonetheless paginated
- * still needs the row, or "Page 2 of 5" would have nothing to attach to.
+ * routes' exception (see app/wide-page.tsx). No local default on
+ * `splitHeader`: nothing here reads the resolved value any more, so whatever
+ * a caller passes (or omits) reaches WidePage exactly as given, and
+ * WidePage's own `= true` default resolves it from there.
+ *
+ * The "N of M" position marker used to render here, appended after
+ * `standfirst` on its own line. It does not any more — see
+ * `app/page-counter.tsx` for the reversal and the full argument. Each of the
+ * seven routes renders it inline inside its own `heading` now, so this
+ * component has nothing left to do with pagination beyond the two numbers
+ * the pager below already needed.
  */
 export default function ListingPage({
   crumbs,
   heading,
   standfirst,
-  // Defaulted here too, matching WidePage's own default — not left implicit.
-  // Every route but the two author ones omits this prop, so without a local
-  // default the text-right check below reads `undefined` for them and never
-  // fires: the caption would render left-aligned under a right-aligned
-  // standfirst on every category, tag and index listing page 2 and later.
-  splitHeader = true,
+  splitHeader,
   posts,
   currentPage,
   totalPages,
@@ -82,7 +76,6 @@ export default function ListingPage({
   /** Serialised into a ld+json script when present. Only the author page has one. */
   jsonLd?: unknown;
 }) {
-  const caption = currentPage > 1;
   return (
     <WidePage
       crumbs={crumbs}
@@ -90,19 +83,7 @@ export default function ListingPage({
       // prop's note. The empty state below carries its own instead.
       contentOwnsLeading
       heading={heading}
-      standfirst={
-        standfirst || caption ? (
-          // text-right only under the split. The caption sits beneath the
-          // standfirst inside the right-hand block, so it has to share its
-          // alignment or it hangs off the left edge of a right-aligned block.
-          // The author routes render with splitHeader={false} and keep the
-          // pre-split left alignment, caption included.
-          <div className={splitHeader ? "text-right" : undefined}>
-            {standfirst}
-            <PageContext currentPage={currentPage} totalPages={totalPages} />
-          </div>
-        ) : undefined
-      }
+      standfirst={standfirst}
       splitHeader={splitHeader}
     >
       {/* Stays here rather than in the band: it is a script tag, so its
