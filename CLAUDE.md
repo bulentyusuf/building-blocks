@@ -256,12 +256,11 @@ checks those two files against the old, pre-M5 signature specifically, since a
 pattern loose enough to match both signatures could not tell a route that
 correctly kept the old style from one that regressed out of the new one.
 
-The position caption (`app/page-context.tsx`) folds into the `standfirst`
-slot rather than becoming a third `WidePage` prop, so it stays the header's
-last line exactly as it was before the split — trailing the standfirst on the
-row's right side. `app/listing-page.tsx` passes a standfirst node whenever
-either the route has one or the page is paginated, so "Page 2 of 5" still has
-something to attach to on a route with no description of its own.
+The position counter no longer rides in the `standfirst` slot at all — see
+"The page counter moves inline, into the heading" below. It once did, folded
+in after the standfirst as a fragment, and that fragment is exactly what
+broke the two-children invariant `app/wide-page.tsx`'s wrapper div now
+guards against on every future caller, not just the one that caused it.
 
 ### The home hero takes the split too, asymmetric, with Avatar kept whole
 
@@ -542,9 +541,10 @@ accessibility audit; do not restore any. Each file carries its reasoning.
   2 onward and appears nowhere on `/`, whose listing renders no heading at all.
   `/about`,
   `/privacy`, `/search` and `/archive` carry the same two-crumb minimum.
-- **Position is carried separately** by `app/page-context.tsx`, a muted "Page N
-  of M" captioning the list — which is why paginated category, tag and author
-  chains stop at the section. Do not add page numbers to those chains.
+- **Position is carried separately**, inline in the `h1` (`app/page-counter.tsx`,
+  "The page counter moves inline, into the heading") rather than in the
+  breadcrumb — which is why paginated category, tag and author chains stop at
+  the section. Do not add page numbers to those chains.
 - Known and accepted: on `/categories/[slug]/page/[page]`, `aria-current="page"`
   sits on the section crumb, whose URL differs from the current one.
 - Archive rows carry two tab stops each, title and category, because the
@@ -998,9 +998,6 @@ heading land at identical coordinates sitewide.
   asserts a trail-less header emits no breadcrumb landmark. Keep the prop
   optional; `/page/[page]` carries a trail again, but that is the route
   changing its mind, not the prop losing its reason.
-- **The position caption is the header's last line**, not a line floating
-  above the list. `app/page-context.tsx` carries why, including why the
-  reasoning that once moved it out of the header no longer applies.
 - **The listing under a header drops its opening rule and nothing else**
   (`openRule={false}` on `MoreStories`). The item padding stays, and the page
   contributes no gap of its own instead (`contentOwnsLeading` on
@@ -1044,16 +1041,62 @@ page rather than page 1 only. Author pages had drifted here, carrying a 112px
 portrait and a bio on page 1 against an 80px portrait and no bio on later ones;
 a reader arriving on page 3 from a search result got a thinner page than the
 same listing's first. Do not reintroduce a per-page variation without a reason
-written down.
+written down. The one difference the header is allowed — the page counter
+inline in the heading text on page 2 and later, absent on page 1 — is content
+the heading itself carries, not a shape difference in the header around it;
+see below.
 
-**Page position captions the list, not the heading.** `app/page-context.tsx`
-renders between the header and the posts, and `app/listing-page.tsx` renders
-it rather than any route passing it in — the component already holds both
-numbers, and PageContext returns `null` on page 1, so no route decides whether
-its own page counts as paginated. Do not move it back into the header: position
-describes the list, and in the header it split the heading from its standfirst
-and landed under the portrait on author pages instead of under the heading it
-referred to.
+### The page counter moves inline, into the heading
+
+**This reverses the entry that used to sit here, "Page position captions the
+list, not the heading."** That entry said the caption — `PageContext`, then —
+rendered as its own block, appended after the standfirst, and that moving it
+into the header would split the heading from its standfirst and land it
+under the portrait on author pages instead of under the heading it referred
+to. Both of those were objections to the caption being a separate BLOCK
+element. It no longer is one: `PageCounter` (the renamed, rewritten
+component; see `app/page-counter.tsx` for the full argument) renders as
+inline text inside each route's own `<h1>` — `{heading} <PageCounter
+currentPage totalPages />` — so it cannot split anything, because nothing
+about it is a block, and it cannot land under a portrait, because it is part
+of the same line as the name. The objection is answered, not overridden.
+
+Two things about the entry this replaces, recorded so the reversal is
+legible rather than a silent overwrite. First, that entry had already gone
+stale before this reversal touched it: it claimed `PageContext` "renders
+between the header and the posts," which stopped being true the moment the
+split masthead folded the caption into the `standfirst` slot — it rendered
+_inside_ the header, after the standfirst, which is what `PageContext`'s own
+comment said in the opposite direction. Code and doc had already disagreed
+for one PR's worth of history before this one reconciled them.
+Second, the reversal was forced by more than tidiness: M5's `justify-between`
+row (see above) took the caption's own last line as the row's baseline
+anchor, so `items-baseline-last` closed the heading against the CAPTION
+rather than against the standfirst, visibly shoving the standfirst upward.
+Clutter was never the real complaint with the caption sharing a column with
+the standfirst — misalignment was, and moving the counter inline removes the
+second baseline that caused it rather than working around it.
+
+`ListingPage` renders none of this any more. Each of the seven paginated
+routes (the index listing and the paginated/unpaginated halves of category,
+tag and author) renders `PageCounter` itself, which is seven call sites where
+there was one — a deliberate trade, and the same one `app/listing-page.tsx`
+already makes for the header being `children` rather than props: the `h1` is
+the one thing every route genuinely builds differently, so centralising the
+one piece that must live inside it costs a conditional per route for no
+buyback. The invariant survives the move intact: `PageCounter` still returns
+`null` on page 1, so every route drops the element in unconditionally and
+none of them decides for itself when its own page counts as paginated.
+
+The author routes take the counter too, on consistency, even though they are
+the one route family exempted from M5 itself (`splitHeader={false}`,
+CLAUDE.md above). The old objection to the caption living in an author
+header — that it landed under the 112px portrait rather than under the name —
+cannot recur once the counter is inline text on the same line as the name.
+`splitHeader={false}` already exists as the documented shape for "the author
+routes are different" if this is ever found to read badly beside the
+portrait; one more exception on that prop is cheaper than a conditional in
+`PageCounter` itself.
 
 `emptyMessage` is omitted by the routes where empty is unreachable, so leaving
 it out asserts that rather than quietly rendering an empty list. `lib/paginate.ts`

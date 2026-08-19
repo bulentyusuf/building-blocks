@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import ListingPage from "../../listing-page";
+import PageCounter from "../../page-counter";
 import { type Crumb } from "../../breadcrumb";
 import { getAllPosts, getTagBySlug } from "@/lib/api";
 import { postsWithTag, visibleTagSlugs } from "@/lib/tags";
@@ -81,6 +82,8 @@ export default async function TagPage({
     { label: tag.name },
   ];
 
+  const totalPages = totalPagesFor(posts.length);
+
   return (
     // No emptyMessage: the threshold gate above guarantees at least
     // MIN_POSTS_PER_TAG posts by the time this renders.
@@ -88,12 +91,13 @@ export default async function TagPage({
       crumbs={crumbs}
       posts={pageItems(posts, 1)}
       currentPage={1}
-      totalPages={totalPagesFor(posts.length)}
+      totalPages={totalPages}
       visibleTags={otherTags}
       basePath={`/tags/${slug}`}
       heading={
         <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-          {widont(tag.name)}
+          {widont(tag.name)}{" "}
+          <PageCounter currentPage={1} totalPages={totalPages} />
         </h1>
       }
       standfirst={

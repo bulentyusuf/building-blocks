@@ -57,6 +57,7 @@ const MoreStories = (await import("@/app/more-stories")).default;
 const Breadcrumb = (await import("@/app/breadcrumb")).default;
 const ListingPage = (await import("@/app/listing-page")).default;
 const WidePage = (await import("@/app/wide-page")).default;
+const PageCounter = (await import("@/app/page-counter")).default;
 const Pagination = (await import("@/app/pagination")).default;
 const CoverImage = (await import("@/app/cover-image")).default;
 const Avatar = (await import("@/app/avatar")).default;
@@ -416,21 +417,31 @@ describe("the index listing, which carries a trail again", () => {
   // crumb is never a link here, so the trail is Home / Latest Posts with one
   // link, and the objection was to a shape this site does not build. The page
   // number still stays out of it, because position is a state rather than a
-  // level and PageContext captions the list with it.
+  // level — it rides inline in the h1 instead, via PageCounter (see the
+  // fixture below and CLAUDE.md, "The page counter moves inline, into the
+  // heading").
   //
   // `crumbs` stays optional on the band regardless. Home is the only route
   // using that now, which is correct, since home is the root.
-  const render = () =>
+  const render = (currentPage: number) =>
     renderPage(
       <RootLayout>
         <ListingPage
           crumbs={[{ label: "Home", href: "/" }, { label: "Latest Posts" }]}
           posts={[post("a", ["Design"]), post("b", ["Retro"])]}
-          currentPage={2}
+          currentPage={currentPage}
           totalPages={3}
           visibleTags={new Set(["design", "retro"])}
           basePath="/"
-          heading={<h1>Latest Posts</h1>}
+          // Wired to PageCounter exactly as app/page/[page]/page.tsx wires
+          // it, rather than a bare <h1>, so this fixture exercises the real
+          // shape rather than the shape the band used to have.
+          heading={
+            <h1>
+              Latest Posts{" "}
+              <PageCounter currentPage={currentPage} totalPages={3} />
+            </h1>
+          }
           // Fixture prose. The real standfirst comes from the browseIntro
           // entry keyed "latest-posts" and nothing here asserts its wording,
           // so this stands in for "the band has a standfirst" and no more.
@@ -444,7 +455,7 @@ describe("the index listing, which carries a trail again", () => {
     );
 
   it("emits a breadcrumb landmark, with only the first crumb linked", async () => {
-    await render();
+    await render(2);
     const trails = document.querySelectorAll('nav[aria-label="Breadcrumb"]');
     expect(trails).toHaveLength(1);
     const links = trails[0].querySelectorAll("a");
@@ -453,7 +464,7 @@ describe("the index listing, which carries a trail again", () => {
   });
 
   it("keeps heading levels contiguous", async () => {
-    await render();
+    await render(2);
     const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
       (h) => Number(h.tagName[1]),
     );
@@ -464,10 +475,28 @@ describe("the index listing, which carries a trail again", () => {
   });
 
   it("has exactly one h1, and it is the band's", async () => {
-    await render();
+    await render(2);
     const h1s = [...document.querySelectorAll("h1")];
     expect(h1s).toHaveLength(1);
-    expect(h1s[0].textContent).toBe("Latest Posts");
+    expect(h1s[0].textContent?.replace(/\s+/g, " ").trim()).toBe(
+      "Latest Posts 2 of 3",
+    );
+  });
+
+  // The counter's own guard: not aria-hidden. Hiding it would make the
+  // visible text and the accessible name disagree, and the orientation it
+  // gives a sighted reader is worth exactly as much to a screen reader.
+  it("carries the position in the h1's accessible name on page 2", async () => {
+    await render(2);
+    const h1 = document.querySelector("h1")!;
+    expect(h1.textContent?.replace(/\s+/g, " ").trim()).toContain("2 of 3");
+    expect(h1.querySelector("[aria-hidden]")).toBeNull();
+  });
+
+  it("carries no position on page 1, where PageCounter renders null", async () => {
+    await render(1);
+    const h1 = document.querySelector("h1")!;
+    expect(h1.textContent?.replace(/\s+/g, " ").trim()).toBe("Latest Posts");
   });
 });
 

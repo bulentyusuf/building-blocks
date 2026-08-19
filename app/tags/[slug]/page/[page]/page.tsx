@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import ListingPage from "../../../../listing-page";
+import PageCounter from "../../../../page-counter";
 import { type Crumb } from "../../../../breadcrumb";
 import { getAllPosts, getTagBySlug } from "@/lib/api";
 import { postsWithTag, visibleTagSlugs } from "@/lib/tags";
@@ -110,7 +111,8 @@ export default async function TagPaginatedPage({
       basePath={`/tags/${slug}`}
       heading={
         <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-          {widont(tag.name)}
+          {widont(tag.name)}{" "}
+          <PageCounter currentPage={pageNumber} totalPages={totalPages} />
         </h1>
       }
       standfirst={

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import ListingPage from "../../listing-page";
+import PageCounter from "../../page-counter";
 import { type Crumb } from "../../breadcrumb";
 import {
   getAllCategories,
@@ -71,18 +72,21 @@ export default async function CategoryPage({
     getVisibleTagSlugs(isEnabled),
   ]);
 
+  const totalPages = totalPagesFor(posts.length);
+
   return (
     <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, 1)}
       currentPage={1}
-      totalPages={totalPagesFor(posts.length)}
+      totalPages={totalPages}
       visibleTags={visibleTags}
       basePath={`/categories/${slug}`}
       emptyMessage="No posts in this category yet."
       heading={
         <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-          {widont(category.name)}
+          {widont(category.name)}{" "}
+          <PageCounter currentPage={1} totalPages={totalPages} />
         </h1>
       }
       standfirst={

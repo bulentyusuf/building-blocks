@@ -3,6 +3,7 @@ import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
 import ListingPage from "../../listing-page";
+import PageCounter from "../../page-counter";
 import { type Crumb } from "../../breadcrumb";
 import { RichText } from "@/lib/rich-text";
 import {
@@ -85,19 +86,24 @@ export default async function AuthorPage({
     },
   };
 
+  const totalPages = totalPagesFor(posts.length);
+
   return (
     <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, 1)}
       currentPage={1}
-      totalPages={totalPagesFor(posts.length)}
+      totalPages={totalPages}
       visibleTags={visibleTags}
       basePath={`/authors/${slug}`}
       emptyMessage="No posts by this author yet."
       jsonLd={jsonLd}
       // The one exception to the split masthead: this h1 already sits in a
       // flex row beside a 112px portrait, and a third element across that
-      // line — the standfirst — is one too many. See app/wide-page.tsx.
+      // line — the standfirst — is one too many. See app/wide-page.tsx. The
+      // page counter still joins the h1 below despite the exception: it is
+      // inline text now, not a third element across the row, and the widest
+      // live author name (362px) leaves plenty of room beside it at 984px.
       splitHeader={false}
       heading={
         <div className="flex items-center gap-6">
@@ -118,7 +124,8 @@ export default async function AuthorPage({
               fronts take: this h1 sits beside a 112px portrait, and the raised
               ramp overflows the row on a long name at md. */}
           <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-            {widont(author.name)}
+            {widont(author.name)}{" "}
+            <PageCounter currentPage={1} totalPages={totalPages} />
           </h1>
         </div>
       }

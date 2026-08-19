@@ -239,10 +239,12 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     }
   });
 
-  it("the position caption takes it too", () => {
+  it("the position counter takes it too", () => {
     // It named no colour in the band, separating by size alone because the
-    // band forbade tinted text. On cream it is a meta line like any other.
-    expect(read("app/page-context.tsx")).toMatch(/text-brand-muted/);
+    // band forbade tinted text. Inline in the heading now (CLAUDE.md, "The
+    // page counter moves inline, into the heading"), it is still a meta
+    // string rather than heading text, and text-brand-muted is what says so.
+    expect(read("app/page-counter.tsx")).toMatch(/text-brand-muted/);
   });
 
   it("home's masthead accents the stop with the TOKEN, never a literal", () => {

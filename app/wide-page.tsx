@@ -139,7 +139,21 @@ export default function WidePage({
         {splitHeader && standfirst ? (
           <div className="flex flex-col gap-3 md:flex-row md:items-baseline-last md:justify-between md:gap-10">
             {heading}
-            {standfirst}
+            {/* Wrapped, and that wrapper is load-bearing rather than tidy
+                markup, even though nothing currently passes a fragment into
+                this slot. app/listing-page.tsx once did — pairing a
+                standfirst with the pagination caption, before the caption
+                moved inline into each route's own heading (CLAUDE.md, "The
+                page counter moves inline, into the heading") — and a
+                fragment generates no box of its own, so the row saw three
+                children instead of two. Under justify-between three children
+                spread across the full measure instead of two, stranding the
+                middle one. The wrapper makes the row two children whatever a
+                caller passes, which is now a guard against the next caller
+                that reaches for a fragment rather than a fix for a bug that
+                still exists. Cheap enough — one div — to keep even with
+                nothing left to guard against today. */}
+            <div>{standfirst}</div>
           </div>
         ) : (
           <>

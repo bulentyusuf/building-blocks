@@ -3,6 +3,7 @@ import { draftMode } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import ListingPage from "../../listing-page";
+import PageCounter from "../../page-counter";
 import { type Crumb } from "../../breadcrumb";
 
 import { getAllPosts, getBrowseIntro } from "@/lib/api";
@@ -104,7 +105,7 @@ export default async function IndexPage({
   // The earlier reasoning against a trail here assumed it would be, and so
   // concluded that both crumbs would point at /. They do not. The page number
   // stays out of it, since position is a state rather than a level and
-  // PageContext captions the list with it.
+  // PageCounter carries it inline in the heading below instead.
   //
   // No `emptyMessage`, because the guard above 404s past the last page, so
   // empty is unreachable and omitting the prop asserts that.
@@ -127,7 +128,8 @@ export default async function IndexPage({
       // the three in sentence case.
       heading={
         <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-          Latest Posts
+          Latest Posts{" "}
+          <PageCounter currentPage={pageNumber} totalPages={totalPages} />
         </h1>
       }
       // Never on / itself, where the masthead carries the site tagline
