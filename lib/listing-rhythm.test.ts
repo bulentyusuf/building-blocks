@@ -324,6 +324,14 @@ describe("the hero's two-column split carries a gap at every width", () => {
     // exact, unprefixed utility instead.
     expect(classes).toContain("grid");
     expect(classes).not.toContain("md:grid");
+    // The second column has to stay behind md, and nothing above catches it.
+    // `md:grid` and `md:grid-cols-[3fr_2fr]` are different tokens, so the
+    // not.toContain above passes either way, and the regex anchoring this
+    // block matches a bare `grid-cols-[3fr_2fr]` as happily as the prefixed
+    // one. Dropping just that prefix gives a 3fr/2fr split at 390px — a 200px
+    // headline column beside a 130px standfirst — while satisfying every
+    // other assertion here.
+    expect(classes).toContain("md:grid-cols-[3fr_2fr]");
   });
 
   it("carries a base gap that the two-column step zeroes out", () => {

@@ -235,14 +235,26 @@ above — and the row is a `md:flex-row` construct that does not exist below
 that breakpoint, where `WidePage` stacks with `flex-col` instead. Unprefixed,
 the two classes still applied on their own: a phone-width standfirst shrank to
 a 320px box and had its text right-aligned inside that box, landing its right
-edge a fixed distance short of the actual page edge — under a left-aligned
-`h1`, above a left-aligned hero. It read as a typesetting mistake because it
-was one: aligned to a boundary nothing else on the page drew. `md:` on both
-classes turns them on at the same breakpoint the row itself appears at, so
-mobile gets a full-width, left-aligned standfirst instead — `justify-between`
-and `items-baseline-last` are no-ops below `md` regardless, since the flex row
-itself only renders there. Fixed August 2026; the guard's pattern requires
-both `md:` prefixes now, not just the two classes.
+edge short of the actual page edge — under a left-aligned `h1`, above a
+left-aligned hero. It read as a typesetting mistake because it was one:
+aligned to a boundary nothing else on the page drew.
+
+**The shortfall scaled with the viewport, which is why it went unreported for
+so long.** `max-w-[20rem]` only binds once the content column exceeds 320px,
+so there was no shortfall at all at 375px and it grew from there. Measured on
+the pre-fix markup: 15px at a 390px viewport, 55px at 430px, 265px at 640px,
+and 392px at 767px, one pixel below the breakpoint that hid it. It was mildest
+on the narrow phone it was first noticed on and worst on a large phone or a
+portrait tablet, so a screenshot from the narrowest device understates it. Do
+not judge an unprefixed `md:`-shaped class from a single viewport width.
+
+`md:` on both classes turns them on at the same breakpoint the row itself
+appears at, so mobile gets a full-width, left-aligned standfirst instead.
+`justify-between` and `items-baseline-last` needed no such fix: they already
+carry `md:`, which is what makes them no-ops below it. The flex container
+itself renders at every width and only changes direction, `flex-col` to
+`md:flex-row`. Fixed August 2026; the guard's pattern requires both `md:`
+prefixes now, not just the two classes.
 
 **The 320px cap sets a hard copy budget: roughly 37 characters a line, 74 for
 two.** Every standfirst on the site — the four browse intros and the twelve
@@ -293,16 +305,24 @@ join on the largest element on the page. It is `grid gap-y-6
 md:grid-cols-[3fr_2fr] md:gap-x-16 md:gap-y-0` now: a single-column grid with
 its own gap at the base, widened to two columns at `md`, matching every other
 two-column grid on the site (`app/categories/page.tsx`, `app/authors/page.tsx`,
-`more-stories.tsx`'s two variants, the footer) — the hero was the one
+`app/more-stories.tsx`'s two variants, the footer) — the hero was the one
 component on that list built the other way round. `gap-y-6` (24px) is a
 judgement call, not a measurement: it has to read as a clear step above the
 `h2`'s own `mb-4` (16px) to the byline directly above it, so the mobile stack
 reads as two groups of two rather than four equally-weighted lines: `gap-5`
-(20px), the nearest sibling precedent, is not quite that step. `md:gap-y-0` is
-required alongside it — without it the base gap survives into the two-column
-layout and adds height under a row that only has one child per side. Fixed
-August 2026, alongside the standfirst `md:` fix above — same root cause, a
-class describing the split row applied below the breakpoint where that row
+(20px), the nearest sibling precedent, is not quite that step.
+
+**`md:gap-y-0` is defensive, not load-bearing, and the entry said otherwise
+once.** Two children in a two-column grid make exactly one row, so `row-gap`
+has nothing to act on and `gap-y-6` is already invisible at `md` and up
+without it — verified by computed style, `grid-template-rows: 168px`, a single
+track. It is there so that a third child added to this grid later inherits the
+two-column layout's intent rather than the mobile stack's, which is worth one
+class. Do not describe it as required, and do not remove it on the grounds
+that it does nothing today.
+
+Fixed August 2026, alongside the standfirst `md:` fix above — same root cause,
+a class describing the split row applied below the breakpoint where that row
 does not exist. `lib/listing-rhythm.test.ts` asserts the base-level `grid` and
 both gap classes.
 
