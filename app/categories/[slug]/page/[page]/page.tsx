@@ -119,7 +119,7 @@ export default async function CategoryPaginatedPage({
       standfirst={
         category.description && (
           <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-            {category.description}
+            {widont(category.description)}
           </p>
         )
       }

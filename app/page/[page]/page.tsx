@@ -15,6 +15,7 @@ import {
   parsePageParam,
   totalPagesFor,
 } from "@/lib/paginate";
+import { widont } from "@/lib/typography";
 
 // The BrowseIntro key, and the one place it is written. Both halves of this
 // route pass this same constant to getBrowseIntro for the reason /about and
@@ -145,7 +146,7 @@ export default async function IndexPage({
       standfirst={
         intro?.standfirst && (
           <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-            {intro.standfirst}
+            {widont(intro.standfirst)}
           </p>
         )
       }
