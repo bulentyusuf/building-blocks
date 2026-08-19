@@ -91,15 +91,18 @@ export default async function TagPage({
       totalPages={totalPagesFor(posts.length)}
       visibleTags={otherTags}
       basePath={`/tags/${slug}`}
-    >
-      <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-        {widont(tag.name)}
-      </h1>
-      {tag.description && (
-        <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-          {tag.description}
-        </p>
-      )}
-    </ListingPage>
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
+          {widont(tag.name)}
+        </h1>
+      }
+      standfirst={
+        tag.description && (
+          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
+            {tag.description}
+          </p>
+        )
+      }
+    />
   );
 }

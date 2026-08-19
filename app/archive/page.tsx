@@ -50,30 +50,33 @@ export default async function ArchivePage() {
   return (
     <WidePage
       crumbs={crumbs}
-      header={
-        <>
-          <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-            Archive
-          </h1>
-          {/* Unlike the other browse pages, this standfirst is generated rather
-            than written: the count and the earliest month come from the posts
-            themselves and stay current without anyone editing them. A Page
-            Intro entry can override it, but leaving that field empty is the
-            better default — typed prose here would be stale by the next post. */}
-          {intro?.standfirst ? (
-            <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-              {intro.standfirst}
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">
+          Archive
+        </h1>
+      }
+      // Unlike the other browse pages, this standfirst is generated rather
+      // than written: the count and the earliest month come from the posts
+      // themselves and stay current without anyone editing them. A Page
+      // Intro entry can override it, but leaving that field empty is the
+      // better default — typed prose here would be stale by the next post.
+      // Both branches carry the M5 signature — max-w-[20rem] plus
+      // text-right — since either one can be the rendered standfirst; see
+      // app/wide-page.tsx for what the two classes are doing.
+      standfirst={
+        intro?.standfirst ? (
+          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
+            {intro.standfirst}
+          </p>
+        ) : (
+          oldest && (
+            <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
+              {posts.length} {posts.length === 1 ? "post" : "posts"} since{" "}
+              {format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })},
+              newest first.
             </p>
-          ) : (
-            oldest && (
-              <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-                {posts.length} {posts.length === 1 ? "post" : "posts"} since{" "}
-                {format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })},
-                newest first.
-              </p>
-            )
-          )}
-        </>
+          )
+        )
       }
     >
       {years.length === 0 ? (

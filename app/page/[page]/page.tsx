@@ -121,29 +121,32 @@ export default async function IndexPage({
       totalPages={totalPages}
       visibleTags={visibleTagSlugs(allPosts)}
       basePath="/"
-    >
-      {/* Title case, matching the "Latest Posts" heading this page continues
-          on the index — and matching this page's own metadata title, which
-          has always read "Latest Posts, Page N". The h1 was the only one of
-          the three in sentence case. */}
-      <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-        Latest Posts
-      </h1>
-      {/* Never on / itself, where the band carries the site tagline instead. A
-          standfirst repeating across the pages of one listing is already how
-          every category reads.
-
-          Rendered only when the entry has one, which is what the four section
-          fronts do, and there is deliberately no fallback: hard-coded copy
-          appearing in the CMS's slot is how the entry stops being the source of
-          truth, with nothing on the page saying which of the two you are
-          looking at. A fresh fork takes this path, because the fork seed is not
-          being given a latest-posts entry in this change. */}
-      {intro?.standfirst && (
-        <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-          {intro.standfirst}
-        </p>
-      )}
-    </ListingPage>
+      // Title case, matching the "Latest Posts" heading this page continues
+      // on the index — and matching this page's own metadata title, which
+      // has always read "Latest Posts, Page N". The h1 was the only one of
+      // the three in sentence case.
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
+          Latest Posts
+        </h1>
+      }
+      // Never on / itself, where the masthead carries the site tagline
+      // instead. A standfirst repeating across the pages of one listing is
+      // already how every category reads.
+      //
+      // Rendered only when the entry has one, which is what the four section
+      // fronts do, and there is deliberately no fallback: hard-coded copy
+      // appearing in the CMS's slot is how the entry stops being the source of
+      // truth, with nothing on the page saying which of the two you are
+      // looking at. A fresh fork takes this path, because the fork seed is not
+      // being given a latest-posts entry in this change.
+      standfirst={
+        intro?.standfirst && (
+          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
+            {intro.standfirst}
+          </p>
+        )
+      }
+    />
   );
 }

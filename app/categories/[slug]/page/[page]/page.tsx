@@ -109,15 +109,18 @@ export default async function CategoryPaginatedPage({
       totalPages={totalPages}
       visibleTags={visibleTags}
       basePath={`/categories/${slug}`}
-    >
-      <h1 className="mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-        {widont(category.name)}
-      </h1>
-      {category.description && (
-        <p className="max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-          {category.description}
-        </p>
-      )}
-    </ListingPage>
+      heading={
+        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
+          {widont(category.name)}
+        </h1>
+      }
+      standfirst={
+        category.description && (
+          <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted text-pretty">
+            {category.description}
+          </p>
+        )
+      }
+    />
   );
 }

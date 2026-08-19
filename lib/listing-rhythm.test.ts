@@ -177,6 +177,14 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   // differ, which is a false alarm one edit away from being live. So the lg:
   // capture prevents a spurious red. It does not catch a missed collapse.
   //
+  // Also captures an arbitrary-value size (text-[2.5rem]), because the hero's
+  // 40px lg step (CLAUDE.md, "The home hero takes the split too") is off
+  // Tailwind's scale and the on-scale-only pattern silently dropped it —
+  // filtering both ramps down to text-2xl/md:text-3xl and reporting them
+  // equal, a false PASS on the exact regression this test exists to catch.
+  // Caught by running this test after that change landed, not by design; kept
+  // here as the reason the bracket branch exists rather than left implicit.
+  //
   // What this cannot see: the comparison below is literal equality of filtered
   // class tokens, not resolved cascade values, so two ramps whose token lists
   // differ in LENGTH pass regardless of what they paint. A hero of
@@ -184,7 +192,7 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   // renders both at 30px from lg up and this stays green, with or without the
   // lg: capture. Resolving each list to a per-breakpoint size and asserting
   // the hero is strictly larger at each is the fix, and it is not this one.
-  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl)$/;
+  const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl|\[[^\]]+\])$/;
   const sizeSteps = (className: string) =>
     className.split(/\s+/).filter((c) => SIZE_STEP.test(c));
 
@@ -222,6 +230,32 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
     expect(heroSteps.length).toBeGreaterThan(0);
     expect(cardSteps.length).toBeGreaterThan(0);
     expect(heroSteps).not.toEqual(cardSteps);
+  });
+});
+
+describe("the hero's byline keeps Avatar whole", () => {
+  // A first version of the split hero pulled the date out of Avatar's `meta`
+  // prop and rendered it as a standalone line, to mirror the index card's
+  // element order (headline, date, standfirst, tags) exactly. That shipped
+  // and was reverted (CLAUDE.md, "The home hero takes the split too"): Avatar
+  // already took name, picture and meta, and the date was already doing the
+  // right job inside it, so pulling it out cost a working component to chase
+  // a sequence no card actually needs matched field-by-field. Nothing else
+  // catches a regression back to the pulled-apart version — jsdom renders
+  // either shape without complaint — so this reads the source instead.
+  const hero = read("app/page.tsx");
+
+  it("renders the byline through Avatar with a meta prop", () => {
+    expect(hero).toMatch(/<Avatar[\s\S]{0,200}?meta=\{dateline\}/);
+  });
+
+  it("does not also render the date as a standalone line", () => {
+    // The pulled-apart version's own tell: a block-level element carrying
+    // tabular-nums directly under the headline, outside of Avatar entirely.
+    // Matched loosely on purpose — this is meant to catch the shape coming
+    // back under a different className, not just the exact one it shipped
+    // with once.
+    expect(hero).not.toMatch(/text-brand-muted mb-3 tabular-nums/);
   });
 });
 

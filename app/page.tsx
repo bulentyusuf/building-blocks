@@ -62,6 +62,16 @@ function HeroPost({
   // earns the space, because the site has three author personas and the film
   // and games posts are bylined to different ones. There is one hero, so unlike
   // the category it never repeats.
+  //
+  // It renders through Avatar with the date still inside `meta`, exactly as it
+  // did before the split — not pulled out onto its own line the way a card's
+  // date is. An earlier version of this component did pull it out, to mirror
+  // the card's element order (headline, date, standfirst, tags) exactly. That
+  // was reverted: Avatar already takes name, picture and meta and the date was
+  // already doing the right job inside it, so keeping the component whole beat
+  // matching the card's sequence one field at a time. The date is grouped with
+  // the author rather than standing alone as a deliberate, stated deviation
+  // from the card mirror — not an oversight.
   const dateline = (
     <>
       <Date dateString={date} />
@@ -73,11 +83,11 @@ function HeroPost({
     </>
   );
 
-  // Cover first, then headline, excerpt and byline. In the old order this was
-  // a post page's masthead rendered on the index — same elements, same order,
-  // same scale — so home read as a preview of the article rather than as the
-  // top of a list. The band above made that unmissable by putting a real
-  // masthead directly over a masthead-shaped block that is not one.
+  // Cover first, then the split. In the old order this was a post page's
+  // masthead rendered on the index — same elements, same order, same scale —
+  // so home read as a preview of the article rather than as the top of a
+  // list. The band above made that unmissable by putting a real masthead
+  // directly over a masthead-shaped block that is not one.
   //
   // The cover keeps `wide` and `priority`. It is still the LCP element and it
   // is now the first painted image in document order as well, so it is
@@ -113,60 +123,70 @@ function HeroPost({
           />
         </div>
       )}
-      <div>
-        {/* An h2, and so is every card title below, because the listing no
-            longer renders a heading of its own. Home's outline is the site
-            name at h1 and then one flat list of siblings, which is what makes
-            the masthead structurally the top of the page rather than only
-            visually it.
+      {/* Below the cover, an asymmetric split rather than an even one: the
+          headline needs more room than the standfirst does. Left carries the
+          headline and the byline; right the standfirst and the tag row.
 
-            One step above the card's ramp and one below the masthead's at
-            every width: the masthead runs 36/48/60, this runs 30/36/48, a
-            card runs 24/30/30. The lg step is the fix, not decoration. The
-            masthead keeps climbing to lg:text-6xl while this used to stop at
-            md, so the gap above the hero widened to 24px at desktop while the
-            gap below it stayed at 6px, and the hero read as a slightly large
-            card rather than as the thing leading the page.
+          md:grid-cols-[3fr_2fr] at gap-x-16 measures a 566px left column
+          inside the 984px container — measured against the six most recently
+          published post titles (38 to 57 characters), not the seed's
+          placeholder titles (17 to 31), which is what let an earlier version
+          of this column ship four lines deep. An even 2fr/2fr split with the
+          listing's own lg:gap-x-32 measured a 428px left column, which held
+          only 30px text to two lines; the wider, asymmetric column is what
+          the 40px cap below actually needs.
 
-            It stops at text-5xl rather than climbing with the masthead.
-            Above the masthead's own md step it starts competing with the
-            site name, and going that far was tried once already: at the wide
-            h1 ramp this carried before, it was the same size as a post
-            page's own headline, which is the whole reason home read as a
-            preview of an article rather than as the top of a list. Bringing
-            it down fixed that, and this change does not undo it. */}
-        <h2 className="mb-4 text-3xl md:text-4xl lg:text-5xl leading-tight text-pretty">
-          <Link
-            href={`/posts/${slug}`}
-            className="hover:text-brand-crimson transition-colors duration-200"
-          >
-            {widont(title)}
-          </Link>
-        </h2>
-        <p className="text-lg leading-relaxed mb-6 text-pretty">{excerpt}</p>
-        {author && (
-          <div className="flex items-center">
-            <Avatar
-              name={author.name}
-              slug={author.slug}
-              picture={author.picture}
-              meta={dateline}
-            />
-          </div>
-        )}
-        {/* Last, which is the same rule a card follows and not the same
-            position. more-stories.tsx puts pills below the excerpt because a
-            count that varies from one to three should land at the foot of the
-            card where it pushes nothing around. A card's date sits above its
-            excerpt and this hero's byline sits below one, so the foot here is
-            after the byline. The two components order their middles
-            differently on purpose.
+          gap-x-16 only, no lg: step. The listing's own two-column grids
+          (more-stories.tsx, the taxonomy card index) widen their gutter at
+          lg because their columns are already wide enough to spare the
+          space; this one cannot afford to, since the extra width bought by a
+          narrower gutter is what keeps the headline at two lines. */}
+      <div className="md:grid md:grid-cols-[3fr_2fr] md:gap-x-16">
+        <div>
+          {/* An h2, and so is every card title below, because the listing no
+              longer renders a heading of its own. Home's outline is the site
+              name at h1 and then one flat list of siblings, which is what
+              makes the masthead structurally the top of the page rather than
+              only visually it.
 
-            mt-6 rather than the card's mt-3, because what sits above differs
-            too. A card's pills follow a text baseline, whereas these follow a
-            40px avatar block, and 12px under that read as the pills belonging
-            to the byline rather than to the post. */}
-        <TagRow tags={tags} className="mt-6" />
+              Caps at 40px (lg:text-[2.5rem], off Tailwind's scale on
+              purpose) rather than climbing to the 48px a full-width hero
+              headline used to reach. Measured against the six most recently
+              published titles in this 566px column: 48px holds two lines for
+              a short title but runs to four for a long one, and three lines
+              is already the four-line failure's twin as far as a hero
+              reads. 40px holds every one of the six to two lines. lg:text-4xl
+              (36px, on-scale) also clears two lines in this column and is
+              the fallback if 2.5rem is ever found objectionable; do not go
+              back to 48px in a split column at this container width. */}
+          <h2 className="mb-4 text-2xl md:text-3xl lg:text-[2.5rem] leading-tight text-pretty">
+            <Link
+              href={`/posts/${slug}`}
+              className="hover:text-brand-crimson transition-colors duration-200"
+            >
+              {widont(title)}
+            </Link>
+          </h2>
+          {author && (
+            <div className="flex items-center">
+              <Avatar
+                name={author.name}
+                slug={author.slug}
+                picture={author.picture}
+                meta={dateline}
+              />
+            </div>
+          )}
+        </div>
+        <div>
+          <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
+          {/* mt-3, not the mt-6 this carried before the split, which was
+              tuned against a 40px avatar block sitting directly above the
+              pills in the same column. The avatar is in the left column now,
+              so what sits above the pills here is a text baseline — the
+              excerpt — exactly as it is on a card. */}
+          <TagRow tags={tags} className="mt-3" />
+        </div>
       </div>
     </section>
   );
@@ -212,28 +232,32 @@ export default async function Page() {
     // content opens with a bare element. Setting it here would leave the cover
     // flush against a 3px line.
     <WidePage
-      header={
-        <>
-          {/* The full stop is wrapped in crimson when the title carries a
-              literal trailing one — true for the default "Be Useful." and for
-              any fork that keeps the convention, but not guaranteed: a
-              NEXT_PUBLIC_SITE_TITLE override (see lib/constants.ts) may not
-              end in a full stop, and this degrades to a plain heading rather
-              than assuming one. */}
-          <h1 className="site-masthead text-5xl leading-[0.95] tracking-[-0.025em] md:text-6xl lg:text-7xl">
-            {SITE_TITLE.endsWith(".") ? (
-              <>
-                {SITE_TITLE.slice(0, -1)}
-                <span className="text-brand-crimson">.</span>
-              </>
-            ) : (
-              SITE_TITLE
-            )}
-          </h1>
-          <p className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted">
-            {SITE_DESCRIPTION}
-          </p>
-        </>
+      heading={
+        // The full stop is wrapped in crimson when the title carries a
+        // literal trailing one — true for the default "Be Useful." and for
+        // any fork that keeps the convention, but not guaranteed: a
+        // NEXT_PUBLIC_SITE_TITLE override (see lib/constants.ts) may not end
+        // in a full stop, and this degrades to a plain heading rather than
+        // assuming one.
+        <h1 className="site-masthead text-5xl leading-[0.95] tracking-[-0.025em] md:text-6xl lg:text-7xl">
+          {SITE_TITLE.endsWith(".") ? (
+            <>
+              {SITE_TITLE.slice(0, -1)}
+              <span className="text-brand-crimson">.</span>
+            </>
+          ) : (
+            SITE_TITLE
+          )}
+        </h1>
+      }
+      // The split masthead's standfirst: text-lg (18px) and text-brand-muted
+      // like every other route's. max-w-[20rem] plus text-right is M5 — see
+      // app/wide-page.tsx — and SITE_DESCRIPTION is written to hold two lines
+      // at that width, same as every other route's standfirst.
+      standfirst={
+        <p className="max-w-[20rem] text-lg leading-relaxed text-right text-brand-muted">
+          {SITE_DESCRIPTION}
+        </p>
       }
     >
       {heroPost && (

@@ -151,7 +151,52 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // routes started passing their header through WidePage, and a guard that
   // silently stops covering anything when markup is recomposed is worse than
   // none.
-  const STANDFIRST = /className="[^"]*max-w-3xl text-lg leading-relaxed[^"]*"/g;
+  //
+  // Re-anchored twice since. First for the split masthead's left-flowing
+  // version, which dropped max-w-3xl because a standfirst filling the
+  // remaining width needed no max-width of its own. That version shipped and
+  // was rejected on sight for a different reason (CLAUDE.md, "The masthead
+  // splits into heading and standfirst") — the row is right-anchored now, via
+  // M5 — and M5 brought a max-width BACK, `max-w-[20rem]`, this time to force
+  // a two-line wrap rather than to cap a stray one. It also added
+  // `text-right`. Both are required in the pattern below, not just checked
+  // afterwards, for the same reason text-brand-muted already was: a
+  // standfirst that loses either one stops MATCHING rather than failing a
+  // later assertion, and the guard exists to catch exactly that regression.
+  //
+  // The author routes are the one exception and are checked separately below,
+  // against the OLD signature — max-w-3xl, no text-right — because they render
+  // through splitHeader={false} and were never touched by M5. A single
+  // pattern loose enough to match both signatures would not distinguish a
+  // route that correctly kept the old style from one that regressed out of
+  // the new one.
+  const STANDFIRST_M5 =
+    /className="[^"]*max-w-\[20rem\] text-lg leading-relaxed text-right text-brand-muted[^"]*"/g;
+
+  // Because text-brand-muted is inside the pattern, a standfirst that loses it
+  // stops MATCHING rather than failing the per-match check. That is fine while a
+  // file has one standfirst — the count drops to zero and the assertion below
+  // fails. It is not fine where a file has two, because the surviving sibling
+  // keeps the count above zero and the regression ships green. Demonstrated by
+  // removing text-brand-muted from one of Archive's two standfirsts: the whole
+  // file stayed green.
+  //
+  // So the count is asserted exactly, not just as non-zero. Requiring
+  // max-w-[20rem] and text-right in the pattern itself, rather than checking
+  // them per match the way text-brand-muted is, is what keeps this map short:
+  // Categories' and Authors' per-item card blurbs (a category description, an
+  // author bio, both ordinary left-aligned body prose) share the OLD
+  // `text-lg leading-relaxed text-brand-muted` prefix with their page's real
+  // standfirst, which is why those two files carried a count of 2 under the
+  // left-flowing pattern. Neither blurb is part of the masthead and neither
+  // takes M5's own classes, so the tighter pattern stops matching them and
+  // both files are back to a plain, un-mapped 1. Archive is the one file
+  // still mapped, because both its standfirsts — the CMS entry and the
+  // generated oldest-post fallback — are real header content and both do
+  // carry the M5 classes.
+  const EXPECTED_STANDFIRSTS: Record<string, number> = {
+    "app/archive/page.tsx": 2,
+  };
 
   it.each([
     "app/page.tsx",
@@ -164,17 +209,34 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     "app/categories/[slug]/page/[page]/page.tsx",
     "app/tags/[slug]/page.tsx",
     "app/tags/[slug]/page/[page]/page.tsx",
+  ])("%s", (file) => {
+    const found = [...(read(file).match(STANDFIRST_M5) ?? [])];
+    // Exact, not non-zero. See the note on EXPECTED_STANDFIRSTS: a zero-floor
+    // check cannot see one of two standfirsts regressing.
+    expect(found.length).toBe(EXPECTED_STANDFIRSTS[file] ?? 1);
+    for (const className of found)
+      expect(className).toMatch(/text-brand-muted/);
+  });
+
+  // The old, pre-M5 signature — no text-right, and max-w-3xl rather than
+  // max-w-[20rem] — because these two routes render through splitHeader={false}
+  // and were never brought into the row. "Render as they do today" is the
+  // acceptance criterion for these two files specifically.
+  const STANDFIRST_AUTHOR =
+    /className="[^"]*max-w-3xl text-lg leading-relaxed text-brand-muted[^"]*"/g;
+
+  it.each([
     // The author routes carry theirs as a RichText wrapper rather than a <p>,
     // and it matches the same signature.
     "app/authors/[slug]/page.tsx",
     "app/authors/[slug]/page/[page]/page.tsx",
-  ])("%s", (file) => {
-    const found = [...(read(file).match(STANDFIRST) ?? [])];
-    // Non-vacuous: every route listed renders one, so an empty list means the
-    // signature stopped matching, not that the page is clean.
-    expect(found.length).toBeGreaterThan(0);
-    for (const className of found)
+  ])("%s (pre-M5 signature)", (file) => {
+    const found = [...(read(file).match(STANDFIRST_AUTHOR) ?? [])];
+    expect(found.length).toBe(1);
+    for (const className of found) {
       expect(className).toMatch(/text-brand-muted/);
+      expect(className).not.toMatch(/text-right/);
+    }
   });
 
   it("the position caption takes it too", () => {

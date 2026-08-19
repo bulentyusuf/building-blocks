@@ -185,6 +185,129 @@ picked up.
 through Phase 1, unreferenced, and Phase 2 removed them along with
 `--color-footer-bg`.
 
+### The masthead splits into heading and standfirst, right-anchored
+
+Every wide route's header used to stack its heading and standfirst. It now
+lays them out on one row from `md` up, standfirst pinned to the container's
+right edge, and stacks them below `md`, where a 60px heading has no room
+beside one. `app/wide-page.tsx` carries the full argument.
+
+**This is M5 from a five-option mockup, and it replaced a left-flowing row
+that shipped first and was rejected on sight.** The left-flowing version put
+a fixed `gap-10` between the heading and a standfirst that started wherever
+the heading ended; in review, a short heading left the standfirst stranded in
+the empty middle of the row with nothing anchoring it. The fix has two parts
+that ship together, not one:
+
+- **`justify-between`** pins the standfirst's right edge to the container's,
+  constant on every route.
+- **The standfirst's own `max-w-[20rem]`** (320px) forces most standfirsts to
+  wrap to two lines rather than trail off as one short line at the far
+  margin. `justify-between` alone reintroduces the original objection to
+  right-anchoring — a one-line standfirst beside a short heading still leaves
+  a large empty gap — and the two-line wrap is what closes it. Do not ship
+  `justify-between` without the width cap, or the reverse.
+
+`items-baseline-last` matters more here than plain `items-baseline` would:
+with a two-line standfirst, first-baseline alignment hangs the second line
+below the heading, and last-baseline closes both blocks at the bottom
+instead.
+
+`WidePage` took one opaque `header: ReactNode` before this; it now takes
+`heading`, an optional `standfirst`, and `splitHeader` (default true). The
+row only renders when both `splitHeader` and `standfirst` are truthy, so a
+route with no standfirst — the post page's `h1` — falls back to the plain
+stack automatically, and `app/listing-page.tsx` passes both props straight
+through from its own `heading`/`standfirst` API.
+
+**Every standfirst carries `max-w-[20rem] text-lg leading-relaxed text-right
+text-brand-muted`.** `text-right` sets both block edges flush against the
+container, chosen over ragged-right knowing that ragged-left text reads worse
+— an accepted, small cost at two lines and 18px. `lib/palette-contrast.test.ts`'s
+Standfirst-role guard requires all four classes in its pattern, not just
+`text-brand-muted`: a standfirst that loses `max-w-[20rem]` or `text-right`
+stops matching the guard rather than failing a later assertion, so both have
+to be part of the anchor itself.
+
+**The 320px cap sets a hard copy budget: roughly 37 characters a line, 74 for
+two.** Every standfirst on the site — the four browse intros and the twelve
+tag descriptions — was measured and rewritten to fit it as of 19 August 2026,
+published and verified against the CMS rather than taken on report. Ten tag
+descriptions and four browse entries were rewritten; ranges moved from 46–134
+characters to 46–74. `Design`, the tag description, sits at exactly 74 with no
+headroom — a word added to it pushes to three lines, which is the entry to
+watch rather than a defect to fix. There is no width that fits both this copy
+and the old, much longer tag descriptions at once; normalising the copy is
+what removed the conflict, not a more generous cap. A note on the tag
+`description` field in the content model should record this budget for
+editors, the same way `browseIntro.standfirst` already carries guidance —
+outstanding as of this writing.
+
+**The author routes are the one exception**, via `splitHeader={false}`: their
+`h1` already sits in a flex row beside a 112px portrait, and a third element
+across that line is one too many. They render exactly as they did before this
+change — bio included, `max-w-3xl`, no `text-right` — because the stacked
+fallback `WidePage` takes when `splitHeader` is false is the same markup
+shape the author routes always used, and they were never brought into M5 at
+all. `app/wide-page.test.tsx` asserts only the two author route files set the
+prop, anchored on the JSX form at line start so a comment explaining the
+exception cannot be mistaken for the prop itself; `lib/palette-contrast.test.ts`
+checks those two files against the old, pre-M5 signature specifically, since a
+pattern loose enough to match both signatures could not tell a route that
+correctly kept the old style from one that regressed out of the new one.
+
+The position caption (`app/page-context.tsx`) folds into the `standfirst`
+slot rather than becoming a third `WidePage` prop, so it stays the header's
+last line exactly as it was before the split — trailing the standfirst on the
+row's right side. `app/listing-page.tsx` passes a standfirst node whenever
+either the route has one or the page is paginated, so "Page 2 of 5" still has
+something to attach to on a route with no description of its own.
+
+### The home hero takes the split too, asymmetric, with Avatar kept whole
+
+`HeroPost` in `app/page.tsx` used to stack headline, excerpt, byline and tags
+in one column under the cover. It now splits into two from `md` up:
+`md:grid-cols-[3fr_2fr]` at a flat `gap-x-16` (no `lg:` step). Left carries
+the headline and the byline; right carries the standfirst and the tag row.
+
+**This replaced an equal-column version that shipped first and ran to four
+lines on a real headline.** The first cut measured wrap against the seed's
+placeholder titles (17–31 characters) and capped the headline at 48px on an
+even `md:grid-cols-2 md:gap-x-16 lg:gap-x-32` split, which resolves to a
+428px column. Measured instead against the six most recently published post
+titles (38–57 characters), 48px in a 428px column runs to four lines on the
+longest of them. **The fix has two parts, and both matter:** the asymmetric
+`3fr_2fr` split at a flat `gap-x-16` (no widening `lg:` step, unlike
+`more-stories.tsx`'s own two-column grids — this column cannot spare the
+gutter width those can) measures a 566px left column, wider than the even
+split's 428px; and the headline caps at 40px (`lg:text-[2.5rem]`, off
+Tailwind's scale on purpose — `lg:text-4xl` at 36px is the on-scale fallback
+if the arbitrary value is ever found objectionable) rather than 48px. Do not
+go back to 48px in a split column at this container width, and do not widen
+the gutter at `lg`.
+
+**Avatar stays whole.** The first cut also pulled the date out of `Avatar`'s
+`meta` prop to mirror the index card's element order (headline, date,
+standfirst, tags) field-by-field, rendering it as a standalone line the way a
+card does. That was reverted: `Avatar` already takes `name`, `picture` and
+`meta`, and the date was already doing the right job inside `meta`, so
+pulling it out cost a working component to chase a sequence no card actually
+needs matched exactly — no card carries a byline at all, so there was nothing
+to mirror there in the first place. The byline renders through
+`<Avatar meta={dateline} />` in the left column, under the headline, exactly
+as it did before the split; `Avatar` itself is untouched. `lib/listing-rhythm.test.ts`
+asserts both the presence of `meta={dateline}` and the absence of a
+standalone date line, so a later refactor cannot pull the two apart again
+without a test noticing.
+
+The date sitting inside the byline rather than on its own line is a stated
+deviation from the card's element order, not an oversight: keeping `Avatar`
+whole was judged worth more than an exact field-by-field mirror. The tag row
+stays at `mt-3`, not the pre-split `mt-6` — that value was tuned against a
+40px avatar block sitting directly above the pills in the same column, and
+the avatar is in the left column now, so what sits above the pills on the
+right is a text baseline (the excerpt), exactly as it is on a card.
+
 ### Chrome is aubergine, one token for the bar and the footer
 
 `#2B1C3F` light, `#3B2A52` dark, carried by `--color-brand-header` and by its

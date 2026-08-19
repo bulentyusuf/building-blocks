@@ -182,7 +182,10 @@ export default async function PostPage({
     // bare cover carrying no top margin, so it takes the shell's gap.
     <WidePage
       crumbs={crumbs}
-      header={
+      // No standfirst prop — see the comment above. With none, the split
+      // masthead has nothing to split against, so the heading falls back to
+      // the plain stack every narrow route uses too.
+      heading={
         // data-pagefind-body a second time, because the h1 has left the
         // article and Pagefind indexes only what sits inside a body region.
         // meta.title survives without this, since Pagefind reads the page's

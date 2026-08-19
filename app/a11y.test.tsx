@@ -364,10 +364,9 @@ describe("banded listing page", () => {
           totalPages={2}
           visibleTags={new Set(["design", "retro"])}
           basePath="/categories/design"
-        >
-          <h1>Design</h1>
-          <p>Posts filed under Design.</p>
-        </ListingPage>
+          heading={<h1>Design</h1>}
+          standfirst={<p>Posts filed under Design.</p>}
+        />
       </RootLayout>,
     );
 
@@ -431,15 +430,16 @@ describe("the index listing, which carries a trail again", () => {
           totalPages={3}
           visibleTags={new Set(["design", "retro"])}
           basePath="/"
-        >
-          <h1>Latest Posts</h1>
-          {/* Fixture prose. The real standfirst comes from the browseIntro
-              entry keyed "latest-posts" and nothing here asserts its wording,
-              so this stands in for "the band has a standfirst" and no more. */}
-          <p className="max-w-3xl text-lg leading-relaxed text-pretty">
-            A standfirst, of the length one usually runs to.
-          </p>
-        </ListingPage>
+          heading={<h1>Latest Posts</h1>}
+          // Fixture prose. The real standfirst comes from the browseIntro
+          // entry keyed "latest-posts" and nothing here asserts its wording,
+          // so this stands in for "the band has a standfirst" and no more.
+          standfirst={
+            <p className="text-lg leading-relaxed text-pretty">
+              A standfirst, of the length one usually runs to.
+            </p>
+          }
+        />
       </RootLayout>,
     );
 
@@ -486,15 +486,15 @@ describe("home, whose band carries the masthead as its h1", () => {
     renderPage(
       <RootLayout>
         <WidePage
-          header={
-            <>
-              <h1 className="site-masthead mb-3 text-4xl leading-tight md:text-5xl lg:text-6xl">
-                {SITE_TITLE}
-              </h1>
-              <p className="max-w-3xl text-lg leading-relaxed">
-                A description of the site.
-              </p>
-            </>
+          heading={
+            <h1 className="site-masthead text-4xl leading-tight md:text-5xl lg:text-6xl">
+              {SITE_TITLE}
+            </h1>
+          }
+          standfirst={
+            <p className="text-lg leading-relaxed">
+              A description of the site.
+            </p>
           }
         >
           <section className="mx-auto max-w-5xl mb-section">

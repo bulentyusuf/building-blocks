@@ -22,21 +22,26 @@ import type { CardPost } from "@/lib/types";
  * What is genuinely uniform lives here: the band, the position caption, the
  * listing itself, the pager, and the empty state.
  *
- * `children` is therefore purely editorial — a heading and a standfirst, nothing
- * navigational. The "Page N of M" caption is rendered here rather than passed
- * in, because it belongs to the list and this component already holds the two
- * numbers. PageContext returns null on page 1, so it is rendered unconditionally
- * and no route decides whether its own page counts as paginated.
- *
- * The position caption goes into the band as its last line rather than into
- * the flow above the list — app/page-context.tsx carries why. It is rendered
- * here rather than passed in, because this component already holds both
- * numbers and PageContext returns null on page 1, so no route decides whether
- * its own page counts as paginated.
+ * `heading` and `standfirst` are therefore purely editorial — nothing
+ * navigational — and pass straight through to WidePage, which is what lays
+ * them out side by side; `splitHeader` passes through too, for the author
+ * routes' exception (see app/wide-page.tsx). The "Page N of M" caption is
+ * rendered here rather than passed in, because it belongs to the list and
+ * this component already holds the two numbers. PageContext returns null on
+ * page 1, so it is appended after `standfirst` unconditionally and no route
+ * decides whether its own page counts as paginated — folded into the
+ * `standfirst` slot itself (rather than a third WidePage prop) so it stays
+ * the header's last line exactly as it was before the split, trailing the
+ * standfirst on the row's right side rather than floating separately.
+ * `caption` below covers the one case `standfirst` alone would miss: a
+ * route with no standfirst text of its own that is nonetheless paginated
+ * still needs the row, or "Page 2 of 5" would have nothing to attach to.
  */
 export default function ListingPage({
   crumbs,
-  children,
+  heading,
+  standfirst,
+  splitHeader,
   posts,
   currentPage,
   totalPages,
@@ -47,8 +52,13 @@ export default function ListingPage({
 }: {
   /** Omitted by the index listing, which has nothing above it. */
   crumbs?: Crumb[];
-  /** The band's contents: the heading, and whatever belongs beside it. */
-  children: ReactNode;
+  /** The heading, passed straight through to WidePage. */
+  heading: ReactNode;
+  /** The standfirst, when this listing has one — a category or tag
+   * description, an author bio. Passed straight through to WidePage. */
+  standfirst?: ReactNode;
+  /** Passed straight through to WidePage. False only on the author routes. */
+  splitHeader?: boolean;
   /** This page's slice, not the whole listing. */
   posts: CardPost[];
   currentPage: number;
@@ -67,18 +77,23 @@ export default function ListingPage({
   /** Serialised into a ld+json script when present. Only the author page has one. */
   jsonLd?: unknown;
 }) {
+  const caption = currentPage > 1;
   return (
     <WidePage
       crumbs={crumbs}
       // The listing's own item padding is the space under the band — see the
       // prop's note. The empty state below carries its own instead.
       contentOwnsLeading
-      header={
-        <>
-          {children}
-          <PageContext currentPage={currentPage} totalPages={totalPages} />
-        </>
+      heading={heading}
+      standfirst={
+        standfirst || caption ? (
+          <>
+            {standfirst}
+            <PageContext currentPage={currentPage} totalPages={totalPages} />
+          </>
+        ) : undefined
       }
+      splitHeader={splitHeader}
     >
       {/* Stays here rather than in the band: it is a script tag, so its
           position in the tree is irrelevant. */}
