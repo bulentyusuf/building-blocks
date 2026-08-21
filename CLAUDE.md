@@ -66,8 +66,8 @@ before touching anything there: Next applies every matching header rule in
 array order and a later match overrides the same key, so the strict catch-all
 must come first and `/search` wins by following it. Only a document's CSP
 governs WASM compilation, so `/pagefind/*` asset responses get no rule of
-their own. `lib/csp-headers.test.ts` resolves the config through those
-semantics and fails if the ordering regresses.
+their own. A vitest guard landing alongside the implementation resolves the
+config through those semantics and fails if the ordering regresses.
 
 ### Search runs on Pagefind's Component UI, and its quirks are upstream
 
