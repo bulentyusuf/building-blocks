@@ -50,13 +50,24 @@ extension.
 
 Intentional. Do not "fix" or re-flag without a new reason.
 
-### Both CSP loosenings in `script-src` are deliberate
+### CSP: `'unsafe-inline'` stays global, `'wasm-unsafe-eval'` scopes to search
 
-`'unsafe-inline'` (removing it needs a per-request nonce, which forces dynamic
-rendering) and `'wasm-unsafe-eval'` (Pagefind's search core; removing it
-silently breaks search in every Chromium browser) — `next.config.js` carries
-both arguments inline. Revisit `'unsafe-inline'` only if the site starts
-rendering untrusted user-generated content.
+Reopened August 2026 under this file's convention, prompted by PR #425, which
+attempted the scoping with inverted header-rule order and was closed rather
+than fixed. `'unsafe-inline'` remains global and deliberate — removing it needs
+a per-request nonce, which forces dynamic rendering; revisit only if the site
+starts rendering untrusted user-generated content. `'wasm-unsafe-eval'` left
+the sitewide policy and now applies to the `/search` document alone, the one
+route whose Pagefind core compiles WebAssembly; without it there, search still
+fails silently in every Chromium browser.
+
+`next.config.js` carries the full argument, and one mechanic is worth knowing
+before touching anything there: Next applies every matching header rule in
+array order and a later match overrides the same key, so the strict catch-all
+must come first and `/search` wins by following it. Only a document's CSP
+governs WASM compilation, so `/pagefind/*` asset responses get no rule of
+their own. `lib/csp-headers.test.ts` resolves the config through those
+semantics and fails if the ordering regresses.
 
 ### Search runs on Pagefind's Component UI, and its quirks are upstream
 
