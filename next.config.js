@@ -2,7 +2,10 @@
 
 const isDev = process.env.NODE_ENV !== "production";
 
-const securityHeaders = [
+const baseScriptSrc = `'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`;
+
+// Global security headers — no wasm-unsafe-eval here
+const baseSecurityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
@@ -17,17 +20,8 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      // 'unsafe-inline' is kept deliberately. Removing it needs a per-request
-      // nonce, which on App Router forces dynamic rendering and disables static
-      // optimisation, ISR, and CDN HTML caching. Trusted-CMS, single-author
-      // threat model makes that trade not worth it. See CLAUDE.md.
-      // 'unsafe-eval' is added in development only. Turbopack and React need it
-      // for dev debugging features, and React never uses eval in production, so
-      // the production policy stays strict.
-      // 'wasm-unsafe-eval' permits WebAssembly compilation only (not JS eval).
-      // Required by Pagefind's search core; without it, search silently fails
-      // in production under this CSP.
-      `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`,
+      // 'unsafe-inline' is kept deliberately (see README/CLAUDE.md).
+      `script-src ${baseScriptSrc}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' https://images.ctfassets.net data: blob:",
       "font-src 'self'",
@@ -46,26 +40,51 @@ module.exports = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
   },
   async headers() {
-    return [
+    // More permissive CSP only for search UI and pagefind assets where Pagefind's WASM runs
+    const searchScriptSrc = `'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`;
+
+    const searchSecurityHeaders = [
       {
-        source: "/(.*)",
-        headers: securityHeaders,
+        key: "Content-Security-Policy",
+        value: [
+          "default-src 'self'",
+          `script-src ${searchScriptSrc}`,
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' https://images.ctfassets.net data: blob:",
+          "font-src 'self'",
+          "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+          "frame-ancestors 'self' https://app.contentful.com",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join("; "),
       },
+    ];
+
+    return [
+      // Relaxed policy for the search page (SearchClient mounts Pagefind here)
       {
-        // The dupe route. Crawlers only know /sitemap.xml. This marks the bare
-        // /sitemap-xml URL noindex without touching /sitemap.xml, because header
-        // source matching runs against the requested path, not the rewrite
-        // destination.
+        source: "/search(.*)",
+        headers: searchSecurityHeaders,
+      },
+      // Relaxed policy for pagefind static assets under public/pagefind
+      {
+        source: "/pagefind/:path*",
+        headers: searchSecurityHeaders,
+      },
+      // Keep the sitemap special-case noindex
+      {
         source: "/sitemap-xml",
         headers: [{ key: "X-Robots-Tag", value: "noindex" }],
+      },
+      // Catch-all: the stricter base headers (no wasm-unsafe-eval)
+      {
+        source: "/(.*)",
+        headers: baseSecurityHeaders,
       },
     ];
   },
   async rewrites() {
-    // /sitemap.xml is a Next-reserved metadata path whose special route does
-    // not honour on-demand tag invalidation. Serve our ordinary /sitemap-xml
-    // route handler at the canonical /sitemap.xml instead. This is an
-    // afterFiles rewrite, so it only fires because no /sitemap.xml file exists.
     return [{ source: "/sitemap.xml", destination: "/sitemap-xml" }];
   },
 };
