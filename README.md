@@ -173,7 +173,7 @@ Forking this template carries over the original author's specifics. Change these
 - **llms.txt.** `public/llms.txt` is a hand-written file describing the original site. Replace it with your own, or delete it. If you delete it, drop the `llms-link-check` workflow too.
 - **Brand assets.** Replace the Open Graph image `public/be_useful.jpg`, swap the favicon and app icon, and retune the palette tokens and `themeColor` in `app/globals.css` and `app/layout.tsx` if you want a different look. The header colour lives in both `globals.css` and `lib/constants.ts`, and both need changing, because the web manifest and viewport `themeColor` are generated in JavaScript and cannot read CSS custom properties.
 - **Search illustration.** The empty-state emblem in `app/search/search-emblem.tsx` is bespoke artwork for this site. Replace or remove it.
-- **Security headers (careful).** The Content Security Policy in `next.config.js` includes `'wasm-unsafe-eval'` in `script-src`. Search needs it, because Pagefind's matching runs as WebAssembly. Removing it breaks search with no visible error.
+- **Security headers (careful).** The Content Security Policy in `next.config.js` allows `'wasm-unsafe-eval'` in `script-src` on the `/search` document and `/pagefind/*` assets only, because Pagefind's matching runs as WebAssembly inside a SharedWorker; every other route serves a stricter policy without it. Removing it breaks search with no visible error.
 - **Seed images (optional).** If you re-run the seed, repoint `PLACEHOLDER_ASSET_URL` in `contentful/build-seed.mjs` to your own copy, then replace the placeholder cover, avatar, and thumbnail with real assets afterwards.
 - **CLAUDE.md (optional).** Useful as-is for working with Claude Code on the repo. Review it for any notes specific to the original author.
 
@@ -187,4 +187,4 @@ Forking this template carries over the original author's specifics. Change these
 
 **Search cannot find a post that is definitely live?** Expected between deploys. Revalidation updates pages but not the search index, so the post is findable from the moment the site next deploys. See "What revalidation does not cover" above.
 
-**Search broken on the deployed site but fine locally?** Check the Content Security Policy. `'wasm-unsafe-eval'` must be present in `script-src`, and the browser console will report a WebAssembly compilation refusal if it is missing.
+**Search broken on the deployed site but fine locally?** Check the Content Security Policy on `/search` itself. `'wasm-unsafe-eval'` must be present in that document's `script-src` (other pages serve a stricter policy by design), and the browser console will report a WebAssembly compilation refusal if it is missing.

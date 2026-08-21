@@ -2,6 +2,31 @@
 
 const isDev = process.env.NODE_ENV !== "production";
 
+// 'unsafe-inline' is kept deliberately. Removing it needs a per-request
+// nonce, which on App Router forces dynamic rendering and disables static
+// optimisation, ISR, and CDN HTML caching. Trusted-CMS, single-author threat
+// model makes that trade not worth it. See CLAUDE.md.
+// 'unsafe-eval' is added in development only. Turbopack and React need it for
+// dev debugging features, and React never uses eval in production, so the
+// production policy stays strict.
+// 'wasm-unsafe-eval' permits WebAssembly compilation only (not JS eval). It is
+// passed in by the /search rule below and deliberately absent from the base
+// policy: Pagefind's search core compiles WASM on /search alone, so every
+// other route serves the stricter form.
+const contentSecurityPolicy = (withWasm) =>
+  [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${withWasm ? " 'wasm-unsafe-eval'" : ""}${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' https://images.ctfassets.net data: blob:",
+    "font-src 'self'",
+    "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+    "frame-ancestors 'self' https://app.contentful.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -15,28 +40,30 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      // 'unsafe-inline' is kept deliberately. Removing it needs a per-request
-      // nonce, which on App Router forces dynamic rendering and disables static
-      // optimisation, ISR, and CDN HTML caching. Trusted-CMS, single-author
-      // threat model makes that trade not worth it. See CLAUDE.md.
-      // 'unsafe-eval' is added in development only. Turbopack and React need it
-      // for dev debugging features, and React never uses eval in production, so
-      // the production policy stays strict.
-      // 'wasm-unsafe-eval' permits WebAssembly compilation only (not JS eval).
-      // Required by Pagefind's search core; without it, search silently fails
-      // in production under this CSP.
-      `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' https://images.ctfassets.net data: blob:",
-      "font-src 'self'",
-      "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
-      "frame-ancestors 'self' https://app.contentful.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
+    value: contentSecurityPolicy(false),
+  },
+];
+
+// The one relaxation: /search loads Pagefind, whose core compiles WebAssembly,
+// so its document CSP adds 'wasm-unsafe-eval'. It carries only the CSP header;
+// X-Content-Type-Options and friends still reach /search through the catch-all,
+// whose other keys merge with this one.
+//
+// /pagefind/* also needs the relaxed CSP because Pagefind compiles WASM inside
+// a SharedWorker (pagefind-worker.js). SharedWorkers get their CSP from the
+// worker script's own response headers, not from the creating document, so
+// the worker script must carry 'wasm-unsafe-eval' on its own response.
+//
+// ORDERING IS LOAD-BEARING. Next.js walks header rules in array order and a
+// later match overwrites the same key, so the catch-all must come FIRST and
+// these rules win by following it. Inverted (PR #425), /search silently loses
+// 'wasm-unsafe-eval' and search fails in every Chromium browser with no
+// visible error. lib/csp-headers.test.ts resolves this array through those
+// semantics so the inversion cannot come back.
+const wasmCspHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: contentSecurityPolicy(true),
   },
 ];
 
@@ -50,6 +77,18 @@ module.exports = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        source: "/search",
+        headers: wasmCspHeaders,
+      },
+      {
+        source: "/search/:path*",
+        headers: wasmCspHeaders,
+      },
+      {
+        source: "/pagefind/:path*",
+        headers: wasmCspHeaders,
       },
       {
         // The dupe route. Crawlers only know /sitemap.xml. This marks the bare
