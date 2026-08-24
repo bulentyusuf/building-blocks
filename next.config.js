@@ -18,7 +18,7 @@ const contentSecurityPolicy = (withWasm) =>
     "default-src 'self'",
     `script-src 'self' 'unsafe-inline'${withWasm ? " 'wasm-unsafe-eval'" : ""}${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' https://images.ctfassets.net data: blob:",
+    "img-src 'self' https://images.ctfassets.net data:",
     "font-src 'self'",
     "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
     "frame-ancestors 'self' https://app.contentful.com",

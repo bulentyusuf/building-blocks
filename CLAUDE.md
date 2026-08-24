@@ -794,7 +794,11 @@ the standalone package parses fine, which is what sank an earlier display face.
 
 - `data:` in `img-src` stays — needed for next/image blur placeholders, and the
   once-suggested `data:image/*` is not valid CSP (scheme-sources cannot be
-  MIME-scoped).
+  MIME-scoped). `blob:` sat alongside it on the same line since the original
+  CSP commit and was removed once audited: nothing in the codebase ever
+  creates a blob URL (no `URL.createObjectURL`, no blob-based image handling
+  anywhere in `app/` or `lib/`), so it was pure unused attack surface, not a
+  paired necessity with `data:`.
 - No `X-Frame-Options`. `frame-ancestors` covers every current browser, so the
   legacy header is low-value, not a gap.
 - No rate limiting on the API routes. Secrets are compared with
