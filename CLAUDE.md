@@ -724,8 +724,11 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
   and on the home hero, which is a listing item in everything but its component
   — **not** on the "Read Next" block at the foot of a post, which sits directly
   under that post's own tags and would say the same thing twice in one viewport.
-  `/search` renders Pagefind's client-side templates and holds no tag data.
-  There is one `TagRow`, exported from `app/more-stories.tsx`; the hero imports
+  `/search` renders Pagefind's client-side templates for results and carries no
+  tag data there; its empty state fetches tags separately to offer a few as
+  links, not pills — the same subject-vs-metadata reason as the glossary, see
+  "Tags render as pills" above. There is one `TagRow`, exported from
+  `app/more-stories.tsx`; the hero imports
   it rather than carrying a second pill implementation. It sits **last** on the
   hero and below the excerpt on a card, which is the same rule and not the same
   position: a ragged pill count belongs at the foot, and the hero's byline is
@@ -846,7 +849,7 @@ utility any more — that class now silently does nothing.
   ordinary editorial practice and is what makes a page cohere; a stray `font-ui`
   on a date is a regression, not a tidy.
 - **UI** — chrome that must not compete with prose, and this is the whole list:
-  the two header nav links and the header tagline; the footer column labels,
+  the header nav links and the mobile nav disclosure's summary; the footer column labels,
   links and legal line; the two table-of-contents labels; the "Explore with AI"
   label; the tag pill; the count spans in `app/archive/page.tsx` and
   `app/tags/page.tsx`; and every small uppercase letterspaced label — the error
@@ -1009,19 +1012,22 @@ heading land at identical coordinates sitewide.
   carries its `view-transition-name`, so it would collide with the masthead's
   and invalidate the transition, whereas a `display: none` element does not
   participate in one at all. The two share a name deliberately and never
-  coexist, which is what keeps it unique per document. The bar's tagline hides
-  with the wordmark, because a description sitting under a masthead repeating
-  it is the duplication the rule exists to remove. **The consequence is
+  coexist, which is what keeps it unique per document. **The consequence is
   deliberate**: past the masthead, home's sticky bar is nav and search with no
   site name in it. The wordmark is wayfinding for a reader deep in the site,
   and on home they are not; it returns on the next navigation. The wordmark
   returns once the masthead scrolls out of view (app/wordmark-fade.tsx),
-  which reverses an earlier position that the gap be left alone. The tagline
-  returns with it at `lg` and up, which reverses a position taken one commit
-  earlier in the same feature and recorded here before it shipped. Do not
+  which reverses an earlier position that the gap be left alone. Do not
   reach for a mark, because none exists in `public/`.
   `app/a11y.test.tsx` asserts the rule in two halves, because jsdom applies no
   stylesheet and cannot evaluate `:has()` itself.
+
+  The bar carried a tagline alongside the wordmark through this point, hiding
+  and fading with it the same way. It was later retired outright in favour of
+  the expanded nav links (`app/layout.tsx`'s `Header`), which carry the same
+  wayfinding on every route rather than only past the masthead — so nothing
+  else in this section should be read as still describing a second element.
+
 - **The bar's wordmark is a link everywhere except home** (`app/site-wordmark.tsx`),
   where it is a button that scrolls the reader to the top. Next 16 treats a
   same-URL `Link` click as a leaf-segment refresh rather than a route change,
@@ -1033,13 +1039,12 @@ heading land at identical coordinates sitewide.
   Rendering it as plain text on home was tried next and left the control dead
   rather than simply absent, at exactly the scroll position where "back to
   top" is the one thing a reader might want from it.
-- **The bar's wordmark machinery is a known local optimum, not an ideal.** Five
+- **The bar's wordmark machinery is a known local optimum, not an ideal.** Four
   mechanisms manage the visibility and behaviour of one word: the `:has()`
   hide, the opacity fade, a `visibility` pair keeping the faded box out of hit
-  testing and the tab order, a `usePathname` re-attach for client-side
-  navigation, and an `lg`-scoped rule keeping the tagline off mobile. Plus
-  `app/wordmark-fade.tsx`, `app/site-wordmark.tsx` and about a dozen
-  assertions in `app/a11y.test.tsx`.
+  testing and the tab order, and a `usePathname` re-attach for client-side
+  navigation. Plus `app/wordmark-fade.tsx`, `app/site-wordmark.tsx` and about a
+  dozen assertions in `app/a11y.test.tsx`.
 
   All of it exists because home's header carries `SITE_TITLE` while the bar
   carries it too, 100px apart. That is one editorial decision, and it is the
