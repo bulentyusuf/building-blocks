@@ -621,6 +621,27 @@ pattern to extend.
   derives this from `caption` being present. The build-time warning for a
   missing description still fires.
 
+### A scroll region's name carries its position, not its contents
+
+The table and code-block wrappers in `lib/rich-text.tsx` are focusable scroll
+regions, so each needs an accessible name. Every table was named the literal
+`"Table"` and every filename-less code block `"Code block"`, which made two of
+either in one post indistinguishable in the list a screen reader keeps of
+regions — the list that exists to tell them apart. Both now count in document
+order and name themselves `Table 2`, `Code block 2`; a code block with a
+filename is still named by it, which is better than a number.
+
+**The name is a position on purpose, not a summary of the table.** Deriving it
+from the header row was the obvious alternative and is wrong here: those cells
+are announced again the moment the reader enters the table, so the region would
+duplicate them — the same defect the rest of the accessibility work in this repo
+removed. Contentful's table model carries no caption field to use instead.
+
+`app/a11y.test.tsx` renders **two** tables for this, which is the smallest
+fixture that can tell a working name from a broken one — the old assertion
+named the literal `"Table"` and so held the defect in place rather than
+catching it. With two present, axe's own duplicate-name rule fails as well.
+
 ### Breadcrumbs, and the one page without them
 
 - **Constrained to their page's own measure.** `Container` is `max-w-5xl`. Pages

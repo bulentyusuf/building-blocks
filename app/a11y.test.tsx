@@ -230,6 +230,18 @@ const bodyTable = table(
   ),
 );
 
+// A SECOND table, and the reason it exists is the whole point of the region
+// naming: with one table, "Table" and "Table 1" are equally usable names and
+// nothing can tell whether the naming works. Two is the smallest fixture where
+// a reader moving between regions needs them to differ.
+const secondTable = table(
+  row(
+    cell(BLOCKS.TABLE_HEADER_CELL, "Language"),
+    cell(BLOCKS.TABLE_HEADER_CELL, "Extension"),
+  ),
+  row(cell(BLOCKS.TABLE_CELL, "TypeScript"), cell(BLOCKS.TABLE_CELL, ".ts")),
+);
+
 const bodyDoc = {
   nodeType: BLOCKS.DOCUMENT,
   data: {},
@@ -245,6 +257,7 @@ const bodyDoc = {
     bodyTable,
     h2("Second section"),
     para(text("Closing copy.")),
+    secondTable,
   ],
 } as unknown as Document;
 
@@ -747,11 +760,33 @@ describe("post page", () => {
     }
   });
 
-  it("exposes the scroll container as a focusable, named region", async () => {
+  it("exposes each scroll container as a focusable, distinctly named region", async () => {
+    // Every table used to be named the literal "Table", so two in one post
+    // were indistinguishable in the list a screen reader keeps of regions —
+    // which is the list that exists to tell them apart. The old assertion
+    // named that literal, so it held the defect in place rather than catching
+    // it: it would have passed for any number of identically named regions.
     await render();
-    const region = getByRole(document.body, "region", { name: "Table" });
-    expect(region.getAttribute("tabindex")).toBe("0");
-    expect(region.querySelector("table")).not.toBeNull();
+    const regions = [
+      getByRole(document.body, "region", { name: "Table 1" }),
+      getByRole(document.body, "region", { name: "Table 2" }),
+    ];
+    for (const region of regions) {
+      expect(region.getAttribute("tabindex")).toBe("0");
+      expect(region.querySelector("table")).not.toBeNull();
+    }
+    expect(regions[0]).not.toBe(regions[1]);
+
+    // getByRole throws on more than one match, so the two lookups above
+    // already prove the names are unique. This proves they are exhaustive:
+    // a third table appearing unnamed, or the counter resetting, shows here.
+    // Scoped to Table regions because the code blocks below are regions too.
+    const tableRegions = document.querySelectorAll(
+      '[role="region"][aria-label^="Table "]',
+    );
+    expect(tableRegions).toHaveLength(
+      document.querySelectorAll("table").length,
+    );
   });
 
   it("aligns every cell start, header included", async () => {
