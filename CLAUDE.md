@@ -861,6 +861,14 @@ the standalone package parses fine, which is what sank an earlier display face.
   random — confirm the configured secrets are high-entropy.
 - `dangerouslySetInnerHTML` for Shiki output in `lib/rich-text.tsx`: trusted CMS
   input, and the renderer allowlists URL schemes.
+- **Pagefind's `{{+ excerpt +}}`** in `app/search/search-client.tsx` is the
+  site's other raw HTML sink, and belongs on this list rather than being left
+  implied by a code comment. The `{{+ +}}` form is Pagefind's unescaped
+  interpolation and is what preserves the `<mark>` highlights; the content
+  reaches it from post bodies through the build-time index, so it inherits the
+  same trusted-CMS model as the Shiki output above. The template around it is
+  ours and static — the `{{ }}` interpolations in it, `meta.title` and the
+  hrefs, are escaped and `safeUrl`-filtered by Pagefind.
 - The sitemap filters CMS `Page` entries through `ROUTED_PAGE_SLUGS` in
   `app/sitemap-xml/route.ts`, so a newly published Page cannot inject a URL with
   no route. Only `/about` and `/privacy` are routed today, both hardcoded; add
@@ -1537,7 +1545,10 @@ each gap has already let a defect through:
   header and footer both link to `/categories` as "Categories".
 
   **It covers six page SHAPES, not routes**, which is right for a shape many
-  routes share and left ten of the sixteen with no axe run at all.
+  routes share: between them they account for home, `/page/[page]`, the post
+  page and the six taxonomy listings, nine of the sixteen. It left the other
+  seven — `/archive`, `/categories`, `/tags`, `/authors`, `/about`,
+  `/privacy`, `/search` — with no axe run at all.
   `app/routes.a11y.test.tsx` is the other half: it renders the REAL route
   components with only the CMS mocked, and carries the list of routes it is
   responsible for. **A new route goes in that list**, or it has no axe run
