@@ -254,6 +254,35 @@ const GRAPHQL_RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 
 type GraphQLVariables = Record<string, unknown>;
 
+/**
+ * The cache tags this module attaches, and the whole set of them.
+ *
+ * Every request used to carry "posts", including the ones fetching CMS Pages
+ * and browse intros — so there was one tag on the site and no way to
+ * invalidate anything narrowly. Editing /about purged every post page, which
+ * cannot be right: nothing about an about-page body reaches a post.
+ *
+ * Only these two split off, and the split is not arbitrary. A Post, Author,
+ * Category or Tag edit genuinely does reach the post pages — a renamed tag
+ * shows on every card and pill, a new post changes the "Read Next" backfill
+ * and the tag-visibility threshold sitewide — so those stay on POSTS and a
+ * publish still purges broadly, correctly. A Page or a Browse Intro reaches
+ * only its own route and the sitemap, and the sitemap reads getAllPages, so
+ * PAGES covers it.
+ *
+ * app/api/revalidate/route.ts maps a webhook's content type onto these.
+ */
+export const CACHE_TAGS = {
+  /** Posts and everything a post renders: authors, categories, tags. */
+  POSTS: "posts",
+  /** CMS `Page` entries — /about, /privacy — and the sitemap that lists them. */
+  PAGES: "pages",
+  /** `BrowseIntro` entries: the standfirst and meta description on a front. */
+  BROWSE_INTROS: "browseIntros",
+} as const;
+
+export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
+
 // The shape every Contentful GraphQL response shares, regardless of query.
 // `data` and `errors` can both be present at once.
 type GraphQLEnvelope = { data?: unknown; errors?: unknown[] };
@@ -275,6 +304,7 @@ async function fetchGraphQL<T>(
   query: string,
   preview = false,
   variables: GraphQLVariables = {},
+  tag: CacheTag = CACHE_TAGS.POSTS,
 ): Promise<T> {
   const spaceId = requireEnv("CONTENTFUL_SPACE_ID");
   const token = requireEnv(
@@ -298,7 +328,11 @@ async function fetchGraphQL<T>(
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ query, variables }),
-        next: { tags: ["posts"] },
+        // Defaults to POSTS, so a new fetcher added without thinking about
+        // tags is over-invalidated rather than under-invalidated. Getting this
+        // wrong in the safe direction costs a render; the other direction
+        // serves stale content with nothing to say so.
+        next: { tags: [tag] },
       });
     } catch (cause) {
       // Socket-level failure rather than an HTTP response. Worth another go.
@@ -385,17 +419,23 @@ async function fetchAllCollectionItems<T>(
   query: string,
   preview: boolean,
   variables: GraphQLVariables = {},
+  tag: CacheTag = CACHE_TAGS.POSTS,
 ): Promise<T[]> {
   const items: T[] = [];
 
   for (let skip = 0; ; skip += COLLECTION_PAGE_SIZE) {
     const response = await fetchGraphQL<{
       data?: Record<string, { total?: number; items?: T[] } | undefined>;
-    }>(query, preview, {
-      ...variables,
-      limit: COLLECTION_PAGE_SIZE,
-      skip,
-    });
+    }>(
+      query,
+      preview,
+      {
+        ...variables,
+        limit: COLLECTION_PAGE_SIZE,
+        skip,
+      },
+      tag,
+    );
 
     const page = response?.data?.[collection];
     const batch = page?.items ?? [];
@@ -566,6 +606,7 @@ export const getPage = cache(
     }`,
       preview,
       { slug, preview },
+      CACHE_TAGS.PAGES,
     );
 
     return entry?.data?.pageCollection?.items?.[0];
@@ -589,6 +630,9 @@ export async function getAllPages(isDraftMode: boolean): Promise<PageMeta[]> {
     }`,
     isDraftMode,
     { preview: isDraftMode },
+    // The sitemap is this query's other consumer, so PAGES busts it too — which
+    // is what a newly published or unpublished Page needs.
+    CACHE_TAGS.PAGES,
   );
 }
 
@@ -623,6 +667,7 @@ export const getBrowseIntro = cache(
     }`,
       isDraftMode,
       { slug, preview: isDraftMode },
+      CACHE_TAGS.BROWSE_INTROS,
     );
 
     return entries?.data?.browseIntroCollection?.items?.[0];

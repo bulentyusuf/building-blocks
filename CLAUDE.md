@@ -1260,6 +1260,36 @@ inherit the page's. The duplicate `getAllPosts` across those two files is the
 accepted cost. Leave `dynamicParams` at its default `true`, so a post published
 through the webhook still gets a card on demand.
 
+### Three cache tags, and the webhook picks between them
+
+`CACHE_TAGS` in `lib/api.ts` carries the whole set, and that file argues the
+split. Every query used to carry `posts`, which meant one tag on the site and
+no lever to invalidate anything narrowly: editing `/about` re-rendered every
+post page. `getPage`, `getAllPages` and `getBrowseIntro` now carry `pages` and
+`browseIntros` instead.
+
+**Only those two split off, and the rest staying broad is a finding rather than
+timidity.** A renamed Tag or Category shows on every card and pill, a new
+Author name appears in bylines across the archive, and a published Post changes
+the "Read Next" backfill and the sitewide tag-visibility threshold on every
+other post page. Those content types genuinely reach everywhere, so a broad
+purge is the correct one. `app/api/revalidate/route.ts` maps a webhook's
+`sys.contentType.sys.id` onto tags, and **anything unrecognised purges
+everything** — an Asset firing, a content type added later, an unparseable
+body. Over-invalidating costs a render; under-invalidating serves stale content
+with nothing anywhere to say so.
+
+**`expire: 0` stays, and it is a freshness choice rather than an oversight.**
+A profile with a non-zero expire would serve the entry stale while it
+regenerated, sparing the first visitor a cold render — but that visitor is
+usually the author refreshing after publishing, and a listing without their new
+post on it is the one thing this webhook exists to prevent. One slow request
+per purged page buys the page being right on the first look. Asserted in
+`app/api/revalidate/route.test.ts` so it cannot be softened by accident.
+
+A new fetcher that passes no tag gets `posts`, deliberately: the safe direction
+to be wrong in is the expensive one.
+
 ### Every unbounded collection query pages, and must keep selecting `total`
 
 `fetchAllCollectionItems` in `lib/api.ts` pages through Contentful's 100-item
