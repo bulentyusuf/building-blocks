@@ -303,7 +303,11 @@ describe("listing page", () => {
               <a href="/posts/hero">The hero post</a>
             </h1>
             <CoverImage
-              url="https://images.ctfassets.net/x/y/hero.jpg"
+              image={{
+                url: "https://images.ctfassets.net/x/y/hero.jpg",
+                title: "A hand-lettered sign in a shop window",
+                fileName: "hero.jpg",
+              }}
               slug="hero"
               wide
               priority
@@ -673,7 +677,11 @@ describe("post page", () => {
             />
             <h1>A post title</h1>
             <CoverImage
-              url="https://images.ctfassets.net/x/y/cover.jpg"
+              image={{
+                url: "https://images.ctfassets.net/x/y/cover.jpg",
+                title: "A hand-lettered sign in a shop window",
+                fileName: "cover.jpg",
+              }}
               wide
               priority
             />

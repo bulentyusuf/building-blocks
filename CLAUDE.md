@@ -594,6 +594,24 @@ accessibility audit; do not restore any. Each file carries its reasoning.
   `aria-hidden` and `tabIndex={-1}` move together and which explains why it has
   **no `title` prop**. Focus can no longer land inside the cover, so the
   focus-within zoom went with it; the hover zoom stays.
+
+**`CoverImage` takes the whole asset, and that is what makes the alt-text guard
+reachable.** It took a `url` and an `alt` string until August 2026, which is
+precisely what let every call site hand the CMS `title` through unchecked:
+`isPlaceholderTitle` had one call site, `lib/rich-text.tsx`, so a cover
+carrying a filename stem announced the filename. It could not have been checked
+either — the cover selections asked for `url` and `title` alone and the
+comparison needs `fileName` — so the fix is a query change and a prop change
+together. A component cannot guard a decision it is only shown the answer to.
+
+Two consequences worth knowing. `fileName` is now selected on every cover and
+on the category thumbnail and is **never rendered**; it exists for the
+comparison. And a cover with no usable title falls back to `""` with a build
+warning, exactly as an embedded figure does — **`description` is deliberately
+not consulted as a fallback**, because on a figure that field is the caption,
+and the note below about one field doing two jobs is a warning rather than a
+pattern to extend.
+
 - **Footer column labels are `<p>`, not `<h4>`** — as headings they skipped a
   level on every page whose deepest heading is an `h2` (axe `heading-order`),
   and promoting them to `h2` would flip them to the display face. Both navs

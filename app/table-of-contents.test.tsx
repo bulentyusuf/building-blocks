@@ -34,7 +34,6 @@ class FakeResizeObserver {
 const heading = (n: number): Heading => ({
   slug: `h-${n}`,
   text: `Heading ${n}`,
-  level: 2,
 });
 
 beforeEach(() => {

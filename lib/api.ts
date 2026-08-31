@@ -43,6 +43,10 @@ const POST_GRAPHQL_FIELDS = `
   coverImage {
     url
     title
+    # fileName is not rendered. app/cover-image.tsx compares the title against
+    # it to catch a filename stem standing in for alt text; see the note on
+    # CoverImage in lib/types.ts.
+    fileName
   }
   date
   updatedDate
@@ -141,6 +145,10 @@ const CARD_GRAPHQL_FIELDS = `
   coverImage {
     url
     title
+    # fileName is not rendered. app/cover-image.tsx compares the title against
+    # it to catch a filename stem standing in for alt text; see the note on
+    # CoverImage in lib/types.ts.
+    fileName
   }
   date
   excerpt
@@ -176,6 +184,10 @@ const LIST_GRAPHQL_FIELDS = `
   coverImage {
     url
     title
+    # fileName is not rendered. app/cover-image.tsx compares the title against
+    # it to catch a filename stem standing in for alt text; see the note on
+    # CoverImage in lib/types.ts.
+    fileName
   }
   date
   updatedDate
@@ -743,6 +755,7 @@ export async function getAllCategories(
           thumbnail {
             url
             title
+            fileName
           }
         }
       }

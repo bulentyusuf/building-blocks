@@ -91,6 +91,12 @@ export interface CoverImage {
   // payload cached before this field was queried carries neither. Every
   // consumer falls back to "" rather than assuming a string.
   title?: string | null;
+  // Not rendered. It is here so isPlaceholderTitle can compare the title
+  // against the filename stem, which is the only way to tell a description
+  // from a filing label — see app/cover-image.tsx, which is the one place that
+  // reads it. Without it the alt-text guard could not run on a cover at all,
+  // and for a long time it did not.
+  fileName?: string | null;
 }
 
 export interface Category {
