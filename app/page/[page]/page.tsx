@@ -44,7 +44,8 @@ export async function generateMetadata({
   // The component 404s on anything that is not a page number, so metadata has
   // to agree — otherwise a title and a canonical are built out of the raw
   // segment for a URL that is about to not exist.
-  if (parsePageParam(page) === null) {
+  const currentPage = parsePageParam(page);
+  if (currentPage === null) {
     return { title: "Page not found" };
   }
 
@@ -68,9 +69,13 @@ export async function generateMetadata({
   const description = intro?.metaDescription?.trim() || SITE_DESCRIPTION;
 
   return {
-    title: `Latest Posts, Page ${page}`,
+    // The parsed number, never the raw segment: `Number()` accepts `0x2` and
+    // `2.000` as readily as `2`, and interpolating the segment made each of
+    // those spellings title itself and declare itself canonical. See
+    // parsePageParam in lib/paginate.ts.
+    title: `Latest Posts, Page ${currentPage}`,
     description,
-    alternates: { canonical: `${SITE_URL}/page/${page}` },
+    alternates: { canonical: `${SITE_URL}/page/${currentPage}` },
   };
 }
 

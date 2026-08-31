@@ -23,6 +23,21 @@ describe("parsePageParam", () => {
       expect(parsePageParam(segment)).toBeNull();
     }
   });
+
+  // Number() is far looser than "digits", and that looseness is accepted: each
+  // of these still resolves rather than 404ing. What is NOT accepted is a route
+  // rendering the segment back out. Every one of these used to title itself and
+  // declare itself canonical in its own spelling, so the accepted set — which
+  // is unbounded, since the trailing zeros never run out — became an unbounded
+  // set of self-canonicalising URLs and ISR entries for one page of content.
+  //
+  // This is the contract the four paginated routes rely on: whatever spelling
+  // arrives, what comes back out is the canonical number.
+  it("collapses every accepted spelling to the canonical number", () => {
+    for (const segment of ["2", "2.0", "2.000000", "+2", "2e0", "0x2", " 2 "]) {
+      expect(parsePageParam(segment)).toBe(2);
+    }
+  });
 });
 
 describe("totalPagesFor", () => {
