@@ -149,6 +149,24 @@ export function RichText({
   // and its in-text marker. The floated note's own "N." prefix comes from a CSS
   // counter (globals.css); both count once per note in order, so they agree.
   let sidenoteIndex = 1;
+  // Document-order number for tables, feeding each scroll region's accessible
+  // name. Every table on the site was named the literal "Table", so two in one
+  // post were indistinguishable in the list a screen reader keeps of regions —
+  // which is the list that exists to tell them apart.
+  //
+  // An ordinal rather than a name derived from the header row, and that is the
+  // considered choice rather than the lazy one: those header cells are
+  // announced again the moment the reader enters the table, so naming the
+  // region after them is a duplicate announcement of exactly the kind the rest
+  // of this file exists to remove. Contentful's table model carries no caption
+  // field to use instead. A position is the one thing the region can say that
+  // the table itself does not.
+  let tableIndex = 0;
+  // The same, for code blocks. A block with a filename is already named by it;
+  // one without fell back to the literal "Code block", so a post with two
+  // unnamed snippets had two identically named regions for the same reason the
+  // tables did.
+  let codeBlockIndex = 0;
 
   // The post title is the page's only h1, so a stray h1 in body content would
   // duplicate it. Coalesce body h1 to h2. H3 to H6 are intentional sub-structure
@@ -239,7 +257,7 @@ export function RichText({
           {children}
         </blockquote>
       ),
-      [BLOCKS.TABLE]: (_node: Block | Inline, children: ReactNode) => (
+      [BLOCKS.TABLE]: (_node: Block | Inline, children: ReactNode) => {
         // Horizontal scroll rather than reflow: a table narrower than its
         // content is unreadable, and Contentful gives no column hints to
         // restructure from. tabIndex makes the scroll container reachable by
@@ -248,19 +266,26 @@ export function RichText({
         // Two nested wrappers: overflow-hidden on the outer element clips the
         // header fill to the rounded corners, overflow-x-auto on the inner one
         // scrolls — one element can't do both without losing the radius.
-        <div className="not-prose my-8 overflow-hidden rounded-lg border border-table-edge">
-          <div
-            className="overflow-x-auto"
-            tabIndex={0}
-            role="region"
-            aria-label="Table"
-          >
-            <table className="w-full border-collapse text-[0.9em]">
-              <tbody>{children}</tbody>
-            </table>
+        //
+        // The name carries the table's position, so a post with several of
+        // them gives the reader something to tell the regions apart by. See
+        // tableIndex above for why it is a number rather than the header row.
+        const position = ++tableIndex;
+        return (
+          <div className="not-prose my-8 overflow-hidden rounded-lg border border-table-edge">
+            <div
+              className="overflow-x-auto"
+              tabIndex={0}
+              role="region"
+              aria-label={`Table ${position}`}
+            >
+              <table className="w-full border-collapse text-[0.9em]">
+                <tbody>{children}</tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
       [BLOCKS.TABLE_ROW]: (_node: Block | Inline, children: ReactNode) => (
         // last:border-b-0 so the final row's rule does not sit a hair inside
         // the container's own bottom edge and read as a double line. The
@@ -313,6 +338,9 @@ export function RichText({
 
         if (entry.__typename === "CodeBlock") {
           const html = highlighted?.get(id);
+          // A filename is a better name than a number whenever there is one.
+          const position = ++codeBlockIndex;
+          const label = entry.filename || `Code block ${position}`;
 
           return (
             <div className="not-prose relative my-8 overflow-hidden rounded-lg border border-hairline">
@@ -330,7 +358,7 @@ export function RichText({
                 <div
                   tabIndex={0}
                   role="region"
-                  aria-label={entry.filename || "Code block"}
+                  aria-label={label}
                   className="overflow-x-auto text-[0.78em] [&_pre]:m-0 [&_pre]:p-4 [&_pre]:w-max [&_pre]:min-w-full focus-visible:outline-offset-[-2px]"
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
@@ -338,7 +366,7 @@ export function RichText({
                 <pre
                   tabIndex={0}
                   role="region"
-                  aria-label={entry.filename || "Code block"}
+                  aria-label={label}
                   className="overflow-x-auto p-4 text-[0.78em] focus-visible:outline-offset-[-2px]"
                 >
                   <code>{entry.code}</code>

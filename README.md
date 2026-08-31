@@ -105,6 +105,7 @@ cp .env.local.example .env.local
 - `CONTENTFUL_PREVIEW_SECRET`, any random string you choose, it guards the draft preview route
 - `CONTENTFUL_REVALIDATE_SECRET`, any random string you choose, it guards the revalidation webhook
 - `NEXT_PUBLIC_SITE_URL`, your public site URL such as `https://example.com`, used for canonical links, Open Graph tags, the sitemap, and the RSS feed. On Vercel this falls back to the project's production domain when unset, and to `http://localhost:3000` everywhere else
+- `AUTHOR_EMAIL` (optional), the address published in every RSS `<author>` element. Leave it unset and the element is omitted, which is the default on purpose: the address used to be inferred from your domain, so setting the site URL alone was enough to start advertising a mailbox you had never decided on
 
 ### 3. Import the content model
 
@@ -173,7 +174,7 @@ Forking this template carries over the original author's specifics. Change these
 - **llms.txt.** `public/llms.txt` is a hand-written file describing the original site. Replace it with your own, or delete it. If you delete it, drop the `llms-link-check` workflow too.
 - **Brand assets.** Replace the Open Graph image `public/be_useful.jpg`, swap the favicon and app icon, and retune the palette tokens and `themeColor` in `app/globals.css` and `app/layout.tsx` if you want a different look. The header colour lives in both `globals.css` and `lib/constants.ts`, and both need changing, because the web manifest and viewport `themeColor` are generated in JavaScript and cannot read CSS custom properties.
 - **Search illustration.** The empty-state emblem in `app/search/search-emblem.tsx` is bespoke artwork for this site. Replace or remove it.
-- **Security headers (careful).** The Content Security Policy in `next.config.js` allows `'wasm-unsafe-eval'` in `script-src` on the `/search` document and `/pagefind/*` assets only, because Pagefind's matching runs as WebAssembly inside a SharedWorker; every other route serves a stricter policy without it. Removing it breaks search with no visible error.
+- **Security headers (careful).** The Content Security Policy in `next.config.js` relaxes two directives per route, and both are load-bearing. `'wasm-unsafe-eval'` is allowed in `script-src` on the `/search` document and `/pagefind/*` assets only, because Pagefind's matching runs as WebAssembly inside a SharedWorker; removing it breaks search with no visible error. `frame-ancestors` allows `https://app.contentful.com` on `/posts/*` only, which is what lets Contentful frame a draft for live preview; every other route is framable by its own origin alone. If you point a preview URL at a content type outside `/posts`, add its route there too.
 - **Seed images (optional).** If you re-run the seed, repoint `PLACEHOLDER_ASSET_URL` in `contentful/build-seed.mjs` to your own copy, then replace the placeholder cover, avatar, and thumbnail with real assets afterwards.
 - **CLAUDE.md (optional).** Useful as-is for working with Claude Code on the repo. Review it for any notes specific to the original author.
 

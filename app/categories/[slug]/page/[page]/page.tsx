@@ -45,7 +45,8 @@ export async function generateMetadata({
   const { slug, page } = await params;
   // Metadata has to make the same judgement the component does, or a title and
   // a canonical get built out of a segment that is about to 404.
-  if (parsePageParam(page) === null) {
+  const currentPage = parsePageParam(page);
+  if (currentPage === null) {
     return { title: "Page not found" };
   }
 
@@ -56,10 +57,11 @@ export async function generateMetadata({
   }
 
   return listingMetadata({
-    title: `${category.name}, Page ${page}`,
+    // The parsed number, never the raw segment — see parsePageParam.
+    title: `${category.name}, Page ${currentPage}`,
     description:
       category.description || `Posts in ${category.name} on ${SITE_TITLE}`,
-    canonical: `${SITE_URL}/categories/${slug}/page/${page}`,
+    canonical: `${SITE_URL}/categories/${slug}/page/${currentPage}`,
   });
 }
 

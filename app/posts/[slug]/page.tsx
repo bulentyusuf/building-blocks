@@ -223,8 +223,7 @@ export default async function PostPage({
         {post.coverImage && (
           <div className="mb-10">
             <CoverImage
-              url={post.coverImage.url}
-              alt={post.coverImage.title ?? ""}
+              image={post.coverImage}
               wide
               priority
               sizes="(max-width: 768px) 100vw, 1024px"

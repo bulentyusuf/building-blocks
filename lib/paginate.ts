@@ -22,10 +22,23 @@ import { POSTS_PER_PAGE } from "./constants";
  * below is here for.
  *
  * Deliberately the exact test those components already made, so metadata and
- * render agree and nothing else changes. It is looser than the canonical form:
- * `/page/2.0` and `/page/%202` still parse as 2 and still emit their own
- * spelling as the canonical. Tightening that is a duplicate-URL decision, not
- * this one.
+ * render agree. It is looser than the canonical form, because `Number()`
+ * accepts far more than digits: `2.0`, `%202`, `+2`, `2e0` and `0x2` all parse
+ * as 2, as does `2.000…` to any depth.
+ *
+ * That looseness is still accepted — tightening it is a duplicate-URL decision
+ * nobody has taken — but the RETURN VALUE is now what every caller renders, and
+ * that part is not optional. A route interpolating the raw segment into its
+ * title and canonical made each spelling declare itself canonical, so the one
+ * mechanism that consolidates duplicates was pointed the wrong way; and with
+ * `dynamicParams` at its default the accepted set is unbounded, so each
+ * trailing zero minted its own ISR entry for identical content across seven
+ * routes. Rendering the parsed number instead makes every spelling canonicalise
+ * to `/page/2` while still resolving, which is the cheap half of the decision
+ * without taking the expensive one.
+ *
+ * So: never interpolate the raw `[page]` segment into anything a reader or a
+ * crawler sees. Use what this returns.
  */
 export function parsePageParam(page: string): number | null {
   const pageNumber = Number(page);

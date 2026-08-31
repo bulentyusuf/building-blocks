@@ -64,26 +64,27 @@ export default function SearchClient() {
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // The components are a build-time static bundle emitted into
-    // public/pagefind/, not an npm package. Loading the build's own copy (not
-    // @pagefind/component-ui from npm) guarantees it matches the CLI version
-    // that built the index.
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/pagefind/pagefind-component-ui.css";
-    document.head.appendChild(link);
-
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src = "/pagefind/pagefind-component-ui.js";
-    // The index only exists after a production build, so the module 404s on
-    // `next dev`. Show the friendly fallback rather than a broken UI.
-    script.onerror = () => setFailed(true);
-    document.body.appendChild(script);
+    // Failure detection only; the loading itself is the hoisted pair below.
+    //
+    // The handler cannot go on that <script>, and this is a hard React rule
+    // rather than a preference: isHostHoistableType refuses to hoist a script
+    // carrying onLoad or onError, so an inline handler would silently put the
+    // module back after hydration and undo the whole change. Hence a second
+    // element for the listener.
+    //
+    // It costs no request. A module URL is fetched and evaluated once per
+    // document, so this resolves against the same module-map entry the hoisted
+    // script created and fires load or error off it. The index only exists
+    // after a production build, so on `next dev` it errors, which is what the
+    // fallback below is for.
+    const probe = document.createElement("script");
+    probe.type = "module";
+    probe.src = "/pagefind/pagefind-component-ui.js";
+    probe.onerror = () => setFailed(true);
+    document.body.appendChild(probe);
 
     return () => {
-      link.remove();
-      script.remove();
+      probe.remove();
     };
   }, []);
 
@@ -98,6 +99,30 @@ export default function SearchClient() {
 
   return (
     <div className="pagefind-scope">
+      {/* Hoisted into <head> by React rather than appended after hydration.
+          Both files are a build-time static bundle emitted into
+          public/pagefind/ by `postbuild`, not an npm package — loading the
+          build's own copy (rather than @pagefind/component-ui) is what
+          guarantees they match the CLI version that wrote the index.
+
+          They used to be created in the effect below, which meant nothing
+          about search existed in the server HTML and the critical path was
+          hydrate, then module, then Pagefind's core, then the WASM, then the
+          index: four sequential round-trips before the input did anything,
+          with the stylesheet landing after first paint and reflowing what was
+          already on screen. In <head> the browser starts both during the
+          initial parse, so the module and the CSS overlap hydration instead of
+          following it.
+
+          precedence is what makes React hoist and dedupe the stylesheet, and
+          it must be present or the element renders in place as ordinary
+          markup. The <script> is deduped by src. */}
+      <link
+        rel="stylesheet"
+        href="/pagefind/pagefind-component-ui.css"
+        precedence="default"
+      />
+      <script type="module" src="/pagefind/pagefind-component-ui.js" async />
       <pagefind-config excerpt-length="30"></pagefind-config>
       <pagefind-input placeholder="What are you looking for?"></pagefind-input>
       {/* Result count / no-results line ("N results for X" / "No results for

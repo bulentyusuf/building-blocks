@@ -54,20 +54,30 @@ export default async function SearchPage() {
             results are showing. Plain <a> rather than <Link>, since client
             navigation is meaningless in a noscript block. */}
         <noscript>
+          {/* The two links below are the only ones on the site that sit INSIDE
+              a run of body text without being inside .prose, so they are the
+              only ones the sitewide "crimson reads fine on cream and needs no
+              underline substitute" argument does not cover. Inside .prose the
+              typography plugin underlines links by default; here nothing does.
+              Crimson against brand-muted is 1.17:1 in light and 1.05:1 in
+              dark, well under the 3:1 WCAG 1.4.1 wants when colour is the only
+              thing marking a link, and hover:opacity is no help at rest. Hence
+              the explicit underline, which matches what a prose link already
+              looks like. */}
           <p className="mb-6 text-brand-muted">
             Search needs JavaScript. The index runs entirely in your browser, so
             no query ever leaves this page — which also means there is nothing
             to search with when scripts are turned off. The{" "}
             <a
               href="/archive"
-              className="font-bold text-brand-crimson transition-opacity duration-200 hover:opacity-80"
+              className="font-bold text-brand-crimson underline underline-offset-2 transition-opacity duration-200 hover:opacity-80"
             >
               archive
             </a>{" "}
             lists every post by year, and{" "}
             <a
               href="/categories"
-              className="font-bold text-brand-crimson transition-opacity duration-200 hover:opacity-80"
+              className="font-bold text-brand-crimson underline underline-offset-2 transition-opacity duration-200 hover:opacity-80"
             >
               categories
             </a>{" "}

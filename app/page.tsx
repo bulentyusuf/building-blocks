@@ -115,8 +115,7 @@ function HeroPost({
         <div className="mb-8 md:mb-10">
           <CoverImage
             slug={slug}
-            url={coverImage.url}
-            alt={coverImage.title ?? ""}
+            image={coverImage}
             wide
             priority
             sizes="(max-width: 768px) 100vw, 1024px"
