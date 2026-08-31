@@ -50,26 +50,42 @@ extension.
 
 Intentional. Do not "fix" or re-flag without a new reason.
 
-### CSP: `'unsafe-inline'` stays global, `'wasm-unsafe-eval'` scopes to search
+### CSP: `'unsafe-inline'` stays global, every relaxation is scoped to a route
 
 Reopened August 2026 under this file's convention, prompted by PR #425, which
 attempted the scoping with inverted header-rule order and was closed rather
 than fixed. `'unsafe-inline'` remains global and deliberate — removing it needs
 a per-request nonce, which forces dynamic rendering; revisit only if the site
-starts rendering untrusted user-generated content. `'wasm-unsafe-eval'` left
-the sitewide policy and now applies to the `/search` document alone, the one
-route whose Pagefind core compiles WebAssembly; without it there, search still
-fails silently in every Chromium browser.
+starts rendering untrusted user-generated content.
+
+**Two directives are now relaxed per route rather than sitewide, and neither
+may go back on the catch-all.**
+
+- **`'wasm-unsafe-eval'`** applies to the `/search` document alone, the one
+  route whose Pagefind core compiles WebAssembly; without it there, search
+  fails silently in every Chromium browser.
+- **`frame-ancestors`** carries `https://app.contentful.com` on `/posts/*`
+  alone. It sat on the catch-all until an audit in August 2026 asked what the
+  preview surface actually is: the README configures the Post type's preview
+  URL as `/api/draft?…&slug={entry.fields.slug}`, which redirects to
+  `/posts/<slug>`, so one route family is the whole of it — and every other
+  published page on the site was framable by the CMS to buy preview on that
+  one. `/api/draft` deliberately does **not** carry the relaxation, because
+  `frame-ancestors` is enforced on a document that is DISPLAYED in a frame and
+  a 302 never is. Give a Page entry its own preview URL and this list has to
+  grow with it; the symptom otherwise is a framing error in Contentful naming
+  nothing in this repo.
 
 `next.config.js` carries the full argument, and one mechanic is worth knowing
 before touching anything there: Next applies every matching header rule in
 array order and a later match overrides the same key, so the strict catch-all
-must come first and `/search` wins by following it. `/pagefind/*` also needs
-the relaxed CSP because Pagefind compiles WASM inside a SharedWorker
+must come first and both relaxations win by following it. `/pagefind/*` also
+needs the relaxed CSP because Pagefind compiles WASM inside a SharedWorker
 (`pagefind-worker.js`); SharedWorkers get their CSP from the worker script's
-own response headers, not from the creating document. A vitest guard landing
-alongside the implementation resolves the config through those semantics and
-fails if the ordering regresses.
+own response headers, not from the creating document. `lib/csp-headers.test.ts`
+resolves the config through those semantics and fails if the ordering
+regresses, and it keeps a known-bad control — the rules reordered as PR #425
+had them — so both relaxations are re-proven catchable on every run.
 
 ### Search runs on Pagefind's Component UI, and its quirks are upstream
 

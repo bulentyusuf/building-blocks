@@ -64,6 +64,13 @@ async function cspFor(pathname: string): Promise<string | undefined> {
 }
 
 const WASM_TOKEN = " 'wasm-unsafe-eval'";
+const CMS_ORIGIN = "https://app.contentful.com";
+
+function frameAncestorsOf(csp: string | undefined): string | undefined {
+  return csp
+    ?.split("; ")
+    .find((directive) => directive.startsWith("frame-ancestors "));
+}
 
 describe("resolved CSP headers", () => {
   it("grants 'wasm-unsafe-eval' on /search and /pagefind, nowhere else", async () => {
@@ -97,22 +104,55 @@ describe("resolved CSP headers", () => {
     );
   });
 
-  it("places every wasm-bearing rule after the catch-all", async () => {
+  it("places every relaxing rule after the catch-all", async () => {
     // The direct statement of the invariant, independent of the matcher
     // above: last-wins means any relaxation must FOLLOW the strict default.
+    // Both relaxations are covered by one predicate rather than a list, so a
+    // third one added later cannot be introduced above the catch-all without
+    // this failing.
     const rules = await loadRules();
     const catchAllIndex = rules.findIndex((rule) => rule.source === "/(.*)");
     expect(catchAllIndex).toBeGreaterThanOrEqual(0);
-    const wasmRules = rules.filter((rule) =>
+    const relaxing = rules.filter((rule) =>
       rule.headers.some(
         ({ key, value }) =>
-          key.toLowerCase() === CSP_KEY && value.includes("wasm-unsafe-eval"),
+          key.toLowerCase() === CSP_KEY &&
+          (value.includes("wasm-unsafe-eval") || value.includes(CMS_ORIGIN)),
       ),
     );
-    expect(wasmRules.length).toBeGreaterThan(0);
-    for (const rule of wasmRules) {
+    // Non-vacuous: both relaxations must actually be present to be ordered.
+    expect(relaxing.some((r) => r.source.startsWith("/search"))).toBe(true);
+    expect(relaxing.some((r) => r.source.startsWith("/posts"))).toBe(true);
+    for (const rule of relaxing) {
       expect(rules.indexOf(rule), rule.source).toBeGreaterThan(catchAllIndex);
     }
+  });
+
+  it("lets Contentful frame /posts and nothing else", async () => {
+    // frame-ancestors carried the CMS origin on the catch-all for a long time,
+    // so every published page on the site was framable by Contentful to buy
+    // live preview on one route family. Both halves are asserted: preview must
+    // still work, and the rest of the site must have stopped offering it.
+    expect(frameAncestorsOf(await cspFor("/posts/some-post"))).toBe(
+      `frame-ancestors 'self' ${CMS_ORIGIN}`,
+    );
+    for (const path of ["/", "/about", "/search", "/categories", "/archive"]) {
+      expect(frameAncestorsOf(await cspFor(path)), path).toBe(
+        "frame-ancestors 'self'",
+      );
+    }
+  });
+
+  it("relaxes framing on /posts by exactly the CMS origin", async () => {
+    // Same shape as the wasm assertion below: the preview policy is built from
+    // the same directive list, and every other directive must stay identical,
+    // so a relaxation cannot ride in alongside the framing one.
+    const base = await cspFor("/");
+    const posts = await cspFor("/posts/some-post");
+    expect(base).toBeDefined();
+    expect(posts).toBeDefined();
+    expect(base).not.toContain(CMS_ORIGIN);
+    expect(posts!.replace(` ${CMS_ORIGIN}`, "")).toBe(base);
   });
 
   it("differs between base and search policies by exactly the wasm token", async () => {
@@ -148,5 +188,16 @@ describe("resolved CSP headers", () => {
         resolvedOnSearch.set(key.toLowerCase(), value);
     }
     expect(cspOf(resolvedOnSearch)).not.toContain("wasm-unsafe-eval");
+
+    // The same control for the framing rule, which is newer and has the same
+    // failure mode: inverted, /posts loses the CMS origin and live preview
+    // breaks in Contentful with a framing error naming nothing in this repo.
+    const resolvedOnPost: Resolved = new Map();
+    for (const rule of inverted) {
+      if (!sourceMatches(rule.source, "/posts/some-post")) continue;
+      for (const { key, value } of rule.headers)
+        resolvedOnPost.set(key.toLowerCase(), value);
+    }
+    expect(cspOf(resolvedOnPost)).not.toContain(CMS_ORIGIN);
   });
 });
