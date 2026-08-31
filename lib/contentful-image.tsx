@@ -1,6 +1,6 @@
 "use client";
 import Image, { type ImageProps } from "next/image";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { clsx as cn } from "clsx";
 import { CONTENTFUL_IMAGE_HOST } from "./contentful-host";
 
@@ -65,6 +65,15 @@ export default function ContentfulImage({
     props.priority ? "instant" : "pending",
   );
 
+  // Stable identity matters more than it looks. An inline arrow here is a new
+  // ref on every render, so React detaches and re-attaches it each time and
+  // runs this again — on the one component that appears once per image on
+  // every page. It is harmless only because the setter below bails on an equal
+  // value; useCallback makes it free instead of merely survivable.
+  const revealIfComplete = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete) setReveal((r) => (r === "pending" ? "instant" : r));
+  }, []);
+
   return (
     <Image
       loader={contentfulLoader}
@@ -75,9 +84,7 @@ export default function ContentfulImage({
         reveal === "pending" ? "opacity-0" : "opacity-100",
       )}
       // Cached case: complete at mount, reveal with no fade theatre.
-      ref={(img) => {
-        if (img?.complete) setReveal((r) => (r === "pending" ? "instant" : r));
-      }}
+      ref={revealIfComplete}
       // Network case: only fade if we had not already revealed instantly.
       onLoad={(event) => {
         setReveal((r) => (r === "pending" ? "fade" : r));
