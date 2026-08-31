@@ -75,20 +75,34 @@ function frameAncestorsOf(csp: string | undefined): string | undefined {
 /**
  * The source expressions in a policy's `frame-ancestors`, as exact tokens.
  *
- * Membership is tested against this rather than with `csp.includes(origin)`,
- * and the difference is not pedantry: a substring test is satisfied by
- * `https://app.contentful.com.evil.example`, so a policy naming an
- * attacker-controlled lookalike would read as "the CMS origin is allowed" and
- * every assertion below would agree. CodeQL flags exactly this shape
- * (js/incomplete-url-substring-sanitization), and it is right to — a test
- * guarding a CSP is the last place to match a host loosely.
- *
  * Splitting on whitespace is safe because a CSP source expression cannot
  * contain any: the grammar separates sources by spaces.
  */
 function frameAncestorSources(csp: string | undefined): string[] {
   const directive = frameAncestorsOf(csp);
   return directive ? directive.split(/\s+/).slice(1) : [];
+}
+
+/**
+ * Whether a policy names `origin` as a frame ancestor — as a whole source, not
+ * as a substring of the header.
+ *
+ * The distinction is not pedantry. `csp.includes("https://app.contentful.com")`
+ * is satisfied by `https://app.contentful.com.evil.example` sitting anywhere in
+ * the policy, so a header naming a lookalike origin would read as "the CMS is
+ * allowed" and every assertion below would agree with it. A test guarding a CSP
+ * is the last place to match a host loosely.
+ *
+ * The comparison is an explicit `===` rather than `sources.includes(origin)`,
+ * and that is deliberate too. CodeQL's js/incomplete-url-substring-sanitization
+ * matches the SHAPE `.includes(<url literal>)` without resolving that the
+ * receiver here is a string[] rather than a string, so the array form is still
+ * reported as a high-severity finding — correctly identifying the pattern it
+ * looks for, on code that no longer has the defect. An equality test is exact
+ * both in fact and on its face, so there is nothing left to argue about.
+ */
+function allowsFrameAncestor(csp: string | undefined, origin: string): boolean {
+  return frameAncestorSources(csp).some((source) => source === origin);
 }
 
 describe("resolved CSP headers", () => {
@@ -137,9 +151,9 @@ describe("resolved CSP headers", () => {
         ({ key, value }) =>
           key.toLowerCase() === CSP_KEY &&
           (value.includes(WASM_TOKEN.trim()) ||
-            // An exact source, never a substring of the policy — see
-            // frameAncestorSources.
-            frameAncestorSources(value).includes(CMS_ORIGIN)),
+            // A whole source, never a substring of the policy — see
+            // allowsFrameAncestor.
+            allowsFrameAncestor(value, CMS_ORIGIN)),
       ),
     );
     // Non-vacuous: both relaxations must actually be present to be ordered.
