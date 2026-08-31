@@ -72,6 +72,25 @@ function frameAncestorsOf(csp: string | undefined): string | undefined {
     .find((directive) => directive.startsWith("frame-ancestors "));
 }
 
+/**
+ * The source expressions in a policy's `frame-ancestors`, as exact tokens.
+ *
+ * Membership is tested against this rather than with `csp.includes(origin)`,
+ * and the difference is not pedantry: a substring test is satisfied by
+ * `https://app.contentful.com.evil.example`, so a policy naming an
+ * attacker-controlled lookalike would read as "the CMS origin is allowed" and
+ * every assertion below would agree. CodeQL flags exactly this shape
+ * (js/incomplete-url-substring-sanitization), and it is right to — a test
+ * guarding a CSP is the last place to match a host loosely.
+ *
+ * Splitting on whitespace is safe because a CSP source expression cannot
+ * contain any: the grammar separates sources by spaces.
+ */
+function frameAncestorSources(csp: string | undefined): string[] {
+  const directive = frameAncestorsOf(csp);
+  return directive ? directive.split(/\s+/).slice(1) : [];
+}
+
 describe("resolved CSP headers", () => {
   it("grants 'wasm-unsafe-eval' on /search and /pagefind, nowhere else", async () => {
     // Non-vacuous on both halves: /search must actually carry the token (for
@@ -117,7 +136,10 @@ describe("resolved CSP headers", () => {
       rule.headers.some(
         ({ key, value }) =>
           key.toLowerCase() === CSP_KEY &&
-          (value.includes("wasm-unsafe-eval") || value.includes(CMS_ORIGIN)),
+          (value.includes(WASM_TOKEN.trim()) ||
+            // An exact source, never a substring of the policy — see
+            // frameAncestorSources.
+            frameAncestorSources(value).includes(CMS_ORIGIN)),
       ),
     );
     // Non-vacuous: both relaxations must actually be present to be ordered.
@@ -133,13 +155,14 @@ describe("resolved CSP headers", () => {
     // so every published page on the site was framable by Contentful to buy
     // live preview on one route family. Both halves are asserted: preview must
     // still work, and the rest of the site must have stopped offering it.
-    expect(frameAncestorsOf(await cspFor("/posts/some-post"))).toBe(
-      `frame-ancestors 'self' ${CMS_ORIGIN}`,
-    );
+    expect(frameAncestorSources(await cspFor("/posts/some-post"))).toEqual([
+      "'self'",
+      CMS_ORIGIN,
+    ]);
     for (const path of ["/", "/about", "/search", "/categories", "/archive"]) {
-      expect(frameAncestorsOf(await cspFor(path)), path).toBe(
-        "frame-ancestors 'self'",
-      );
+      expect(frameAncestorSources(await cspFor(path)), path).toEqual([
+        "'self'",
+      ]);
     }
   });
 
