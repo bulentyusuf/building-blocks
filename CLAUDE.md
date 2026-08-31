@@ -1535,6 +1535,23 @@ each gap has already let a defect through:
   announcement** check axe does not implement — two links inside `<main>`
   sharing a destination and an accessible name — scoped to `<main>` because the
   header and footer both link to `/categories` as "Categories".
+
+  **It covers six page SHAPES, not routes**, which is right for a shape many
+  routes share and left ten of the sixteen with no axe run at all.
+  `app/routes.a11y.test.tsx` is the other half: it renders the REAL route
+  components with only the CMS mocked, and carries the list of routes it is
+  responsible for. **A new route goes in that list**, or it has no axe run
+  anywhere and nothing in CI reports the gap. Both halves also assert the page
+  rendered something — an empty render passes every rule, and a fixture
+  drifting out of step with a route's data shape is the quiet way that happens.
+
+  Its duplicate-announcement check found two repetitions that are **designs
+  rather than defects**: the archive links its category on every row, and the
+  glossary lists each post once per tag. Both are allowances keyed to a URL
+  pattern per route rather than a skip, so a duplicate of any other shape still
+  fails there — and each allowance asserts the duplication still occurs, so it
+  cannot outlive the design it was written for.
+
 - **`lib/paginate.test.ts`** covers the page arithmetic the six taxonomy routes
   and the home index share, including that every item lands on exactly one page.
   It says nothing about what those pages then render.
