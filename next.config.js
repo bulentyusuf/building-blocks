@@ -95,6 +95,9 @@ const previewCspHeaders = [
 ];
 
 module.exports = {
+  // Off by default in Next; suppresses free stack fingerprinting for no
+  // functional cost.
+  poweredByHeader: false,
   images: {
     loader: "custom",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
