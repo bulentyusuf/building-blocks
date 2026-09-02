@@ -340,6 +340,10 @@ const entries = [
       ),
     ),
     author: loc(link("author-alex")),
+    // The only seeded post carrying a contributor, so a fork's build renders
+    // both paths: this one shows the credit line under the byline, the other
+    // two posts show a post with no contributors renders exactly as before.
+    contributors: loc([link("author-sam")]),
     category: loc(link("cat-main-quest")),
     tags: loc([link("tag-craft")]),
   }),

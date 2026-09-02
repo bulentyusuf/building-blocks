@@ -896,6 +896,30 @@ the standalone package parses fine, which is what sank an earlier display face.
   `contentful-batch-libs` touches uuid in one place, `add-sequence-header.js`,
   so re-check that call site if the override is ever bumped.
 
+### Contributors are a credit, not a byline
+
+`post.contributors` is an `Array<Link>` to `author`, capped at three. It
+renders as one plain-text line under the byline via
+`app/contributor-line.tsx` and appears nowhere else. No portrait, no bio
+card, no listing card, no link on the name, no `/authors` entry of its own.
+`article:author` and the RSS `<author>` stay the primary author alone.
+JSON-LD sets the schema.org `contributor` property, and omits the key
+entirely when there are none, so `author` is a bare object on every post
+exactly as before.
+
+There is deliberately no "contributed to" section on author pages.
+Considered and cancelled on 2 September 2026. A contributor is a credit on a
+post, not a status that earns a listing, and the plain-text name follows
+from that rather than being a styling preference.
+
+There is no per-contributor query and there cannot be one. Contentful's
+GraphQL cannot filter on `Array<Link>`, the same wall `postsWithTag` hit.
+`lib/contributors.ts` filters in memory and takes the posts rather than
+fetching them, because `getAllPosts` is not `cache()`-wrapped.
+
+Deduplication against the primary author lives in `postContributors`, not in
+Contentful, which cannot express the constraint.
+
 ## House conventions
 
 ### Two faces, three roles, and no family named directly
