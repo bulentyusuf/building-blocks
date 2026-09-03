@@ -316,14 +316,21 @@ export default async function PostPage({
               // the nav's pt-6 or the row sits off-centre in its band. Without
               // tags there is no band and the usual mt-12 applies.
               <div
-                className={`${tags.length > 0 ? "mt-6" : "mt-12"} flex flex-col gap-8 border-t border-hairline pt-8`}
+                className={`${tags.length > 0 ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
               >
-                {postAuthors(post).map(
-                  (a) =>
-                    a.bio && (
-                      <AuthorBioCard key={a.slug ?? a.name} author={a} />
-                    ),
-                )}
+                <p className="mb-6 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
+                  {postAuthors(post).filter((a) => a.bio).length > 1
+                    ? "About the authors"
+                    : "About the author"}
+                </p>
+                <div className="flex flex-col gap-8">
+                  {postAuthors(post).map(
+                    (a) =>
+                      a.bio && (
+                        <AuthorBioCard key={a.slug ?? a.name} author={a} />
+                      ),
+                  )}
+                </div>
               </div>
             )}
           </div>

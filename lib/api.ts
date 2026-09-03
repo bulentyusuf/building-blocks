@@ -119,6 +119,16 @@ const POST_GRAPHQL_FIELDS = `
       picture {
         url
       }
+      bio {
+        json
+        links {
+          assets {
+            block {
+              ${ASSET_BLOCK_FIELDS}
+            }
+          }
+        }
+      }
     }
   }
 `;
