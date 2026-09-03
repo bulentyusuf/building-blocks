@@ -134,7 +134,7 @@ export default async function CategoriesPage() {
                         </div>
                         {post.excerpt && (
                           <p className="mt-1 text-base leading-relaxed text-brand-muted line-clamp-1">
-                            {post.excerpt}
+                            {widont(post.excerpt)}
                           </p>
                         )}
                       </li>
