@@ -104,3 +104,54 @@ describe("search page tag entry point", () => {
     expect(tagLabel).toBeGreaterThan(wrapperOpen);
   });
 });
+
+describe("Pagefind's own bundle", () => {
+  // Both files used to be created in a useEffect, so nothing about search
+  // existed in the server HTML and the browser could not begin fetching either
+  // until hydration had finished — four sequential round-trips (module, core,
+  // WASM, index) before the input did anything, with the stylesheet arriving
+  // after first paint and reflowing the page.
+  //
+  // Asserting on the server markup is the whole point: this is the difference
+  // between the two designs, and it is invisible to every other test here.
+  it("is requested from the server HTML, not after hydration", () => {
+    expect(html).toContain("/pagefind/pagefind-component-ui.css");
+    expect(html).toContain("/pagefind/pagefind-component-ui.js");
+  });
+
+  it("keeps both tags in the shape React will actually hoist", () => {
+    // React refuses to hoist either element under conditions that are easy to
+    // reintroduce by accident, and it refuses QUIETLY — the tag renders in
+    // place, the fetch goes back to being late, and every other assertion here
+    // still passes because the href is present either way. So both are checked
+    // by the evidence that React treated them as resources rather than by the
+    // props that ask it to.
+    //
+    // A stylesheet needs `precedence`, and React signs a hoisted one with
+    // data-precedence. Drop the prop and that attribute goes with it.
+    expect(html).toMatch(
+      /<link rel="stylesheet" href="\/pagefind\/pagefind-component-ui\.css" data-precedence="[^"]+"\s*\/?>/,
+    );
+
+    // A script needs `async` and, critically, NEITHER onLoad nor onError —
+    // isHostHoistableType rejects a script carrying one. That is why the
+    // failure listener lives on a separate element created in the effect, and
+    // this is what fails if a later edit moves it back onto this tag.
+    const script = html.match(
+      /<script[^>]*pagefind-component-ui\.js[^>]*><\/script>/,
+    );
+    expect(
+      script,
+      "the module script is missing from the server HTML",
+    ).not.toBeNull();
+    expect(script![0]).toContain('type="module"');
+    expect(script![0]).toContain("async");
+
+    // Both are emitted ahead of the page's own markup, which is what hoisting
+    // means here: the browser starts fetching during the initial parse rather
+    // than after hydration.
+    expect(html.indexOf("pagefind-component-ui.js")).toBeLessThan(
+      html.indexOf("pagefind-scope"),
+    );
+  });
+});

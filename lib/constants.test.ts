@@ -117,8 +117,33 @@ describe("SITE_HOSTNAME", () => {
     vi.resetModules();
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://example.com");
     const mod = await import("@/lib/constants");
-    // AUTHOR_EMAIL is derived from this, so a regression here changes the
-    // address in every RSS <author> element.
+    // renderHyperlink judges a rich-text link internal or external against
+    // this, so a regression here silently flips every absolute link in a post
+    // body to the other treatment. (AUTHOR_EMAIL was derived from it too,
+    // until inferring an address was dropped — see its note in constants.ts.)
     expect(mod.SITE_HOSTNAME).toBe("example.com");
+  });
+});
+
+describe("AUTHOR_EMAIL", () => {
+  it("is empty unless the deployment sets one", async () => {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://example.com");
+    const mod = await import("@/lib/constants");
+    // The known-bad control for the derived form this replaced: with a site
+    // URL and nothing else, the old constant returned contact@example.com and
+    // the feed published it in every item. Asserting on the hostname rather
+    // than on "" alone is what keeps this from passing for the wrong reason.
+    expect(mod.AUTHOR_EMAIL).toBe("");
+    expect(mod.AUTHOR_EMAIL).not.toContain("example.com");
+  });
+
+  it("takes the address when one is configured", async () => {
+    vi.resetModules();
+    vi.stubEnv("AUTHOR_EMAIL", "  hello@example.com  ");
+    const mod = await import("@/lib/constants");
+    // Trimmed for the same reason every other constant here is: a trailing
+    // newline pasted into a host's environment UI is the common failure.
+    expect(mod.AUTHOR_EMAIL).toBe("hello@example.com");
   });
 });

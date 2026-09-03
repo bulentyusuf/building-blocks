@@ -2,6 +2,44 @@ import ContentfulImage from "../lib/contentful-image";
 import Link from "next/link";
 import { clsx as cn } from "clsx";
 import { getBlurDataURL } from "@/lib/blur";
+import { isPlaceholderTitle } from "@/lib/placeholder-title";
+import type { CoverImage as CoverImageAsset } from "@/lib/types";
+
+// The asset's alt text, or "" when it has none worth announcing.
+//
+// This is the same rule lib/rich-text.tsx applies to an embedded figure, and
+// it is here because for a long time it was applied NOWHERE on a cover.
+// isPlaceholderTitle had exactly one call site, and covers rendered
+// `alt={coverImage.title ?? ""}` straight from the CMS — so the whole class of
+// defect that helper was written for (a library of filename stems and
+// generator output sitting in the title field) went unchecked on the largest
+// image on every page.
+//
+// It could not have been checked, either: the cover selections in lib/api.ts
+// asked for `url` and `title` and nothing else, and the guard needs the
+// filename to compare against. That is why this landed as a query change and a
+// prop change together.
+//
+// "" rather than the filename, never a guess. On a LINKED cover the alt is
+// inert for assistive tech anyway (see the Link below), but the post-page hero
+// passes no slug and no href, so it renders no link and IS announced — which
+// is the case that made this worth fixing rather than noting.
+//
+// `description` is deliberately NOT consulted as a fallback. On an embedded
+// figure that field is the caption, and CLAUDE.md's note on it — one field
+// doing two jobs — is a warning, not a pattern to extend. A cover with no
+// usable title is a content problem, and the warning below is how it surfaces.
+function coverAltText(image: CoverImageAsset): string {
+  if (isPlaceholderTitle(image.title, image.fileName)) {
+    console.warn(
+      `[cover-image] ${image.url} has no usable title (${JSON.stringify(
+        image.title ?? null,
+      )}), so it renders with empty alt text rather than a filename.`,
+    );
+    return "";
+  }
+  return image.title ?? "";
+}
 
 // No `title` prop, in the sense of the post's title. It existed solely to name
 // the cover link via aria-label, which is exactly the duplicate announcement
@@ -12,8 +50,7 @@ import { getBlurDataURL } from "@/lib/blur";
 // The separate `alt` prop below is the Contentful ASSET title, which is a
 // different string for a different purpose. See its own note.
 export default async function CoverImage({
-  url,
-  alt = "",
+  image,
   slug,
   href,
   sizes,
@@ -21,18 +58,22 @@ export default async function CoverImage({
   priority = false,
   hover = false,
 }: {
-  url: string;
-  // The asset's Contentful `title`, rendered as the image's alt text. Defaults
-  // to "" so an asset with no title renders exactly what it rendered before
-  // this prop existed, and so the site degrades to decorative rather than to a
-  // filename when the field is unset.
+  // The whole asset, not a url and an alt string.
   //
-  // On a LINKED cover this is deliberately inert for assistive tech: the Link
-  // below carries aria-hidden="true", which removes the whole subtree from the
-  // accessibility tree including this image. The alt text is there for search
-  // crawlers, which read the DOM rather than the accessibility tree. That is
-  // not a contradiction and must not be "fixed" by removing either one.
-  alt?: string;
+  // It took the two separately until August 2026, and that shape is what let
+  // every call site hand the CMS title straight through as alt text with
+  // nothing checking it. A component cannot guard a decision it is only shown
+  // the answer to. Taking the asset makes coverAltText above the only way alt
+  // is arrived at, and makes it structurally impossible for a caller to pass
+  // one asset's url beside another's title.
+  //
+  // On a LINKED cover the alt is deliberately inert for assistive tech: the
+  // Link below carries aria-hidden="true", which removes the whole subtree
+  // from the accessibility tree including this image. The alt text is there
+  // for search crawlers, which read the DOM rather than the accessibility
+  // tree. That is not a contradiction and must not be "fixed" by removing
+  // either one.
+  image: CoverImageAsset;
   slug?: string;
   // Link destination override. When omitted, a `slug` links to /posts/${slug}
   // (the default for post covers and cards). Pass `href` to point the cover
@@ -58,11 +99,14 @@ export default async function CoverImage({
   // Cold-cache LQIP: a tiny blurred preview underlays the frame so covers show a
   // full colour wash from first paint rather than a stark void. Undefined when
   // the fetch fails — the bg-brand-dark/5 tint on the wrapper is the fallback.
-  const blurDataURL = await getBlurDataURL(url);
+  const blurDataURL = await getBlurDataURL(image.url);
+  const alt = coverAltText(image);
   // Prefer an explicit href; otherwise fall back to the post route for a slug.
   // The frame is a link (with pointer cursor) whenever either is present.
   const linkHref = href ?? (slug ? `/posts/${slug}` : undefined);
-  const image = (
+  // Named for what it is rather than reusing `image`, which is now the asset
+  // prop above.
+  const picture = (
     <ContentfulImage
       alt={alt}
       priority={priority}
@@ -79,7 +123,7 @@ export default async function CoverImage({
         "motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.02] pointer-fine:motion-safe:will-change-transform":
           hover,
       })}
-      src={url}
+      src={image.url}
     />
   );
   return (
@@ -132,10 +176,10 @@ export default async function CoverImage({
             tabIndex={-1}
             className="block h-full"
           >
-            {image}
+            {picture}
           </Link>
         ) : (
-          image
+          picture
         )}
       </div>
     </div>

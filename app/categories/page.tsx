@@ -76,8 +76,7 @@ export default async function CategoriesPage() {
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10">
         {categories.map((category, index) => {
           const posts = postsBySlug.get(category.slug) ?? [];
-          const thumbUrl = category.thumbnail?.url;
-          const thumbAlt = category.thumbnail?.title ?? "";
+          const thumbnail = category.thumbnail;
           return (
             <article key={category.slug} className="flex flex-col min-w-0">
               <h2 className="mb-3 text-2xl leading-snug md:text-3xl text-pretty">
@@ -95,7 +94,7 @@ export default async function CategoriesPage() {
                 </p>
               )}
 
-              {thumbUrl && (
+              {thumbnail?.url && (
                 // Thumbnails render through the shared CoverImage so they inherit
                 // its frame (border, blur underlay, shadow, aspect) rather than
                 // duplicating it. Deliberately plain: no `hover` zoom, no
@@ -105,8 +104,7 @@ export default async function CategoriesPage() {
                 // category.
                 <div className="mb-5">
                   <CoverImage
-                    url={thumbUrl}
-                    alt={thumbAlt}
+                    image={thumbnail}
                     href={`/categories/${category.slug}`}
                     // Capped in px for the same reason as the listing covers in
                     // more-stories.tsx. This grid is two columns with a 40px

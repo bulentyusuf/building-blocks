@@ -6,6 +6,7 @@ import {
   SITE_TITLE,
   SITE_DESCRIPTION,
   SITE_URL,
+  SITE_AUTHOR,
   SITE_REPO_URL,
   SITE_FOOTER_BLURB,
   BRAND_HEADER_COLOR,
@@ -134,10 +135,17 @@ function Header() {
           <SiteWordmark title={SITE_TITLE} />
         </div>
         {/* On mobile the full nav sits inside a <details> disclosure so the
-            bar stays at one row of links. At md+ the disclosure is forced open
-            and the summary hidden, so the links sit inline. The <details>
-            pattern is borrowed from app/table-of-contents.tsx — same
-            progressive-enhancement shape, different breakpoint. */}
+            bar stays at one row of links; from md up the disclosure is hidden
+            outright and a second, inline copy of the links takes over. The two
+            are mutually exclusive — md:hidden on the <details>, hidden md:flex
+            on the list — so only one is ever in the accessibility tree.
+
+            NOT the table-of-contents mechanism, which this comment used to
+            describe: that one keeps a single copy and forces the panel open at
+            xl+ with CSS. Duplicating the links is the cheaper answer here
+            because the two copies are laid out differently (a stacked panel
+            against an inline row), so a single copy would need the branch
+            anyway. */}
         <nav aria-label="Primary" className="flex items-center gap-4">
           <NavDisclosure>
             <summary
@@ -380,7 +388,7 @@ function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 border-t border-white/10 pt-8">
           <p className="font-ui text-xs text-white/72">
-            © {new Date().getFullYear()} Bulent Yusuf · Built with Next.js &
+            © {new Date().getFullYear()} {SITE_AUTHOR} · Built with Next.js &
             Contentful · Type set in Bricolage Grotesque and Literata
           </p>
         </div>

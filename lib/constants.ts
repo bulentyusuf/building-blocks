@@ -17,7 +17,7 @@
 // app/layout.tsx throws outright on a scheme-less value, failing the build with
 // an ERR_INVALID_URL that names neither the variable nor the setting, and
 // parseHostname below swallows that same error and silently yields "localhost",
-// which then lands in AUTHOR_EMAIL.
+// which then lands in every rich-text link's internal/external judgement.
 
 // Trailing slashes are stripped because every consumer appends its own path, so
 // `https://example.com/` would otherwise emit `https://example.com//posts/x`
@@ -141,7 +141,21 @@ export const SITE_REPO_URL =
 // the hero counts as one of these, so every page holds the same number of posts.
 export const POSTS_PER_PAGE = 5;
 
-export const AUTHOR_EMAIL = `contact@${SITE_HOSTNAME}`;
+// The RSS <author> address, and the one identity value with NO default.
+//
+// It used to be derived as `contact@` plus the hostname, which meant any
+// deployment that set NEXT_PUBLIC_SITE_URL and nothing else began publishing a
+// mailbox at its own domain in a machine-readable file, in every item of the
+// feed, without anyone having decided that mailbox exists. Inferring an address
+// is not the same as having one.
+//
+// So it is opt-in, and app/feed.xml/route.ts omits the <author> element
+// entirely when it is unset — <author> is optional in RSS 2.0, and no element
+// is the honest answer to "we were not told". Set AUTHOR_EMAIL to turn it back
+// on. Deliberately not NEXT_PUBLIC_, unlike the four identity overrides above:
+// this one is read on the server only, and the prefix would inline an address
+// into the client bundle for no reader's benefit.
+export const AUTHOR_EMAIL = process.env.AUTHOR_EMAIL?.trim() || "";
 
 // Chrome colour, carried by the sticky bar and the footer. CSS twin lives in
 // app/globals.css as --color-brand-header; keep both at #2B1C3F (CSS @theme

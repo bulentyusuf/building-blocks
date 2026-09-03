@@ -50,26 +50,42 @@ extension.
 
 Intentional. Do not "fix" or re-flag without a new reason.
 
-### CSP: `'unsafe-inline'` stays global, `'wasm-unsafe-eval'` scopes to search
+### CSP: `'unsafe-inline'` stays global, every relaxation is scoped to a route
 
 Reopened August 2026 under this file's convention, prompted by PR #425, which
 attempted the scoping with inverted header-rule order and was closed rather
 than fixed. `'unsafe-inline'` remains global and deliberate — removing it needs
 a per-request nonce, which forces dynamic rendering; revisit only if the site
-starts rendering untrusted user-generated content. `'wasm-unsafe-eval'` left
-the sitewide policy and now applies to the `/search` document alone, the one
-route whose Pagefind core compiles WebAssembly; without it there, search still
-fails silently in every Chromium browser.
+starts rendering untrusted user-generated content.
+
+**Two directives are now relaxed per route rather than sitewide, and neither
+may go back on the catch-all.**
+
+- **`'wasm-unsafe-eval'`** applies to the `/search` document alone, the one
+  route whose Pagefind core compiles WebAssembly; without it there, search
+  fails silently in every Chromium browser.
+- **`frame-ancestors`** carries `https://app.contentful.com` on `/posts/*`
+  alone. It sat on the catch-all until an audit in August 2026 asked what the
+  preview surface actually is: the README configures the Post type's preview
+  URL as `/api/draft?…&slug={entry.fields.slug}`, which redirects to
+  `/posts/<slug>`, so one route family is the whole of it — and every other
+  published page on the site was framable by the CMS to buy preview on that
+  one. `/api/draft` deliberately does **not** carry the relaxation, because
+  `frame-ancestors` is enforced on a document that is DISPLAYED in a frame and
+  a 302 never is. Give a Page entry its own preview URL and this list has to
+  grow with it; the symptom otherwise is a framing error in Contentful naming
+  nothing in this repo.
 
 `next.config.js` carries the full argument, and one mechanic is worth knowing
 before touching anything there: Next applies every matching header rule in
 array order and a later match overrides the same key, so the strict catch-all
-must come first and `/search` wins by following it. `/pagefind/*` also needs
-the relaxed CSP because Pagefind compiles WASM inside a SharedWorker
+must come first and both relaxations win by following it. `/pagefind/*` also
+needs the relaxed CSP because Pagefind compiles WASM inside a SharedWorker
 (`pagefind-worker.js`); SharedWorkers get their CSP from the worker script's
-own response headers, not from the creating document. A vitest guard landing
-alongside the implementation resolves the config through those semantics and
-fails if the ordering regresses.
+own response headers, not from the creating document. `lib/csp-headers.test.ts`
+resolves the config through those semantics and fails if the ordering
+regresses, and it keeps a known-bad control — the rules reordered as PR #425
+had them — so both relaxations are re-proven catchable on every run.
 
 ### Search runs on Pagefind's Component UI, and its quirks are upstream
 
@@ -578,6 +594,24 @@ accessibility audit; do not restore any. Each file carries its reasoning.
   `aria-hidden` and `tabIndex={-1}` move together and which explains why it has
   **no `title` prop**. Focus can no longer land inside the cover, so the
   focus-within zoom went with it; the hover zoom stays.
+
+**`CoverImage` takes the whole asset, and that is what makes the alt-text guard
+reachable.** It took a `url` and an `alt` string until August 2026, which is
+precisely what let every call site hand the CMS `title` through unchecked:
+`isPlaceholderTitle` had one call site, `lib/rich-text.tsx`, so a cover
+carrying a filename stem announced the filename. It could not have been checked
+either — the cover selections asked for `url` and `title` alone and the
+comparison needs `fileName` — so the fix is a query change and a prop change
+together. A component cannot guard a decision it is only shown the answer to.
+
+Two consequences worth knowing. `fileName` is now selected on every cover and
+on the category thumbnail and is **never rendered**; it exists for the
+comparison. And a cover with no usable title falls back to `""` with a build
+warning, exactly as an embedded figure does — **`description` is deliberately
+not consulted as a fallback**, because on a figure that field is the caption,
+and the note below about one field doing two jobs is a warning rather than a
+pattern to extend.
+
 - **Footer column labels are `<p>`, not `<h4>`** — as headings they skipped a
   level on every page whose deepest heading is an `h2` (axe `heading-order`),
   and promoting them to `h2` would flip them to the display face. Both navs
@@ -586,6 +620,27 @@ accessibility audit; do not restore any. Each file carries its reasoning.
   Contentful's `description` is one field doing two jobs. `lib/lightbox-image.tsx`
   derives this from `caption` being present. The build-time warning for a
   missing description still fires.
+
+### A scroll region's name carries its position, not its contents
+
+The table and code-block wrappers in `lib/rich-text.tsx` are focusable scroll
+regions, so each needs an accessible name. Every table was named the literal
+`"Table"` and every filename-less code block `"Code block"`, which made two of
+either in one post indistinguishable in the list a screen reader keeps of
+regions — the list that exists to tell them apart. Both now count in document
+order and name themselves `Table 2`, `Code block 2`; a code block with a
+filename is still named by it, which is better than a number.
+
+**The name is a position on purpose, not a summary of the table.** Deriving it
+from the header row was the obvious alternative and is wrong here: those cells
+are announced again the moment the reader enters the table, so the region would
+duplicate them — the same defect the rest of the accessibility work in this repo
+removed. Contentful's table model carries no caption field to use instead.
+
+`app/a11y.test.tsx` renders **two** tables for this, which is the smallest
+fixture that can tell a working name from a broken one — the old assertion
+named the literal `"Table"` and so held the defect in place rather than
+catching it. With two present, axe's own duplicate-name rule fails as well.
 
 ### Breadcrumbs, and the one page without them
 
@@ -724,8 +779,11 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
   and on the home hero, which is a listing item in everything but its component
   — **not** on the "Read Next" block at the foot of a post, which sits directly
   under that post's own tags and would say the same thing twice in one viewport.
-  `/search` renders Pagefind's client-side templates and holds no tag data.
-  There is one `TagRow`, exported from `app/more-stories.tsx`; the hero imports
+  `/search` renders Pagefind's client-side templates for results and carries no
+  tag data there; its empty state fetches tags separately to offer a few as
+  links, not pills — the same subject-vs-metadata reason as the glossary, see
+  "Tags render as pills" above. There is one `TagRow`, exported from
+  `app/more-stories.tsx`; the hero imports
   it rather than carrying a second pill implementation. It sits **last** on the
   hero and below the excerpt on a card, which is the same rule and not the same
   position: a ragged pill count belongs at the foot, and the hero's byline is
@@ -791,7 +849,11 @@ the standalone package parses fine, which is what sank an earlier display face.
 
 - `data:` in `img-src` stays — needed for next/image blur placeholders, and the
   once-suggested `data:image/*` is not valid CSP (scheme-sources cannot be
-  MIME-scoped).
+  MIME-scoped). `blob:` sat alongside it on the same line since the original
+  CSP commit and was removed once audited: nothing in the codebase ever
+  creates a blob URL (no `URL.createObjectURL`, no blob-based image handling
+  anywhere in `app/` or `lib/`), so it was pure unused attack surface, not a
+  paired necessity with `data:`.
 - No `X-Frame-Options`. `frame-ancestors` covers every current browser, so the
   legacy header is low-value, not a gap.
 - No rate limiting on the API routes. Secrets are compared with
@@ -799,6 +861,14 @@ the standalone package parses fine, which is what sank an earlier display face.
   random — confirm the configured secrets are high-entropy.
 - `dangerouslySetInnerHTML` for Shiki output in `lib/rich-text.tsx`: trusted CMS
   input, and the renderer allowlists URL schemes.
+- **Pagefind's `{{+ excerpt +}}`** in `app/search/search-client.tsx` is the
+  site's other raw HTML sink, and belongs on this list rather than being left
+  implied by a code comment. The `{{+ +}}` form is Pagefind's unescaped
+  interpolation and is what preserves the `<mark>` highlights; the content
+  reaches it from post bodies through the build-time index, so it inherits the
+  same trusted-CMS model as the Shiki output above. The template around it is
+  ours and static — the `{{ }}` interpolations in it, `meta.title` and the
+  hrefs, are escaped and `safeUrl`-filtered by Pagefind.
 - The sitemap filters CMS `Page` entries through `ROUTED_PAGE_SLUGS` in
   `app/sitemap-xml/route.ts`, so a newly published Page cannot inject a URL with
   no route. Only `/about` and `/privacy` are routed today, both hardcoded; add
@@ -846,7 +916,7 @@ utility any more — that class now silently does nothing.
   ordinary editorial practice and is what makes a page cohere; a stray `font-ui`
   on a date is a regression, not a tidy.
 - **UI** — chrome that must not compete with prose, and this is the whole list:
-  the two header nav links and the header tagline; the footer column labels,
+  the header nav links and the mobile nav disclosure's summary; the footer column labels,
   links and legal line; the two table-of-contents labels; the "Explore with AI"
   label; the tag pill; the count spans in `app/archive/page.tsx` and
   `app/tags/page.tsx`; and every small uppercase letterspaced label — the error
@@ -1009,19 +1079,22 @@ heading land at identical coordinates sitewide.
   carries its `view-transition-name`, so it would collide with the masthead's
   and invalidate the transition, whereas a `display: none` element does not
   participate in one at all. The two share a name deliberately and never
-  coexist, which is what keeps it unique per document. The bar's tagline hides
-  with the wordmark, because a description sitting under a masthead repeating
-  it is the duplication the rule exists to remove. **The consequence is
+  coexist, which is what keeps it unique per document. **The consequence is
   deliberate**: past the masthead, home's sticky bar is nav and search with no
   site name in it. The wordmark is wayfinding for a reader deep in the site,
   and on home they are not; it returns on the next navigation. The wordmark
   returns once the masthead scrolls out of view (app/wordmark-fade.tsx),
-  which reverses an earlier position that the gap be left alone. The tagline
-  returns with it at `lg` and up, which reverses a position taken one commit
-  earlier in the same feature and recorded here before it shipped. Do not
+  which reverses an earlier position that the gap be left alone. Do not
   reach for a mark, because none exists in `public/`.
   `app/a11y.test.tsx` asserts the rule in two halves, because jsdom applies no
   stylesheet and cannot evaluate `:has()` itself.
+
+  The bar carried a tagline alongside the wordmark through this point, hiding
+  and fading with it the same way. It was later retired outright in favour of
+  the expanded nav links (`app/layout.tsx`'s `Header`), which carry the same
+  wayfinding on every route rather than only past the masthead — so nothing
+  else in this section should be read as still describing a second element.
+
 - **The bar's wordmark is a link everywhere except home** (`app/site-wordmark.tsx`),
   where it is a button that scrolls the reader to the top. Next 16 treats a
   same-URL `Link` click as a leaf-segment refresh rather than a route change,
@@ -1033,13 +1106,12 @@ heading land at identical coordinates sitewide.
   Rendering it as plain text on home was tried next and left the control dead
   rather than simply absent, at exactly the scroll position where "back to
   top" is the one thing a reader might want from it.
-- **The bar's wordmark machinery is a known local optimum, not an ideal.** Five
+- **The bar's wordmark machinery is a known local optimum, not an ideal.** Four
   mechanisms manage the visibility and behaviour of one word: the `:has()`
   hide, the opacity fade, a `visibility` pair keeping the faded box out of hit
-  testing and the tab order, a `usePathname` re-attach for client-side
-  navigation, and an `lg`-scoped rule keeping the tagline off mobile. Plus
-  `app/wordmark-fade.tsx`, `app/site-wordmark.tsx` and about a dozen
-  assertions in `app/a11y.test.tsx`.
+  testing and the tab order, and a `usePathname` re-attach for client-side
+  navigation. Plus `app/wordmark-fade.tsx`, `app/site-wordmark.tsx` and about a
+  dozen assertions in `app/a11y.test.tsx`.
 
   All of it exists because home's header carries `SITE_TITLE` while the bar
   carries it too, 100px apart. That is one editorial decision, and it is the
@@ -1234,6 +1306,36 @@ carries its own `generateStaticParams` — colocated metadata routes do not
 inherit the page's. The duplicate `getAllPosts` across those two files is the
 accepted cost. Leave `dynamicParams` at its default `true`, so a post published
 through the webhook still gets a card on demand.
+
+### Three cache tags, and the webhook picks between them
+
+`CACHE_TAGS` in `lib/api.ts` carries the whole set, and that file argues the
+split. Every query used to carry `posts`, which meant one tag on the site and
+no lever to invalidate anything narrowly: editing `/about` re-rendered every
+post page. `getPage`, `getAllPages` and `getBrowseIntro` now carry `pages` and
+`browseIntros` instead.
+
+**Only those two split off, and the rest staying broad is a finding rather than
+timidity.** A renamed Tag or Category shows on every card and pill, a new
+Author name appears in bylines across the archive, and a published Post changes
+the "Read Next" backfill and the sitewide tag-visibility threshold on every
+other post page. Those content types genuinely reach everywhere, so a broad
+purge is the correct one. `app/api/revalidate/route.ts` maps a webhook's
+`sys.contentType.sys.id` onto tags, and **anything unrecognised purges
+everything** — an Asset firing, a content type added later, an unparseable
+body. Over-invalidating costs a render; under-invalidating serves stale content
+with nothing anywhere to say so.
+
+**`expire: 0` stays, and it is a freshness choice rather than an oversight.**
+A profile with a non-zero expire would serve the entry stale while it
+regenerated, sparing the first visitor a cold render — but that visitor is
+usually the author refreshing after publishing, and a listing without their new
+post on it is the one thing this webhook exists to prevent. One slow request
+per purged page buys the page being right on the first look. Asserted in
+`app/api/revalidate/route.test.ts` so it cannot be softened by accident.
+
+A new fetcher that passes no tag gets `posts`, deliberately: the safe direction
+to be wrong in is the expensive one.
 
 ### Every unbounded collection query pages, and must keep selecting `total`
 
@@ -1441,6 +1543,26 @@ each gap has already let a defect through:
   announcement** check axe does not implement — two links inside `<main>`
   sharing a destination and an accessible name — scoped to `<main>` because the
   header and footer both link to `/categories` as "Categories".
+
+  **It covers six page SHAPES, not routes**, which is right for a shape many
+  routes share: between them they account for home, `/page/[page]`, the post
+  page and the six taxonomy listings, nine of the sixteen. It left the other
+  seven — `/archive`, `/categories`, `/tags`, `/authors`, `/about`,
+  `/privacy`, `/search` — with no axe run at all.
+  `app/routes.a11y.test.tsx` is the other half: it renders the REAL route
+  components with only the CMS mocked, and carries the list of routes it is
+  responsible for. **A new route goes in that list**, or it has no axe run
+  anywhere and nothing in CI reports the gap. Both halves also assert the page
+  rendered something — an empty render passes every rule, and a fixture
+  drifting out of step with a route's data shape is the quiet way that happens.
+
+  Its duplicate-announcement check found two repetitions that are **designs
+  rather than defects**: the archive links its category on every row, and the
+  glossary lists each post once per tag. Both are allowances keyed to a URL
+  pattern per route rather than a skip, so a duplicate of any other shape still
+  fails there — and each allowance asserts the duplication still occurs, so it
+  cannot outlive the design it was written for.
+
 - **`lib/paginate.test.ts`** covers the page arithmetic the six taxonomy routes
   and the home index share, including that every item lands on exactly one page.
   It says nothing about what those pages then render.

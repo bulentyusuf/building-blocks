@@ -13,15 +13,32 @@ const isDev = process.env.NODE_ENV !== "production";
 // passed in by the /search rule below and deliberately absent from the base
 // policy: Pagefind's search core compiles WASM on /search alone, so every
 // other route serves the stricter form.
-const contentSecurityPolicy = (withWasm) =>
+//
+// cmsFraming adds Contentful to frame-ancestors, and is likewise passed in by
+// one rule rather than sitting in the base policy. The preview surface is a
+// single route family: the README configures the Post type's preview URL as
+// /api/draft?…&slug={entry.fields.slug}, which redirects to /posts/<slug>, so
+// that is the only document Contentful ever frames. It sat on the catch-all
+// for a long time, which made every published page on the site framable by the
+// CMS to buy preview on one of them.
+//
+// /api/draft deliberately does NOT carry it. frame-ancestors is enforced when
+// a document is DISPLAYED in a frame, and a 302 is never displayed — the final
+// /posts/<slug> response is the one the browser renders and checks. Adding a
+// rule there would be a rule that never fires.
+//
+// If a Page entry (about, privacy) is ever given a preview URL of its own,
+// this list is what has to grow with it, and preview will fail with a framing
+// error rather than anything that names this file.
+const contentSecurityPolicy = ({ wasm = false, cmsFraming = false } = {}) =>
   [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline'${withWasm ? " 'wasm-unsafe-eval'" : ""}${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`,
+    `script-src 'self' 'unsafe-inline'${wasm ? " 'wasm-unsafe-eval'" : ""}${isDev ? " 'unsafe-eval'" : ""} https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' https://images.ctfassets.net data: blob:",
+    "img-src 'self' https://images.ctfassets.net data:",
     "font-src 'self'",
     "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
-    "frame-ancestors 'self' https://app.contentful.com",
+    `frame-ancestors 'self'${cmsFraming ? " https://app.contentful.com" : ""}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -40,7 +57,7 @@ const securityHeaders = [
   },
   {
     key: "Content-Security-Policy",
-    value: contentSecurityPolicy(false),
+    value: contentSecurityPolicy(),
   },
 ];
 
@@ -63,11 +80,24 @@ const securityHeaders = [
 const wasmCspHeaders = [
   {
     key: "Content-Security-Policy",
-    value: contentSecurityPolicy(true),
+    value: contentSecurityPolicy({ wasm: true }),
+  },
+];
+
+// The other relaxation, and it follows the catch-all for the same last-wins
+// reason: /posts/* is the one document Contentful frames for live preview.
+// Everything else on the site is framable by this origin alone.
+const previewCspHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: contentSecurityPolicy({ cmsFraming: true }),
   },
 ];
 
 module.exports = {
+  // Off by default in Next; suppresses free stack fingerprinting for no
+  // functional cost.
+  poweredByHeader: false,
   images: {
     loader: "custom",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
@@ -89,6 +119,10 @@ module.exports = {
       {
         source: "/pagefind/:path*",
         headers: wasmCspHeaders,
+      },
+      {
+        source: "/posts/:path*",
+        headers: previewCspHeaders,
       },
       {
         // The dupe route. Crawlers only know /sitemap.xml. This marks the bare

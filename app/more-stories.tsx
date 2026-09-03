@@ -78,8 +78,7 @@ function PostPreview({
           <div>
             <CoverImage
               slug={slug}
-              url={coverImage.url}
-              alt={coverImage.title ?? ""}
+              image={coverImage}
               priority={priority}
               hover
               // Capped in px above the point the container stops growing.
@@ -134,8 +133,7 @@ function PostPreview({
               these cards on the same aspect as the hero above them. */}
           <CoverImage
             slug={slug}
-            url={coverImage.url}
-            alt={coverImage.title ?? ""}
+            image={coverImage}
             wide
             priority={priority}
             hover

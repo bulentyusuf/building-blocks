@@ -15,6 +15,12 @@ import { widont } from "@/lib/typography";
 // sooner regardless.
 const PIN_SETTLE_MS = 1500;
 
+// Below this a table of contents is a list as long as the article, so there is
+// nothing to navigate. The effect and the render read the same constant on
+// purpose: they were two different numbers once, and the effect did all its
+// work for a component that rendered nothing.
+const MIN_HEADINGS = 3;
+
 export default function TableOfContents({ headings }: { headings: Heading[] }) {
   const [activeId, setActiveId] = useState<string>("");
 
@@ -31,7 +37,14 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
   const armPin = useRef<((slug: string) => void) | null>(null);
 
   useEffect(() => {
-    if (headings.length === 0) return;
+    // The same threshold the render guard below uses, and it has to be the
+    // same one. At 0 this bailed and at 3 the component renders, so a post
+    // with one or two headings fell in the gap: it attached a scroll listener,
+    // a resize listener and a ResizeObserver on document.body — which fires on
+    // every layout change, the web-font swap included — and drove a
+    // getBoundingClientRect per heading on each frame, all to compute an
+    // active id for markup that returns null.
+    if (headings.length < MIN_HEADINGS) return;
 
     const elements = headings
       .map((h) => document.getElementById(h.slug))
@@ -166,7 +179,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   const onLinkClick = (slug: string) => armPin.current?.(slug);
 
-  if (headings.length < 3) return null;
+  if (headings.length < MIN_HEADINGS) return null;
 
   return (
     <details className="toc-details group">
