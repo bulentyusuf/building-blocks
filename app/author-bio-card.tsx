@@ -55,14 +55,13 @@ export function AuthorBioSection({
   const authorsWithBio = authors.filter((a) => a.bio);
   if (authorsWithBio.length === 0) return null;
 
-  // mt-6 after a tag row, mt-12 otherwise. This margin is the only thing
-  // setting the space beneath the pills, so it has to match the nav's pt-6 or
-  // the row sits off-centre in its band. Without tags there is no band and the
-  // usual mt-12 applies.
+  // When tags precede the bio, the single hairline divider already opened
+  // the post-footer zone above the tag row, so this block separates from the
+  // tags with a clean mt-8 margin rather than stacking a redundant second
+  // hairline border. When there are no tags, this block opens the zone itself
+  // with a hairline border and matching pt-8.
   return (
-    <div
-      className={`${hasTags ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
-    >
+    <div className={hasTags ? "mt-8" : "mt-8 border-t border-hairline pt-8"}>
       <p className="mb-6 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
         {authorsWithBio.length > 1 ? "About the authors" : "About the author"}
       </p>
