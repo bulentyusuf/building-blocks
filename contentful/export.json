@@ -270,33 +270,6 @@
           "linkType": "Entry"
         },
         {
-          "id": "contributors",
-          "name": "Contributors",
-          "type": "Array",
-          "localized": false,
-          "required": false,
-          "validations": [
-            {
-              "size": {
-                "max": 3
-              }
-            }
-          ],
-          "disabled": false,
-          "omitted": false,
-          "items": {
-            "type": "Link",
-            "validations": [
-              {
-                "linkContentType": [
-                  "author"
-                ]
-              }
-            ],
-            "linkType": "Entry"
-          }
-        },
-        {
           "id": "category",
           "name": "Category",
           "type": "Link",

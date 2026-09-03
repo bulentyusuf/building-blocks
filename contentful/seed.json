@@ -955,17 +955,6 @@
             }
           }
         },
-        "contributors": {
-          "en-US": [
-            {
-              "sys": {
-                "type": "Link",
-                "linkType": "Entry",
-                "id": "author-sam"
-              }
-            }
-          ]
-        },
         "category": {
           "en-US": {
             "sys": {

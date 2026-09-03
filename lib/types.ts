@@ -76,13 +76,6 @@ export interface Author {
   };
 }
 
-// A secondary editorial credit on a post. Deliberately narrower than Author,
-// two fields rather than five. Nothing renders a contributor's portrait or
-// bio, so fetching either would put weight in the post query for pixels that
-// never appear. Contributors are author entries, so the full record is one
-// getAuthorBySlug away if that ever changes.
-export type Contributor = Pick<Author, "name"> & { slug?: string };
-
 export interface AuthorCollectionResponse {
   data?: {
     authorCollection?: {
@@ -164,11 +157,6 @@ export interface Post {
   // single link. Read it through postTags() in lib/tags.ts rather than reaching
   // in, so the empty and absent cases stay in one place.
   tagsCollection?: { items: Tag[] };
-  // Nested for the same reason tagsCollection is, this file types Contentful
-  // responses as they arrive rather than reshaping them. Read through
-  // postContributors() in lib/contributors.ts so the empty case, the absent
-  // case and the deduplication against the primary author stay in one place.
-  contributorsCollection?: { items: Contributor[] };
 }
 
 export interface CategoryCollectionResponse {

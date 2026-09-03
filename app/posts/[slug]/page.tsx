@@ -8,8 +8,6 @@ import CoverImage from "../../cover-image";
 import { RichText } from "@/lib/rich-text";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
-import { postContributors } from "@/lib/contributors";
-import ContributorLine from "../../contributor-line";
 import { extractHeadings } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
@@ -24,11 +22,7 @@ import {
   SITE_TITLE,
   DEFAULT_OG_LOCALE,
 } from "@/lib/constants";
-import {
-  jsonLdHtml,
-  postAuthorNode,
-  postContributorNodes,
-} from "@/lib/json-ld";
+import { jsonLdHtml } from "@/lib/json-ld";
 import { widont } from "@/lib/typography";
 
 export async function generateStaticParams() {
@@ -111,7 +105,6 @@ export default async function PostPage({
 
   const visible = visibleTagSlugs(allPosts);
   const tags = postTags(post).filter((t) => visible.has(t.slug));
-  const contributors = postContributors(post);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -123,8 +116,13 @@ export default async function PostPage({
       : `${SITE_URL}/be_useful.jpg`,
     datePublished: post.date,
     dateModified: post.updatedDate ?? post.date,
-    author: postAuthorNode(post.author),
-    contributor: postContributorNodes(contributors),
+    author: {
+      "@type": "Person",
+      name: post.author?.name || SITE_AUTHOR,
+      ...(post.author?.slug
+        ? { url: `${SITE_URL}/authors/${post.author.slug}` }
+        : {}),
+    },
     publisher: {
       "@type": "Person",
       name: SITE_AUTHOR,
@@ -257,25 +255,14 @@ export default async function PostPage({
             <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
               {post.excerpt}
             </p>
-            {(post.author || contributors.length > 0) && (
+            {post.author && (
               <div className="mb-10">
-                {post.author ? (
-                  <Avatar
-                    name={post.author.name}
-                    slug={post.author.slug}
-                    picture={post.author.picture}
-                    meta={
-                      <>
-                        {dateline}
-                        <ContributorLine contributors={contributors} />
-                      </>
-                    }
-                  />
-                ) : (
-                  <div className="text-sm leading-tight text-brand-muted">
-                    <ContributorLine contributors={contributors} />
-                  </div>
-                )}
+                <Avatar
+                  name={post.author.name}
+                  slug={post.author.slug}
+                  picture={post.author.picture}
+                  meta={dateline}
+                />
               </div>
             )}
             {/* text-pretty on the prose container inherits into every child —

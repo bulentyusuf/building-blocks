@@ -127,12 +127,6 @@ const POST_GRAPHQL_FIELDS = `
       slug
     }
   }
-  contributorsCollection(limit: 3) {
-    items {
-      name
-      slug
-    }
-  }
 `;
 
 // Slim fragment for listing previews (e.g. the categories landing page). Pulls
