@@ -113,18 +113,47 @@ describe("the repo URL is the same everywhere", () => {
     }
   });
 
+  // README.md line 5 is the deliberate exception: it links Vercel's upstream
+  // TEMPLATE, vercel.com/templates/next.js/nextjs-blog-draft-mode, which is
+  // their URL and not ours. The old check carved that out by requiring a
+  // github.com prefix, which made it blind to the bare `owner/name` form —
+  // exactly the form that once shipped undetected in a since-removed planning
+  // doc under docs/. Removing Vercel's URL first and then rejecting the name
+  // outright is both stricter and narrower.
+  const VERCEL_TEMPLATE_URL =
+    "vercel.com/templates/next.js/nextjs-blog-draft-mode";
+  const staleRepoNames = (text: string) =>
+    [
+      ...text
+        .split(VERCEL_TEMPLATE_URL)
+        .join("")
+        .matchAll(/nextjs-blog-draft-mode/g),
+    ].map((m) => m[0]);
+
   it("leaves no reference to the pre-rename repo name", () => {
-    // README.md line 5 is the deliberate exception: it links Vercel's upstream
-    // TEMPLATE, vercel.com/templates/next.js/nextjs-blog-draft-mode, which is
-    // their URL and not ours. Anything on github.com must be the new name.
     for (const doc of [...DOCS, "public/llms.txt"]) {
-      const stale = [
-        ...read(doc).matchAll(
-          /github\.com\/[a-zA-Z0-9-]+\/nextjs-blog-draft-mode/g,
-        ),
-      ];
-      expect(stale.map((m) => m[0])).toEqual([]);
+      expect(staleRepoNames(read(doc)), `${doc} names the old repo`).toEqual(
+        [],
+      );
     }
+  });
+
+  it("catches the bare owner/name form", () => {
+    // Known-bad control. This is the shape of reference the github.com-prefixed
+    // pattern used to miss.
+    expect(
+      staleRepoNames("see `bulentyusuf/nextjs-blog-draft-mode` for details."),
+    ).toHaveLength(1);
+  });
+
+  it("still permits Vercel's own template URL", () => {
+    // The other direction. A detector that fires on README.md line 5 would be
+    // turned off within a week.
+    expect(
+      staleRepoNames(
+        "https://vercel.com/templates/next.js/nextjs-blog-draft-mode",
+      ),
+    ).toEqual([]);
   });
 });
 
