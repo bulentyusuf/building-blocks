@@ -259,15 +259,23 @@ export default async function PostPage({
             </p>
             {(post.author || contributors.length > 0) && (
               <div className="mb-10">
-                {post.author && (
+                {post.author ? (
                   <Avatar
                     name={post.author.name}
                     slug={post.author.slug}
                     picture={post.author.picture}
-                    meta={dateline}
+                    meta={
+                      <>
+                        {dateline}
+                        <ContributorLine contributors={contributors} />
+                      </>
+                    }
                   />
+                ) : (
+                  <div className="text-sm leading-tight text-brand-muted">
+                    <ContributorLine contributors={contributors} />
+                  </div>
                 )}
-                <ContributorLine contributors={contributors} />
               </div>
             )}
             {/* text-pretty on the prose container inherits into every child —

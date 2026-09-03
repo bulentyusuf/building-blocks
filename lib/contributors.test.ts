@@ -102,6 +102,12 @@ describe("ContributorLine", () => {
     expect(out).toContain("A, B and C");
   });
 
+  it("pluralises the label for more than one contributor", () => {
+    expect(html([{ name: "A" }])).toContain("Contributor");
+    expect(html([{ name: "A" }])).not.toContain("Contributors");
+    expect(html([{ name: "A" }, { name: "B" }])).toContain("Contributors");
+  });
+
   // The guard on the plain-text decision. Without this, a future edit could
   // reintroduce links and every other assertion above would still pass.
   it("renders no anchor element at all, for any input", () => {
