@@ -42,3 +42,35 @@ export default function AuthorBioCard({ author }: { author: Author }) {
     </aside>
   );
 }
+
+// The foot-of-post author bio section. Renders nothing when no author carries a
+// bio, ensuring no empty hairline shell or orphan margin is left behind.
+export function AuthorBioSection({
+  authors,
+  hasTags = false,
+}: {
+  authors: Author[];
+  hasTags?: boolean;
+}) {
+  const authorsWithBio = authors.filter((a) => a.bio);
+  if (authorsWithBio.length === 0) return null;
+
+  // mt-6 after a tag row, mt-12 otherwise. This margin is the only thing
+  // setting the space beneath the pills, so it has to match the nav's pt-6 or
+  // the row sits off-centre in its band. Without tags there is no band and the
+  // usual mt-12 applies.
+  return (
+    <div
+      className={`${hasTags ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
+    >
+      <p className="mb-6 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
+        {authorsWithBio.length > 1 ? "About the authors" : "About the author"}
+      </p>
+      <div className="space-y-10">
+        {authorsWithBio.map((author) => (
+          <AuthorBioCard key={author.slug ?? author.name} author={author} />
+        ))}
+      </div>
+    </div>
+  );
+}
