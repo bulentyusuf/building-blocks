@@ -147,7 +147,7 @@ export interface Post {
   coverImage?: CoverImage;
   date: string;
   updatedDate?: string; // optional, only set when post has been updated
-  author?: Author;
+
   excerpt: string;
   content: Content;
   category?: Category; // single reference; optional so untagged posts don't break
@@ -199,9 +199,7 @@ export interface CardPostCollectionResponse {
 // It carries the card and byline fields the home page, feed, and sitemap render,
 // but omits the heavy `content` body and the author `bio` — those are absent, so
 // don't read them. Use getPostAndMorePosts / getPostsByCategory for a full Post.
-export type ListPost = Omit<Post, "content" | "author"> & {
-  author?: Omit<Author, "bio">;
-};
+export type ListPost = Omit<Post, "content">;
 
 export interface ListPostCollectionResponse {
   data?: {
