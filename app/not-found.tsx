@@ -41,6 +41,7 @@ export default function NotFound() {
             this server component, both of which break the build.
           */}
           <ContentfulImage
+            unoptimized
             src="/404-gremlin.webp"
             alt="A gremlin sitting in a tangle of wires, holding the two ends of an unplugged cable"
             width={720}
