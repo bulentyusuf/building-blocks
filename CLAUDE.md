@@ -909,8 +909,13 @@ Names join with an ampersand, no serial comma before it, separators outside
 the anchors. The ampersand is presentation only and never reaches XML or
 JSON-LD.
 
-`author`, singular, is the retired original. It is omitted rather than
-deleted so it remains a rollback. Do not query it.
+`author`, singular, is not deleted, and it has not been omitted either —
+that is phase 4, and phase 4 has not happened. It stays present, populated
+and queryable until phase 3 is verified in production; that is the point of
+an additive migration, that a post never lacks an author and rollback is
+"revert the code," not "restore the data." `AuthorBioCard` still reads it
+today. Do not query it in new code, and do not read this entry as saying
+the retirement is done.
 
 There is no `getPostsByAuthor`. Contentful GraphQL cannot filter a collection
 on `Array<Link>`, so author pages fetch `getAllPosts` once and filter with
