@@ -1,4 +1,4 @@
-import type { ListPost, Post, Tag } from "./types";
+import type { ListPost, Post } from "./types";
 import { postTags } from "./tags";
 
 /**
