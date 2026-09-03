@@ -71,9 +71,9 @@ export default async function ArchivePage() {
         ) : (
           oldest && (
             <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-              {posts.length} {posts.length === 1 ? "post" : "posts"} since{" "}
-              {format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })},
-              newest first.
+              {widont(
+                `${posts.length} ${posts.length === 1 ? "post" : "posts"} since ${format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })}, newest first.`,
+              )}
             </p>
           )
         )
