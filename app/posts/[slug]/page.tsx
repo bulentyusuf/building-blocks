@@ -8,6 +8,7 @@ import CoverImage from "../../cover-image";
 import { RichText } from "@/lib/rich-text";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
+import { postAuthors } from "@/lib/authors";
 import { extractHeadings } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
@@ -22,7 +23,7 @@ import {
   SITE_TITLE,
   DEFAULT_OG_LOCALE,
 } from "@/lib/constants";
-import { jsonLdHtml } from "@/lib/json-ld";
+import { jsonLdHtml, postAuthorsNode } from "@/lib/json-ld";
 import { widont } from "@/lib/typography";
 
 export async function generateStaticParams() {
@@ -53,6 +54,9 @@ export async function generateMetadata({
   }
 
   const canonical = `${SITE_URL}/posts/${slug}`;
+  const authorUrls = postAuthors(post)
+    .filter((a) => a.slug)
+    .map((a) => `${SITE_URL}/authors/${a.slug}`);
 
   return {
     title: post.title,
@@ -70,9 +74,10 @@ export async function generateMetadata({
       url: canonical,
       siteName: SITE_TITLE,
       locale: DEFAULT_OG_LOCALE,
-      authors: post.author?.slug
-        ? [`${SITE_URL}/authors/${post.author.slug}`]
-        : undefined,
+      // Every author's URL, not just the lead's — openGraph.authors is
+      // already an array, so it needed no fixed-slot compromise the way the
+      // RSS <author> and the OG image byline did.
+      authors: authorUrls.length > 0 ? authorUrls : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -105,6 +110,7 @@ export default async function PostPage({
 
   const visible = visibleTagSlugs(allPosts);
   const tags = postTags(post).filter((t) => visible.has(t.slug));
+  const authors = postAuthors(post);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -116,13 +122,7 @@ export default async function PostPage({
       : `${SITE_URL}/be_useful.jpg`,
     datePublished: post.date,
     dateModified: post.updatedDate ?? post.date,
-    author: {
-      "@type": "Person",
-      name: post.author?.name || SITE_AUTHOR,
-      ...(post.author?.slug
-        ? { url: `${SITE_URL}/authors/${post.author.slug}` }
-        : {}),
-    },
+    author: postAuthorsNode(authors),
     publisher: {
       "@type": "Person",
       name: SITE_AUTHOR,
@@ -255,14 +255,9 @@ export default async function PostPage({
             <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
               {post.excerpt}
             </p>
-            {post.author && (
+            {authors.length > 0 && (
               <div className="mb-10">
-                <Avatar
-                  name={post.author.name}
-                  slug={post.author.slug}
-                  picture={post.author.picture}
-                  meta={dateline}
-                />
+                <Avatar authors={authors} meta={dateline} />
               </div>
             )}
             {/* text-pretty on the prose container inherits into every child —

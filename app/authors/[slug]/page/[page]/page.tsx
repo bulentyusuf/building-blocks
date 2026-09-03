@@ -6,12 +6,9 @@ import ListingPage from "../../../../listing-page";
 import PageCounter from "../../../../page-counter";
 import { type Crumb } from "../../../../breadcrumb";
 import { RichText } from "@/lib/rich-text";
-import {
-  getAllAuthors,
-  getAuthorBySlug,
-  getPostsByAuthor,
-  getVisibleTagSlugs,
-} from "@/lib/api";
+import { getAllAuthors, getAllPosts, getAuthorBySlug } from "@/lib/api";
+import { postsByAuthor } from "@/lib/authors";
+import { visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
 import {
@@ -25,17 +22,21 @@ import { widont } from "@/lib/typography";
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const authors = await getAllAuthors(false);
-  const perAuthor = await Promise.all(
-    authors
-      .filter((author) => author.slug)
-      .map(async (author) => {
-        const slug = author.slug as string;
-        const posts = await getPostsByAuthor(slug, false);
-        return pageRangeParams(posts.length, (page) => ({ slug, page }));
-      }),
-  );
-  return perAuthor.flat();
+  // One getAllPosts for every author, rather than one getPostsByAuthor call
+  // per author — getPostsByAuthor no longer exists (see the component below),
+  // and fetching the sitewide list once here is also strictly fewer requests
+  // than the per-author query it replaces.
+  const [authors, allPosts] = await Promise.all([
+    getAllAuthors(false),
+    getAllPosts(false),
+  ]);
+  return authors
+    .filter((author) => author.slug)
+    .flatMap((author) => {
+      const slug = author.slug as string;
+      const posts = postsByAuthor(allPosts, slug);
+      return pageRangeParams(posts.length, (page) => ({ slug, page }));
+    });
 }
 
 export async function generateMetadata({
@@ -95,11 +96,10 @@ export default async function AuthorPaginatedPage({
     { label: author.name },
   ];
 
-  // Independent queries, so they go out together — see the unpaginated page.
-  const [posts, visibleTags] = await Promise.all([
-    getPostsByAuthor(slug, isEnabled),
-    getVisibleTagSlugs(isEnabled),
-  ]);
+  // One fetch, read twice — see the unpaginated page for why.
+  const allPosts = await getAllPosts(isEnabled);
+  const posts = postsByAuthor(allPosts, slug);
+  const visibleTags = visibleTagSlugs(allPosts);
   const totalPages = totalPagesFor(posts.length);
 
   if (pageNumber > totalPages) {

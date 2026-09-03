@@ -141,6 +141,13 @@ export const SITE_REPO_URL =
 // the hero counts as one of these, so every page holds the same number of posts.
 export const POSTS_PER_PAGE = 5;
 
+// Authors a post can carry, matched to the Contentful size validation on
+// `authors` (max 3, no minimum) on both spaces. lib/api.ts's
+// authorsCollection(limit: MAX_AUTHORS) must use this same number, or the two
+// silently disagree: a fourth author would vanish from every query with no
+// error anywhere, the same trap as tagsCollection(limit: 3).
+export const MAX_AUTHORS = 3;
+
 // The RSS <author> address, and the one identity value with NO default.
 //
 // It used to be derived as `contact@` plus the hostname, which meant any

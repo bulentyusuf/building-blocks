@@ -699,8 +699,7 @@ describe("post page", () => {
               priority
             />
             <Avatar
-              name="Bulent Yusuf"
-              slug="bulent-yusuf"
+              authors={[{ name: "Bulent Yusuf", slug: "bulent-yusuf" }]}
               meta={<span>1 January 2026</span>}
             />
             <div className="prose">

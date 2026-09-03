@@ -1,4 +1,5 @@
 import { getAllPosts } from "@/lib/api";
+import { postAuthors } from "@/lib/authors";
 import {
   SITE_URL,
   SITE_TITLE,
@@ -32,6 +33,11 @@ export async function GET() {
     .map((post) => {
       const url = escapeXml(`${SITE_URL}/posts/${post.slug}`);
       const pubDate = new Date(post.date).toUTCString();
+      // authors[0], the lead author — RSS <author> is one element in one
+      // item, so it takes the fixed slot rather than every co-author. The
+      // array order in Contentful decides who that is; reordering it changes
+      // whose name goes out in the feed.
+      const lead = postAuthors(post)[0];
       return `
     <item>
       <title>${escapeXml(post.title)}</title>
@@ -39,7 +45,7 @@ export async function GET() {
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(post.excerpt || "")}</description>
-      ${AUTHOR_EMAIL && post.author?.name ? `<author>${escapeXml(AUTHOR_EMAIL)} (${escapeXml(post.author.name)})</author>` : ""}
+      ${AUTHOR_EMAIL && lead?.name ? `<author>${escapeXml(AUTHOR_EMAIL)} (${escapeXml(lead.name)})</author>` : ""}
     </item>`;
     })
     .join("");

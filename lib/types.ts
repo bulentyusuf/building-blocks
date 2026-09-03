@@ -157,6 +157,13 @@ export interface Post {
   // single link. Read it through postTags() in lib/tags.ts rather than reaching
   // in, so the empty and absent cases stay in one place.
   tagsCollection?: { items: Tag[] };
+  // The co-authored byline, ordered: the first entry is the lead author. Items
+  // can be null — Contentful returns null in a link array for an unpublished
+  // entry — so read this through postAuthors() in lib/authors.ts, which filters
+  // them out, rather than reaching in directly. `author`, singular, stays
+  // populated alongside this as the migration's rollback; do not query it in
+  // new code.
+  authorsCollection?: { items: (Author | null)[] };
 }
 
 export interface CategoryCollectionResponse {

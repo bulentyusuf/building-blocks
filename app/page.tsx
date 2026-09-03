@@ -11,6 +11,7 @@ import Pagination from "./pagination";
 
 import { getAllPosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
+import { postAuthors } from "@/lib/authors";
 import {
   POSTS_PER_PAGE,
   SITE_URL,
@@ -31,7 +32,7 @@ function HeroPost({
   date,
   updatedDate,
   excerpt,
-  author,
+  authors,
   slug,
   tags,
 }: {
@@ -40,7 +41,7 @@ function HeroPost({
   date: string;
   updatedDate?: string;
   excerpt: string;
-  author?: Author;
+  authors: Author[];
   slug: string;
   /** Already filtered to tags with a live page, exactly as a card's are. */
   tags: Tag[];
@@ -173,14 +174,9 @@ function HeroPost({
               {widont(title)}
             </Link>
           </h2>
-          {author && (
+          {authors.length > 0 && (
             <div className="flex items-center">
-              <Avatar
-                name={author.name}
-                slug={author.slug}
-                picture={author.picture}
-                meta={dateline}
-              />
+              <Avatar authors={authors} meta={dateline} />
             </div>
           )}
         </div>
@@ -279,7 +275,7 @@ export default async function Page() {
           coverImage={heroPost.coverImage}
           date={heroPost.date}
           updatedDate={heroPost.updatedDate}
-          author={heroPost.author}
+          authors={postAuthors(heroPost)}
           slug={heroPost.slug}
           excerpt={heroPost.excerpt}
           tags={postTags(heroPost).filter((t) => visibleTags.has(t.slug))}

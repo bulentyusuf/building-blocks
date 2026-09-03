@@ -896,6 +896,39 @@ the standalone package parses fine, which is what sank an earlier display face.
   `contentful-batch-libs` touches uuid in one place, `add-sequence-header.js`,
   so re-check that call site if the override is ever bumped.
 
+### Posts carry `authors`, an ordered array capped at three
+
+Authors share the byline as co-authors, but the order carries meaning: the
+first entry is the lead. It sits in front in the 14px-overlapped portrait
+stack, reads first in the name line, and fills the two surfaces that take
+one value, the RSS `<author>` element and the OG image byline. Reordering
+the array in Contentful changes both. The Contentful size validation and the
+GraphQL `limit` are both 3 and must move together.
+
+Names join with an ampersand, no serial comma before it, separators outside
+the anchors. The ampersand is presentation only and never reaches XML or
+JSON-LD.
+
+`author`, singular, is not deleted, and it has not been omitted either —
+that is phase 4, and phase 4 has not happened. It stays present, populated
+and queryable until phase 3 is verified in production; that is the point of
+an additive migration, that a post never lacks an author and rollback is
+"revert the code," not "restore the data." `AuthorBioCard` still reads it
+today. Do not query it in new code, and do not read this entry as saying
+the retirement is done.
+
+There is no `getPostsByAuthor`. Contentful GraphQL cannot filter a collection
+on `Array<Link>`, so author pages fetch `getAllPosts` once and filter with
+`postsByAuthor`, exactly as tag pages do. `getAllPosts` is not
+`cache()`-wrapped, so fetch once per route and read twice.
+
+Reversal, 3 September 2026. This replaces the contributor credits model, in
+which a post had one author plus optional secondary contributors. That was
+built and closed unmerged as PR 437. Co-authorship was judged neater than a
+two-tier byline, and expressing hierarchy through field membership was judged
+not worth the second field. `authors[0]` is the residue of that decision and
+is the thing most likely to be misread later.
+
 ## House conventions
 
 ### Two faces, three roles, and no family named directly

@@ -126,6 +126,30 @@ describe("contentful export.json", () => {
       ).toBe(true);
     }
   });
+
+  it("keeps the authors field's size cap in step with MAX_AUTHORS", async () => {
+    // The Contentful validation and lib/api.ts's authorsCollection(limit)
+    // have no relationship the API enforces — the fragment already
+    // interpolates MAX_AUTHORS, so this is the other half: a silent mismatch
+    // with the CMS validation is the failure mode with no error message
+    // anywhere, the same trap as tagsCollection(limit: 3).
+    const { MAX_AUTHORS } = await import("./constants");
+    const post = exportData.contentTypes.find(
+      (ct: { sys: { id: string } }) => ct.sys.id === "post",
+    );
+    const authorsField = post.fields.find(
+      (f: { id: string }) => f.id === "authors",
+    );
+    expect(authorsField, 'post has no "authors" field').toBeTruthy();
+    const size = authorsField.validations.find(
+      (v: { size?: { max?: number } }) => v.size,
+    )?.size;
+    expect(size?.max).toBe(MAX_AUTHORS);
+    // No minimum: PR 437's export.json once shipped min: 1 on the
+    // contributors field, which fails validation whenever an editor empties
+    // an optional array rather than nulling it.
+    expect(size?.min).toBeUndefined();
+  });
 });
 
 describe("contentful seed.json", () => {

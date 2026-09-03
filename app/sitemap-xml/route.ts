@@ -8,6 +8,7 @@ import { SITE_URL } from "@/lib/constants";
 import { escapeXml } from "@/lib/xml";
 import type { ListPost } from "@/lib/types";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
+import { postAuthors } from "@/lib/authors";
 
 // Served at /sitemap.xml via a rewrite in next.config.js. This handler lives on
 // an ordinary path (/sitemap-xml) on purpose. Next treats the reserved
@@ -75,14 +76,17 @@ export async function GET() {
     }
   }
 
-  // Same idea per author slug. Posts carry author.slug via POST_GRAPHQL_FIELDS.
+  // Same idea per author slug, except a post can carry up to three authors,
+  // so it can be the freshest entry for several at once — the same shape as
+  // newestByTag above, and for the same reason.
   const newestByAuthor = new Map<string, Date>();
   for (const post of posts) {
-    const slug = post.author?.slug;
-    if (!slug) continue;
     const date = postDate(post);
-    const current = newestByAuthor.get(slug);
-    if (!current || date > current) newestByAuthor.set(slug, date);
+    for (const author of postAuthors(post)) {
+      if (!author.slug) continue;
+      const current = newestByAuthor.get(author.slug);
+      if (!current || date > current) newestByAuthor.set(author.slug, date);
+    }
   }
 
   const postEntries: SitemapEntry[] = posts.map((post) => ({
