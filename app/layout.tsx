@@ -79,9 +79,14 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
-// Two faces, three jobs — see the token block in globals.css. latin-ext on both
-// is deliberate: the capital eszett ẞ (U+1E9E) sits in that range and de-DE will
-// need it. German low-9 quotes „ (U+201E) are already inside latin.
+// Two faces, three jobs — see the token block in globals.css. Preload the latin
+// subset only. Dropping latin-ext from `subsets` does not reduce character
+// coverage: Next.js emits @font-face declarations with unicode-range for all
+// family subsets, so characters like ẞ (U+1E9E) still render seamlessly, they
+// are just fetched on demand by the browser rather than eagerly preloaded.
+// Preloading both subsets across styles injected 6 font files (~501 KB) into
+// <head>, saturating mobile bandwidth against the LCP hero image. Dropping
+// latin-ext eliminates 3 high-priority preloads (211,968 B / ~207 KiB).
 //
 // opsz only. The wdth axis (75-100) is why Bricolage is the right long-term
 // choice — it lets a long German compound narrow rather than drop a size step —
@@ -89,7 +94,7 @@ export const viewport = {
 // benefit. Add it when the de-DE work actually needs it.
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   display: "swap",
   axes: ["opsz"],
 });
@@ -98,7 +103,7 @@ const bricolage = Bricolage_Grotesque({
 // roman only — a display italic is a separate decision.
 const literata = Literata({
   variable: "--font-literata",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin"],
   display: "swap",
   style: ["normal", "italic"],
   axes: ["opsz"],

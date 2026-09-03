@@ -984,6 +984,24 @@ Bricolage's `wdth` axis (75–100) is deliberately not requested — it costs by
 and nothing reaches for it, but it is why this face suits the de-DE work, where
 a long compound can narrow instead of dropping a size step.
 
+### Font preloading is `subsets: ["latin"]` only
+
+`subsets` in `next/font/google` is a **preload selector, not a coverage selector**.
+Next.js emits `@font-face` blocks with explicit `unicode-range` for _every_
+Google subset (including `latin-ext`, `cyrillic`, etc.), and only injects
+`<link rel="preload">` for the ones listed in `subsets`.
+
+`latin-ext` was previously configured under the assumption that it was needed
+for character coverage of German characters (e.g. capital eszett `ẞ`, `U+1E9E`).
+Preloading both `latin` and `latin-ext` across Bricolage and Literata (regular +
+italic) forced 6 separate font files (~501 KB) into `<head>` at High Priority,
+saturating mobile bandwidth and delaying the LCP hero image.
+
+Restricting `subsets` to `["latin"]` eliminates 3 high-priority preloads (207 KiB /
+211,968 B) on initial page load without losing any glyph coverage: `latin-ext`
+characters still render via `unicode-range` and are simply fetched on demand when
+a page actually uses them. Do not re-add `latin-ext` to `subsets` for `de-DE` work.
+
 ### The prose column is never measured in `ch`
 
 `@utility prose` in `app/globals.css` neutralises the typography plugin's
