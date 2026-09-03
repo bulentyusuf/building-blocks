@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import fs from "node:fs";
 import path from "node:path";
 import { getAllPosts, getPost } from "@/lib/api";
+import { postAuthors } from "@/lib/authors";
 import { SITE_TITLE, SITE_AUTHOR } from "@/lib/constants";
 import { CONTENTFUL_IMAGE_HOST } from "@/lib/contentful-host";
 import { widont } from "@/lib/typography";
@@ -125,7 +126,10 @@ export default async function OpengraphImage({
   const post = await getPost(slug, false).catch(() => undefined);
 
   const title = post ? cardTitle(post.title) : SITE_TITLE;
-  const author = post?.author?.name ?? SITE_AUTHOR;
+  // authors[0], the lead author — the card has a fixed-width byline slot for
+  // one name, not every co-author. The array order in Contentful decides who
+  // that is; reordering it changes whose name goes out on the OG card.
+  const author = (post ? postAuthors(post)[0]?.name : undefined) ?? SITE_AUTHOR;
   const coverUrl = coverPanelUrl(post?.coverImage?.url);
 
   return new ImageResponse(

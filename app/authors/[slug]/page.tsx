@@ -6,12 +6,9 @@ import ListingPage from "../../listing-page";
 import PageCounter from "../../page-counter";
 import { type Crumb } from "../../breadcrumb";
 import { RichText } from "@/lib/rich-text";
-import {
-  getAllAuthors,
-  getAuthorBySlug,
-  getPostsByAuthor,
-  getVisibleTagSlugs,
-} from "@/lib/api";
+import { getAllAuthors, getAllPosts, getAuthorBySlug } from "@/lib/api";
+import { postsByAuthor } from "@/lib/authors";
+import { visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
 import { pageItems, totalPagesFor } from "@/lib/paginate";
@@ -68,12 +65,14 @@ export default async function AuthorPage({
     { label: author.name },
   ];
 
-  // Independent queries, so they go out together. Awaited in sequence they
-  // serialised the two slowest calls on this page for no reason.
-  const [posts, visibleTags] = await Promise.all([
-    getPostsByAuthor(slug, isEnabled),
-    getVisibleTagSlugs(isEnabled),
-  ]);
+  // One fetch, read twice. There is no getPostsByAuthor — `authors` is an
+  // Array<Link> and Contentful's GraphQL cannot filter a collection on one —
+  // so this page fetches the sitewide list once and filters in memory, the
+  // same pattern app/tags/[slug]/page.tsx uses. getAllPosts is not
+  // cache()-wrapped, so calling it twice here would be two identical requests.
+  const allPosts = await getAllPosts(isEnabled);
+  const posts = postsByAuthor(allPosts, slug);
+  const visibleTags = visibleTagSlugs(allPosts);
 
   const jsonLd = {
     "@context": "https://schema.org",

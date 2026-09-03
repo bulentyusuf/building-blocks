@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { visibleTagSlugs } from "./tags";
+import { MAX_AUTHORS } from "./constants";
 import type {
   Post,
   PostCollectionResponse,
@@ -127,6 +128,15 @@ const POST_GRAPHQL_FIELDS = `
       slug
     }
   }
+  authorsCollection(limit: ${MAX_AUTHORS}) {
+    items {
+      name
+      slug
+      picture {
+        url
+      }
+    }
+  }
 `;
 
 // Slim fragment for listing previews (e.g. the categories landing page). Pulls
@@ -207,6 +217,15 @@ const LIST_GRAPHQL_FIELDS = `
     items {
       name
       slug
+    }
+  }
+  authorsCollection(limit: ${MAX_AUTHORS}) {
+    items {
+      name
+      slug
+      picture {
+        url
+      }
     }
   }
 `;
@@ -871,24 +890,10 @@ export const getAuthorBySlug = cache(
   },
 );
 
-export async function getPostsByAuthor(
-  slug: string,
-  isDraftMode = false,
-): Promise<CardPost[]> {
-  return fetchAllCollectionItems<CardPost>(
-    "postCollection",
-    `query GetPostsByAuthor($slug: String!, $preview: Boolean, $limit: Int!, $skip: Int!) {
-      postCollection(where: { author: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit, skip: $skip) {
-        total
-        items {
-          ${CARD_GRAPHQL_FIELDS}
-        }
-      }
-    }`,
-    isDraftMode,
-    { slug, preview: isDraftMode },
-  );
-}
+// There is no getPostsByAuthor. `authors` is an Array<Link>, and Contentful's
+// GraphQL cannot filter a collection on one — where: { authors: { slug } }
+// does not exist, the same wall postsWithTag hit. Author pages fetch
+// getAllPosts once and filter in memory with postsByAuthor, in lib/authors.ts.
 
 export async function getAllAuthors(isDraftMode = false): Promise<Author[]> {
   return fetchAllCollectionItems<Author>(

@@ -896,6 +896,34 @@ the standalone package parses fine, which is what sank an earlier display face.
   `contentful-batch-libs` touches uuid in one place, `add-sequence-header.js`,
   so re-check that call site if the override is ever bumped.
 
+### Posts carry `authors`, an ordered array capped at three
+
+Authors share the byline as co-authors, but the order carries meaning: the
+first entry is the lead. It sits in front in the 14px-overlapped portrait
+stack, reads first in the name line, and fills the two surfaces that take
+one value, the RSS `<author>` element and the OG image byline. Reordering
+the array in Contentful changes both. The Contentful size validation and the
+GraphQL `limit` are both 3 and must move together.
+
+Names join with an ampersand, no serial comma before it, separators outside
+the anchors. The ampersand is presentation only and never reaches XML or
+JSON-LD.
+
+`author`, singular, is the retired original. It is omitted rather than
+deleted so it remains a rollback. Do not query it.
+
+There is no `getPostsByAuthor`. Contentful GraphQL cannot filter a collection
+on `Array<Link>`, so author pages fetch `getAllPosts` once and filter with
+`postsByAuthor`, exactly as tag pages do. `getAllPosts` is not
+`cache()`-wrapped, so fetch once per route and read twice.
+
+Reversal, 3 September 2026. This replaces the contributor credits model, in
+which a post had one author plus optional secondary contributors. That was
+built and closed unmerged as PR 437. Co-authorship was judged neater than a
+two-tier byline, and expressing hierarchy through field membership was judged
+not worth the second field. `authors[0]` is the residue of that decision and
+is the thing most likely to be misread later.
+
 ## House conventions
 
 ### Two faces, three roles, and no family named directly

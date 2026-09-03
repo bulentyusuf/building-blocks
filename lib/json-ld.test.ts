@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { jsonLdHtml, postAuthorNode, postContributorNodes } from "./json-ld";
+import { jsonLdHtml, postAuthorsNode } from "./json-ld";
 import { SITE_AUTHOR, SITE_URL } from "./constants";
 
 describe("jsonLdHtml", () => {
@@ -14,9 +14,23 @@ describe("jsonLdHtml", () => {
   });
 });
 
-describe("postAuthorNode", () => {
-  it("deep-equals the literal the page emitted before this change", () => {
-    const node = postAuthorNode({ name: "Bulent Yusuf", slug: "bulent-yusuf" });
+describe("postAuthorsNode", () => {
+  it("falls back to SITE_AUTHOR with no url for zero authors", () => {
+    const node = postAuthorsNode([]);
+    expect(node).toEqual({ "@type": "Person", name: SITE_AUTHOR });
+    expect(Array.isArray(node)).toBe(false);
+  });
+
+  it("returns a bare object, not a one-element array, for a single author", () => {
+    // Criterion 1: every post on the site today has exactly one author, and
+    // this is the case that must render byte-identical JSON-LD to before
+    // `authors` existed. A one-element array here would deep-equal nothing
+    // useful and pass a looser assertion, which is why this checks
+    // Array.isArray directly rather than trusting a shape match alone.
+    const node = postAuthorsNode([
+      { name: "Bulent Yusuf", slug: "bulent-yusuf" },
+    ]);
+    expect(Array.isArray(node)).toBe(false);
     expect(node).toEqual({
       "@type": "Person",
       name: "Bulent Yusuf",
@@ -24,46 +38,53 @@ describe("postAuthorNode", () => {
     });
   });
 
-  it("falls back to SITE_AUTHOR with no author, and omits url rather than emitting it undefined", () => {
-    const node = postAuthorNode(undefined);
-    expect(node).toEqual({ "@type": "Person", name: SITE_AUTHOR });
-
-    // JSON.stringify drops undefined values, so a parsed-object assertion alone
-    // would not catch a url key that is present but undefined. Assert against
-    // the serialised string instead.
-    const serialised = jsonLdHtml({ author: node });
-    expect(serialised).not.toContain('"url"');
-  });
-});
-
-describe("postContributorNodes", () => {
-  it("returns undefined for an empty list, and the key is absent from the serialised output", () => {
-    expect(postContributorNodes([])).toBeUndefined();
-
-    // The known-bad control: an empty ARRAY here would serialise as
-    // "contributor":[] and every parsed-object assertion would still pass.
-    const serialised = jsonLdHtml({
-      author: postAuthorNode(undefined),
-      contributor: postContributorNodes([]),
-    });
-    expect(serialised).not.toContain("contributor");
+  it("omits url for a single author with no slug", () => {
+    const node = postAuthorsNode([{ name: "No Slug" }]);
+    expect(node).toEqual({ "@type": "Person", name: "No Slug" });
   });
 
-  it("returns a one-element array for one contributor", () => {
-    const nodes = postContributorNodes([
-      { name: "Genial Yeti", slug: "genial-yeti" },
+  it("returns an array of Person nodes for two authors", () => {
+    const node = postAuthorsNode([
+      { name: "Trippy Robot", slug: "trippy-robot" },
+      { name: "Bulent Yusuf", slug: "bulent-yusuf" },
     ]);
-    expect(nodes).toEqual([
+    expect(Array.isArray(node)).toBe(true);
+    expect(node).toEqual([
       {
         "@type": "Person",
-        name: "Genial Yeti",
-        url: `${SITE_URL}/authors/genial-yeti`,
+        name: "Trippy Robot",
+        url: `${SITE_URL}/authors/trippy-robot`,
+      },
+      {
+        "@type": "Person",
+        name: "Bulent Yusuf",
+        url: `${SITE_URL}/authors/bulent-yusuf`,
       },
     ]);
   });
 
-  it("omits url for a contributor with no slug", () => {
-    const nodes = postContributorNodes([{ name: "No Slug" }]);
-    expect(nodes).toEqual([{ "@type": "Person", name: "No Slug" }]);
+  it("returns an array of three, preserving order", () => {
+    const node = postAuthorsNode([
+      { name: "A", slug: "a" },
+      { name: "B", slug: "b" },
+      { name: "C", slug: "c" },
+    ]);
+    expect(Array.isArray(node) && node.map((n) => n.name)).toEqual([
+      "A",
+      "B",
+      "C",
+    ]);
+  });
+
+  it("the empty-array known-bad control: a naive [] would serialise as an array, not the bare object", () => {
+    // The failure mode this whole file exists to catch: swapping
+    // postAuthorsNode's zero-author branch for `authors.map(...)` over an
+    // empty array silently returns [] instead of the SITE_AUTHOR fallback,
+    // and a parsed-object-only assertion could still pass if it only checked
+    // "is this an object with a name field" loosely. Pin both the type and
+    // the content together.
+    const node = postAuthorsNode([]);
+    expect(node).not.toEqual([]);
+    expect((node as { name: string }).name).toBe(SITE_AUTHOR);
   });
 });
