@@ -181,7 +181,9 @@ function HeroPost({
           )}
         </div>
         <div>
-          <p className="text-lg leading-relaxed text-pretty">{excerpt}</p>
+          <p className="text-lg leading-relaxed text-pretty">
+            {widont(excerpt)}
+          </p>
           {/* mt-3, not the mt-6 this carried before the split, which was
               tuned against a 40px avatar block sitting directly above the
               pills in the same column. The avatar is in the left column now,

@@ -253,7 +253,7 @@ export default async function PostPage({
 
           <div className="mx-auto max-w-2xl xl:mx-0">
             <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
-              {post.excerpt}
+              {widont(post.excerpt)}
             </p>
             {authors.length > 0 && (
               <div className="mb-10">
