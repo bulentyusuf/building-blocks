@@ -293,21 +293,23 @@ export default async function PostPage({
             {tags.length > 0 && (
               <nav
                 aria-label="Tags"
-                className="mt-12 border-t border-hairline pt-6"
+                className="mt-8 border-t border-hairline pt-6"
               >
-                {/* The label is sentence case and unstyled while the tags are
-                    bordered, so "Tagged" cannot be mistaken for a third tag.
-                    All three were previously uppercase muted text, which made
-                    the label look like one of them and gave the links no
-                    affordance at all. */}
-                <ul className="flex flex-wrap items-center gap-x-2 gap-y-2">
-                  <li className="mr-2 text-sm text-brand-muted">Tagged</li>
-                  {tags.map((tag) => (
-                    <li key={tag.slug}>
-                      <TagPill tag={tag} />
-                    </li>
-                  ))}
-                </ul>
+                {/* Single-line layout: the uppercase tracking-widest eyebrow
+                    matches "About the author" in family and weight without
+                    competing with the pill buttons beside it. */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="font-ui text-xs font-bold uppercase tracking-widest text-brand-muted shrink-0">
+                    Tagged
+                  </span>
+                  <ul className="flex flex-wrap items-center gap-2">
+                    {tags.map((tag) => (
+                      <li key={tag.slug}>
+                        <TagPill tag={tag} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </nav>
             )}
             <AuthorBioSection authors={authors} hasTags={tags.length > 0} />

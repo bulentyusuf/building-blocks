@@ -128,21 +128,22 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html.match(/More posts by/g)).toHaveLength(1);
   });
 
-  it("applies mt-6 when hasTags is true so margin matches tag band spacing", () => {
+  it("applies mt-8 and omits border-t when hasTags is true (single divider above tags)", () => {
     const author = authorWithBio("bulent-yusuf", "Bulent Yusuf");
     const html = renderToStaticMarkup(
       <AuthorBioSection authors={[author]} hasTags={true} />,
     );
-    expect(html).toContain("mt-6");
-    expect(html).not.toContain("mt-12");
+    expect(html).toContain("mt-8");
+    expect(html).not.toContain("border-t");
   });
 
-  it("applies mt-12 when hasTags is false", () => {
+  it("applies mt-8, border-t, and pt-8 when hasTags is false (opens section itself)", () => {
     const author = authorWithBio("bulent-yusuf", "Bulent Yusuf");
     const html = renderToStaticMarkup(
       <AuthorBioSection authors={[author]} hasTags={false} />,
     );
-    expect(html).toContain("mt-12");
-    expect(html).not.toContain("mt-6");
+    expect(html).toContain("mt-8");
+    expect(html).toContain("border-t");
+    expect(html).toContain("pt-8");
   });
 });

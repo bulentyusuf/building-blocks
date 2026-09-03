@@ -378,7 +378,7 @@ export function RichText({
 
         if (entry.__typename === "PromptBlock") {
           return (
-            <figure className="not-prose my-8 overflow-hidden rounded-lg border border-hairline">
+            <figure className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline">
               {/* figcaption as figure's first child names the whole block
                   natively — no role or aria-labelledby needed. In dark mode
                   brand-crimson lifts (for link legibility); white text on the
