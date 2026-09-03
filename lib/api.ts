@@ -51,23 +51,7 @@ const POST_GRAPHQL_FIELDS = `
   }
   date
   updatedDate
-  author {
-    name
-    slug
-    picture {
-      url
-    }
-    bio {
-      json
-      links {
-        assets {
-          block {
-            ${ASSET_BLOCK_FIELDS}
-          }
-        }
-      }
-    }
-  }
+
   excerpt
   content {
     json
@@ -201,13 +185,7 @@ const LIST_GRAPHQL_FIELDS = `
   }
   date
   updatedDate
-  author {
-    name
-    slug
-    picture {
-      url
-    }
-  }
+
   excerpt
   category {
     name

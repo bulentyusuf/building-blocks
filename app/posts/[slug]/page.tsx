@@ -310,15 +310,20 @@ export default async function PostPage({
                 </ul>
               </nav>
             )}
-            {post.author?.bio && (
+            {postAuthors(post).some((a) => a.bio) && (
               // mt-6 after a tag row, mt-12 otherwise. This margin is the only
               // thing setting the space beneath the pills, so it has to match
               // the nav's pt-6 or the row sits off-centre in its band. Without
               // tags there is no band and the usual mt-12 applies.
               <div
-                className={`${tags.length > 0 ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
+                className={`${tags.length > 0 ? "mt-6" : "mt-12"} flex flex-col gap-8 border-t border-hairline pt-8`}
               >
-                <AuthorBioCard author={post.author} />
+                {postAuthors(post).map(
+                  (a) =>
+                    a.bio && (
+                      <AuthorBioCard key={a.slug ?? a.name} author={a} />
+                    ),
+                )}
               </div>
             )}
           </div>
