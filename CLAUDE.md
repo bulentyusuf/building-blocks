@@ -1491,6 +1491,12 @@ on merges to `main`, so nothing checks the demo space against the queries until
 forgotten step surfaces within seven days rather than on an unrelated future
 sync.
 
+**`public/llms.txt` describes the content model and editorial rules.** A CI job
+(`.github/workflows/llms-link-check.yml`) checks that its markdown links resolve,
+but no automated check verifies its assertions about cardinality, bylines, or
+content types. Review and update `public/llms.txt` whenever the content model or
+editorial structure changes.
+
 **Content type IDs are immutable.** The display name can be changed by an editor
 at any time; the ID cannot. Renaming means deleting and recreating the type —
 trivial while nothing is published, a content migration afterwards. Get the ID

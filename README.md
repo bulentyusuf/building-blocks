@@ -24,8 +24,8 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 ## 🧩 Content model
 
-- **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, and links to one author and one category
-- **Author**, name, picture, slug, and a short bio, with its own landing page
+- **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a link to one category, and links to up to three authors
+- **Author**, name, picture, slug, and a short bio, with its own landing page. A post can carry more than one, and every author it names lists that post
 - **Category**, name, slug, description, and thumbnail, with its own landing page. Posts are filed under Main Quest or Side Quests
 - **Tag**, name, slug, and a one-line description, with its own landing page. Cross-cutting topics, up to three per post: where Category says where a post lives, a Tag says what it is about
 - **Code Block**, embedded into post bodies for syntax-highlighted snippets. Optional filename and a fixed list of languages
@@ -49,6 +49,7 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - Tag landing pages, and a glossary indexing every topic with its posts grouped beneath it. Tag pills on each post and on every listing card
 - Archive page listing every post grouped by year
 - Paginated home, category, and author listings
+- Related posts scored on shared tags weighted by rarity, so an uncommon tag counts for more than a common one, with category and shared authorship as lesser signals
 - Category and author landing pages, each with a directory index
 - Breadcrumb navigation with `BreadcrumbList` structured data
 - Responsive header nav with inline links from `md` up and a hamburger disclosure on mobile
@@ -57,6 +58,7 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 - Light and dark colour schemes, following the operating system preference
 - Per-post table of contents, reading time, and an image lightbox
+- Shared bylines, with overlapping author portraits and a bio for each author at the foot of the post
 - Sidenotes that float into the right margin on wide screens and collapse behind their reference number on narrow ones, opening without JavaScript
 - Skip link, a single visible focus indicator across the site, and reduced-motion support
 
