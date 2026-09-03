@@ -987,7 +987,7 @@ a long compound can narrow instead of dropping a size step.
 ### Font preloading is `subsets: ["latin"]` only
 
 `subsets` in `next/font/google` is a **preload selector, not a coverage selector**.
-Next.js emits `@font-face` blocks with explicit `unicode-range` for *every*
+Next.js emits `@font-face` blocks with explicit `unicode-range` for _every_
 Google subset (including `latin-ext`, `cyrillic`, etc.), and only injects
 `<link rel="preload">` for the ones listed in `subsets`.
 
