@@ -199,7 +199,14 @@ export interface CardPostCollectionResponse {
 // It carries the card and byline fields the home page, feed, and sitemap render,
 // but omits the heavy `content` body and the author `bio` — those are absent, so
 // don't read them. Use getPostAndMorePosts / getPostsByCategory for a full Post.
-export type ListPost = Omit<Post, "content">;
+// List queries fetch authors without bios. LIST_GRAPHQL_FIELDS selects name,
+// slug and picture under authorsCollection but not bio, so typing the items as
+// full Authors would let a bio render from a list-sourced post: typechecks
+// fine, renders nothing, no error anywhere. The old singular `author` field
+// carried this same Omit for the same reason.
+export type ListPost = Omit<Post, "content" | "authorsCollection"> & {
+  authorsCollection?: { items: (Omit<Author, "bio"> | null)[] };
+};
 
 export interface ListPostCollectionResponse {
   data?: {
