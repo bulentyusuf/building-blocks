@@ -119,7 +119,7 @@ function HeroPost({
             image={coverImage}
             wide
             priority
-            sizes="(max-width: 768px) 100vw, 1024px"
+            sizes="(max-width: 768px) calc(100vw - 2.5rem), 1024px"
           />
         </div>
       )}
