@@ -1,6 +1,6 @@
 # Handover briefing — German (de-DE) localisation
 
-Space `rczsnwq9z69e`, environment `master`. Blog `bulentyusuf.com`, Next.js App Router, Contentful, Tailwind v4, Vercel Hobby.
+Space `rczsnwq9z69e`, environment `master`. Blog `beuseful.net`, Next.js App Router, Contentful, Tailwind v4, Vercel Hobby.
 
 Architecture decided: Contentful native field-level locales, de-DE fallback to en-GB, Next.js `[lang]` sub-path routing (`/de/posts/...`). Delivery gate is Contentful **locale-based publishing** (en-GB and de-DE published independently per entry). SEO gate is a space-level tag `de-ready`. The two are separate switches, see the publishing model below. Render behaviour is fallback (never hide). hreflang and the de sitemap key off `de-ready`, never off "the route resolved".
 
@@ -75,7 +75,7 @@ Create a space tag `de-ready` (Contentful UI → Settings → Tags, or MCP `crea
 5. Apply `de-ready` tag.
 6. Publish the de-DE locale (locale-based publish, en-GB stays untouched).
 7. Revalidate so static paths rebuild.
-   The de-DE publish in step 6 is the independent gate, per post. RichText caveat: `content` is a structured node tree, not a string. Test Contentful's `translate_entry` (rich-text and locale aware) before building a bespoke walker. Formality: lean `du`, Bulent's call. Glossary-pin product and persona names so they never translate.
+   The de-DE publish in step 6 is the independent gate, per post. RichText caveat: `content` is a structured node tree, not a string, and there is no ready-made translate primitive on the Contentful MCP surface. `create_ai_action` and `invoke_ai_action` are prompt templates you author (variable types include `Locale` and `StandardInput`), not a locale-aware walker, so a node-tree walker that translates text nodes and leaves marks, embeds and `codeBlock` entries untouched is required either way. Engine decision is recorded separately. Formality: lean `du`, Bulent's call. Glossary-pin product and persona names so they never translate.
 
 ---
 
@@ -86,7 +86,7 @@ Create a space tag `de-ready` (Contentful UI → Settings → Tags, or MCP `crea
 - No writes to production Contentful from code beyond reads. Translation writes happen through the per-post workflow, not the build.
 - `coverImage` stays typed optional in code (Contentful required only enforces at publish, previews can return null). Keep this.
 - **Font preloads & character coverage**: `subsets` in `next/font/google` (`app/layout.tsx`) is set to `["latin"]`. Do NOT re-add `latin-ext` for `de-DE`. In Next.js, `subsets` is a preload selector, not a coverage selector: Next emits `@font-face` with `unicode-range` for all subsets automatically. German glyphs (including capital eszett `ẞ`, `ä`, `ö`, `ü`) render seamlessly and are fetched on demand; eager preloading `latin-ext` wastes 207 KiB of critical-path mobile bandwidth.
-- **Exact file paths and full file contents for phases 1–4 are pending a live tarball scan of `bulentyusuf/nextjs-blog-draft-mode`. This doc gives objective, scope, and known paths. Do not write code from these notes alone, wait for the scan-completed appendix.**
+- **Exact file paths and full file contents for phases 1–4 are pending a live tarball scan of `bulentyusuf/building-blocks`. This doc gives objective, scope, and known paths. Do not write code from these notes alone, wait for the scan-completed appendix.**
 
 ---
 

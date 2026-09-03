@@ -19,12 +19,24 @@ const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
 
 const DOCS = ["CLAUDE.md", "README.md"] as const;
+
+// Everything in docs/ is a briefing that gets handed to an implementer before
+// any code is written, so a dead path or a stale name in there does not just
+// mislead a reader, it goes into a PR. de-localisation-briefing.md landed on
+// main naming the pre-rename repo and nothing surfaced it, because none of
+// these checks looked at the directory at all.
+const BRIEFINGS = fs
+  .readdirSync(path.join(ROOT, "docs"))
+  .filter((f) => f.endsWith(".md"))
+  .map((f) => `docs/${f}`);
+
+const CHECKED = [...DOCS, ...BRIEFINGS];
 const pkg = JSON.parse(read("package.json")) as {
   scripts: Record<string, string>;
 };
 
 describe("npm scripts named in the docs", () => {
-  it.each(DOCS)("all exist in package.json (%s)", (doc) => {
+  it.each(CHECKED)("all exist in package.json (%s)", (doc) => {
     const text = read(doc);
     const named = new Set(
       [...text.matchAll(/npm run ([a-z][a-z0-9:-]*)/g)].map((m) => m[1]),
@@ -38,7 +50,7 @@ describe("npm scripts named in the docs", () => {
 });
 
 describe("file paths named in the docs", () => {
-  it.each(DOCS)("all exist on disk (%s)", (doc) => {
+  it.each(CHECKED)("all exist on disk (%s)", (doc) => {
     const text = read(doc);
     const paths = new Set(
       [
@@ -112,17 +124,47 @@ describe("the repo URL is the same everywhere", () => {
     }
   });
 
+  // README.md line 5 is the deliberate exception: it links Vercel's upstream
+  // TEMPLATE, vercel.com/templates/next.js/nextjs-blog-draft-mode, which is
+  // their URL and not ours. The old check carved that out by requiring a
+  // github.com prefix, which made it blind to the bare `owner/name` form, and
+  // that is exactly the form that reached docs/. Removing Vercel's URL first
+  // and then rejecting the name outright is both stricter and narrower.
+  const VERCEL_TEMPLATE_URL =
+    "vercel.com/templates/next.js/nextjs-blog-draft-mode";
+  const staleRepoNames = (text: string) =>
+    [
+      ...text
+        .split(VERCEL_TEMPLATE_URL)
+        .join("")
+        .matchAll(/nextjs-blog-draft-mode/g),
+    ].map((m) => m[0]);
+
   it("leaves no reference to the pre-rename repo name", () => {
-    // README.md line 5 is the deliberate exception: it links Vercel's upstream
-    // TEMPLATE, vercel.com/templates/next.js/nextjs-blog-draft-mode, which is
-    // their URL and not ours. Anything on github.com must be the new name.
-    for (const doc of [...DOCS, "public/llms.txt"]) {
-      const stale = [
-        ...read(doc).matchAll(
-          /github\.com\/[a-zA-Z0-9-]+\/nextjs-blog-draft-mode/g,
-        ),
-      ];
-      expect(stale.map((m) => m[0])).toEqual([]);
+    for (const doc of [...CHECKED, "public/llms.txt"]) {
+      expect(staleRepoNames(read(doc)), `${doc} names the old repo`).toEqual(
+        [],
+      );
     }
+  });
+
+  it("catches the bare owner/name form", () => {
+    // Known-bad control. This is the literal string that shipped in
+    // docs/de-localisation-briefing.md and passed the previous pattern.
+    expect(
+      staleRepoNames(
+        "pending a live tarball scan of `bulentyusuf/nextjs-blog-draft-mode`.",
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("still permits Vercel's own template URL", () => {
+    // The other direction. A detector that fires on README.md line 5 would be
+    // turned off within a week.
+    expect(
+      staleRepoNames(
+        "https://vercel.com/templates/next.js/nextjs-blog-draft-mode",
+      ),
+    ).toEqual([]);
   });
 });
