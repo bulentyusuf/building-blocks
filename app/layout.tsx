@@ -406,7 +406,11 @@ export default async function RootLayout({
     <html
       lang={DEFAULT_LOCALE}
       className={`${bricolage.variable} ${literata.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://images.ctfassets.net" />
+      </head>
       <body className="min-h-screen flex flex-col bg-brand-bg text-brand-dark">
         {/* top-2 centres the 36px link in the 52px header band. If the header's
             py-3 or the masthead's text-lg ever changes, this needs revisiting —
@@ -417,7 +421,6 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
-        <link rel="preconnect" href="https://images.ctfassets.net" />
         <Header />
         {/* tabIndex={-1} makes the skip link's target focusable. Following a
             fragment moves the sequential-focus starting point in current
