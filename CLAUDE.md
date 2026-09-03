@@ -1001,6 +1001,8 @@ Restricting `subsets` to `["latin"]` eliminates 3 high-priority preloads (207 Ki
 211,968 B) on initial page load without losing any glyph coverage: `latin-ext`
 characters still render via `unicode-range` and are simply fetched on demand when
 a page actually uses them. Do not re-add `latin-ext` to `subsets` for `de-DE` work.
+`app/layout.font-subsets.test.ts` holds this, with the two-subset configuration
+as its known-bad control.
 
 ### The prose column is never measured in `ch`
 
