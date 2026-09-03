@@ -80,9 +80,13 @@ export const viewport = {
   initialScale: 1,
 };
 // Two faces, three jobs — see the token block in globals.css. Preload the latin
-// subset only: latin-ext was preloaded for future de-DE characters (like ẞ),
-// but preloading both subsets across styles injected 6 font files (~501 KB) into
-// <head>, competing for mobile bandwidth against the LCP image.
+// subset only. Dropping latin-ext from `subsets` does not reduce character
+// coverage: Next.js emits @font-face declarations with unicode-range for all
+// family subsets, so characters like ẞ (U+1E9E) still render seamlessly, they
+// are just fetched on demand by the browser rather than eagerly preloaded.
+// Preloading both subsets across styles injected 6 font files (~501 KB) into
+// <head>, saturating mobile bandwidth against the LCP hero image. Dropping
+// latin-ext eliminates 3 high-priority preloads (211,968 B / ~207 KiB).
 //
 // opsz only. The wdth axis (75-100) is why Bricolage is the right long-term
 // choice — it lets a long German compound narrow rather than drop a size step —
