@@ -14,7 +14,7 @@ import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
-import AuthorBioCard from "../../author-bio-card";
+import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
 import { type Crumb } from "../../breadcrumb";
 import {
@@ -310,29 +310,7 @@ export default async function PostPage({
                 </ul>
               </nav>
             )}
-            {postAuthors(post).some((a) => a.bio) && (
-              // mt-6 after a tag row, mt-12 otherwise. This margin is the only
-              // thing setting the space beneath the pills, so it has to match
-              // the nav's pt-6 or the row sits off-centre in its band. Without
-              // tags there is no band and the usual mt-12 applies.
-              <div
-                className={`${tags.length > 0 ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
-              >
-                <p className="mb-6 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
-                  {postAuthors(post).filter((a) => a.bio).length > 1
-                    ? "About the authors"
-                    : "About the author"}
-                </p>
-                <div className="flex flex-col gap-8">
-                  {postAuthors(post).map(
-                    (a) =>
-                      a.bio && (
-                        <AuthorBioCard key={a.slug ?? a.name} author={a} />
-                      ),
-                  )}
-                </div>
-              </div>
-            )}
+            <AuthorBioSection authors={authors} hasTags={tags.length > 0} />
           </div>
         </div>
       </article>
