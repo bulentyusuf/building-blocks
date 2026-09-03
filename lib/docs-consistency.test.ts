@@ -8,12 +8,13 @@ import path from "node:path";
 // repo works, and prose is the only artefact here with no verification path:
 // code has tsc, formatting has Prettier, behaviour has vitest, the two
 // Contentful spaces have contentful-fixtures.test.ts. These checks cover the
-// part of the prose that is mechanically checkable — the names of things.
+// part of the prose that is mechanically checkable — the names of things, and
+// the handful of specific claims that have already gone wrong once.
 //
-// They deliberately do NOT try to verify claims. A sentence can name a real
-// file and still describe it wrongly; only a reader catches that. What they
-// stop is the cheaper failure: a rename or a removal quietly turning an
-// instruction into a dead end.
+// They do NOT attempt general claim verification, which only a reader catches:
+// a sentence can name a real file or state a plausible number and still describe
+// it wrongly. What they stop is the cheaper failure: a rename, a removal, or a
+// schema flip quietly turning an instruction into a dead end.
 
 const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -124,5 +125,57 @@ describe("the repo URL is the same everywhere", () => {
       ];
       expect(stale.map((m) => m[0])).toEqual([]);
     }
+  });
+});
+
+describe("the author cap is the same everywhere", () => {
+  it("matches MAX_AUTHORS across constants and README", () => {
+    // The README told forkers a post links to "one author and one category"
+    // for the whole of the day the field became an array of three. Nothing
+    // surfaced it: the schema check in contentful-fixtures.test.ts pins
+    // MAX_AUTHORS to the Contentful validation, and the GraphQL limit reads
+    // the same constant, so code and CMS agreed with each other while the
+    // document describing them to a forker was wrong.
+    const constants = read("lib/constants.ts");
+    const max = Number(/MAX_AUTHORS\s*=\s*(\d+)/.exec(constants)?.[1]);
+    expect(max, "MAX_AUTHORS not found in lib/constants.ts").toBeGreaterThan(0);
+
+    // House style spells out one to ten, so the prose carries the word and
+    // not the numeral. Falling back to the digit keeps the check working if
+    // the cap ever goes past ten, where the style rule flips anyway.
+    const words = [
+      "zero",
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+      "six",
+      "seven",
+      "eight",
+      "nine",
+      "ten",
+    ];
+    const word = words[max] ?? String(max);
+
+    expect(
+      read("README.md"),
+      `README.md does not state the cap as "up to ${word} authors"`,
+    ).toContain(`up to ${word} authors`);
+  });
+});
+
+describe("llms.txt attribution guidance", () => {
+  it("does not send a model looking for a single author", () => {
+    // This is an instruction, not a description, so a stale version does not
+    // merely misinform, it makes a model drop a real co-author's name. The
+    // link checker in llms-link-check.yml verifies the URLs in this file and
+    // nothing verifies the sentences.
+    const llms = read("public/llms.txt");
+    const line = /^- Attribute each post.*$/m.exec(llms)?.[0] ?? "";
+    expect(line, "no attribution line found in public/llms.txt").toBeTruthy();
+
+    expect(line).toContain("every author");
+    expect(line).not.toMatch(/the author named on that page/);
   });
 });
