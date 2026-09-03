@@ -125,7 +125,7 @@ export default async function OpengraphImage({
   const post = await getPost(slug, false).catch(() => undefined);
 
   const title = post ? cardTitle(post.title) : SITE_TITLE;
-  const author = post?.author?.name ?? SITE_AUTHOR;
+  const author = post?.authorsCollection?.items?.[0]?.name ?? SITE_AUTHOR;
   const coverUrl = coverPanelUrl(post?.coverImage?.url);
 
   return new ImageResponse(

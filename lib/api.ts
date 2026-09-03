@@ -46,18 +46,20 @@ const POST_GRAPHQL_FIELDS = `
   }
   date
   updatedDate
-  author {
-    name
-    slug
-    picture {
-      url
-    }
-    bio {
-      json
-      links {
-        assets {
-          block {
-            ${ASSET_BLOCK_FIELDS}
+  authorsCollection(limit: 5) {
+    items {
+      name
+      slug
+      picture {
+        url
+      }
+      bio {
+        json
+        links {
+          assets {
+            block {
+              ${ASSET_BLOCK_FIELDS}
+            }
           }
         }
       }
@@ -179,11 +181,13 @@ const LIST_GRAPHQL_FIELDS = `
   }
   date
   updatedDate
-  author {
-    name
-    slug
-    picture {
-      url
+  authorsCollection(limit: 5) {
+    items {
+      name
+      slug
+      picture {
+        url
+      }
     }
   }
   excerpt
@@ -813,22 +817,17 @@ export const getAuthorBySlug = cache(
   },
 );
 
+// In-memory filter rather than a GraphQL where clause: Contentful's GraphQL
+// cannot filter a collection on an Array<Link> field at all (same constraint
+// as tags — see lib/tags.ts), so the query runs against the full listing and
+// the slug match happens here. getAllPosts already sorts date_DESC.
 export async function getPostsByAuthor(
   slug: string,
   isDraftMode = false,
-): Promise<CardPost[]> {
-  return fetchAllCollectionItems<CardPost>(
-    "postCollection",
-    `query GetPostsByAuthor($slug: String!, $preview: Boolean, $limit: Int!, $skip: Int!) {
-      postCollection(where: { author: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit, skip: $skip) {
-        total
-        items {
-          ${CARD_GRAPHQL_FIELDS}
-        }
-      }
-    }`,
-    isDraftMode,
-    { slug, preview: isDraftMode },
+): Promise<ListPost[]> {
+  const posts = await getAllPosts(isDraftMode);
+  return posts.filter((post) =>
+    post.authorsCollection?.items?.some((a) => a.slug === slug),
   );
 }
 

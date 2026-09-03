@@ -8,6 +8,7 @@ import CoverImage from "../../cover-image";
 import { RichText } from "@/lib/rich-text";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
+import { postAuthors } from "@/lib/authors";
 import { extractHeadings } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
@@ -70,9 +71,9 @@ export async function generateMetadata({
       url: canonical,
       siteName: SITE_TITLE,
       locale: DEFAULT_OG_LOCALE,
-      authors: post.author?.slug
-        ? [`${SITE_URL}/authors/${post.author.slug}`]
-        : undefined,
+      authors: postAuthors(post)
+        .filter((a) => a.slug)
+        .map((a) => `${SITE_URL}/authors/${a.slug}`) || undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -116,13 +117,13 @@ export default async function PostPage({
       : `${SITE_URL}/be_useful.jpg`,
     datePublished: post.date,
     dateModified: post.updatedDate ?? post.date,
-    author: {
-      "@type": "Person",
-      name: post.author?.name || SITE_AUTHOR,
-      ...(post.author?.slug
-        ? { url: `${SITE_URL}/authors/${post.author.slug}` }
-        : {}),
-    },
+    author: postAuthors(post).length > 0
+      ? postAuthors(post).map((a) => ({
+          "@type": "Person" as const,
+          name: a.name,
+          ...(a.slug ? { url: `${SITE_URL}/authors/${a.slug}` } : {}),
+        }))
+      : { "@type": "Person" as const, name: SITE_AUTHOR },
     publisher: {
       "@type": "Person",
       name: SITE_AUTHOR,
@@ -256,14 +257,17 @@ export default async function PostPage({
             <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
               {post.excerpt}
             </p>
-            {post.author && (
-              <div className="mb-10">
-                <Avatar
-                  name={post.author.name}
-                  slug={post.author.slug}
-                  picture={post.author.picture}
-                  meta={dateline}
-                />
+            {postAuthors(post).length > 0 && (
+              <div className="mb-10 flex flex-col gap-4">
+                {postAuthors(post).map((a) => (
+                  <Avatar
+                    key={a.slug ?? a.name}
+                    name={a.name}
+                    slug={a.slug}
+                    picture={a.picture}
+                    meta={dateline}
+                  />
+                ))}
               </div>
             )}
             {/* text-pretty on the prose container inherits into every child —
@@ -316,15 +320,23 @@ export default async function PostPage({
                 </ul>
               </nav>
             )}
-            {post.author?.bio && (
+            {postAuthors(post).some((a) => a.bio) && (
               // mt-6 after a tag row, mt-12 otherwise. This margin is the only
               // thing setting the space beneath the pills, so it has to match
               // the nav's pt-6 or the row sits off-centre in its band. Without
               // tags there is no band and the usual mt-12 applies.
               <div
-                className={`${tags.length > 0 ? "mt-6" : "mt-12"} border-t border-hairline pt-8`}
+                className={`${tags.length > 0 ? "mt-6" : "mt-12"} flex flex-col gap-8 border-t border-hairline pt-8`}
               >
-                <AuthorBioCard author={post.author} />
+                {postAuthors(post).map(
+                  (a) =>
+                    a.bio && (
+                      <AuthorBioCard
+                        key={a.slug ?? a.name}
+                        author={a}
+                      />
+                    ),
+                )}
               </div>
             )}
           </div>

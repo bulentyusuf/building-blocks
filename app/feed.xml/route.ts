@@ -25,7 +25,7 @@ export async function GET() {
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(post.excerpt || "")}</description>
-      ${post.author?.name ? `<author>${AUTHOR_EMAIL} (${escapeXml(post.author.name)})</author>` : ""}
+      ${post.authorsCollection?.items?.[0]?.name ? `<author>${AUTHOR_EMAIL} (${escapeXml(post.authorsCollection.items[0].name)})</author>` : ""}
     </item>`;
     })
     .join("");

@@ -75,14 +75,16 @@ export async function GET() {
     }
   }
 
-  // Same idea per author slug. Posts carry author.slug via POST_GRAPHQL_FIELDS.
+  // Same idea per author slug. Posts carry author slugs via LIST_GRAPHQL_FIELDS.
   const newestByAuthor = new Map<string, Date>();
   for (const post of posts) {
-    const slug = post.author?.slug;
-    if (!slug) continue;
     const date = postDate(post);
-    const current = newestByAuthor.get(slug);
-    if (!current || date > current) newestByAuthor.set(slug, date);
+    for (const a of post.authorsCollection?.items ?? []) {
+      const slug = a.slug;
+      if (!slug) continue;
+      const current = newestByAuthor.get(slug);
+      if (!current || date > current) newestByAuthor.set(slug, date);
+    }
   }
 
   const postEntries: SitemapEntry[] = posts.map((post) => ({
