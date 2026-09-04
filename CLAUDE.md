@@ -755,11 +755,11 @@ land, but nothing generates them.
 (Contentful's GraphQL cannot filter on an `Array<Link>` field, and `linkedFrom`
 has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
 
-- **It takes the posts, it does not fetch them.** A per-tag fetcher wrapping
-  `getAllPosts` — the removed `getPostsByTag` — issued a second identical
-  request per render. `getAllPosts` is `cache()`-wrapped now, so that fetcher
-  would dedupe rather than duplicate, but do not reintroduce one: passing the
-  list in still keeps the data flow visible at the call site.
+- **It takes the posts, it does not fetch them.** Not for request-count
+  reasons. Every fetcher in `lib/api.ts` is `cache()`-wrapped and a test holds
+  that, so a wrapper would dedupe. `postsWithTag` filters in memory because
+  Contentful cannot query the field at all, and callers pass the list in
+  because the data flow is then visible at the call site.
 - **Every surface reads the threshold through the one `visibleTagSlugs`
   helper**, and they must stay on one helper. It gates three: the glossary, the
   sitemap, and `/tags/[slug]`, which **404s** below it. A test asserts they
@@ -920,9 +920,8 @@ the retirement is done.
 
 There is no `getPostsByAuthor`. Contentful GraphQL cannot filter a collection
 on `Array<Link>`, so author pages fetch `getAllPosts` once and filter with
-`postsByAuthor`, exactly as tag pages do. `getAllPosts` is `cache()`-wrapped,
-so a second call would dedupe rather than duplicate, but fetching once per
-route and reading twice keeps the data flow visible at the call site.
+`postsByAuthor`, exactly as tag pages do. Fetching once and reading twice is a
+legibility choice, not a correctness one.
 
 Reversal, 3 September 2026. This replaces the contributor credits model, in
 which a post had one author plus optional secondary contributors. That was
@@ -1361,6 +1360,24 @@ carries its own `generateStaticParams` — colocated metadata routes do not
 inherit the page's. The duplicate `getAllPosts` across those two files is the
 accepted cost. Leave `dynamicParams` at its default `true`, so a post published
 through the webhook still gets a card on demand.
+
+### Every fetcher in `lib/api.ts` is `cache()`-wrapped
+
+No exceptions, including `getVisibleTagSlugs`, which is not itself a fetcher.
+`lib/api.cache-invariant.test.ts` holds this, with the unwrapped form as its
+known-bad control.
+
+This replaces three separate rules that told call sites to fetch once and pass
+the result down, on the grounds that `getAllPosts` was uncached. Those rules
+failed twice, and the second failure is the instructive one. `PostPage` obeyed
+them exactly, fetching once and passing the list into `visibleTagSlugs`, and
+still issued a duplicate query, because `getPostAndMorePosts` fetched the same
+list internally and neither call site could see the other. A rule about call
+sites cannot see composition.
+
+Passing a held list down rather than re-fetching is still the house style, but
+it is now about legibility. Getting it wrong costs a reader a moment, not a
+round trip.
 
 ### Three cache tags, and the webhook picks between them
 
