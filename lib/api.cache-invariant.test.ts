@@ -28,11 +28,11 @@ function cacheWrappedExports(source: string): string[] {
   return [...source.matchAll(/export const (\w+) = cache\(/g)].map((m) => m[1]);
 }
 
-function defaultedFetcherParams(source: string): string[] {
+function defaultedOrOptionalFetcherParams(source: string): string[] {
   return [
     ...source.matchAll(/export const (\w+) = cache\(\s*async \(([^)]*)\)/gs),
   ]
-    .filter(([, , params]) => params.includes("="))
+    .filter(([, , params]) => params.includes("=") || params.includes("?"))
     .map(([, name]) => name);
 }
 
@@ -52,11 +52,12 @@ describe("lib/api.ts fetcher caching", () => {
     expect(cacheWrappedExports(source).length).toBeGreaterThanOrEqual(15);
   });
 
-  it("declares no defaulted parameter on any fetcher", () => {
-    // cache() keys on the arguments as passed, so a default lets two spellings
-    // of the same intent occupy two memo entries. Requiring the argument is
-    // what makes tsc hold the call sites; this holds the declarations.
-    expect(defaultedFetcherParams(source)).toEqual([]);
+  it("declares no defaulted or optional parameter on any fetcher", () => {
+    // cache() keys on the arguments as passed, so a default or optional parameter
+    // lets two spellings of the same intent occupy two memo entries. Requiring
+    // the argument is what makes tsc hold the call sites; this holds the
+    // declarations.
+    expect(defaultedOrOptionalFetcherParams(source)).toEqual([]);
   });
 });
 
@@ -90,7 +91,15 @@ describe("the detectors themselves", () => {
     // Known-bad control, copied from getAllTags as it stood before PR F.
     const bad =
       "export const getAllTags = cache(async (isDraftMode = false): Promise<Tag[]> => {";
-    expect(defaultedFetcherParams(bad)).toEqual(["getAllTags"]);
+    expect(defaultedOrOptionalFetcherParams(bad)).toEqual(["getAllTags"]);
+  });
+
+  it("flags an optional parameter", () => {
+    // Known-bad control: an optional parameter lets callers omit the argument
+    // without triggering an '=' match, fragmenting the memo cache identically.
+    const bad =
+      "export const getAllTags = cache(async (isDraftMode?: boolean): Promise<Tag[]> => {";
+    expect(defaultedOrOptionalFetcherParams(bad)).toEqual(["getAllTags"]);
   });
 
   it("accepts a required parameter", () => {
@@ -98,6 +107,6 @@ describe("the detectors themselves", () => {
     // turned off within a week.
     const good =
       "export const getAllTags = cache(async (isDraftMode: boolean): Promise<Tag[]> => {";
-    expect(defaultedFetcherParams(good)).toEqual([]);
+    expect(defaultedOrOptionalFetcherParams(good)).toEqual([]);
   });
 });

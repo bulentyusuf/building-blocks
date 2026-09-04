@@ -510,10 +510,10 @@ export const getVisibleTagSlugs = cache(
 // Callers that hold this result should keep passing it down rather than
 // re-fetching. That is now a legibility preference rather than a correctness
 // one, and the call sites say so in one line each rather than repeating this.
-// No defaulted parameters on any fetcher in this file. cache() keys on the
-// argument list as it was passed, before defaults resolve, so getAllPosts()
-// and getAllPosts(false) are two memo entries meaning the same thing and the
-// second is a duplicate query nothing reports. Requiring the argument makes
+// No defaulted or optional parameters on any fetcher in this file. cache() keys on
+// the argument list as it was passed, before defaults or omissions resolve, so
+// getAllPosts() and getAllPosts(false) are two memo entries meaning the same thing
+// and the second is a duplicate query nothing reports. Requiring the argument makes
 // tsc hold that, which is cheaper and more durable than a guard scanning call
 // sites for omitted arguments.
 export const getAllPosts = cache(
