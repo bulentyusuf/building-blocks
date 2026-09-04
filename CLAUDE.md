@@ -1379,9 +1379,9 @@ Passing a held list down rather than re-fetching is still the house style, but
 it is now about legibility. Getting it wrong costs a reader a moment, not a
 round trip.
 
-None of them declares a defaulted or optional parameter either. `cache()` keys on the
-argument list as passed, so `getAllTags()` and `getAllTags(false)` would be two
-memo entries meaning the same thing. Requiring the argument makes `tsc` hold
+No fetcher declares a defaulted or optional parameter either. `cache()` keys on
+the argument list as passed, so `getAllTags()` and `getAllTags(false)` would be
+two memo entries meaning the same thing. Requiring the argument makes `tsc` hold
 every call site, which is why there is no guard scanning for omitted arguments
 and should not be one.
 
