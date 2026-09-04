@@ -256,11 +256,9 @@ export default async function PostPage({
             <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
               {widont(post.excerpt)}
             </p>
-            {authors.length > 0 && (
-              <div className="mb-10">
-                <Avatar authors={authors} meta={dateline} />
-              </div>
-            )}
+            <div className="mb-10">
+              <Avatar authors={authors} meta={dateline} />
+            </div>
             {/* text-pretty on the prose container inherits into every child —
                 paragraphs and in-body headings alike — so line breaking just
                 avoids a lone last word, without the aggressive re-balancing of
