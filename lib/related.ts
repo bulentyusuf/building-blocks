@@ -71,7 +71,23 @@ function score(
     ? AUTHOR_WEIGHT
     : 0;
 
-  const ageDays = (now - new Date(candidate.date).getTime()) / 86_400_000;
+  // Two ways this arithmetic turns hostile, both reachable from the corpus
+  // query, which filters on slug_exists only and has no date ceiling.
+  //
+  // A future date makes ageDays negative, and 0.5 raised to a negative power
+  // GROWS. A post dated a year out scores about 1.22, which clears
+  // CATEGORY_WEIGHT and breaks the invariant RECENCY_WEIGHT's own comment
+  // states. Clamping at zero makes a post-dated entry merely as recent as
+  // possible rather than more recent than possible.
+  //
+  // A missing or unparseable date gives NaN, which reaches the sort comparator
+  // as b.score - a.score and destroys the strict weak ordering sort assumes.
+  // Infinity instead sends 0.5 ** Infinity to exactly 0, so a post with no
+  // usable date gets no recency nudge and still sorts on its real signals.
+  const timestamp = new Date(candidate.date).getTime();
+  const ageDays = Number.isNaN(timestamp)
+    ? Number.POSITIVE_INFINITY
+    : Math.max(0, (now - timestamp) / 86_400_000);
   const recencyScore =
     RECENCY_WEIGHT * Math.pow(0.5, ageDays / RECENCY_HALF_LIFE_DAYS);
 
