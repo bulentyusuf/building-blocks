@@ -131,7 +131,7 @@ export default async function SearchPage() {
 
                         Links rather than pills because the tag is the subject
                         here, not metadata about something else. See
-                        CLAUDE.md's tag entry. */}
+                        docs/decisions.md's tag entry. */}
                     <Link
                       href={`/tags/${tag.slug}`}
                       className="font-display text-xl md:text-2xl font-bold text-brand-crimson transition-opacity duration-200 hover:opacity-80"

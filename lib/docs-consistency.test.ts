@@ -19,7 +19,7 @@ import path from "node:path";
 const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
 
-const DOCS = ["CLAUDE.md", "README.md"] as const;
+const DOCS = ["CLAUDE.md", "docs/decisions.md", "README.md"] as const;
 
 // Anything under docs/ is a briefing an implementer reads before writing code,
 // so a dead path or a stale repo name there does not merely mislead a reader,
@@ -106,6 +106,54 @@ describe("the CI gate CLAUDE.md describes", () => {
 
     expect(gateSentence).not.toMatch(/tsc --noEmit`? \+/);
     expect(commands).toContain("npm run build");
+  });
+});
+
+// CLAUDE.md is read in full at the start of every Claude Code session, so its
+// length is a running cost rather than a style preference. It reached 1,734
+// lines before the split that produced docs/decisions.md, at which point the
+// reasoning moved out and this budget went in to keep it out. An entry that
+// cannot be stated in a few lines belongs in docs/decisions.md with a marker
+// pointing at it; raising this number instead is how the split gets undone.
+const CLAUDE_MD_LINE_BUDGET = 320;
+
+describe("CLAUDE.md stays inside its line budget", () => {
+  it("is no longer than the budget", () => {
+    const lines = read("CLAUDE.md").split("\n").length;
+    expect(lines).toBeLessThanOrEqual(CLAUDE_MD_LINE_BUDGET);
+  });
+});
+
+describe("every decision marker in CLAUDE.md resolves", () => {
+  // CLAUDE.md cites docs/decisions.md by key rather than by heading text, so a
+  // heading can be reworded without breaking the link. What it cannot survive
+  // is the entry being deleted or the key being renamed on one side only —
+  // which leaves a short rule pointing at nothing, and no reader any way to
+  // find the argument. This is the check that the split does not rot.
+  const keysIn = (doc: string) =>
+    new Set([...doc.matchAll(/<!-- key: ([a-z0-9-]+) -->/g)].map((m) => m[1]));
+  const markersIn = (doc: string) =>
+    [...doc.matchAll(/\[→ `([a-z0-9-]+)`\]/g)].map((m) => m[1]);
+  const unresolved = (claude: string, decisions: string) => {
+    const keys = keysIn(decisions);
+    return markersIn(claude).filter((marker) => !keys.has(marker));
+  };
+
+  it("finds a key in docs/decisions.md for every marker", () => {
+    const markers = markersIn(read("CLAUDE.md"));
+    // Non-vacuous: an empty marker list would pass the filter below trivially.
+    expect(markers.length).toBeGreaterThan(20);
+    expect(unresolved(read("CLAUDE.md"), read("docs/decisions.md"))).toEqual(
+      [],
+    );
+  });
+
+  it("reports a marker whose key is not in docs/decisions.md", () => {
+    // Known-bad control. A key removed from docs/decisions.md must surface as
+    // an unresolved marker rather than passing quietly.
+    expect(
+      unresolved("[→ `no-such-entry`]", "<!-- key: cover-frames -->"),
+    ).toEqual(["no-such-entry"]);
   });
 });
 

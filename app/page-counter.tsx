@@ -3,14 +3,14 @@
  * the trailing text of the route's own `<h1>` — `{heading} <PageCounter
  * currentPage totalPages />` — not as a separate line anywhere in the header.
  *
- * This reverses a decision recorded in CLAUDE.md ("Page position captions
- * the list, not the heading"): the counter used to be `PageContext`, a block
- * rendered by `app/listing-page.tsx` after the standfirst, on its own line.
- * That mechanism broke under M5's `justify-between` row (CLAUDE.md, "The
- * masthead splits into heading and standfirst") in a way worse than the
- * visible bug it caused. The visible bug: `ListingPage` paired the
- * standfirst and the caption in a React fragment, which generates no box, so
- * the split-masthead row saw three children instead of two and
+ * This reverses a decision recorded in docs/decisions.md ("Page position
+ * captions the list, not the heading"): the counter used to be `PageContext`,
+ * a block rendered by `app/listing-page.tsx` after the standfirst, on its own
+ * line. That mechanism broke under M5's `justify-between` row
+ * (docs/decisions.md, "The masthead splits into heading and standfirst") in
+ * a way worse than the visible bug it caused. The visible bug: `ListingPage`
+ * paired the standfirst and the caption in a React fragment, which generates
+ * no box, so the split-masthead row saw three children instead of two and
  * `justify-between` spread all three across the full measure, stranding the
  * standfirst in the middle. That part was already fixed by wrapping the slot
  * (`app/wide-page.tsx`) before this change. The deeper problem survived the

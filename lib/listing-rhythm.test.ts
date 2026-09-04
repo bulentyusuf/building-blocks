@@ -8,10 +8,10 @@ import path from "node:path";
 //
 // The rule: whatever sits above a list item — a hairline between items, or
 // WidePage's own 3px rule (formerly the masthead band's bottom edge; see
-// CLAUDE.md, "The masthead band was retired in favour of a 3px rule") —
-// belongs the same distance from the cover below it. That distance is the
-// item's own top padding. So exactly one of the two may contribute space,
-// never both and never neither.
+// docs/decisions.md, "The masthead band was retired in favour of a 3px
+// rule") — belongs the same distance from the cover below it. That distance
+// is the item's own top padding. So exactly one of the two may contribute
+// space, never both and never neither.
 
 const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -74,7 +74,8 @@ describe("a wide page sits on the same grid as a narrow one", () => {
   // is animated, not just present.
   //
   // Three assertions retired here, from before Phase 1 of the band retirement
-  // (CLAUDE.md, "The masthead band was retired in favour of a 3px rule"):
+  // (docs/decisions.md, "The masthead band was retired in favour of a 3px
+  // rule"):
   //
   // "the band's top inset equals Container's default top padding" compared
   // app/page-band.tsx's own pt-8 against Container's — both gone now that
@@ -85,7 +86,8 @@ describe("a wide page sits on the same grid as a narrow one", () => {
   // "the bleed variant only ever deepens the bottom" tested the arithmetic
   // behind the `bleed` prop, which pulled a cover up across the band's
   // bottom edge. Covers are contained now (see "Covers take one of two
-  // frames" in CLAUDE.md) and WidePage no longer accepts the prop at all.
+  // frames" in docs/decisions.md) and WidePage no longer accepts the prop at
+  // all.
   //
   // "both breadcrumb tones keep the same bottom margin" guarded against the
   // dark (on-band) and light (on-cream) trail treatments in app/breadcrumb.tsx
@@ -178,8 +180,8 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   // capture prevents a spurious red. It does not catch a missed collapse.
   //
   // Also captures an arbitrary-value size (text-[2.5rem]), because the hero's
-  // 40px lg step (CLAUDE.md, "The home hero takes the split too") is off
-  // Tailwind's scale and the on-scale-only pattern silently dropped it —
+  // 40px lg step (docs/decisions.md, "The home hero takes the split too") is
+  // off Tailwind's scale and the on-scale-only pattern silently dropped it —
   // filtering both ramps down to text-2xl/md:text-3xl and reporting them
   // equal, a false PASS on the exact regression this test exists to catch.
   // Caught by running this test after that change landed, not by design; kept
@@ -237,10 +239,10 @@ describe("the hero's byline keeps Avatar whole", () => {
   // A first version of the split hero pulled the date out of Avatar's `meta`
   // prop and rendered it as a standalone line, to mirror the index card's
   // element order (headline, date, standfirst, tags) exactly. That shipped
-  // and was reverted (CLAUDE.md, "The home hero takes the split too"): Avatar
-  // already took name, picture and meta, and the date was already doing the
-  // right job inside it, so pulling it out cost a working component to chase
-  // a sequence no card actually needs matched field-by-field. Nothing else
+  // and was reverted (docs/decisions.md, "The home hero takes the split
+  // too"): Avatar already took name, picture and meta, and the date was
+  // already doing the right job inside it, so pulling it out cost a working
+  // component to chase a sequence no card actually needs matched field-by-field. Nothing else
   // catches a regression back to the pulled-apart version — jsdom renders
   // either shape without complaint — so this reads the source instead.
   const hero = read("app/page.tsx");

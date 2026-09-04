@@ -132,14 +132,16 @@ describe("scroll offset lives in exactly one place", () => {
   it("excludes prose files from Tailwind's source scanning", () => {
     // The blind spot that let the check below pass while the utility was
     // still shipping. Tailwind v4 scans every file .gitignore does not
-    // exclude, markdown included, so CLAUDE.md's sentence explaining why that
-    // utility must not exist was generating it. The walk below only covers
-    // app/ and lib/, and always will — the fix belongs in the stylesheet.
+    // exclude, markdown included, so CLAUDE.md's (now docs/decisions.md's)
+    // sentence explaining why that utility must not exist was generating it.
+    // The walk below only covers app/ and lib/, and always will — the fix
+    // belongs in the stylesheet.
     //
     // This comment says "the utility" rather than naming it for the same
     // reason: app/ and lib/ ARE scanned, so a literal class name here would
     // regenerate the rule. The test below enforces that.
     expect(css).toContain('@source not "../CLAUDE.md"');
+    expect(css).toContain('@source not "../docs/decisions.md"');
     expect(css).toContain('@source not "../README.md"');
   });
 

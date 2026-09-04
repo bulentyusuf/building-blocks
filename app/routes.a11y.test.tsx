@@ -279,10 +279,10 @@ function duplicateAnnouncements(): string[] {
 /**
  * The two routes where a repeated link is the design, not a defect.
  *
- * Both are recorded decisions in CLAUDE.md, so the check accommodates them
- * rather than the designs accommodating the check. It is a pattern per route,
- * not a skip: a duplicate of any OTHER shape still fails on these pages, which
- * is the part a plain exemption would have thrown away.
+ * Both are recorded decisions in docs/decisions.md, so the check
+ * accommodates them rather than the designs accommodating the check. It is a
+ * pattern per route, not a skip: a duplicate of any OTHER shape still fails
+ * on these pages, which is the part a plain exemption would have thrown away.
  */
 const EXPECTED_DUPLICATES: Record<string, { href: RegExp; because: string }> = {
   "/archive": {
@@ -296,8 +296,9 @@ const EXPECTED_DUPLICATES: Record<string, { href: RegExp; because: string }> = {
   "/tags": {
     href: /^\/posts\//,
     // The glossary groups every post under each of its tags, so a post with
-    // three tags appears three times — that repetition IS the index. CLAUDE.md
-    // notes the same property as the reason the page is data-pagefind-ignore.
+    // three tags appears three times — that repetition IS the index.
+    // docs/decisions.md notes the same property as the reason the page is
+    // data-pagefind-ignore.
     because: "the glossary lists each post once per tag it carries",
   },
 };

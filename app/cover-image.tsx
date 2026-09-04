@@ -26,8 +26,8 @@ import type { CoverImage as CoverImageAsset } from "@/lib/types";
 // is the case that made this worth fixing rather than noting.
 //
 // `description` is deliberately NOT consulted as a fallback. On an embedded
-// figure that field is the caption, and CLAUDE.md's note on it — one field
-// doing two jobs — is a warning, not a pattern to extend. A cover with no
+// figure that field is the caption, and docs/decisions.md's note on it — one
+// field doing two jobs — is a warning, not a pattern to extend. A cover with no
 // usable title is a content problem, and the warning below is how it surfaces.
 function coverAltText(image: CoverImageAsset): string {
   if (isPlaceholderTitle(image.title, image.fileName)) {

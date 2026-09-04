@@ -6,12 +6,13 @@ export type Crumb = { label: string; href?: string };
 
 /**
  * One surface, one style. Every wide route rendered its trail on the navy
- * masthead band until Phase 1 of the band retirement (CLAUDE.md), which is
- * why this used to carry a `tone` prop switching between a light (cream) and
- * a dark (navy) treatment — brand-crimson computed to 1.35:1 on that navy, so
- * the dark tone needed a white ring and an opacity hover instead of the
- * ordinary link styling. With the band gone every trail sits on cream, so
- * there is only one styling to carry and the accent is available again.
+ * masthead band until Phase 1 of the band retirement (docs/decisions.md),
+ * which is why this used to carry a `tone` prop switching between a light
+ * (cream) and a dark (navy) treatment — brand-crimson computed to 1.35:1 on
+ * that navy, so the dark tone needed a white ring and an opacity hover
+ * instead of the ordinary link styling. With the band gone every trail sits
+ * on cream, so there is only one styling to carry and the accent is
+ * available again.
  *
  * The one focus-visible exception the dark tone used to need — an explicit
  * white ring plus `outline-hidden` — is gone with it. Every link here now
