@@ -24,9 +24,10 @@ export function postAuthors<
  * wall postsWithTag hit in lib/tags.ts. The documented `linkedFrom` workaround
  * also returns no ordering, so it could not reproduce `date_DESC` either way.
  *
- * It takes the posts rather than fetching them, because `getAllPosts` is not
- * `cache()`-wrapped — a fetcher wrapping it here would be a second identical
- * request on every caller, all of which already hold the sitewide list.
+ * It takes the posts rather than fetching them because every caller already
+ * holds the sitewide list. `getAllPosts` is `cache()`-wrapped now, so a fetcher
+ * here would dedupe rather than duplicate, but passing the list in still keeps
+ * the data flow visible at the call site.
  */
 export function postsByAuthor<
   T extends Pick<Post | ListPost, "authorsCollection">,

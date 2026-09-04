@@ -57,8 +57,9 @@ export default async function TagPage({
   }
 
   // One fetch, read twice. The threshold check needs the sitewide list and the
-  // post list is a filter over that same result, so fetching for each was two
-  // identical requests — getAllPosts is not cache()-wrapped.
+  // post list is a filter over that same result. getAllPosts is cache()-wrapped
+  // now, so fetching for each would dedupe rather than duplicate, but holding
+  // the single result keeps the data flow visible at the call site.
   const allPosts = await getAllPosts(isEnabled);
   const visible = visibleTagSlugs(allPosts);
 

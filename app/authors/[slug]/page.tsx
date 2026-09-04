@@ -68,8 +68,9 @@ export default async function AuthorPage({
   // One fetch, read twice. There is no getPostsByAuthor — `authors` is an
   // Array<Link> and Contentful's GraphQL cannot filter a collection on one —
   // so this page fetches the sitewide list once and filters in memory, the
-  // same pattern app/tags/[slug]/page.tsx uses. getAllPosts is not
-  // cache()-wrapped, so calling it twice here would be two identical requests.
+  // same pattern app/tags/[slug]/page.tsx uses. getAllPosts is cache()-wrapped
+  // now, so calling it twice here would dedupe rather than duplicate, but
+  // holding the single result keeps the data flow visible at the call site.
   const allPosts = await getAllPosts(isEnabled);
   const posts = postsByAuthor(allPosts, slug);
   const visibleTags = visibleTagSlugs(allPosts);

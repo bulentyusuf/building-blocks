@@ -96,9 +96,10 @@ export default async function PostPage({
   const { slug } = await params;
   // getAllPosts alongside the post itself, because a pill may only render if
   // its tag clears the threshold across the whole site, and that count cannot
-  // be derived from one post. The list fragment omits every post body, and the
-  // response is ISR-cached under the same "posts" tag as everything else, so
-  // this costs one slim cached query rather than a second body fetch.
+  // be derived from one post. getPostAndMorePosts fetches the same list
+  // internally to rank related posts, so this is the second of two calls in one
+  // render. getAllPosts is cache()-wrapped and both pass the same isDraftMode,
+  // so the second dedupes.
   const [{ post, morePosts }, allPosts] = await Promise.all([
     getPostAndMorePosts(slug, isEnabled),
     getAllPosts(isEnabled),

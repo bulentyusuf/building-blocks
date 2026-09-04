@@ -482,19 +482,27 @@ function extractPost(fetchResponse: PostCollectionResponse): Post | undefined {
 // listing query on those pages, accepted because the alternative is a pill that
 // dead-ends.
 //
-// The home pages already hold getAllPosts. They should pass
+// The home pages already hold getAllPosts. They should still pass
 // visibleTagSlugs(allPosts) straight through rather than calling this, because
-// getAllPosts is not cache()-wrapped and calling it twice is two requests.
+// it is clearer at the call site about where the list came from. It is no
+// longer a correctness matter: getAllPosts is cache()-wrapped, so a second
+// identical call dedupes.
 export async function getVisibleTagSlugs(
   isDraftMode = false,
 ): Promise<Set<string>> {
   return visibleTagSlugs(await getAllPosts(isDraftMode));
 }
 
-export async function getAllPosts(isDraftMode = false): Promise<ListPost[]> {
-  return fetchAllCollectionItems<ListPost>(
-    "postCollection",
-    `query GetAllPosts($preview: Boolean, $limit: Int!, $skip: Int!) {
+// cache()-wrapped because the post page reaches this twice per render from two
+// directions that cannot see each other: getPostAndMorePosts calls it to rank
+// related posts, and the page calls it again for the sitewide tag counts, which
+// cannot be derived from one post. cache() dedupes identical calls and both
+// pass the same isDraftMode, so the second is a dedupe rather than a request.
+export const getAllPosts = cache(
+  async (isDraftMode = false): Promise<ListPost[]> => {
+    return fetchAllCollectionItems<ListPost>(
+      "postCollection",
+      `query GetAllPosts($preview: Boolean, $limit: Int!, $skip: Int!) {
       postCollection(where: { slug_exists: true }, order: date_DESC, preview: $preview, limit: $limit, skip: $skip) {
         total
         items {
@@ -502,10 +510,11 @@ export async function getAllPosts(isDraftMode = false): Promise<ListPost[]> {
         }
       }
     }`,
-    isDraftMode,
-    { preview: isDraftMode },
-  );
-}
+      isDraftMode,
+      { preview: isDraftMode },
+    );
+  },
+);
 
 // A single post, listing fragment only — no related/backfill queries and no
 // heavy `content`/`bio`. For consumers that need just the post's own fields
