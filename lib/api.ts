@@ -483,15 +483,13 @@ function extractPost(fetchResponse: PostCollectionResponse): Post | undefined {
 // dead-ends.
 //
 // The home pages already hold getAllPosts. They should still pass
-// visibleTagSlugs(allPosts) straight through rather than calling this, because
-// it is clearer at the call site about where the list came from. It is no
-// longer a correctness matter: getAllPosts is cache()-wrapped, so a second
-// identical call dedupes.
-export async function getVisibleTagSlugs(
-  isDraftMode = false,
-): Promise<Set<string>> {
-  return visibleTagSlugs(await getAllPosts(isDraftMode));
-}
+// visibleTagSlugs(allPosts) straight through rather than calling this — a
+// legibility choice, not a correctness one, see getAllPosts below.
+export const getVisibleTagSlugs = cache(
+  async (isDraftMode = false): Promise<Set<string>> => {
+    return visibleTagSlugs(await getAllPosts(isDraftMode));
+  },
+);
 
 // cache()-wrapped because the post page reaches this twice per render from two
 // directions that cannot see each other: getPostAndMorePosts calls it to rank
@@ -608,10 +606,11 @@ export const getPage = cache(
   },
 );
 
-export async function getAllPages(isDraftMode: boolean): Promise<PageMeta[]> {
-  return fetchAllCollectionItems<PageMeta>(
-    "pageCollection",
-    `query GetAllPages($preview: Boolean, $limit: Int!, $skip: Int!) {
+export const getAllPages = cache(
+  async (isDraftMode: boolean): Promise<PageMeta[]> => {
+    return fetchAllCollectionItems<PageMeta>(
+      "pageCollection",
+      `query GetAllPages($preview: Boolean, $limit: Int!, $skip: Int!) {
       pageCollection(where: { slug_exists: true }, preview: $preview, limit: $limit, skip: $skip) {
         total
         items {
@@ -623,13 +622,14 @@ export async function getAllPages(isDraftMode: boolean): Promise<PageMeta[]> {
         }
       }
     }`,
-    isDraftMode,
-    { preview: isDraftMode },
-    // The sitemap is this query's other consumer, so PAGES busts it too — which
-    // is what a newly published or unpublished Page needs.
-    CACHE_TAGS.PAGES,
-  );
-}
+      isDraftMode,
+      { preview: isDraftMode },
+      // The sitemap is this query's other consumer, so PAGES busts it too — which
+      // is what a newly published or unpublished Page needs.
+      CACHE_TAGS.PAGES,
+    );
+  },
+);
 
 // The editable standfirst and meta description for a browse page.
 //
@@ -701,11 +701,11 @@ export const getTagBySlug = cache(
 
 // Posts carrying a tag are filtered in memory by postsWithTag in lib/tags.ts,
 // not fetched here. There is no per-tag query to write — Contentful's GraphQL
-// cannot filter a collection on an Array<Link> field — and a fetcher wrapping
-// getAllPosts only hid a second identical request from callers that already
-// held the list. See the note on postsWithTag.
+// cannot filter a collection on an Array<Link> field. That is the whole reason,
+// and it has nothing to do with request counts: every fetcher in this file is
+// cache()-wrapped, so a wrapper would have been redundant rather than costly.
 
-export async function getAllTags(isDraftMode = false): Promise<Tag[]> {
+export const getAllTags = cache(async (isDraftMode = false): Promise<Tag[]> => {
   return fetchAllCollectionItems<Tag>(
     "tagCollection",
     `query GetAllTags($preview: Boolean, $limit: Int!, $skip: Int!) {
@@ -721,14 +721,13 @@ export async function getAllTags(isDraftMode = false): Promise<Tag[]> {
     isDraftMode,
     { preview: isDraftMode },
   );
-}
+});
 
-export async function getAllCategories(
-  isDraftMode = false,
-): Promise<Category[]> {
-  return fetchAllCollectionItems<Category>(
-    "categoryCollection",
-    `query GetAllCategories($preview: Boolean, $limit: Int!, $skip: Int!) {
+export const getAllCategories = cache(
+  async (isDraftMode = false): Promise<Category[]> => {
+    return fetchAllCollectionItems<Category>(
+      "categoryCollection",
+      `query GetAllCategories($preview: Boolean, $limit: Int!, $skip: Int!) {
       categoryCollection(where: { slug_exists: true }, order: name_ASC, preview: $preview, limit: $limit, skip: $skip) {
         total
         items {
@@ -743,10 +742,11 @@ export async function getAllCategories(
         }
       }
     }`,
-    isDraftMode,
-    { preview: isDraftMode },
-  );
-}
+      isDraftMode,
+      { preview: isDraftMode },
+    );
+  },
+);
 
 export const getCategoryBySlug = cache(
   async (slug: string, isDraftMode = false): Promise<Category | undefined> => {
@@ -781,13 +781,15 @@ export const getCategoryBySlug = cache(
 //
 // If a caller ever needs `category`, `author` or `updatedDate` here, add
 // LIST_GRAPHQL_FIELDS rather than reaching back for the full one.
-export async function getPostsByCategory(
-  slug: string,
-  isDraftMode = false,
-): Promise<CardPost[]> {
-  return fetchAllCollectionItems<CardPost>(
-    "postCollection",
-    `query GetPostsByCategory($slug: String!, $preview: Boolean, $limit: Int!, $skip: Int!) {
+//
+// cache() keys on the full argument list, so this only dedupes calls for the
+// same (slug, isDraftMode) pair — the first fetcher in this file where the
+// memo key is not just the draft-mode boolean.
+export const getPostsByCategory = cache(
+  async (slug: string, isDraftMode = false): Promise<CardPost[]> => {
+    return fetchAllCollectionItems<CardPost>(
+      "postCollection",
+      `query GetPostsByCategory($slug: String!, $preview: Boolean, $limit: Int!, $skip: Int!) {
       postCollection(where: { category: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit, skip: $skip) {
         total
         items {
@@ -795,34 +797,40 @@ export async function getPostsByCategory(
         }
       }
     }`,
-    isDraftMode,
-    { slug, preview: isDraftMode },
-  );
-}
+      isDraftMode,
+      { slug, preview: isDraftMode },
+    );
+  },
+);
 
 // Recent posts in a category, capped server-side. Same card fragment as
 // getPostsByCategory above; the difference is the limit. This one teases a few
 // posts on the categories landing page, that one returns the whole category so
 // the index can paginate it.
-export async function getRecentPostsByCategory(
-  slug: string,
-  limit: number,
-  isDraftMode = false,
-): Promise<CardPost[]> {
-  const entries = await fetchGraphQL<CardPostCollectionResponse>(
-    `query GetRecentPostsByCategory($slug: String!, $limit: Int!, $preview: Boolean) {
+//
+// cache() keys on (slug, limit, isDraftMode) here, so a call only dedupes
+// against another asking for the same slug and the same cap.
+export const getRecentPostsByCategory = cache(
+  async (
+    slug: string,
+    limit: number,
+    isDraftMode = false,
+  ): Promise<CardPost[]> => {
+    const entries = await fetchGraphQL<CardPostCollectionResponse>(
+      `query GetRecentPostsByCategory($slug: String!, $limit: Int!, $preview: Boolean) {
       postCollection(where: { category: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit) {
         items {
           ${CARD_GRAPHQL_FIELDS}
         }
       }
     }`,
-    isDraftMode,
-    { slug, limit, preview: isDraftMode },
-  );
+      isDraftMode,
+      { slug, limit, preview: isDraftMode },
+    );
 
-  return entries?.data?.postCollection?.items ?? [];
-}
+    return entries?.data?.postCollection?.items ?? [];
+  },
+);
 
 export const getAuthorBySlug = cache(
   async (slug: string, isDraftMode = false): Promise<Author | undefined> => {
@@ -859,10 +867,11 @@ export const getAuthorBySlug = cache(
 // does not exist, the same wall postsWithTag hit. Author pages fetch
 // getAllPosts once and filter in memory with postsByAuthor, in lib/authors.ts.
 
-export async function getAllAuthors(isDraftMode = false): Promise<Author[]> {
-  return fetchAllCollectionItems<Author>(
-    "authorCollection",
-    `query GetAllAuthors($preview: Boolean, $limit: Int!, $skip: Int!) {
+export const getAllAuthors = cache(
+  async (isDraftMode = false): Promise<Author[]> => {
+    return fetchAllCollectionItems<Author>(
+      "authorCollection",
+      `query GetAllAuthors($preview: Boolean, $limit: Int!, $skip: Int!) {
       authorCollection(where: { slug_exists: true }, order: name_ASC, preview: $preview, limit: $limit, skip: $skip) {
         total
         items {
@@ -872,7 +881,8 @@ export async function getAllAuthors(isDraftMode = false): Promise<Author[]> {
         }
       }
     }`,
-    isDraftMode,
-    { preview: isDraftMode },
-  );
-}
+      isDraftMode,
+      { preview: isDraftMode },
+    );
+  },
+);
