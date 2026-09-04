@@ -98,6 +98,13 @@ module.exports = {
   // Off by default in Next; suppresses free stack fingerprinting for no
   // functional cost.
   poweredByHeader: false,
+  // next dev upserts a managed block into CLAUDE.md on every start, via
+  // node_modules/next/dist/server/lib/generate-agent-files.js. CLAUDE.md is a
+  // hand-maintained house-rules doc and a tracked file, so a routine command
+  // rewriting it is a diff waiting to be committed by mistake. It happened
+  // once already and was caught by luck. start-server.js gates the write on
+  // this flag.
+  agentRules: false,
   images: {
     loader: "custom",
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
