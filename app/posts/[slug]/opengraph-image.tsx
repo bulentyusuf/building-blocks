@@ -25,8 +25,11 @@ export const runtime = "nodejs";
 //
 // Colocated metadata routes do not inherit the page's generateStaticParams, so
 // the slugs have to be enumerated again here. That is a second getAllPosts at
-// build time — it is not cache()-wrapped — which is one listing query per
-// build, paid once, against 20-odd renders moved off the request path.
+// build time — getAllPosts is cache()-wrapped now, but React's cache() dedupes
+// only within a single request/render, and this route's own generateStaticParams
+// runs in a separate pass from the page's, so it stays a real second query —
+// one listing query per build, paid once, against 20-odd renders moved off the
+// request path.
 //
 // dynamicParams stays at its default of true, which is what makes this safe
 // for a post published through the webhook: a slug that was not in the build
