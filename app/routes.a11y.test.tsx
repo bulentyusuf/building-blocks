@@ -197,8 +197,18 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
   ["not-found", () => import("@/app/not-found")],
 ];
 
+// The first test in this suite pays a one-time cold-start penalty: dynamic
+// module compilation of the route and its dependency graph (e.g. date-fns,
+// layouts), plus axe-core's first-run rule and standard compilation inside
+// JSDOM. Under parallel test runner load, this initial test can take 2–4 s
+// (and timed out under Vitest's 5 000 ms default when /archive sat first in
+// the list), cascading into a re-entrancy failure on the subsequent test
+// while the orphaned axe.run() was still in flight. 15 s gives ample headroom
+// for the cold start without masking genuine hangs.
+const AXE_TIMEOUT = 15_000;
+
 describe.each(routes)("%s", (name, load) => {
-  it("has no axe violations", async () => {
+  it("has no axe violations", { timeout: AXE_TIMEOUT }, async () => {
     const mod = (await load()) as { default: () => Promise<ReactElement> };
     const { violations, lang } = await auditRoute(mod.default);
     expect(violations, `${name}\n\n${describeViolations(violations)}`).toEqual(
@@ -210,22 +220,29 @@ describe.each(routes)("%s", (name, load) => {
     expect(lang, `${name} rendered <html> with no lang`).toBeTruthy();
   });
 
-  it("renders something for axe to have audited", async () => {
-    // The non-vacuous half, and it is not decoration. An empty render passes
-    // every rule, and a fixture drifting out of step with a route's data shape
-    // is the likeliest way for that to happen quietly — the page would fall to
-    // its empty state and the assertion above would stay green forever, on a
-    // route nobody was watching in the first place.
-    const mod = (await load()) as { default: () => Promise<ReactElement> };
-    await auditRoute(mod.default);
-    const main = document.querySelector("main");
-    expect(main, `${name} rendered no <main>`).not.toBeNull();
-    expect(
-      main!.textContent!.trim().length,
-      `${name} rendered almost nothing`,
-    ).toBeGreaterThan(100);
-    expect(main!.querySelector("h1"), `${name} rendered no h1`).not.toBeNull();
-  });
+  it(
+    "renders something for axe to have audited",
+    { timeout: AXE_TIMEOUT },
+    async () => {
+      // The non-vacuous half, and it is not decoration. An empty render passes
+      // every rule, and a fixture drifting out of step with a route's data shape
+      // is the likeliest way for that to happen quietly — the page would fall to
+      // its empty state and the assertion above would stay green forever, on a
+      // route nobody was watching in the first place.
+      const mod = (await load()) as { default: () => Promise<ReactElement> };
+      await auditRoute(mod.default);
+      const main = document.querySelector("main");
+      expect(main, `${name} rendered no <main>`).not.toBeNull();
+      expect(
+        main!.textContent!.trim().length,
+        `${name} rendered almost nothing`,
+      ).toBeGreaterThan(100);
+      expect(
+        main!.querySelector("h1"),
+        `${name} rendered no h1`,
+      ).not.toBeNull();
+    },
+  );
 });
 
 /**
@@ -286,25 +303,29 @@ const EXPECTED_DUPLICATES: Record<string, { href: RegExp; because: string }> = {
 };
 
 describe.each(routes)("%s", (name, load) => {
-  it("announces each destination at most once", async () => {
-    const mod = (await load()) as { default: () => Promise<ReactElement> };
-    await auditRoute(mod.default);
-    const expected = EXPECTED_DUPLICATES[name];
-    const duplicates = duplicateAnnouncements();
-    const unexpected = expected
-      ? duplicates.filter((d) => !expected.href.test(d))
-      : duplicates;
-    expect(unexpected, `${name}: ${unexpected.join(", ")}`).toEqual([]);
+  it(
+    "announces each destination at most once",
+    { timeout: AXE_TIMEOUT },
+    async () => {
+      const mod = (await load()) as { default: () => Promise<ReactElement> };
+      await auditRoute(mod.default);
+      const expected = EXPECTED_DUPLICATES[name];
+      const duplicates = duplicateAnnouncements();
+      const unexpected = expected
+        ? duplicates.filter((d) => !expected.href.test(d))
+        : duplicates;
+      expect(unexpected, `${name}: ${unexpected.join(", ")}`).toEqual([]);
 
-    if (expected) {
-      // The carve-out has to keep earning itself. If the design it describes
-      // ever goes away, this is what says so — otherwise the exemption sits
-      // there forever, quietly excusing a defect that arrives later under the
-      // same shape.
-      expect(
-        duplicates.some((d) => expected.href.test(d)),
-        `${name} no longer duplicates any link, so the allowance for "${expected.because}" is stale and should be removed`,
-      ).toBe(true);
-    }
-  });
+      if (expected) {
+        // The carve-out has to keep earning itself. If the design it describes
+        // ever goes away, this is what says so — otherwise the exemption sits
+        // there forever, quietly excusing a defect that arrives later under the
+        // same shape.
+        expect(
+          duplicates.some((d) => expected.href.test(d)),
+          `${name} no longer duplicates any link, so the allowance for "${expected.because}" is stale and should be removed`,
+        ).toBe(true);
+      }
+    },
+  );
 });
