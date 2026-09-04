@@ -1,4 +1,4 @@
-import type { Post, ListPost, Author } from "./types";
+import type { Post, ListPost } from "./types";
 
 /**
  * Authors on a post, in credit order, flattened out of Contentful's collection
@@ -10,9 +10,18 @@ import type { Post, ListPost, Author } from "./types";
  */
 export function postAuthors<
   T extends Pick<Post | ListPost, "authorsCollection">,
->(post: T): Author[] {
+>(
+  post: T,
+): NonNullable<NonNullable<T["authorsCollection"]>["items"][number]>[] {
+  // The return type is derived from T rather than fixed to Author[] because
+  // ListPost narrows its items to Omit<Author, "bio">, and a predicate of
+  // `a is Author` widened that straight back. A bio read off a list-sourced
+  // post then typechecked and rendered nothing, which is the exact failure the
+  // Omit on ListPost exists to prevent. bio is optional on Author, so the Omit
+  // never blocked assignment, only property access, and only this signature
+  // preserves that.
   return (post.authorsCollection?.items ?? []).filter(
-    (a): a is Author => a != null,
+    (a): a is NonNullable<typeof a> => a != null,
   );
 }
 
@@ -24,9 +33,9 @@ export function postAuthors<
  * wall postsWithTag hit in lib/tags.ts. The documented `linkedFrom` workaround
  * also returns no ordering, so it could not reproduce `date_DESC` either way.
  *
- * It takes the posts rather than fetching them, because `getAllPosts` is not
- * `cache()`-wrapped — a fetcher wrapping it here would be a second identical
- * request on every caller, all of which already hold the sitewide list.
+ * It takes the posts rather than fetching them because every caller already
+ * holds the sitewide list. Passing it in is a legibility choice now, not a
+ * correctness one, see `getAllPosts` in `lib/api.ts`.
  */
 export function postsByAuthor<
   T extends Pick<Post | ListPost, "authorsCollection">,

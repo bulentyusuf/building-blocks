@@ -174,11 +174,9 @@ function HeroPost({
               {widont(title)}
             </Link>
           </h2>
-          {authors.length > 0 && (
-            <div className="flex items-center">
-              <Avatar authors={authors} meta={dateline} />
-            </div>
-          )}
+          <div className="flex items-center">
+            <Avatar authors={authors} meta={dateline} />
+          </div>
         </div>
         <div>
           <p className="text-lg leading-relaxed text-pretty">
