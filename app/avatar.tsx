@@ -72,7 +72,19 @@ export default function Avatar({
   authors: AvatarAuthor[];
   meta?: ReactNode;
 }) {
-  if (authors.length === 0) return null;
+  // An unpublished author reference comes back from Contentful as null and is
+  // filtered out upstream, so a post can reach here with an empty array while
+  // still carrying a date and a reading time. Returning null outright took the
+  // meta down with the byline, which is silent data loss on the only surface
+  // that renders it. Empty AND no meta still renders nothing, so the
+  // zero-authors contract for callers that pass no meta is unchanged.
+  if (authors.length === 0) {
+    return meta ? (
+      <div className="text-sm font-normal leading-tight text-brand-muted">
+        {meta}
+      </div>
+    ) : null;
+  }
 
   const last = authors.length - 1;
   const stacked = authors.length > 1;
