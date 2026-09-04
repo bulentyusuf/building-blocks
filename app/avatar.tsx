@@ -64,6 +64,13 @@ function AuthorLink({ author }: { author: AvatarAuthor }) {
  * front, and their names on one line joined by an ampersand rather than
  * moved below the discs, matching the single-author shape as closely as the
  * extra name allows.
+ *
+ * The empty-authors case is handled here, not at the call sites. Both callers
+ * pass meta unconditionally and let this decide. Do not add an
+ * `authors.length > 0` guard at a call site: two of them had one, they drifted
+ * apart, and the one on the home hero was still silently dropping the dateline
+ * after the post page stopped. A caller that genuinely wants nothing rendered
+ * for an authorless post passes no meta.
  */
 export default function Avatar({
   authors,
