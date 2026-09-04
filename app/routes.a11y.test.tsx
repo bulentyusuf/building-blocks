@@ -197,8 +197,17 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
   ["not-found", () => import("@/app/not-found")],
 ];
 
+// The /archive route renders every post on the site, producing the heaviest
+// DOM tree axe has to walk. Under load (CI or a busy local machine) axe.run()
+// intermittently exceeds Vitest's default 5 000 ms timeout, which cascades
+// into the next test too — axe-core's re-entrancy guard trips because the
+// timed-out run is still in flight. 15 s gives 3× headroom without masking
+// genuine hangs. Applied to every route uniformly: they all do SSR → axe, and
+// a per-parameter branch inside describe.each would obscure the intent.
+const AXE_TIMEOUT = 15_000;
+
 describe.each(routes)("%s", (name, load) => {
-  it("has no axe violations", async () => {
+  it("has no axe violations", { timeout: AXE_TIMEOUT }, async () => {
     const mod = (await load()) as { default: () => Promise<ReactElement> };
     const { violations, lang } = await auditRoute(mod.default);
     expect(violations, `${name}\n\n${describeViolations(violations)}`).toEqual(
@@ -210,7 +219,7 @@ describe.each(routes)("%s", (name, load) => {
     expect(lang, `${name} rendered <html> with no lang`).toBeTruthy();
   });
 
-  it("renders something for axe to have audited", async () => {
+  it("renders something for axe to have audited", { timeout: AXE_TIMEOUT }, async () => {
     // The non-vacuous half, and it is not decoration. An empty render passes
     // every rule, and a fixture drifting out of step with a route's data shape
     // is the likeliest way for that to happen quietly — the page would fall to
@@ -286,7 +295,7 @@ const EXPECTED_DUPLICATES: Record<string, { href: RegExp; because: string }> = {
 };
 
 describe.each(routes)("%s", (name, load) => {
-  it("announces each destination at most once", async () => {
+  it("announces each destination at most once", { timeout: AXE_TIMEOUT }, async () => {
     const mod = (await load()) as { default: () => Promise<ReactElement> };
     await auditRoute(mod.default);
     const expected = EXPECTED_DUPLICATES[name];
