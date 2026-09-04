@@ -197,13 +197,14 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
   ["not-found", () => import("@/app/not-found")],
 ];
 
-// The /archive route renders every post on the site, producing the heaviest
-// DOM tree axe has to walk. Under load (CI or a busy local machine) axe.run()
-// intermittently exceeds Vitest's default 5 000 ms timeout, which cascades
-// into the next test too — axe-core's re-entrancy guard trips because the
-// timed-out run is still in flight. 15 s gives 3× headroom without masking
-// genuine hangs. Applied to every route uniformly: they all do SSR → axe, and
-// a per-parameter branch inside describe.each would obscure the intent.
+// The first test in this suite pays a one-time cold-start penalty: dynamic
+// module compilation of the route and its dependency graph (e.g. date-fns,
+// layouts), plus axe-core's first-run rule and standard compilation inside
+// JSDOM. Under parallel test runner load, this initial test can take 2–4 s
+// (and timed out under Vitest's 5 000 ms default when /archive sat first in
+// the list), cascading into a re-entrancy failure on the subsequent test
+// while the orphaned axe.run() was still in flight. 15 s gives ample headroom
+// for the cold start without masking genuine hangs.
 const AXE_TIMEOUT = 15_000;
 
 describe.each(routes)("%s", (name, load) => {
