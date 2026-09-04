@@ -23,7 +23,7 @@ import path from "node:path";
 //
 // Argument-count drift — getBrowseIntro(slug) silently diverging from
 // getBrowseIntro(slug, false) — used to be the second fragility here, but
-// lib/api.ts now declares no defaulted parameters on any fetcher, so tsc
+// lib/api.ts now declares no defaulted or optional parameters on any fetcher, so tsc
 // rejects an omitted argument before this file ever sees it. The arity
 // assertion below stays as a cheap double-check and a count-of-call-sites
 // guard, but it is no longer the primary defence.
