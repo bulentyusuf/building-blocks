@@ -25,9 +25,8 @@ export function postAuthors<
  * also returns no ordering, so it could not reproduce `date_DESC` either way.
  *
  * It takes the posts rather than fetching them because every caller already
- * holds the sitewide list. `getAllPosts` is `cache()`-wrapped now, so a fetcher
- * here would dedupe rather than duplicate, but passing the list in still keeps
- * the data flow visible at the call site.
+ * holds the sitewide list. Passing it in is a legibility choice now, not a
+ * correctness one, see `getAllPosts` in `lib/api.ts`.
  */
 export function postsByAuthor<
   T extends Pick<Post | ListPost, "authorsCollection">,

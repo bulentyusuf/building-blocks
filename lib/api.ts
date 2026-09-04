@@ -498,6 +498,20 @@ export async function getVisibleTagSlugs(
 // related posts, and the page calls it again for the sitewide tag counts, which
 // cannot be derived from one post. cache() dedupes identical calls and both
 // pass the same isDraftMode, so the second is a dedupe rather than a request.
+//
+// It has to be cache(), because nothing below it dedupes. Checked against the
+// installed Next 16.3.3 source, node_modules/next/dist/server/lib/patch-fetch.js:
+// the Data Cache is gated on a fetch setting an explicit `cache` or
+// `next.revalidate` option, not on the HTTP method. fetchGraphQL sets neither,
+// only next: { tags }, so autoNoCache applies and the response is never
+// persisted. The tag still attaches to the enclosing page's Full Route Cache
+// entry, which is what makes revalidateTag work, but that is a different
+// mechanism from the response being reused. A comment here previously claimed
+// the second call was free because it was "ISR-cached"; it was not.
+//
+// Callers that hold this result should keep passing it down rather than
+// re-fetching. That is now a legibility preference rather than a correctness
+// one, and the call sites say so in one line each rather than repeating this.
 export const getAllPosts = cache(
   async (isDraftMode = false): Promise<ListPost[]> => {
     return fetchAllCollectionItems<ListPost>(

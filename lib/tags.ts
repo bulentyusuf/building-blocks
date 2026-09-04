@@ -48,10 +48,9 @@ export function visibleTagSlugs(
  *
  * It takes the posts rather than fetching them because every caller already
  * holds the `getAllPosts` result — it needs the sitewide list anyway, to decide
- * whether the tag clears `MIN_POSTS_PER_TAG`. `getAllPosts` is `cache()`-wrapped
- * now, so a fetcher here would dedupe rather than duplicate, but passing the
- * list in still keeps the data flow visible at the call site. Order is the
- * caller's: getAllPosts already sorts `date_DESC`.
+ * whether the tag clears `MIN_POSTS_PER_TAG`. Passing the list in is a
+ * legibility choice now, not a correctness one, see `getAllPosts` in
+ * `lib/api.ts`. Order is the caller's: getAllPosts already sorts `date_DESC`.
  */
 export function postsWithTag<T extends Pick<Post | ListPost, "tagsCollection">>(
   posts: T[],
