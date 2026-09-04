@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:atom="http://www.w3.org/2005/Atom">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <xsl:output method="html" version="1.0" encoding="UTF-8" indent="yes"/>
   <xsl:template match="/">
     <html lang="en">
@@ -119,7 +119,25 @@
                 <xsl:attribute name="href"><xsl:value-of select="link"/></xsl:attribute>
                 <xsl:value-of select="title"/>
               </a>
-              <p class="meta"><xsl:value-of select="pubDate"/></p>
+              <p class="meta">
+                <xsl:value-of select="pubDate"/>
+                <xsl:if test="dc:creator">
+                  <xsl:text> • by </xsl:text>
+                  <xsl:for-each select="dc:creator">
+                    <xsl:value-of select="."/>
+                    <xsl:if test="position() != last()">
+                      <xsl:choose>
+                        <xsl:when test="position() = last() - 1">
+                          <xsl:text> &amp; </xsl:text>
+                        </xsl:when>
+                        <xsl:otherwise>
+                          <xsl:text>, </xsl:text>
+                        </xsl:otherwise>
+                      </xsl:choose>
+                    </xsl:if>
+                  </xsl:for-each>
+                </xsl:if>
+              </p>
               <p class="excerpt"><xsl:value-of select="description"/></p>
             </li>
           </xsl:for-each>

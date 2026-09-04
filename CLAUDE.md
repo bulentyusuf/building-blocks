@@ -901,14 +901,16 @@ the standalone package parses fine, which is what sank an earlier display face.
 
 Authors share the byline as co-authors, but the order carries meaning: the
 first entry is the lead. It sits in front in the 14px-overlapped portrait
-stack, reads first in the name line, and fills the two surfaces that take
-one value, the RSS `<author>` element and the OG image byline. Reordering
-the array in Contentful changes both. The Contentful size validation and the
-GraphQL `limit` are both 3 and must move together.
+stack, reads first in the on-page and OG image name lines, and fills the
+legacy RSS `<author>` element when `AUTHOR_EMAIL` is set. Reordering the array
+in Contentful changes lead authorship across all of them. The Contentful size
+validation and the GraphQL `limit` are both 3 and must move together.
 
 Names join with an ampersand, no serial comma before it, separators outside
-the anchors. The ampersand is presentation only and never reaches XML or
-JSON-LD.
+the anchors (`formatAuthorsByline` in `lib/authors.ts` formats plain-text
+bylines for the OG image). In the RSS feed, each author emits their own
+`<dc:creator>` element via the Dublin Core extension (`xmlns:dc`), avoiding the
+single-author and mandatory-email constraints of base RSS 2.0.
 
 `author`, singular, is not deleted, and it has not been omitted either —
 that is phase 4, and phase 4 has not happened. It stays present, populated

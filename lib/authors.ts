@@ -1,4 +1,5 @@
 import type { Post, ListPost } from "./types";
+import { SITE_AUTHOR } from "./constants";
 
 /**
  * Authors on a post, in credit order, flattened out of Contentful's collection
@@ -41,4 +42,23 @@ export function postsByAuthor<
   T extends Pick<Post | ListPost, "authorsCollection">,
 >(posts: T[], slug: string): T[] {
   return posts.filter((post) => postAuthors(post).some((a) => a.slug === slug));
+}
+
+/**
+ * Joins author names for plain-text byline surfaces (such as the Open Graph
+ * card), formatted with commas and an ampersand:
+ *   - 1 author: "Bulent Yusuf"
+ *   - 2 authors: "Bulent Yusuf & Genial Yeti"
+ *   - 3 authors: "Bulent Yusuf, Genial Yeti & Trippy Robot"
+ * Empty list falls back to fallback (defaults to SITE_AUTHOR).
+ */
+export function formatAuthorsByline(
+  authors: { name: string }[],
+  fallback = SITE_AUTHOR,
+): string {
+  const names = authors.map((a) => a.name).filter(Boolean);
+  if (names.length === 0) return fallback;
+  if (names.length === 1) return names[0];
+  const last = names.pop()!;
+  return `${names.join(", ")} & ${last}`;
 }

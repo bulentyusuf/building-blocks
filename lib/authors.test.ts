@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { postAuthors, postsByAuthor } from "./authors";
+import { formatAuthorsByline, postAuthors, postsByAuthor } from "./authors";
+import { SITE_AUTHOR } from "./constants";
 import type { Author, ListPost, Post } from "./types";
 
 const author = (slug: string, name = slug): Author => ({
@@ -94,5 +95,47 @@ describe("postAuthors, narrowed element type", () => {
     void postAuthors(fullPost)[0]?.bio;
 
     expect(postAuthors(listPost)).toEqual([]);
+  });
+});
+
+describe("formatAuthorsByline", () => {
+  it("returns SITE_AUTHOR when author list is empty", () => {
+    expect(formatAuthorsByline([])).toBe(SITE_AUTHOR);
+  });
+
+  it("returns custom fallback when author list is empty and fallback is given", () => {
+    expect(formatAuthorsByline([], "Custom Fallback")).toBe("Custom Fallback");
+  });
+
+  it("returns single author name directly", () => {
+    expect(formatAuthorsByline([{ name: "Bulent Yusuf" }])).toBe(
+      "Bulent Yusuf",
+    );
+  });
+
+  it("joins two authors with an ampersand", () => {
+    expect(
+      formatAuthorsByline([{ name: "Bulent Yusuf" }, { name: "Genial Yeti" }]),
+    ).toBe("Bulent Yusuf & Genial Yeti");
+  });
+
+  it("joins three authors with commas and an ampersand", () => {
+    expect(
+      formatAuthorsByline([
+        { name: "Bulent Yusuf" },
+        { name: "Genial Yeti" },
+        { name: "Trippy Robot" },
+      ]),
+    ).toBe("Bulent Yusuf, Genial Yeti & Trippy Robot");
+  });
+
+  it("ignores authors with empty names", () => {
+    expect(
+      formatAuthorsByline([
+        { name: "Bulent Yusuf" },
+        { name: "" },
+        { name: "Genial Yeti" },
+      ]),
+    ).toBe("Bulent Yusuf & Genial Yeti");
   });
 });
