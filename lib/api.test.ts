@@ -62,7 +62,7 @@ describe("fetchGraphQL", () => {
     const fetchMock = vi.fn().mockResolvedValue(ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -73,7 +73,7 @@ describe("fetchGraphQL", () => {
       .mockResolvedValueOnce(ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -86,7 +86,9 @@ describe("fetchGraphQL", () => {
       .mockImplementation(async () => httpError(500, "Internal Server Error"));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).rejects.toThrow(/500 Internal Server Error/);
+    await expect(getAllAuthors(false)).rejects.toThrow(
+      /500 Internal Server Error/,
+    );
     expect(fetchMock).toHaveBeenCalledTimes(3);
     // 500ms before attempt two, 1000ms before attempt three: the exponential
     // step, asserted rather than merely waited out.
@@ -100,7 +102,7 @@ describe("fetchGraphQL", () => {
       .mockResolvedValueOnce(ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -108,7 +110,7 @@ describe("fetchGraphQL", () => {
     const fetchMock = vi.fn().mockResolvedValue(httpError(401, "Unauthorized"));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).rejects.toThrow(/401 Unauthorized/);
+    await expect(getAllAuthors(false)).rejects.toThrow(/401 Unauthorized/);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -118,7 +120,7 @@ describe("fetchGraphQL", () => {
       .mockResolvedValue(ok({ errors: [{ message: "Cannot query field" }] }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).rejects.toThrow(/returned errors/);
+    await expect(getAllAuthors(false)).rejects.toThrow(/returned errors/);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -131,7 +133,7 @@ describe("fetchGraphQL", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(warn).toHaveBeenCalledOnce();
   });
 
@@ -142,7 +144,7 @@ describe("fetchGraphQL", () => {
       .mockImplementationOnce(async () => ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -150,7 +152,7 @@ describe("fetchGraphQL", () => {
     const fetchMock = vi.fn().mockImplementation(async () => notJson());
     vi.stubGlobal("fetch", fetchMock);
 
-    const error = await getAllAuthors().catch((thrown: unknown) => thrown);
+    const error = await getAllAuthors(false).catch((thrown: unknown) => thrown);
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toMatch(/unparseable/);
     expect((error as Error).message).toMatch(/502 Bad Gateway/);
@@ -162,7 +164,7 @@ describe("fetchGraphQL", () => {
     const fetchMock = vi.fn().mockRejectedValue(cause);
     vi.stubGlobal("fetch", fetchMock);
 
-    const error = await getAllAuthors().catch((thrown: unknown) => thrown);
+    const error = await getAllAuthors(false).catch((thrown: unknown) => thrown);
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).cause).toBe(cause);
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -173,7 +175,7 @@ describe("fetchGraphQL", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).rejects.toThrow(/CONTENTFUL_SPACE_ID/);
+    await expect(getAllAuthors(false)).rejects.toThrow(/CONTENTFUL_SPACE_ID/);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -182,7 +184,7 @@ describe("fetchGraphQL", () => {
     const fetchMock = vi.fn().mockResolvedValue(ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getAllAuthors();
+    await getAllAuthors(false);
     expect(fetchMock.mock.calls[0][0]).toBe(
       "https://graphql.contentful.com/content/v1/spaces/space123",
     );
@@ -210,7 +212,7 @@ describe("the retry delay seam", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const started = Date.now();
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     // Real backoff is 500ms before attempt two. Asserting a floor rather than a
     // window keeps this off the flake list on a loaded CI box.
     expect(Date.now() - started).toBeGreaterThanOrEqual(400);
@@ -223,7 +225,7 @@ describe("retry backoff", () => {
     const fetchMock = vi.fn().mockResolvedValue(ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getAllAuthors();
+    await getAllAuthors(false);
     expect(delays).toEqual([]);
   });
 
@@ -234,7 +236,7 @@ describe("retry backoff", () => {
       .mockImplementationOnce(async () => ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(delays).toEqual([500]);
   });
 
@@ -242,7 +244,7 @@ describe("retry backoff", () => {
     const fetchMock = vi.fn().mockResolvedValue(httpError(401, "Unauthorized"));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(getAllAuthors()).rejects.toThrow(/401 Unauthorized/);
+    await expect(getAllAuthors(false)).rejects.toThrow(/401 Unauthorized/);
     expect(delays).toEqual([]);
   });
 });
@@ -273,7 +275,7 @@ describe("collection paging", () => {
       ok(await fetchMock(...args)),
     );
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -289,7 +291,7 @@ describe("collection paging", () => {
       ok(await fetchMock(...args)),
     );
 
-    const authors = await getAllAuthors();
+    const authors = await getAllAuthors(false);
 
     expect(authors).toHaveLength(102);
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -313,13 +315,13 @@ describe("collection paging", () => {
       ok(await fetchMock(...args)),
     );
 
-    await expect(getAllAuthors()).resolves.toHaveLength(1);
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("returns an empty array when the collection is absent", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(ok({ data: {} })));
 
-    await expect(getAllAuthors()).resolves.toEqual([]);
+    await expect(getAllAuthors(false)).resolves.toEqual([]);
   });
 });

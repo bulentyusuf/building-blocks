@@ -16,13 +16,17 @@ import path from "node:path";
 // runtime. Under vitest it is a passthrough, so counting fetches there reports
 // two calls whether the route is right or wrong, which is a false negative
 // rather than evidence. Measuring it honestly needs next dev against real
-// credentials. What this file can do instead is hold the two properties the
-// route actually controls, both of which have a plausible way of drifting:
+// credentials. What this file can do instead is hold the property the route
+// actually controls that has a plausible way of drifting:
 //
 //   1. the same slug at both call sites, which is why it is a constant
-//   2. the same arity at both, since getBrowseIntro(slug) and
-//      getBrowseIntro(slug, false) are DIFFERENT argument lists to cache()
-//      even though isDraftMode defaults to false and both mean the same thing
+//
+// Argument-count drift — getBrowseIntro(slug) silently diverging from
+// getBrowseIntro(slug, false) — used to be the second fragility here, but
+// lib/api.ts now declares no defaulted parameters on any fetcher, so tsc
+// rejects an omitted argument before this file ever sees it. The arity
+// assertion below stays as a cheap double-check and a count-of-call-sites
+// guard, but it is no longer the primary defence.
 //
 // Scoped to this route deliberately. The four section fronts reach
 // getBrowseIntro through browsePageMetadata, which takes the slug as an

@@ -486,7 +486,7 @@ function extractPost(fetchResponse: PostCollectionResponse): Post | undefined {
 // visibleTagSlugs(allPosts) straight through rather than calling this — a
 // legibility choice, not a correctness one, see getAllPosts below.
 export const getVisibleTagSlugs = cache(
-  async (isDraftMode = false): Promise<Set<string>> => {
+  async (isDraftMode: boolean): Promise<Set<string>> => {
     return visibleTagSlugs(await getAllPosts(isDraftMode));
   },
 );
@@ -510,8 +510,14 @@ export const getVisibleTagSlugs = cache(
 // Callers that hold this result should keep passing it down rather than
 // re-fetching. That is now a legibility preference rather than a correctness
 // one, and the call sites say so in one line each rather than repeating this.
+// No defaulted parameters on any fetcher in this file. cache() keys on the
+// argument list as it was passed, before defaults resolve, so getAllPosts()
+// and getAllPosts(false) are two memo entries meaning the same thing and the
+// second is a duplicate query nothing reports. Requiring the argument makes
+// tsc hold that, which is cheaper and more durable than a guard scanning call
+// sites for omitted arguments.
 export const getAllPosts = cache(
-  async (isDraftMode = false): Promise<ListPost[]> => {
+  async (isDraftMode: boolean): Promise<ListPost[]> => {
     return fetchAllCollectionItems<ListPost>(
       "postCollection",
       `query GetAllPosts($preview: Boolean, $limit: Int!, $skip: Int!) {
@@ -534,7 +540,7 @@ export const getAllPosts = cache(
 // would fire 1–2 extra GraphQL round-trips whose result is then discarded.
 // Returns a partial post: `content` and `author.bio` are absent (see ListPost).
 export const getPost = cache(
-  async (slug: string, preview = false): Promise<ListPost | undefined> => {
+  async (slug: string, preview: boolean): Promise<ListPost | undefined> => {
     const entry = await fetchGraphQL<ListPostCollectionResponse>(
       `query GetPostMeta($slug: String!, $preview: Boolean) {
       postCollection(where: { slug: $slug }, preview: $preview, limit: 1) {
@@ -554,7 +560,7 @@ export const getPost = cache(
 export const getPostAndMorePosts = cache(
   async (
     slug: string,
-    preview = false,
+    preview: boolean,
   ): Promise<{ post: Post | undefined; morePosts: CardPost[] }> => {
     const [entry, allPosts] = await Promise.all([
       fetchGraphQL<PostCollectionResponse>(
@@ -588,7 +594,7 @@ export const getPostAndMorePosts = cache(
 // on the site. The two calls must pass the same arguments, which is why both
 // resolve draftMode() first and pass the same SLUG constant.
 export const getPage = cache(
-  async (slug: string, preview = false): Promise<Page | undefined> => {
+  async (slug: string, preview: boolean): Promise<Page | undefined> => {
     const entry = await fetchGraphQL<PageCollectionResponse>(
       `query GetPage($slug: String!, $preview: Boolean) {
       pageCollection(where: { slug: $slug }, preview: $preview, limit: 1) {
@@ -647,7 +653,7 @@ export const getAllPages = cache(
 export const getBrowseIntro = cache(
   async (
     slug: string,
-    isDraftMode = false,
+    isDraftMode: boolean,
   ): Promise<BrowseIntro | undefined> => {
     const entries = await fetchGraphQL<BrowseIntroCollectionResponse>(
       `query GetBrowseIntro($slug: String!, $preview: Boolean) {
@@ -680,7 +686,7 @@ export const getBrowseIntro = cache(
 // the page component both need it, and cache() only dedupes identical calls —
 // see the note on getPostAndMorePosts.
 export const getTagBySlug = cache(
-  async (slug: string, isDraftMode = false): Promise<Tag | undefined> => {
+  async (slug: string, isDraftMode: boolean): Promise<Tag | undefined> => {
     const entries = await fetchGraphQL<TagCollectionResponse>(
       `query GetTagBySlug($slug: String!, $preview: Boolean) {
       tagCollection(where: { slug: $slug }, preview: $preview, limit: 1) {
@@ -705,10 +711,11 @@ export const getTagBySlug = cache(
 // and it has nothing to do with request counts: every fetcher in this file is
 // cache()-wrapped, so a wrapper would have been redundant rather than costly.
 
-export const getAllTags = cache(async (isDraftMode = false): Promise<Tag[]> => {
-  return fetchAllCollectionItems<Tag>(
-    "tagCollection",
-    `query GetAllTags($preview: Boolean, $limit: Int!, $skip: Int!) {
+export const getAllTags = cache(
+  async (isDraftMode: boolean): Promise<Tag[]> => {
+    return fetchAllCollectionItems<Tag>(
+      "tagCollection",
+      `query GetAllTags($preview: Boolean, $limit: Int!, $skip: Int!) {
       tagCollection(where: { slug_exists: true }, order: name_ASC, preview: $preview, limit: $limit, skip: $skip) {
         total
         items {
@@ -718,13 +725,14 @@ export const getAllTags = cache(async (isDraftMode = false): Promise<Tag[]> => {
         }
       }
     }`,
-    isDraftMode,
-    { preview: isDraftMode },
-  );
-});
+      isDraftMode,
+      { preview: isDraftMode },
+    );
+  },
+);
 
 export const getAllCategories = cache(
-  async (isDraftMode = false): Promise<Category[]> => {
+  async (isDraftMode: boolean): Promise<Category[]> => {
     return fetchAllCollectionItems<Category>(
       "categoryCollection",
       `query GetAllCategories($preview: Boolean, $limit: Int!, $skip: Int!) {
@@ -749,7 +757,7 @@ export const getAllCategories = cache(
 );
 
 export const getCategoryBySlug = cache(
-  async (slug: string, isDraftMode = false): Promise<Category | undefined> => {
+  async (slug: string, isDraftMode: boolean): Promise<Category | undefined> => {
     const entries = await fetchGraphQL<CategoryCollectionResponse>(
       `query GetCategory($slug: String!, $preview: Boolean) {
       categoryCollection(where: { slug: $slug }, preview: $preview, limit: 1) {
@@ -786,7 +794,7 @@ export const getCategoryBySlug = cache(
 // same (slug, isDraftMode) pair — the first fetcher in this file where the
 // memo key is not just the draft-mode boolean.
 export const getPostsByCategory = cache(
-  async (slug: string, isDraftMode = false): Promise<CardPost[]> => {
+  async (slug: string, isDraftMode: boolean): Promise<CardPost[]> => {
     return fetchAllCollectionItems<CardPost>(
       "postCollection",
       `query GetPostsByCategory($slug: String!, $preview: Boolean, $limit: Int!, $skip: Int!) {
@@ -814,7 +822,7 @@ export const getRecentPostsByCategory = cache(
   async (
     slug: string,
     limit: number,
-    isDraftMode = false,
+    isDraftMode: boolean,
   ): Promise<CardPost[]> => {
     const entries = await fetchGraphQL<CardPostCollectionResponse>(
       `query GetRecentPostsByCategory($slug: String!, $limit: Int!, $preview: Boolean) {
@@ -833,7 +841,7 @@ export const getRecentPostsByCategory = cache(
 );
 
 export const getAuthorBySlug = cache(
-  async (slug: string, isDraftMode = false): Promise<Author | undefined> => {
+  async (slug: string, isDraftMode: boolean): Promise<Author | undefined> => {
     const entries = await fetchGraphQL<AuthorCollectionResponse>(
       `query GetAuthor($slug: String!, $preview: Boolean) {
       authorCollection(where: { slug: $slug }, preview: $preview, limit: 1) {
@@ -868,7 +876,7 @@ export const getAuthorBySlug = cache(
 // getAllPosts once and filter in memory with postsByAuthor, in lib/authors.ts.
 
 export const getAllAuthors = cache(
-  async (isDraftMode = false): Promise<Author[]> => {
+  async (isDraftMode: boolean): Promise<Author[]> => {
     return fetchAllCollectionItems<Author>(
       "authorCollection",
       `query GetAllAuthors($preview: Boolean, $limit: Int!, $skip: Int!) {
