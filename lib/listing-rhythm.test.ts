@@ -311,8 +311,7 @@ describe("the hero's two-column split carries a gap at every width", () => {
   // specifically — the file has two other bare `<div className="...">` lines
   // (the cover wrapper, the byline row) that a looser pattern would match
   // first, since .exec() returns whichever occurs earliest in source order.
-  const HERO_GRID =
-    /^\s*<div className="([^"]*grid-cols-\[3fr_2fr\][^"]*)">\s*$/m;
+  const HERO_GRID = /^\s*<div className="([^"]*md:grid-cols-2[^"]*)">\s*$/m;
 
   it("declares a base-level grid, not a base stack that only grids at md", () => {
     const match = HERO_GRID.exec(read("app/page.tsx"));
@@ -325,13 +324,11 @@ describe("the hero's two-column split carries a gap at every width", () => {
     expect(classes).toContain("grid");
     expect(classes).not.toContain("md:grid");
     // The second column has to stay behind md, and nothing above catches it.
-    // `md:grid` and `md:grid-cols-[3fr_2fr]` are different tokens, so the
+    // `md:grid` and `md:grid-cols-2` are different tokens, so the
     // not.toContain above passes either way, and the regex anchoring this
-    // block matches a bare `grid-cols-[3fr_2fr]` as happily as the prefixed
-    // one. Dropping just that prefix gives a 3fr/2fr split at 390px — a 200px
-    // headline column beside a 130px standfirst — while satisfying every
-    // other assertion here.
-    expect(classes).toContain("md:grid-cols-[3fr_2fr]");
+    // block matches a bare `grid-cols-2` as happily as the prefixed
+    // one.
+    expect(classes).toContain("md:grid-cols-2");
   });
 
   it("carries a base gap that the two-column step zeroes out", () => {
@@ -341,5 +338,6 @@ describe("the hero's two-column split carries a gap at every width", () => {
     expect(classes).toContain("gap-y-6");
     expect(classes).toContain("md:gap-y-0");
     expect(classes).toContain("md:gap-x-16");
+    expect(classes).toContain("lg:gap-x-32");
   });
 });

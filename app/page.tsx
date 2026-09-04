@@ -123,32 +123,21 @@ function HeroPost({
           />
         </div>
       )}
-      {/* Below the cover, an asymmetric split rather than an even one: the
-          headline needs more room than the standfirst does. Left carries the
-          headline and the byline; right the standfirst and the tag row.
+      {/* Below the cover, a split synced in width and gutter with MoreStories'
+          two-column grid below. Left carries the headline and the byline;
+          right carries the standfirst and the tag row.
 
-          md:grid-cols-[3fr_2fr] at gap-x-16 measures a 566px left column
-          inside the 984px container — measured against the six most recently
-          published post titles (38 to 57 characters), not the seed's
-          placeholder titles (17 to 31), which is what let an earlier version
-          of this column ship four lines deep. An even 2fr/2fr split with the
-          listing's own lg:gap-x-32 measured a 428px left column, which held
-          only 30px text to two lines; the wider, asymmetric column is what
-          the 40px cap below actually needs.
-
-          gap-x-16 only, no lg: step. The listing's own two-column grids
-          (more-stories.tsx, the taxonomy card index) widen their gutter at
-          lg because their columns are already wide enough to spare the
-          space; this one cannot afford to, since the extra width bought by a
-          narrower gutter is what keeps the headline at two lines.
+          md:grid-cols-2 md:gap-x-16 lg:gap-x-32 matches the card grid beneath
+          the divider, aligning the hero standfirst's left edge and width
+          directly with the right-hand card below it.
 
           Base-level grid, not md:grid — below md the two children stack as a
           single column, and gap-y-6 is the join between them (the byline
           block and the excerpt), a clear step above the h2's own mb-4 to the
           byline so the mobile stack reads as two groups rather than four
           equally-weighted items. md:gap-y-0 drops it once the grid goes
-          two-column, where gap-x-16 is the only gap this row has. */}
-      <div className="grid gap-y-6 md:grid-cols-[3fr_2fr] md:gap-x-16 md:gap-y-0">
+          two-column, where gap-x-16 / lg:gap-x-32 is the only gap this row has. */}
+      <div className="grid gap-y-6 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 md:gap-y-0">
         <div>
           {/* An h2, and so is every card title below, because the listing no
               longer renders a heading of its own. Home's outline is the site
