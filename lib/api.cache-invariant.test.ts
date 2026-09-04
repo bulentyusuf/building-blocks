@@ -28,6 +28,14 @@ function cacheWrappedExports(source: string): string[] {
   return [...source.matchAll(/export const (\w+) = cache\(/g)].map((m) => m[1]);
 }
 
+function defaultedFetcherParams(source: string): string[] {
+  return [
+    ...source.matchAll(/export const (\w+) = cache\(\s*async \(([^)]*)\)/gs),
+  ]
+    .filter(([, , params]) => params.includes("="))
+    .map(([, name]) => name);
+}
+
 describe("lib/api.ts fetcher caching", () => {
   const source = readFileSync(API, "utf8");
 
@@ -42,6 +50,13 @@ describe("lib/api.ts fetcher caching", () => {
     // the regex goes stale this also fails, which the assertion above cannot
     // tell apart from a clean file on its own.
     expect(cacheWrappedExports(source).length).toBeGreaterThanOrEqual(15);
+  });
+
+  it("declares no defaulted parameter on any fetcher", () => {
+    // cache() keys on the arguments as passed, so a default lets two spellings
+    // of the same intent occupy two memo entries. Requiring the argument is
+    // what makes tsc hold the call sites; this holds the declarations.
+    expect(defaultedFetcherParams(source)).toEqual([]);
   });
 });
 
@@ -69,5 +84,20 @@ describe("the detectors themselves", () => {
     const sync =
       "export function setRetryDelayForTests(next: RetryDelay = realRetryDelay): void {";
     expect(uncachedExportedFetchers(sync)).toEqual([]);
+  });
+
+  it("flags a reintroduced default", () => {
+    // Known-bad control, copied from getAllTags as it stood before PR F.
+    const bad =
+      "export const getAllTags = cache(async (isDraftMode = false): Promise<Tag[]> => {";
+    expect(defaultedFetcherParams(bad)).toEqual(["getAllTags"]);
+  });
+
+  it("accepts a required parameter", () => {
+    // The other direction. A detector that fired on the fixed form would be
+    // turned off within a week.
+    const good =
+      "export const getAllTags = cache(async (isDraftMode: boolean): Promise<Tag[]> => {";
+    expect(defaultedFetcherParams(good)).toEqual([]);
   });
 });
