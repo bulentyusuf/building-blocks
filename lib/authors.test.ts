@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { postAuthors, postsByAuthor } from "./authors";
-import type { Author } from "./types";
+import type { Author, ListPost, Post } from "./types";
 
 const author = (slug: string, name = slug): Author => ({
   name,
@@ -73,5 +73,26 @@ describe("postsByAuthor", () => {
     const second = post("second", author("y"), author("x"));
 
     expect(postsByAuthor([lead, second], "x")).toEqual([lead, second]);
+  });
+});
+
+describe("postAuthors, narrowed element type", () => {
+  it("keeps bio unreachable on a ListPost and reachable on a Post", () => {
+    // A compile-time guard wearing a test's clothes. Nothing here asserts
+    // runtime behaviour, the @ts-expect-error IS the assertion: if postAuthors
+    // ever stops propagating the element type, the error stops occurring, the
+    // directive becomes unused, and tsc --noEmit fails the build. That is the
+    // known-bad control, and it is the only kind available, since bio being
+    // optional on Author means an assignability check passes either way.
+    const listPost = {
+      authorsCollection: { items: [] },
+    } as unknown as ListPost;
+    const fullPost = { authorsCollection: { items: [] } } as unknown as Post;
+
+    // @ts-expect-error bio is absent from list-sourced authors by construction.
+    void postAuthors(listPost)[0]?.bio;
+    void postAuthors(fullPost)[0]?.bio;
+
+    expect(postAuthors(listPost)).toEqual([]);
   });
 });
