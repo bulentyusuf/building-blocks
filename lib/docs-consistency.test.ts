@@ -20,12 +20,29 @@ const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
 
 const DOCS = ["CLAUDE.md", "README.md"] as const;
+
+// Anything under docs/ is a briefing an implementer reads before writing code,
+// so a dead path or a stale repo name there does not merely mislead a reader,
+// it reaches a PR. That happened once: de-localisation-briefing.md landed on
+// main naming the pre-rename repo, and none of these checks looked at the
+// directory. The directory was later removed, which is why this is guarded
+// rather than unconditional. It is empty scope today and real scope the moment
+// a doc reappears, which is the point.
+const BRIEFINGS = fs.existsSync(path.join(ROOT, "docs"))
+  ? fs
+      .readdirSync(path.join(ROOT, "docs"))
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => `docs/${f}`)
+  : [];
+
+const CHECKED = [...DOCS, ...BRIEFINGS];
+
 const pkg = JSON.parse(read("package.json")) as {
   scripts: Record<string, string>;
 };
 
 describe("npm scripts named in the docs", () => {
-  it.each(DOCS)("all exist in package.json (%s)", (doc) => {
+  it.each(CHECKED)("all exist in package.json (%s)", (doc) => {
     const text = read(doc);
     const named = new Set(
       [...text.matchAll(/npm run ([a-z][a-z0-9:-]*)/g)].map((m) => m[1]),
@@ -39,7 +56,7 @@ describe("npm scripts named in the docs", () => {
 });
 
 describe("file paths named in the docs", () => {
-  it.each(DOCS)("all exist on disk (%s)", (doc) => {
+  it.each(CHECKED)("all exist on disk (%s)", (doc) => {
     const text = read(doc);
     const paths = new Set(
       [
@@ -131,7 +148,7 @@ describe("the repo URL is the same everywhere", () => {
     ].map((m) => m[0]);
 
   it("leaves no reference to the pre-rename repo name", () => {
-    for (const doc of [...DOCS, "public/llms.txt"]) {
+    for (const doc of [...CHECKED, "public/llms.txt"]) {
       expect(staleRepoNames(read(doc)), `${doc} names the old repo`).toEqual(
         [],
       );
@@ -154,6 +171,22 @@ describe("the repo URL is the same everywhere", () => {
         "https://vercel.com/templates/next.js/nextjs-blog-draft-mode",
       ),
     ).toEqual([]);
+  });
+
+  it("would scan a briefing if docs/ held one", () => {
+    // The scan is empty scope right now, so nothing above proves it works.
+    // This drives the same filter over a fixture listing rather than the real
+    // directory, which is the only way to tell "docs/ is clean" apart from
+    // "docs/ is not being read".
+    const listing = ["de-localisation-briefing.md", "notes.txt", "README.md"];
+    const scanned = listing
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => `docs/${f}`);
+
+    expect(scanned).toEqual([
+      "docs/de-localisation-briefing.md",
+      "docs/README.md",
+    ]);
   });
 });
 
