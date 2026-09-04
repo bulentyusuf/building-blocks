@@ -15,6 +15,22 @@ describe("Avatar, single author (acceptance criterion 1: byte-identical to befor
     expect(html([])).toBe("");
   });
 
+  it("renders the meta alone when there are no authors", () => {
+    // The regression this fixes: Avatar returned null for zero authors and
+    // dropped the dateline with it, so a post whose only author reference was
+    // unpublished lost its date and reading time entirely.
+    const out = html([], <span>3 min read</span>);
+    expect(out).toContain("3 min read");
+    expect(out).not.toContain("<a ");
+    expect(out).not.toContain("rounded-full");
+  });
+
+  it("still renders nothing for zero authors and no meta", () => {
+    // The other direction. Widening the empty case to always render a wrapper
+    // would put an empty div on every caller that passes no meta.
+    expect(html([], undefined)).toBe("");
+  });
+
   it("renders one disc with no ring and no overlap class", () => {
     const out = html([author("bulent-yusuf", "Bulent Yusuf")]);
     // The exact pre-authors wrapper: mr-4 w-12 h-12 shrink-0, no ring-*, no

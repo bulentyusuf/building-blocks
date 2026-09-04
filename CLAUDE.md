@@ -757,8 +757,9 @@ has no ordering), and why `MIN_POSTS_PER_TAG` is two. What that leaves for here:
 
 - **It takes the posts, it does not fetch them.** A per-tag fetcher wrapping
   `getAllPosts` — the removed `getPostsByTag` — issued a second identical
-  request per render, and `getAllPosts` is not `cache()`-wrapped, so nothing
-  collapsed them. Do not reintroduce one.
+  request per render. `getAllPosts` is `cache()`-wrapped now, so that fetcher
+  would dedupe rather than duplicate, but do not reintroduce one: passing the
+  list in still keeps the data flow visible at the call site.
 - **Every surface reads the threshold through the one `visibleTagSlugs`
   helper**, and they must stay on one helper. It gates three: the glossary, the
   sitemap, and `/tags/[slug]`, which **404s** below it. A test asserts they
@@ -919,8 +920,9 @@ the retirement is done.
 
 There is no `getPostsByAuthor`. Contentful GraphQL cannot filter a collection
 on `Array<Link>`, so author pages fetch `getAllPosts` once and filter with
-`postsByAuthor`, exactly as tag pages do. `getAllPosts` is not
-`cache()`-wrapped, so fetch once per route and read twice.
+`postsByAuthor`, exactly as tag pages do. `getAllPosts` is `cache()`-wrapped,
+so a second call would dedupe rather than duplicate, but fetching once per
+route and reading twice keeps the data flow visible at the call site.
 
 Reversal, 3 September 2026. This replaces the contributor credits model, in
 which a post had one author plus optional secondary contributors. That was
