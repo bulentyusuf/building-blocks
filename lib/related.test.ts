@@ -233,4 +233,51 @@ describe("relatedPosts", () => {
       expect(results).toEqual([]);
     });
   });
+
+  describe("hostile dates", () => {
+    it("does not let a future-dated post outrank a real category match", () => {
+      // Without the clamp: future is 365 days ahead of PINNED_NOW, so ageDays
+      // is -365, 0.5 ** (-365/180) is about 4.08, and the recency term reaches
+      // roughly 1.22. That beats CATEGORY_WEIGHT of 1 and the future post wins
+      // on nothing but its date. This is the known-bad control for the clamp.
+      const current = makePost({ slug: "current", categorySlug: "main-quest" });
+      const matched = makePost({
+        slug: "matched",
+        categorySlug: "main-quest",
+        date: "2020-01-01T00:00:00Z",
+      });
+      const future = makePost({
+        slug: "future",
+        date: "2027-09-03T12:00:00Z",
+      });
+
+      const results = relatedPosts(
+        current,
+        [current, matched, future],
+        1,
+        PINNED_NOW,
+      );
+
+      expect(results[0].slug).toBe("matched");
+    });
+
+    it("keeps a post with an unusable date from poisoning the ordering", () => {
+      // Corpus order is load-bearing. A NaN comparator result is treated as
+      // zero, which preserves input order, so `broken` MUST come first in the
+      // array or the test passes without the fix and guards nothing.
+      const current = makePost({ slug: "current", tags: ["shared"] });
+      const broken = makePost({ slug: "broken", date: "not-a-date" });
+      const matched = makePost({ slug: "matched", tags: ["shared"] });
+
+      const results = relatedPosts(
+        current,
+        [current, broken, matched],
+        2,
+        PINNED_NOW,
+      );
+
+      expect(results[0].slug).toBe("matched");
+      expect(results.map((r) => r.slug)).toEqual(["matched", "broken"]);
+    });
+  });
 });
