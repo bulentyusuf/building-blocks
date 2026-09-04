@@ -22,9 +22,9 @@ import path from "node:path";
 //   1. the same slug at both call sites, which is why it is a constant
 //
 // Argument-count drift — getBrowseIntro(slug) silently diverging from
-// getBrowseIntro(slug, false) — used to be the second fragility here, but
-// lib/api.ts now declares no defaulted or optional parameters on any fetcher, so tsc
-// rejects an omitted argument before this file ever sees it. The arity
+// getBrowseIntro(slug, false) — used to be the second fragility here, but no
+// fetcher in lib/api.ts declares a defaulted or optional parameter now, so
+// tsc rejects an omitted argument before this file ever sees it. The arity
 // assertion below stays as a cheap double-check and a count-of-call-sites
 // guard, but it is no longer the primary defence.
 //

@@ -28,6 +28,13 @@ function cacheWrappedExports(source: string): string[] {
   return [...source.matchAll(/export const (\w+) = cache\(/g)].map((m) => m[1]);
 }
 
+// The "?" test is a substring check rather than a parse. It would also fire on
+// an inline object type carrying an optional property, async (opts: { limit?:
+// number }), which no fetcher here has. Not worth handling, because an object
+// argument defeats cache() outright anyway, a fresh literal being a fresh key
+// on every call. That is a bigger problem than argument arity and belongs
+// elsewhere. Do not widen this filter without settling which one you are
+// fixing.
 function defaultedOrOptionalFetcherParams(source: string): string[] {
   return [
     ...source.matchAll(/export const (\w+) = cache\(\s*async \(([^)]*)\)/gs),
@@ -53,10 +60,10 @@ describe("lib/api.ts fetcher caching", () => {
   });
 
   it("declares no defaulted or optional parameter on any fetcher", () => {
-    // cache() keys on the arguments as passed, so a default or optional parameter
-    // lets two spellings of the same intent occupy two memo entries. Requiring
-    // the argument is what makes tsc hold the call sites; this holds the
-    // declarations.
+    // cache() keys on the arguments as passed, so a default or an optional
+    // parameter lets two spellings of the same intent occupy two memo
+    // entries. Requiring the argument is what makes tsc hold the call sites,
+    // this holds the declarations.
     expect(defaultedOrOptionalFetcherParams(source)).toEqual([]);
   });
 });
