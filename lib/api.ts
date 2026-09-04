@@ -488,6 +488,13 @@ function extractPost(fetchResponse: PostCollectionResponse): Post | undefined {
 // The home pages already hold getAllPosts. They should still pass
 // visibleTagSlugs(allPosts) straight through rather than calling this — a
 // legibility choice, not a correctness one, see getAllPosts below.
+//
+// This exists for the two category routes specifically. Every other listing
+// holds allPosts and calls the pure visibleTagSlugs(allPosts) directly, but the
+// category pages hold getPostsByCategory output, which is a filtered subset,
+// and a tag only shows if it clears MIN_POSTS_PER_TAG across the whole site.
+// They cannot derive that from what they have, so the fetch is the point rather
+// than an oversight. Do not delete this as redundant.
 export const getVisibleTagSlugs = cache(
   async (isDraftMode: boolean): Promise<Set<string>> => {
     return visibleTagSlugs(await getAllPosts(isDraftMode));
