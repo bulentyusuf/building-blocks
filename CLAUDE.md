@@ -318,24 +318,24 @@ in after the standfirst as a fragment, and that fragment is exactly what
 broke the two-children invariant `app/wide-page.tsx`'s wrapper div now
 guards against on every future caller, not just the one that caused it.
 
-### The home hero takes the split too, asymmetric, with Avatar kept whole
+### The home hero splits 50/50, synced with the card grid beneath it, with Avatar kept whole
 
-`HeroPost` in `app/page.tsx` used to stack headline, excerpt, byline and tags
-in one column under the cover. It now splits into two from `md` up:
-`md:grid-cols-[3fr_2fr]` at a flat `gap-x-16` (no `lg:` step). Left carries
-the headline and the byline; right carries the standfirst and the tag row.
+`HeroPost` in `app/page.tsx` splits into two from `md` up:
+`md:grid-cols-2 md:gap-x-16 lg:gap-x-32 md:gap-y-0`, directly matching the
+`MoreStories` two-column grid below. Left carries the headline and the byline;
+right carries the standfirst and the tag row, aligning the hero standfirst's
+left edge and column width with the right-hand post below it.
 
 **The container is a base-level `grid`, not `md:grid`.** It shipped as
-`md:grid md:grid-cols-[3fr_2fr] md:gap-x-16` with no grid at all below `md`,
+`md:grid md:grid-cols-2 md:gap-x-16` with no grid at all below `md`,
 so the two columns fell back to plain stacked block divs with nothing between
 them — `gap-x-16` is a horizontal gap, which does nothing to a stack, so the
 byline block and the excerpt sat flush against each other on mobile, a 0px
 join on the largest element on the page. It is `grid gap-y-6
-md:grid-cols-[3fr_2fr] md:gap-x-16 md:gap-y-0` now: a single-column grid with
+md:grid-cols-2 md:gap-x-16 lg:gap-x-32 md:gap-y-0` now: a single-column grid with
 its own gap at the base, widened to two columns at `md`, matching every other
 two-column grid on the site (`app/categories/page.tsx`, `app/authors/page.tsx`,
-`app/more-stories.tsx`'s two variants, the footer) — the hero was the one
-component on that list built the other way round. `gap-y-6` (24px) is a
+`app/more-stories.tsx`'s two variants, the footer). `gap-y-6` (24px) is a
 judgement call, not a measurement: it has to read as a clear step above the
 `h2`'s own `mb-4` (16px) to the byline directly above it, so the mobile stack
 reads as two groups of two rather than four equally-weighted lines: `gap-5`
@@ -355,21 +355,15 @@ a class describing the split row applied below the breakpoint where that row
 does not exist. `lib/listing-rhythm.test.ts` asserts the base-level `grid` and
 both gap classes.
 
-**This replaced an equal-column version that shipped first and ran to four
-lines on a real headline.** The first cut measured wrap against the seed's
-placeholder titles (17–31 characters) and capped the headline at 48px on an
-even `md:grid-cols-2 md:gap-x-16 lg:gap-x-32` split, which resolves to a
-428px column. Measured instead against the six most recently published post
-titles (38–57 characters), 48px in a 428px column runs to four lines on the
-longest of them. **The fix has two parts, and both matter:** the asymmetric
-`3fr_2fr` split at a flat `gap-x-16` (no widening `lg:` step, unlike
-`more-stories.tsx`'s own two-column grids — this column cannot spare the
-gutter width those can) measures a 566px left column, wider than the even
-split's 428px; and the headline caps at 40px (`lg:text-[2.5rem]`, off
-Tailwind's scale on purpose — `lg:text-4xl` at 36px is the on-scale fallback
-if the arbitrary value is ever found objectionable) rather than 48px. Do not
-go back to 48px in a split column at this container width, and do not widen
-the gutter at `lg`.
+**This replaces an earlier asymmetric `3fr_2fr` split.** The asymmetric cut
+had been introduced to give long headlines 566px of column width to prevent
+3–4 line wraps at 48px, at the cost of squeezing the right column to 368px
+and leaving it 60px misaligned against the 428px grid card directly below.
+Syncing the hero to `md:grid-cols-2 md:gap-x-16 lg:gap-x-32` restores the
+vertical grid axis across the divider line. The headline remains capped at
+40px (`lg:text-[2.5rem]`, off Tailwind's scale on purpose — `lg:text-4xl` at
+36px is the on-scale fallback if the arbitrary value is ever found
+objectionable) rather than climbing to 48px.
 
 **Avatar stays whole.** The first cut also pulled the date out of `Avatar`'s
 `meta` prop to mirror the index card's element order (headline, date,
