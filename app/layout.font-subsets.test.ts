@@ -29,20 +29,49 @@ function declaredSubsets(source: string): string[][] {
   );
 }
 
+// Literata is split across two next/font/google calls so preload can be set
+// per style — see the comment above the declarations. Both instances still
+// have to declare the same subsets or the two faces could diverge in what
+// unicode-range they carry, which is why this check stays a loop over every
+// declaration rather than special-casing the pair.
+function declaredPreloadFalse(source: string): string[] {
+  return [...source.matchAll(/preload:\s*false/g)].map((match) => match[0]);
+}
+
 describe("preloaded font subsets", () => {
   const found = declaredSubsets(readFileSync(LAYOUT, "utf8"));
 
-  it("finds both font declarations in app/layout.tsx", () => {
-    // Bricolage and Literata. Adding a third face moves this number and fails,
-    // which is intended: a new family has to make the same decision rather
-    // than inherit whatever was pasted alongside it.
-    expect(found).toHaveLength(2);
+  it("finds all three font declarations in app/layout.tsx", () => {
+    // Bricolage, Literata roman and Literata italic. Adding a fourth face
+    // moves this number and fails, which is intended: a new family has to
+    // make the same decision rather than inherit whatever was pasted
+    // alongside it.
+    expect(found).toHaveLength(3);
   });
 
   it("preloads latin only", () => {
     for (const subsets of found) {
       expect(subsets).toEqual(["latin"]);
     }
+  });
+});
+
+describe("the Literata italic opts out of preload", () => {
+  it("sets preload: false on exactly one instance", () => {
+    // Not zero: the whole point of the split is that the italic instance
+    // stops preloading. Not two: the roman instance has to keep preloading,
+    // or the LCP hero image loses its head start on every route again.
+    const found = declaredPreloadFalse(readFileSync(LAYOUT, "utf8"));
+    expect(found).toHaveLength(1);
+  });
+
+  it("finds nothing on a declaration with no preload key", () => {
+    // Every declaration looked like this before the split: no preload key at
+    // all, meaning next/font's own default of true. A detector that reported
+    // a match here would fail the "exactly one" assertion above for the wrong
+    // reason, on every instance rather than the one that matters.
+    const fixture = 'const x = Literata({ subsets: ["latin"] });';
+    expect(declaredPreloadFalse(fixture)).toEqual([]);
   });
 });
 

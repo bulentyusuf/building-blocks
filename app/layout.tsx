@@ -99,14 +99,43 @@ const bricolage = Bricolage_Grotesque({
   axes: ["opsz"],
 });
 // Literata carries the italic because it is the prose face: <em> in rich text
-// and the figure captions were browser-synthesised slants before. Bricolage is
-// roman only — a display italic is a separate decision.
+// and the figure captions were browser-synthesised slants before this was
+// wired up. It is split across two next/font/google calls so the italic can
+// drop out of the preload set. preload is per-instance, and subsets is the only
+// per-file preload lever next/font/google exposes (google/loader.js:102 keys
+// preloading on subset membership, and style is not a subset), so one call
+// covering both styles preloads both or neither.
+//
+// Both calls emit font-family: Literata, the real family name rather than a
+// generated one, so this is one family to the browser and native style
+// matching resolves <i> to the italic faces. No CSS selector targets italic
+// and none should: a selector-based approach would have to enumerate every
+// container rich text renders into, and would silently fall back to a
+// synthetic oblique on anything it missed.
+//
+// The italic still loads, just on demand. All seven of its subset faces keep
+// their unicode-range, so coverage is unchanged. What goes away is 113,196 B
+// of High-priority bandwidth in <head> on every route, competing with the LCP
+// hero image, on the roughly half of pages that paint no italic at all.
 const literata = Literata({
   variable: "--font-literata",
   subsets: ["latin"],
   display: "swap",
-  style: ["normal", "italic"],
+  style: ["normal"],
   axes: ["opsz"],
+});
+// Referenced only for its side effect: the returned object must be assigned
+// to a variable that is actually used (below, in the <html> class list) or
+// next/font never emits this instance's faces at all. Nothing reads
+// --font-literata-italic — the family name is what does the work, since both
+// instances share it — but the variable still has to exist and be wired in.
+const literataItalic = Literata({
+  variable: "--font-literata-italic",
+  subsets: ["latin"],
+  display: "swap",
+  style: ["italic"],
+  axes: ["opsz"],
+  preload: false,
 });
 function Header() {
   return (
@@ -410,7 +439,7 @@ export default async function RootLayout({
   return (
     <html
       lang={DEFAULT_LOCALE}
-      className={`${bricolage.variable} ${literata.variable}`}
+      className={`${bricolage.variable} ${literata.variable} ${literataItalic.variable}`}
       suppressHydrationWarning
     >
       <head>
