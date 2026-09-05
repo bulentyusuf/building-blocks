@@ -219,8 +219,23 @@ describe("heading permalink anchor", () => {
   // otherwise trip an exact string match here — "Getting set up" is three
   // tokens, right at the threshold that glues "set up". Normalised out so the
   // comparison is only ever about the glyph, the thing under test.
-  const textContent = (h2: string) =>
-    h2.replace(/<[^>]+>/g, "").replace(/ /g, " ");
+  //
+  // The tag strip runs to a fixed point rather than a single pass: a single
+  // replace(/<[^>]+>/g, "") can leave a residual tag behind on adversarial
+  // input (CodeQL flags this shape as incomplete multi-character
+  // sanitisation). Nothing here is untrusted — it is our own
+  // renderToStaticMarkup output on a hardcoded fixture — but looping to a
+  // fixed point costs nothing and removes the pattern rather than arguing
+  // with the scanner.
+  const textContent = (h2: string) => {
+    let stripped = h2;
+    let previous: string;
+    do {
+      previous = stripped;
+      stripped = previous.replace(/<[^>]+>/g, "");
+    } while (stripped !== previous);
+    return stripped.replace(/ /g, " ");
+  };
 
   it("leaves no stray glyph in the heading's text content", () => {
     // What Pagefind reads for a sub-result title. It takes a heading anchor's
