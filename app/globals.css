@@ -16,7 +16,7 @@
   a comment here would regenerate the very rule this removes. Ordinary English
   that happens to match a utility is a different matter — see CLAUDE.md.
 
-  These two carry class names in prose and ship no markup of their own.
+  These three carry class names in prose and ship no markup of their own.
   llms.txt and the READMEs describe the site to other tools; app/ and lib/ are
   still scanned normally, so nothing a component uses is affected.
 */

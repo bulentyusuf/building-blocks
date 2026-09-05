@@ -10,7 +10,7 @@ Read `docs/decisions.md` before an audit of any kind, and before changing
 anything an entry here names. Do not re-raise a decision as a finding without
 reading its entry first.
 
-**This file has a line budget of 320 and `lib/docs-consistency.test.ts`
+**This file has a line budget of 260 and `lib/docs-consistency.test.ts`
 enforces it.** An entry that cannot be stated in a few lines belongs in
 `docs/decisions.md` with a marker here, not expanded in place. The budget is
 the mechanism; growing the number instead of moving the prose defeats it.
@@ -65,6 +65,9 @@ md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
   (`openRule={false}`). Item padding stays `py-10 md:py-12`, the page adds no
   gap of its own, the closing rule stays, and `app/pagination.tsx` has no top
   border. [→ `wide-page-shell`, `border-roles`]
+- **Breadcrumbs wrap in `mx-auto max-w-2xl` on narrow pages**, sit before
+  `<section>` on `/search`, and never carry page position — that rides inline
+  in the heading instead. [→ `breadcrumbs`]
 
 ## Headers and home
 
@@ -131,10 +134,29 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 - **Tags are pills via `app/tag-pill.tsx`.** A tag as metadata is a pill; a tag
   as destination is a link. There is no third treatment.
   [→ `tag-pills`, `tag-pages`]
+- **Cross-document view transitions are gone.** Do not reintroduce a
+  `view-transition-name`, `viewTransitionName` or `transitionName` prop.
+  [→ `view-transitions`]
+- **Search runs on Pagefind's Component UI**; its keyboard/ARIA behaviour is
+  upstream's, deliberately not reimplemented. Keep `pagefind` `^1.5.2`+. [→ `pagefind-ui`]
 - **Never write a literal Tailwind utility name in a source comment** under
   `app/` or `lib/` — it regenerates the rule. Verify only against the deployed
   bundle; a local `@tailwindcss/postcss` compile reports false negatives.
   [→ `tailwind-scanning`]
+
+## Accessibility
+
+- **One announced link per card, one description per figure.** A linked cover
+  is `aria-hidden`/`tabIndex={-1}` with no `title`, footer labels are `<p>`
+  not `<h4>`, and a figure's `alt` is empty when its caption renders.
+  [→ `announced-links`]
+- **A scroll region's accessible name is its position** (`Table 2`, `Code
+block 2`), never a summary of its contents. [→ `scroll-region-names`]
+- **The skip link's target (`<main id="main">`) carries `tabIndex={-1}`**,
+  needed in browsers that don't move focus on a fragment jump. [→ `skip-link`]
+- **The lightbox's enlarge button renders only after `mounted`**, never
+  unconditionally — an unmounted trigger would announce an affordance that
+  does nothing with scripts off. [→ `lightbox-mounted`]
 
 ## Data and Contentful
 
@@ -177,6 +199,16 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   Do not add `.nvmrc`, `volta.node`, `devEngines.runtime` or a hardcoded
   `node-version:`. `@types/node` follows the runtime major, not latest.
   [→ `node-pin`]
+- **Browse-page standfirst and meta description are CMS-editable** via a
+  `browseIntro` entry; site identity (`SITE_TITLE`, `SITE_DESCRIPTION`) stays
+  in code. [→ `browse-copy`]
+- **Two copies of `@contentful/rich-text-types` ship on purpose** — the app
+  resolves `17.x`, `contentful-management` nests its own `^16.6.1` dev copy.
+  Do not force a resolution to dedupe it. [→ `rich-text-types-dupe`]
+- **`'unsafe-inline'` stays global in the CSP.** `'wasm-unsafe-eval'` and
+  `frame-ancestors` are relaxed per route only — `/search` plus
+  `/pagefind/*`, and `/posts/*` respectively — never on the catch-all.
+  [→ `csp-scoping`]
 
 ## Testing
 

@@ -115,7 +115,7 @@ describe("the CI gate CLAUDE.md describes", () => {
 // reasoning moved out and this budget went in to keep it out. An entry that
 // cannot be stated in a few lines belongs in docs/decisions.md with a marker
 // pointing at it; raising this number instead is how the split gets undone.
-const CLAUDE_MD_LINE_BUDGET = 320;
+const CLAUDE_MD_LINE_BUDGET = 260;
 
 describe("CLAUDE.md stays inside its line budget", () => {
   it("is no longer than the budget", () => {
@@ -132,8 +132,13 @@ describe("every decision marker in CLAUDE.md resolves", () => {
   // find the argument. This is the check that the split does not rot.
   const keysIn = (doc: string) =>
     new Set([...doc.matchAll(/<!-- key: ([a-z0-9-]+) -->/g)].map((m) => m[1]));
+  // A citation can name more than one key in a single bracket, e.g.
+  // `[→ \`a\`, \`b\`]`, so this reads every backtick-quoted key inside the
+  // bracket rather than assuming the bracket closes after the first one.
   const markersIn = (doc: string) =>
-    [...doc.matchAll(/\[→ `([a-z0-9-]+)`\]/g)].map((m) => m[1]);
+    [...doc.matchAll(/\[→ ([^\]]+)\]/g)].flatMap((m) =>
+      [...m[1].matchAll(/`([a-z0-9-]+)`/g)].map((k) => k[1]),
+    );
   const unresolved = (claude: string, decisions: string) => {
     const keys = keysIn(decisions);
     return markersIn(claude).filter((marker) => !keys.has(marker));
@@ -154,6 +159,44 @@ describe("every decision marker in CLAUDE.md resolves", () => {
     expect(
       unresolved("[→ `no-such-entry`]", "<!-- key: cover-frames -->"),
     ).toEqual(["no-such-entry"]);
+  });
+
+  it("reports an unresolved key inside a multi-key marker", () => {
+    // Known-bad control for the multi-key bracket form specifically. The
+    // regex above once stopped at the first closing backtick, so a marker
+    // like `[→ \`a\`, \`b\`]` matched nothing at all and both keys went
+    // unchecked — silently, since an unmatched marker looks the same as a
+    // resolved one to the filter above.
+    expect(
+      unresolved(
+        "[→ `cover-frames`, `no-such-entry`]",
+        "<!-- key: cover-frames -->",
+      ),
+    ).toEqual(["no-such-entry"]);
+  });
+
+  it("cites every key docs/decisions.md defines", () => {
+    // The reciprocal direction. A marker with no key is a rule pointing at
+    // nothing; a key with no marker is an argument nothing in the short layer
+    // can reach — an auditor reading CLAUDE.md has no way to find it, which
+    // is the exact failure this split exists to prevent.
+    const cited = new Set(markersIn(read("CLAUDE.md")));
+    const orphans = [...keysIn(read("docs/decisions.md"))].filter(
+      (k) => !cited.has(k),
+    );
+
+    expect(orphans).toEqual([]);
+  });
+
+  it("reports a key nothing in CLAUDE.md cites", () => {
+    // Known-bad control. An argument with no rule pointing at it is
+    // unreachable from the file a session actually reads.
+    const cited = new Set(markersIn("[→ `cover-frames`]"));
+    expect(
+      [...keysIn("<!-- key: cover-frames -->\n<!-- key: orphan -->")].filter(
+        (k) => !cited.has(k),
+      ),
+    ).toEqual(["orphan"]);
   });
 });
 

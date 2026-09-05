@@ -1321,10 +1321,10 @@ buyback. The invariant survives the move intact: `PageCounter` still returns
 none of them decides for itself when its own page counts as paginated.
 
 The author routes take the counter too, on consistency, even though they are
-the one route family exempted from M5 itself (`splitHeader={false}`,
-CLAUDE.md above). The old objection to the caption living in an author
-header — that it landed under the 112px portrait rather than under the name —
-cannot recur once the counter is inline text on the same line as the name.
+the one route family exempted from M5 itself (`splitHeader={false}`, above).
+The old objection to the caption living in an author header — that it landed
+under the 112px portrait rather than under the name — cannot recur once the
+counter is inline text on the same line as the name.
 `splitHeader={false}` already exists as the documented shape for "the author
 routes are different" if this is ever found to read badly beside the
 portrait; one more exception on that prop is cheaper than a conditional in
@@ -1754,8 +1754,8 @@ guarded was broken:
 <!-- key: tailwind-scanning -->
 
 `app/globals.css` carries `@source not "../CLAUDE.md"` and the same for
-`README.md`, and explains why: a utility merely **named** in prose is generated
-as though a component used it.
+`docs/decisions.md` and `README.md`, and explains why: a utility merely
+**named** in prose is generated as though a component used it.
 
 The exclusions work and do not solve the whole problem, because `app/` and
 `lib/` are scanned and cannot be excluded. Two categories remain, and only one
