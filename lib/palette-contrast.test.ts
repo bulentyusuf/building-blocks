@@ -390,14 +390,51 @@ describe("literal hexes track the tokens they duplicate", () => {
     ).toBe(true);
   });
 
-  it("the search emblem's dark-mode figure equals the LIGHT crimson", () => {
+  // The emblem moved from an inline SVG (ink via currentColor, guarded through
+  // page.tsx's dark: class) to a static asset with no currentColor to pick up,
+  // so the ink is a literal hex baked into the file and the guard reads it
+  // there instead. See the emblem note in docs/decisions.md.
+  const emblemSvg = read("public/search-emblem.svg");
+  const inkFill = (svg: string) =>
+    /id="search-emblem-ink"[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(svg)?.[1];
+
+  it("the search emblem's ink equals the LIGHT crimson", () => {
     // Deliberately the light value. The emblem's ground is a fixed cream island
     // in both schemes, so the lifted dark-mode crimson washes out on it. If this
     // ever matches the dark token instead, the fix went in backwards.
-    const page = read("app/search/page.tsx");
-    const m = /dark:text-\[(#[0-9a-f]{6})\]/i.exec(page);
-    expect(m).not.toBeNull();
-    expect(sameColour(parseColour(m![1]), light("--color-brand-crimson"))).toBe(
+    const fill = inkFill(emblemSvg);
+    expect(fill, "ink fill not found in public/search-emblem.svg").toBeTruthy();
+    expect(sameColour(parseColour(fill!), light("--color-brand-crimson"))).toBe(
+      true,
+    );
+  });
+
+  it("would catch the lifted dark crimson wired in by mistake", () => {
+    // Known-bad control: same extraction and comparison, fed a fixture using
+    // the lifted dark-mode value instead of the light one. Proves the check
+    // above can actually fail rather than passing on whatever hex it finds.
+    const bad = emblemSvg.replace(
+      /(id="search-emblem-ink"[^>]*fill=")#[0-9a-fA-F]{6}/,
+      "$1#EC8494",
+    );
+    expect(
+      sameColour(parseColour(inkFill(bad)!), light("--color-brand-crimson")),
+    ).toBe(false);
+  });
+
+  it("keeps the lens ground's dark-mode fill the fixed cream, not a token", () => {
+    // --color-brand-bg flips to near-black in dark mode and would paint a
+    // black glass, so the ground the knockouts read against stays a literal
+    // hex in both schemes rather than the token.
+    const m =
+      /prefers-color-scheme:dark\)\{\.search-lens-ground\{fill:(#[0-9a-fA-F]{6})\}/i.exec(
+        emblemSvg,
+      );
+    expect(
+      m,
+      "dark-mode ground fill not found in public/search-emblem.svg",
+    ).not.toBeNull();
+    expect(sameColour(parseColour(m![1]), light("--color-brand-bg"))).toBe(
       true,
     );
   });

@@ -119,7 +119,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   white one. The footer's faintest tint is `white/72`. [→ `chrome-aubergine`]
 - **The search emblem's ground stays cream `#FAF5F1` in both schemes**, so
   anything rendered on it uses literal hex in dark mode, never brand tokens.
-  [→ `search-emblem`]
+  The art is a static `public/search-emblem.svg` loaded via `<img>`, not a
+  page-level CSS class — nothing outside the file can style it, so a brand
+  token cannot reach it even in principle. [→ `search-emblem`]
 - **Three border roles, not interchangeable**: `--color-hairline` (dividers,
   inverts on its own, never add a `dark:` variant), `--color-control-edge`
   (`app/tag-pill.tsx` only, carries a WCAG 1.4.11 contrast floor), and the
