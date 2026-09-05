@@ -1535,6 +1535,63 @@ per purged page buys the page being right on the first look. Asserted in
 A new fetcher that passes no tag gets `posts`, deliberately: the safe direction
 to be wrong in is the expensive one.
 
+### Scheduling is Contentful's job, and `date` is not a gate
+
+<!-- key: post-scheduling -->
+
+`getAllPosts` in `lib/api.ts` queries `where: { slug_exists: true }` with no
+bound on `date`. A published entry dated in the future is therefore live the
+moment it publishes. That is accepted, not an oversight, and adding a
+`date_lte` filter would make the site worse in three separate ways.
+
+**Nothing would ever bring the post back.** Revalidation here is webhook-only
+with `expire: 0` (see `cache-tags` above), and no page route carries a
+time-based `revalidate` — the only two routes that do, `/sitemap-xml` and
+`/feed.xml`, are derived exports nobody browses directly, and even they run on
+a 24-hour clock rather than the moment a scheduled date arrives. No webhook
+fires when a date passes, so a filtered post would stay invisible on every
+page a reader actually browses until some unrelated entry happened to purge
+the `posts` tag — days later, or never. The filter converts "appears too
+early" into "never appears", and the second failure is silent where the first
+is obvious.
+
+**It is not one query.** `getPostAndMorePosts` carries its own, as do
+`getPost`, `getPostsByCategory` and `getRecentPostsByCategory`, and the
+`generateStaticParams` in both `app/posts/[slug]/page.tsx` and its
+`opengraph-image.tsx` calls `getAllPosts` separately again. Filtering
+`getAllPosts` alone would hide a post from every listing while `/posts/[slug]`
+still rendered it — `dynamicParams` defaults to `true`, so a slug missing from
+the build list still renders on demand through `getPost`'s own unfiltered
+query — which is a worse state than either extreme.
+
+**It would break the per-render dedupe.** `getAllPosts` is `cache()`-wrapped
+and reached twice on a post page from two directions that cannot see each
+other: `getPostAndMorePosts` calls it internally to rank related posts, and
+the page calls it again directly for the sitewide tag counts, which cannot be
+derived from one post. `cache()` keys on the argument list as passed, so a
+`$now` computed at each call site and threaded through as an argument would be
+two memo entries a few milliseconds apart and two queries where there is one
+today. Hoisting it to a single value per render fixes that and is one more
+thing to get right, silently, forever.
+
+**Use Contentful's scheduled publishing instead.** The entry stays unpublished
+until the scheduled moment, the publish webhook fires, `revalidateTag` purges
+and the post appears. The CDN never holds it early because it was never
+published, and no route needs to know anything about dates. That is strictly
+more correct than a filter: a filtered post is still published and still
+reachable through the Contentful API, whereas an unscheduled one does not
+exist yet.
+
+So the `date` field is display metadata, not an access gate. A future date on a
+published entry is a data-entry mistake — visible immediately on the home
+hero, since `getAllPosts` orders `date_DESC` and the hero is `allPosts[0]` —
+and not a content leak. Nothing is exposed that the author did not publish.
+
+If date-gated scheduling on _published_ entries is ever genuinely wanted, the
+cost is the five-plus query sites above plus an hourly `revalidate` floor on
+every listing route, and it reopens the `expire: 0` decision. Reopen it in
+writing first, per `reopening-decisions`.
+
 ### Every unbounded collection query pages, and must keep selecting `total`
 
 <!-- key: collection-paging -->
