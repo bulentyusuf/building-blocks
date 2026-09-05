@@ -194,6 +194,10 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   the lead. The Contentful size validation and the GraphQL `limit` are both 3
   and move together. `author`, singular, still exists; do not query it in new
   code. [→ `authors-array`]
+- **Post scheduling goes through Contentful's scheduled publishing**, never a
+  `date` filter in the query. Revalidation is webhook-only, so nothing would
+  fire when a date passed and a filtered post would never appear at all.
+  `date` is display metadata, not a gate. [→ `post-scheduling`]
 - **A schema change reaches both spaces first, then merges, then syncs
   `demo`** — live `rczsnwq9z69e` and Demo Site `18c3oqmr28q0`. Update
   `contentful/export.json`, `contentful/seed.json` and `public/llms.txt` in the
