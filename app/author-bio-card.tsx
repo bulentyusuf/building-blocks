@@ -64,9 +64,11 @@ export function AuthorBioSection({
     // Excluded from the search index. The bio comes from the Author entry, so
     // it is identical on every post that author wrote — indexed as prose it
     // matches a query a dozen times over and hands back the bio as the excerpt
-    // instead of anything about the post. /authors/[slug] carries no
-    // data-pagefind-body of its own, so this makes the bio unsearchable
-    // sitewide rather than searchable in one place — see the PR description.
+    // instead of anything about the post. The author's name still indexes via
+    // the byline above (see Avatar in app/posts/[slug]/page.tsx), so searching
+    // a persona still returns their posts; only the bio prose drops out, and
+    // /authors/[slug] is not in the index at all today. If author pages ever
+    // join the index, this is the text that should carry them.
     <div
       data-pagefind-ignore
       className={hasTags ? "mt-8" : "mt-8 border-t border-hairline pt-8"}

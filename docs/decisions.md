@@ -128,10 +128,14 @@ Three things earn it today, all inside `<article>`:
   `AuthorBioSection`). The bio text comes from the Author entry, so it is
   byte-identical on every post that author wrote — indexed as prose it
   matches a query once per post by that author and hands back the bio as the
-  excerpt instead of anything about the post that matched. `/authors/[slug]`
-  renders the same bio but carries no `data-pagefind-body` of its own, so
-  excluding it here makes the bio unsearchable sitewide rather than
-  searchable in one place. Accepted for now; making an author's bio
+  excerpt instead of anything about the post that matched. That is not a
+  feature quietly lost; it is a known relevance bug, and removing it is the
+  point. The byline (`<Avatar>` in `app/posts/[slug]/page.tsx`, above the bio
+  wrapper) stays inside the indexed region, so a search for a persona's name
+  still returns their posts exactly as before — only the bio's own prose
+  drops out. `/authors/[slug]` renders the same bio but carries no
+  `data-pagefind-body` of its own, so nothing today makes it findable there
+  either. Accepted at 22 posts and three personas; making an author's bio
   findable from their own page is a separate decision about which routes
   join the index, not a follow-up owed to this one.
 
