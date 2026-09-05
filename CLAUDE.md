@@ -141,6 +141,10 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   [→ `view-transitions`]
 - **Search runs on Pagefind's Component UI**; its keyboard/ARIA behaviour is
   upstream's, deliberately not reimplemented. Keep `pagefind` `^1.5.2`+. [→ `pagefind-ui`]
+- **`aria-hidden` and `opacity-0` are not index controls.** Pagefind reads raw
+  text inside a `data-pagefind-body` region regardless of either, so chrome
+  and boilerplate there needs `data-pagefind-ignore` stated explicitly.
+  [→ `pagefind-index-scope`]
 - **Never write a literal Tailwind utility name in a source comment** under
   `app/` or `lib/` — it regenerates the rule. Verify only against the deployed
   bundle; a local `@tailwindcss/postcss` compile reports false negatives.

@@ -61,7 +61,16 @@ export function AuthorBioSection({
   // hairline border. When there are no tags, this block opens the zone itself
   // with a hairline border and matching pt-8.
   return (
-    <div className={hasTags ? "mt-8" : "mt-8 border-t border-hairline pt-8"}>
+    // Excluded from the search index. The bio comes from the Author entry, so
+    // it is identical on every post that author wrote — indexed as prose it
+    // matches a query a dozen times over and hands back the bio as the excerpt
+    // instead of anything about the post. /authors/[slug] carries no
+    // data-pagefind-body of its own, so this makes the bio unsearchable
+    // sitewide rather than searchable in one place — see the PR description.
+    <div
+      data-pagefind-ignore
+      className={hasTags ? "mt-8" : "mt-8 border-t border-hairline pt-8"}
+    >
       <p className="mb-6 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
         {authorsWithBio.length > 1 ? "About the authors" : "About the author"}
       </p>
