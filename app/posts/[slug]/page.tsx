@@ -271,7 +271,7 @@ export default async function PostPage({
                 the space around it as well as the type. At 1.6em the gap above
                 lands at 57.6px, near where it sat before the bump, and the
                 h1-to-h2 step widens back out. */}
-            <div className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h4:text-[1.15em]">
+            <div className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h3:font-[600] prose-h4:text-[1.15em]">
               <RichText
                 content={post.content}
                 headings={headings}
