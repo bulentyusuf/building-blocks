@@ -214,6 +214,30 @@ describe("heading permalink anchor", () => {
     expect(html).toContain('aria-hidden="true"');
   });
 
+  it("keeps the permalink glyph out of the search index", () => {
+    // Pagefind honours neither aria-hidden nor opacity-0, so without this the
+    // "#" is concatenated onto every h2 in the index and shows up in
+    // sub-result titles and excerpts.
+    const html = render(text("Getting set up"));
+    const anchor = /<a[^>]*href="#getting-set-up"[^>]*>/.exec(html)?.[0];
+    expect(anchor, "permalink anchor not found").toBeTruthy();
+    expect(anchor).toContain("data-pagefind-ignore");
+  });
+
+  it("would catch the ignore attribute drifting off the anchor", () => {
+    // Known-bad control. The check above reads the anchor's own opening tag
+    // rather than the whole document, because the attribute landing on the
+    // <h2> instead would drop the entire heading from the index — a worse
+    // outcome that a document-wide toContain would happily pass.
+    const html = render(text("Getting set up")).replace(
+      /(<a[^>]*href="#getting-set-up"[^>]*?)\sdata-pagefind-ignore/,
+      "$1",
+    );
+    const anchor = /<a[^>]*href="#getting-set-up"[^>]*>/.exec(html)?.[0];
+    expect(anchor).toBeTruthy();
+    expect(anchor).not.toContain("data-pagefind-ignore");
+  });
+
   it("keeps the anchor name out of the heading's accessible name", () => {
     // The anchor sits inside the <h2>, so accessible-name-from-content folds
     // the link's name into the heading. A descriptive per-heading label would

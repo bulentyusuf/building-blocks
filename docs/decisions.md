@@ -99,6 +99,50 @@ Three more accepted properties:
 - **`/search` is `noindex`.** A search page is thin content and crawlers should
   reach posts directly. Not an SEO gap.
 
+### What the Pagefind index deliberately excludes
+
+<!-- key: pagefind-index-scope -->
+
+Two regions carry `data-pagefind-body`: a post's own `h1` and its `<article>`
+(`app/posts/[slug]/page.tsx`). Nothing else on the site is indexed —
+`/search` is `noindex` and carries no body region of its own, and no other
+route opts in.
+
+`data-pagefind-body` scopes what is indexed, not what is legible inside it.
+Pagefind reads raw text content and honours neither `aria-hidden` nor
+`opacity-0`, so anything inside a body region that a sighted reader would not
+think of as the post's own words needs `data-pagefind-ignore` stated
+explicitly, regardless of how it is hidden visually or from assistive tech.
+Three things earn it today, all inside `<article>`:
+
+- **The table of contents** (`app/posts/[slug]/page.tsx`) repeats every
+  heading in the post, which would double-weight them against the body text
+  they summarise.
+- **The heading permalink glyph** (`lib/rich-text.tsx`, `BLOCKS.HEADING_2`).
+  The `#` is `opacity-0` until hover and `aria-hidden`, invisible to sighted
+  readers and assistive tech alike, but Pagefind concatenates it onto the
+  heading's text regardless — a trailing "#" in both the sub-result title and
+  the excerpt. The heading's own `id` is untouched, so Pagefind still builds a
+  sub-result anchor for it; only the marker drops out.
+- **The foot-of-post author bio** (`app/author-bio-card.tsx`,
+  `AuthorBioSection`). The bio text comes from the Author entry, so it is
+  byte-identical on every post that author wrote — indexed as prose it
+  matches a query once per post by that author and hands back the bio as the
+  excerpt instead of anything about the post that matched. That is not a
+  feature quietly lost; it is a known relevance bug, and removing it is the
+  point. The byline (`<Avatar>` in `app/posts/[slug]/page.tsx`, above the bio
+  wrapper) stays inside the indexed region, so a search for a persona's name
+  still returns their posts exactly as before — only the bio's own prose
+  drops out. `/authors/[slug]` renders the same bio but carries no
+  `data-pagefind-body` of its own, so nothing today makes it findable there
+  either. Accepted at 22 posts and three personas; making an author's bio
+  findable from their own page is a separate decision about which routes
+  join the index, not a follow-up owed to this one.
+
+Left in deliberately: the `Tagged` row at the foot of a post. Tag names are
+real signal — a post tagged Retro Gaming should match that query — and the
+one-word "Tagged" eyebrow beside them is not worth an attribute.
+
 ### The search emblem's dark-mode ground
 
 <!-- key: search-emblem -->

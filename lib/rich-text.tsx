@@ -201,6 +201,13 @@ export function RichText({
             {slug ? (
               <a
                 href={`#${slug}`}
+                // Pagefind indexes raw text content, and honours neither
+                // aria-hidden nor opacity-0 — so without this the glyph is
+                // concatenated onto the heading in the index and surfaces as a
+                // trailing "#" in both the sub-result title and the excerpt.
+                // The h2's own id is untouched, so Pagefind still builds a
+                // sub-result anchor for the heading; only the marker drops out.
+                data-pagefind-ignore
                 // The visible glyph is decorative, so it is hidden from the
                 // accessibility tree and the link carries a real name instead.
                 // Without this every permalink announces as "number sign".

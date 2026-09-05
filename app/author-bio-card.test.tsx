@@ -97,6 +97,29 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html.match(/More posts by/g)).toHaveLength(1);
   });
 
+  it("keeps the foot-of-post bio out of the search index", () => {
+    // The bio is identical on every post by that author, so indexed as prose
+    // it matches a query a dozen times over and hands back the bio as the
+    // excerpt instead of anything about the post.
+    const author = authorWithBio("bulent-yusuf", "Bulent Yusuf");
+    const html = renderToStaticMarkup(<AuthorBioSection authors={[author]} />);
+    const wrapper = /^<div[^>]*>/.exec(html)?.[0];
+    expect(wrapper, "AuthorBioSection wrapper not found").toBeTruthy();
+    expect(wrapper).toContain("data-pagefind-ignore");
+  });
+
+  it("would catch the ignore attribute drifting off the wrapper", () => {
+    // Known-bad control. Proves the check above can actually fail rather than
+    // passing on any data-pagefind-ignore it finds in the document.
+    const author = authorWithBio("bulent-yusuf", "Bulent Yusuf");
+    const html = renderToStaticMarkup(
+      <AuthorBioSection authors={[author]} />,
+    ).replace(/(<div[^>]*?)\sdata-pagefind-ignore/, "$1");
+    const wrapper = /^<div[^>]*>/.exec(html)?.[0];
+    expect(wrapper).toBeTruthy();
+    expect(wrapper).not.toContain("data-pagefind-ignore");
+  });
+
   it("renders two cards with plural 'About the authors' for a co-authored post where both have bios", () => {
     const author1 = authorWithBio("bulent-yusuf", "Bulent Yusuf");
     const author2 = authorWithBio("trippy-robot", "Trippy Robot");
