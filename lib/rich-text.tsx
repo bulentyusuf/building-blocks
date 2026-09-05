@@ -235,7 +235,16 @@ export function RichText({
                 // is completely full, which is inside the gutter it sits in.
                 className="ml-2 -mr-[1em] inline-block align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
               >
-                <span aria-hidden="true">#</span>
+                {/* The glyph is CSS generated content, not a text node, and
+                    that is load-bearing rather than stylistic. Pagefind reads
+                    a heading anchor's text straight from the DOM and does NOT
+                    honour data-pagefind-ignore when it does so — only when
+                    assembling the page's body content. So with a text node
+                    here, every sub-result title in search ended in a stray
+                    "#" even with the ignore attribute in place. Generated
+                    content is invisible to it. Do not put the character back
+                    in the markup. */}
+                <span aria-hidden="true" className="after:content-['#']" />
               </a>
             ) : null}
           </h2>

@@ -120,10 +120,31 @@ Three things earn it today, all inside `<article>`:
   they summarise.
 - **The heading permalink glyph** (`lib/rich-text.tsx`, `BLOCKS.HEADING_2`).
   The `#` is `opacity-0` until hover and `aria-hidden`, invisible to sighted
-  readers and assistive tech alike, but Pagefind concatenates it onto the
+  readers and assistive tech alike, but Pagefind concatenated it onto the
   heading's text regardless — a trailing "#" in both the sub-result title and
-  the excerpt. The heading's own `id` is untouched, so Pagefind still builds a
-  sub-result anchor for it; only the marker drops out.
+  the excerpt. `data-pagefind-ignore` fixed half of this: it kept the glyph
+  out of the page's indexed **content** string, which is what the excerpt is
+  built from. It did nothing for the sub-result **title**, which Pagefind
+  reads straight from the heading anchor's DOM text and does not consult
+  `data-pagefind-ignore` for at all — a second, separate extraction the
+  attribute was never in a position to cover. Sub-result titles kept reading
+  `What's changed#` after the attribute shipped, which is the half of the
+  symptom a reader actually sees. The fix that reaches both is to stop the
+  glyph being a text node: it renders as CSS generated content
+  (`after:content-['#']` on an empty, `aria-hidden` span) instead, so there is
+  nothing in the DOM for either extraction to read. The heading's own `id` is
+  untouched, so Pagefind still builds a sub-result anchor for it; only the
+  marker text drops out, from both places at once this time.
+
+  `data-pagefind-ignore` was a correct fix, not a wasted one — it still keeps
+  the glyph out of the excerpt, and it documents the intent if a text node
+  ever comes back. Do not read the title bug as a reason to remove it. The
+  general lesson: `data-pagefind-ignore` scopes the page's content string
+  only. A heading anchor's title is extracted separately and ignores it
+  completely, so anything textual inside a heading reaches search results no
+  matter what it is marked with. The only reliable way to keep a decorative
+  character out of both is to never put it in the DOM as text.
+
 - **The foot-of-post author bio** (`app/author-bio-card.tsx`,
   `AuthorBioSection`). The bio text comes from the Author entry, so it is
   byte-identical on every post that author wrote — indexed as prose it
