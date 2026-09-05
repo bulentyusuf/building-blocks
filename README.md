@@ -178,7 +178,7 @@ Forking this template carries over the original author's specifics. Change these
 - **Search illustration.** The empty-state emblem in `app/search/search-emblem.tsx` is bespoke artwork for this site. Replace or remove it.
 - **Security headers (careful).** The Content Security Policy in `next.config.js` relaxes two directives per route, and both are load-bearing. `'wasm-unsafe-eval'` is allowed in `script-src` on the `/search` document and `/pagefind/*` assets only, because Pagefind's matching runs as WebAssembly inside a SharedWorker; removing it breaks search with no visible error. `frame-ancestors` allows `https://app.contentful.com` on `/posts/*` only, which is what lets Contentful frame a draft for live preview; every other route is framable by its own origin alone. If you point a preview URL at a content type outside `/posts`, add its route there too.
 - **Seed images (optional).** If you re-run the seed, repoint `PLACEHOLDER_ASSET_URL` in `contentful/build-seed.mjs` to your own copy, then replace the placeholder cover, avatar, and thumbnail with real assets afterwards.
-- **CLAUDE.md (optional).** Useful as-is for working with Claude Code on the repo. Review it for any notes specific to the original author.
+- **CLAUDE.md and docs/decisions.md (optional).** Useful as-is for working with Claude Code on the repo. `CLAUDE.md` carries the conventions; `docs/decisions.md` carries the reasoning behind them. Review both for any notes specific to the original author.
 
 `public/pagefind` is generated at build time and is not tracked in git. There is nothing to replace there.
 

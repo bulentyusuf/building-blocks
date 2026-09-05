@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 // characters still render, they are just fetched when a page needs one. Adding
 // latin-ext back therefore buys no glyphs at all and costs 211,968 B of
 // high-priority bandwidth in <head> competing with the LCP hero image on
-// mobile. CLAUDE.md carries the full argument.
+// mobile. docs/decisions.md carries the full argument.
 //
 // The obvious reversal is a de-DE ticket re-adding latin-ext "for the capital
 // eszett", which is the assumption the original configuration was built on.

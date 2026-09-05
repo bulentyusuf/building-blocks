@@ -89,7 +89,7 @@ export const SITE_HOSTNAME = parseHostname(SITE_URL);
 // fast-forward and the weekly sync workflow would start failing — which is the
 // source divergence the one-repo setup exists to avoid.
 //
-// This is not the "move site identity into the CMS" change CLAUDE.md rejects.
+// This is not the "move site identity into the CMS" change docs/decisions.md rejects.
 // That one puts constants fourteen files deep behind a network fetch on routes
 // that never touch Contentful. This is build-time config in the same shape as
 // NEXT_PUBLIC_SITE_URL above, and the default in code is still the live name,

@@ -435,8 +435,8 @@ describe("the index listing, which carries a trail again", () => {
   // link, and the objection was to a shape this site does not build. The page
   // number still stays out of it, because position is a state rather than a
   // level — it rides inline in the h1 instead, via PageCounter (see the
-  // fixture below and CLAUDE.md, "The page counter moves inline, into the
-  // heading").
+  // fixture below and docs/decisions.md, "The page counter moves inline, into
+  // the heading").
   //
   // `crumbs` stays optional on the band regardless. Home is the only route
   // using that now, which is correct, since home is the root.

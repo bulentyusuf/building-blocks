@@ -7,11 +7,12 @@ import { describe, expect, it } from "vitest";
 // their callers, and that distinction is the whole point of this file.
 //
 // The bug this replaces: getAllPosts was uncached, and three prose rules in
-// CLAUDE.md and lib/api.ts told call sites to route around that by fetching
-// once and passing the list down. Two call sites obeyed the rule perfectly and
-// still produced a double fetch, because getPostAndMorePosts called getAllPosts
-// internally and PostPage called it again, and neither could see the other. A
-// call-site rule cannot see composition. A wrapped fetcher does not need to.
+// docs/decisions.md and lib/api.ts told call sites to route around that by
+// fetching once and passing the list down. Two call sites obeyed the rule
+// perfectly and still produced a double fetch, because getPostAndMorePosts
+// called getAllPosts internally and PostPage called it again, and neither
+// could see the other. A call-site rule cannot see composition. A wrapped
+// fetcher does not need to.
 //
 // This is a pattern match on source, which is the guard shape that has passed
 // here while the thing it guarded was broken, so it carries a known-bad control

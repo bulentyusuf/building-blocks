@@ -136,7 +136,8 @@ describe("nav text on chrome clears AAA in both schemes", () => {
 });
 
 // Five describe blocks retired here, by Phase 1 of the band retirement
-// (CLAUDE.md, "The masthead band was retired in favour of a 3px rule"):
+// (docs/decisions.md, "The masthead band was retired in favour of a 3px
+// rule"):
 //
 //   - "the browse band carries solid white text" and "the browse band stays a
 //     visible block in both schemes" checked --color-brand-band against white
@@ -149,7 +150,8 @@ describe("nav text on chrome clears AAA in both schemes", () => {
 //   - "the cover keyline stays visible on the band in both schemes" checked
 //     --color-cover-keyline against --color-brand-band specifically, because
 //     the post cover used to cross the band's bottom edge. Every cover is
-//     contained now (see "Covers take one of two frames" in CLAUDE.md), so
+//     contained now (see "Covers take one of two frames" in
+//     docs/decisions.md), so
 //     there is no seam left for the keyline to cross — the token stays,
 //     serving the shadow's other half against the page as it always did, but
 //     the band-specific pairing this asserted no longer describes anything
@@ -182,10 +184,11 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // Re-anchored three times since. First for the split masthead's
   // left-flowing version, which dropped max-w-3xl because a standfirst
   // filling the remaining width needed no max-width of its own. That version
-  // shipped and was rejected on sight for a different reason (CLAUDE.md, "The
-  // masthead splits into heading and standfirst") — the row is right-anchored
-  // now, via M5 — and M5 brought a max-width BACK, `max-w-[20rem]`, this time
-  // to force a two-line wrap rather than to cap a stray one. It also added
+  // shipped and was rejected on sight for a different reason
+  // (docs/decisions.md, "The masthead splits into heading and standfirst")
+  // — the row is right-anchored now, via M5 — and M5 brought a max-width
+  // BACK, `max-w-[20rem]`, this time to force a two-line wrap rather than to
+  // cap a stray one. It also added
   // `text-right`. Both are required in the pattern below, not just checked
   // afterwards, for the same reason text-brand-muted already was: a
   // standfirst that loses either one stops MATCHING rather than failing a
@@ -276,8 +279,8 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
 
   it("the position counter takes it too", () => {
     // It named no colour in the band, separating by size alone because the
-    // band forbade tinted text. Inline in the heading now (CLAUDE.md, "The
-    // page counter moves inline, into the heading"), it is still a meta
+    // band forbade tinted text. Inline in the heading now (docs/decisions.md,
+    // "The page counter moves inline, into the heading"), it is still a meta
     // string rather than heading text, and text-brand-muted is what says so.
     expect(read("app/page-counter.tsx")).toMatch(/text-brand-muted/);
   });

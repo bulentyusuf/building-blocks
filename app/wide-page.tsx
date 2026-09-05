@@ -6,14 +6,15 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  * The shell every wide route renders through — the four section fronts, all six
  * taxonomy listings, the index listing at /page/[page], the post page and home.
  * Which routes are wide is settled by the header measure, not here — see "One
- * axis, and it is the header measure" in CLAUDE.md.
+ * axis, and it is the header measure" in docs/decisions.md.
  *
- * Until Phase 1 of the band retirement (CLAUDE.md) this rendered the trail and
- * `header` inside a full-bleed navy `<PageBand>`, a sibling of `<Container>`
- * rather than a child of it. That band is gone: `#2b1c3f` (Phase 2's aubergine)
- * cannot carry it, since pure black beneath it reaches only 1.34:1 against the
- * chrome ramp `lib/palette-contrast.test.ts` still enforces, so retiring the
- * band had to happen regardless of the palette and had to happen first.
+ * Until Phase 1 of the band retirement (docs/decisions.md) this rendered the
+ * trail and `header` inside a full-bleed navy `<PageBand>`, a sibling of
+ * `<Container>` rather than a child of it. That band is gone: `#2b1c3f`
+ * (Phase 2's aubergine) cannot carry it, since pure black beneath it reaches
+ * only 1.34:1 against the chrome ramp `lib/palette-contrast.test.ts` still
+ * enforces, so retiring the band had to happen regardless of the palette and
+ * had to happen first.
  *
  * Everything the band drew now happens on one cream surface, inside one
  * `<Container>`:
@@ -99,7 +100,7 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  * false is the author page, whose `h1` already sits in a flex row beside a
  * 112px portrait — a third element across that line is one too many, so it
  * keeps the stacked fallback instead. Do not give a narrow route this prop at
- * all — see "One axis, and it is the header measure" in CLAUDE.md.
+ * all — see "One axis, and it is the header measure" in docs/decisions.md.
  */
 export default function WidePage({
   crumbs,
@@ -152,8 +153,8 @@ export default function WidePage({
                 markup, even though nothing currently passes a fragment into
                 this slot. app/listing-page.tsx once did — pairing a
                 standfirst with the pagination caption, before the caption
-                moved inline into each route's own heading (CLAUDE.md, "The
-                page counter moves inline, into the heading") — and a
+                moved inline into each route's own heading (docs/decisions.md,
+                "The page counter moves inline, into the heading") — and a
                 fragment generates no box of its own, so the row saw three
                 children instead of two. Under justify-between three children
                 spread across the full measure instead of two, stranding the

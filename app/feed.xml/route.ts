@@ -18,8 +18,8 @@ export const revalidate = 86400;
 //
 // <language> is the site locale in RSS 2.0's form, which is the BCP-47 tag
 // lowercased — en-GB becomes en-gb. It was a hardcoded "en", the one piece of
-// feed metadata not following DEFAULT_LOCALE, against CLAUDE.md's "the site's
-// locale is en-GB, everywhere".
+// feed metadata not following DEFAULT_LOCALE, against docs/decisions.md's
+// "the site's locale is en-GB, everywhere".
 //
 // Authors:
 // <dc:creator> carries every author in credit order via the Dublin Core

@@ -104,10 +104,10 @@ function HeroPost({
     <section className="mx-auto max-w-5xl mb-10 md:mb-12">
       {coverImage && (
         // Same device as the post page. No pull-up any more: Phase 1 of the
-        // band retirement (CLAUDE.md) dropped the full-bleed band the cover
-        // used to cross, so it renders as an ordinary block sitting directly
-        // under WidePage's 3px rule, the same as any other wide route's first
-        // element.
+        // band retirement (docs/decisions.md) dropped the full-bleed band
+        // the cover used to cross, so it renders as an ordinary block sitting
+        // directly under WidePage's 3px rule, the same as any other wide
+        // route's first element.
         //
         // mb-8 md:mb-10 rather than the post page's flat mb-10. What sits below
         // differs — a post's cover is followed by its body column, this one by a

@@ -6,21 +6,22 @@
   Tailwind v4 detects sources automatically: every file not excluded by
   .gitignore is scanned for class-name candidates, markdown included. So a
   utility merely NAMED in documentation is generated as if it were used —
-  CLAUDE.md's line explaining why a `scroll-mt-*` utility must not coexist with
-  scroll-padding was, by itself, emitting that utility into production CSS after
-  every component using it had been removed. Documentation should not be able to
-  change the artefact it documents.
+  docs/decisions.md's line explaining why a `scroll-mt-*` utility must not
+  coexist with scroll-padding was, by itself, emitting that utility into
+  production CSS after every component using it had been removed.
+  Documentation should not be able to change the artefact it documents.
 
   Note this comment carefully does not spell the class out. Prose files can be
   excluded wholesale, as below; source files cannot, so a literal class name in
   a comment here would regenerate the very rule this removes. Ordinary English
   that happens to match a utility is a different matter — see CLAUDE.md.
 
-  These two carry class names in prose and ship no markup of their own.
+  These three carry class names in prose and ship no markup of their own.
   llms.txt and the READMEs describe the site to other tools; app/ and lib/ are
   still scanned normally, so nothing a component uses is affected.
 */
 @source not "../CLAUDE.md";
+@source not "../docs/decisions.md";
 @source not "../README.md";
 
 @plugin '@tailwindcss/typography';
@@ -86,10 +87,10 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
   /* Two faces, three jobs. Display is headings and mastheads. Body is
      everything you read, prose and the meta around it. UI is the display face
      at smaller sizes — chrome that should not compete with prose: nav, labels,
-     pills, counts, an enumerated list, see CLAUDE.md. --default-font-family is
-     what Preflight puts on <body>, so body copy flips with one token, and
-     font-display / font-body / font-ui are generated from these by Tailwind.
-     Nothing names a family directly.
+     pills, counts, an enumerated list, see docs/decisions.md.
+     --default-font-family is what Preflight puts on <body>, so body copy
+     flips with one token, and font-display / font-body / font-ui are
+     generated from these by Tailwind. Nothing names a family directly.
 
      --font-ui resolving to the same family as --font-display is a choice, not a
      redundancy to tidy away: the roles stay separate, so handing UI back to its
@@ -285,7 +286,7 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
 
   This rule is why the footer's column labels are <p> rather than headings: as
   h4 they skipped a level after the page's h2s, and promoting them to h2 to fix
-  that would have pulled them into Bricolage. See CLAUDE.md.
+  that would have pulled them into Bricolage. See docs/decisions.md.
 
   A grotesque needs more weight than a serif to hold the same presence, and less
   manual tracking: Bricolage's opsz axis does the optical fitting that the
@@ -789,7 +790,7 @@ html {
    a cream page. In dark mode it is the fixed cream ground the knockouts read
    against, so it uses a literal hex, never a brand token: --color-brand-bg
    flips to near-black in dark mode and would paint a black glass. See the
-   emblem note in CLAUDE.md. */
+   emblem note in docs/decisions.md. */
 .search-lens-ground {
   fill: transparent;
 }

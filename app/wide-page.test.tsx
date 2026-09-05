@@ -6,7 +6,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
 
-// The split masthead (CLAUDE.md, "The split masthead"). WidePage lays a
+// The split masthead (docs/decisions.md, "The split masthead"). WidePage lays a
 // heading and a standfirst out on one row from md up and stacks them below
 // it — jsdom applies no stylesheet, so this asserts the branch WidePage takes
 // and the classes it emits, not that flexbox actually resolves them.
@@ -85,7 +85,7 @@ describe("WidePage's split masthead", () => {
   it("pins the standfirst to the container's right edge (M5)", () => {
     // The row shipped left-flowing first and was rejected on sight for
     // stranding a short standfirst in the middle of the row — see
-    // CLAUDE.md, "The masthead splits into heading and standfirst".
+    // docs/decisions.md, "The masthead splits into heading and standfirst".
     // justify-between is what anchors the standfirst's right edge instead;
     // the standfirst's own max-w-[20rem] (checked per route, not here) is
     // what stops that anchor reintroducing the empty-middle problem.
@@ -153,12 +153,12 @@ describe("only the author routes opt out of the split masthead", () => {
 });
 
 describe("every paginated route renders PageCounter inside its heading", () => {
-  // CLAUDE.md, "The page counter moves inline, into the heading". The single
-  // call site inside ListingPage/PageContext is gone; each of these seven
-  // routes now renders <PageCounter> itself, inline in its own <h1>. Without
-  // this guard a route can silently lose its counter — a typo, a refactor
-  // that drops the fragment — and nothing would notice, which is exactly the
-  // failure mode the one call site used to make impossible.
+  // docs/decisions.md, "The page counter moves inline, into the heading".
+  // The single call site inside ListingPage/PageContext is gone; each of
+  // these seven routes now renders <PageCounter> itself, inline in its own
+  // <h1>. Without this guard a route can silently lose its counter — a typo,
+  // a refactor that drops the fragment — and nothing would notice, which is
+  // exactly the failure mode the one call site used to make impossible.
   //
   // Anchored on the JSX at line start, never on the bare word "PageCounter":
   // app/page-counter.tsx's own name and app/listing-page.tsx's docstring both
