@@ -1564,12 +1564,15 @@ still rendered it — `dynamicParams` defaults to `true`, so a slug missing from
 the build list still renders on demand through `getPost`'s own unfiltered
 query — which is a worse state than either extreme.
 
-**The cache key would move under it.** `$now` as a GraphQL variable changes the
-request body on every render, and Next's fetch caching keys on that body, so
-introducing it risks turning a webhook-driven purge into a second,
-time-sensitive revalidation path running alongside the first. Quantising the
-timestamp to the hour narrows that risk but does not remove the second
-mechanism — which is the thing `expire: 0` was chosen to avoid.
+**It would break the per-render dedupe.** `getAllPosts` is `cache()`-wrapped
+and reached twice on a post page from two directions that cannot see each
+other: `getPostAndMorePosts` calls it internally to rank related posts, and
+the page calls it again directly for the sitewide tag counts, which cannot be
+derived from one post. `cache()` keys on the argument list as passed, so a
+`$now` computed at each call site and threaded through as an argument would be
+two memo entries a few milliseconds apart and two queries where there is one
+today. Hoisting it to a single value per render fixes that and is one more
+thing to get right, silently, forever.
 
 **Use Contentful's scheduled publishing instead.** The entry stays unpublished
 until the scheduled moment, the publish webhook fires, `revalidateTag` purges
