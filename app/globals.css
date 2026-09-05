@@ -784,23 +784,6 @@ html {
   display: none;
 }
 
-/* Cream ground behind the emblem's knockout artwork (hat, face, eye). It is the
-   magnifying glass's own outer silhouette (see search-emblem.tsx), so it fills
-   the whole glass exactly. Transparent in light mode — the emblem is already on
-   a cream page. In dark mode it is the fixed cream ground the knockouts read
-   against, so it uses a literal hex, never a brand token: --color-brand-bg
-   flips to near-black in dark mode and would paint a black glass. See the
-   emblem note in docs/decisions.md. */
-.search-lens-ground {
-  fill: transparent;
-}
-
-@media (prefers-color-scheme: dark) {
-  .search-lens-ground {
-    fill: #faf5f1;
-  }
-}
-
 /*
   Fragment-arrival confirmation. A reader landing on /posts/x#some-heading gets a
   brief highlight so it is obvious which section they arrived at. Uses box-shadow

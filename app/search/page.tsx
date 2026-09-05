@@ -3,7 +3,6 @@ import { draftMode } from "next/headers";
 import Container from "../container";
 import Breadcrumb, { type Crumb } from "../breadcrumb";
 import SearchClient from "./search-client";
-import SearchEmblem from "./search-emblem";
 import { getAllPosts } from "@/lib/api";
 import { groupPostsByTag } from "@/lib/tags";
 
@@ -94,19 +93,26 @@ export default async function SearchPage() {
             typing has to be inside the one element carrying that class, not a
             second sibling of its own. */}
         <div className="search-empty">
-          {/* Inline SVG so currentColor picks up the ink colour. Knockout
-              artwork: the hat, face and eye are gaps where the ground shows
-              through the ink, which only reads on a light ground. In dark mode
-              the cream ground is the glass's own silhouette, drawn inside the
-              SVG (see search-emblem.tsx), so the whole magnifying glass is lit
-              and there is no floating plate. The ink is forced to the light
-              crimson #9E2238 in dark mode (never the token, which is lifted to
-              #EC8494 for link legibility and looks washed out on cream): the
-              emblem is on cream in both schemes, so it should be the same
-              colour in both. p-8, shared by both schemes, sets a single emblem
-              size across light and dark. */}
-          <figure className="mx-auto mt-10 max-w-[16rem] p-8 text-brand-crimson dark:text-[#9E2238]">
-            <SearchEmblem />
+          {/* Static SVG, not inline: the ink is hardcoded to the light
+              crimson #9E2238 (never the token, which is lifted to #EC8494 for
+              link legibility and looks washed out on cream — the emblem is on
+              cream in both schemes, so it should be the same colour in both),
+              so there is no currentColor to pick up and no reason to inline
+              it. Knockout artwork: the hat, face and eye are gaps where the
+              ground shows through the ink, which only reads on a light
+              ground. In dark mode the cream ground is the glass's own
+              silhouette, filled by the SVG's own prefers-color-scheme block
+              (public/search-emblem.svg), so the whole magnifying glass is lit
+              and there is no floating plate. p-8, shared by both schemes,
+              sets a single emblem size across light and dark. */}
+          <figure className="mx-auto mt-10 max-w-[16rem] p-8">
+            <img
+              src="/search-emblem.svg"
+              alt=""
+              width={1735}
+              height={1867}
+              className="h-auto w-full"
+            />
           </figure>
           {tags.length > 0 && (
             <div className="flex flex-col gap-3.5">

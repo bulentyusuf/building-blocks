@@ -103,19 +103,28 @@ Three more accepted properties:
 
 <!-- key: search-emblem -->
 
-`app/search/search-emblem-art.ts` holds the artwork and the argument;
-`app/search/search-emblem.tsx` is the rendering. The knockout figure sits on a
-cream underlay sliced from the art, and that ground stays cream in both schemes
-while every brand token flips, so **anything rendered on it uses literal hex in
-dark mode, never brand tokens** — including a border, caption or hover state
-added later. Hence `.search-lens-ground` at `#FAF5F1` and the figure's
-`dark:text-[#A4243B]`.
+`public/search-emblem.svg` holds the artwork and, in its own `<style>` block,
+the argument. It is a static asset loaded via `<img>` in `app/search/page.tsx`
+rather than inlined, so there is no `currentColor` to pick up: the ink is a
+literal `#9E2238` baked into the file, the same value in both schemes, which
+is why a static `<img>` needs nothing extra to look right in dark mode. The
+knockout figure sits on a cream ground sliced from the same outline, and that
+ground stays cream in both schemes while every brand token flips, so
+**anything rendered on it uses literal hex in dark mode, never brand tokens**
+— including a border, caption or hover state added later. Hence the SVG's own
+`@media (prefers-color-scheme: dark)` rule setting `.search-lens-ground` to
+`#FAF5F1`, checked against the light `--color-brand-bg` token in
+`lib/palette-contrast.test.ts`, rather than a page-level CSS class: an
+`<img>`-embedded SVG cannot read the host page's stylesheet, so the rule has
+to live inside the file.
 
-`LENS` is sliced from `PATH1` so it cannot drift from the art — not a tuning
-knob. `p-8` may be nudged by eye. Tried and rejected: a rounded plate behind the
-figure, a hand-tuned tilted ellipse, inverting the ink to cream, stripping the
-face to keep only the glass. The paths live apart from the component because
-they are 36 KB of coordinates and nothing else; do not inline them again.
+The ground path is sliced from the glass's own outline so it cannot drift from
+the art — not a tuning knob. `p-8` may be nudged by eye. Tried and rejected: a
+rounded plate behind the figure, a hand-tuned tilted ellipse, inverting the ink
+to cream, stripping the face to keep only the glass. Moved out of a
+search-emblem-art.ts JS module (36 KB of coordinates and nothing else) to a
+static file once nothing but a `<style>` block needed to travel with the
+paths — the geometry is unchanged, only where it lives.
 
 ### Brand colour exists in two places on purpose
 

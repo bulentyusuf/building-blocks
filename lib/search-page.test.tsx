@@ -4,12 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 // The page pulls in a client component that loads Pagefind's bundle from
 // /pagefind at mount. Nothing here runs that effect — renderToStaticMarkup only
 // produces the server HTML, which is exactly the markup a scripts-off visitor
-// receives — but next/link and the emblem are stubbed to keep this a unit test
-// of the page's own structure.
-vi.mock("../app/search/search-emblem", () => ({
-  default: () => <svg data-testid="emblem" />,
-}));
-
+// receives — but next/link is stubbed to keep this a unit test of the page's
+// own structure.
 vi.mock("next/headers", () => ({
   draftMode: async () => ({ isEnabled: false }),
 }));
