@@ -214,6 +214,41 @@ describe("heading permalink anchor", () => {
     expect(html).toContain('aria-hidden="true"');
   });
 
+  // widont() glues a heading's final two words with a non-breaking space
+  // (lib/typography.ts), which is unrelated to what these two guard and would
+  // otherwise trip an exact string match here — "Getting set up" is three
+  // tokens, right at the threshold that glues "set up". Normalised out so the
+  // comparison is only ever about the glyph, the thing under test.
+  const textContent = (h2: string) =>
+    h2.replace(/<[^>]+>/g, "").replace(/ /g, " ");
+
+  it("leaves no stray glyph in the heading's text content", () => {
+    // What Pagefind reads for a sub-result title. It takes a heading anchor's
+    // text straight from the DOM and does not honour data-pagefind-ignore
+    // there, so anything textual inside the h2 lands in search results. The
+    // glyph is CSS generated content for exactly this reason.
+    const html = render(text("Getting set up"));
+    const h2 = /<h2[^>]*>([\s\S]*?)<\/h2>/.exec(html)?.[1];
+    expect(h2, "h2 not found").toBeTruthy();
+    expect(textContent(h2!)).toBe("Getting set up");
+  });
+
+  it("would catch the glyph returning as a text node", () => {
+    // Known-bad control. Puts a "#" back inside the anchor and shows the check
+    // above failing — the regression it exists to catch shipped once already,
+    // guarded by attribute assertions that all passed.
+    const original = render(text("Getting set up"));
+    const html = original.replace(
+      /(<span aria-hidden="true"[^>]*>)<\/span>/,
+      "$1#</span>",
+    );
+    // The replace must actually have mutated the string, or the assertion
+    // below would pass vacuously against the unmodified render.
+    expect(html).not.toBe(original);
+    const h2 = /<h2[^>]*>([\s\S]*?)<\/h2>/.exec(html)?.[1];
+    expect(textContent(h2!)).not.toBe("Getting set up");
+  });
+
   it("keeps the permalink glyph out of the search index", () => {
     // Pagefind honours neither aria-hidden nor opacity-0, so without this the
     // "#" is concatenated onto every h2 in the index and shows up in
