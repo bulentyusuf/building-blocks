@@ -276,7 +276,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
             />
           </svg>
         </summary>
-        <div className="pt-3">
+        <div className="pt-3 pb-12">
           <TocNav
             headings={headings}
             activeId={activeId}
