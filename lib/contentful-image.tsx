@@ -11,6 +11,10 @@ type ContentfulImageProps = Omit<ImageProps, "loader" | "src"> & {
 // trusting whatever URL the CMS hands us. Anything else is returned untouched
 // (CSP img-src is the hard backstop on what can load).
 
+// Exported only so lib/contentful-image.test.tsx can assert its query-string
+// behaviour directly, with fixed inputs, rather than through next/image's own
+// width-candidate selection. Not a general-purpose utility — nothing outside
+// this file and its test should import it.
 export const contentfulLoader = ({
   src,
   width,
