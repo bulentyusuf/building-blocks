@@ -1429,11 +1429,12 @@ Do not copy the renderer to a second location — that drift caused the gap.
 
 <!-- key: locale -->
 
-The Contentful default locale is `en-GB`, dates format via date-fns `enGB`, and
-the html `lang`, OG locale and feed metadata follow. Any `en-US`, `en_US` or
-American date formatting in code or metadata is a regression, not a style choice
-— a previous PR existed solely to purge these. German (`de-DE`) localisation is
-in progress; until it lands, do not add locale plumbing speculatively.
+The Contentful default locale is `en-GB`, dates format via
+`Intl.DateTimeFormat("en-GB", ...)`, and the html `lang`, OG locale and feed
+metadata follow. Any `en-US`, `en_US` or American date formatting in code or
+metadata is a regression, not a style choice — a previous PR existed solely to
+purge these. German (`de-DE`) localisation is in progress; until it lands, do
+not add locale plumbing speculatively.
 
 `contentful/export.json` is the deliberate exception and ships `en-US` as its
 default locale. It is the **template's** content model, imported by people
