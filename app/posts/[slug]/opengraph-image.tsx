@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import fs from "node:fs";
 import path from "node:path";
-import { getAllPosts, getPost } from "@/lib/api";
+import { getPost } from "@/lib/api";
 import { formatAuthorsByline, postAuthors } from "@/lib/authors";
 import { SITE_TITLE, SITE_AUTHOR } from "@/lib/constants";
 import { CONTENTFUL_IMAGE_HOST } from "@/lib/contentful-host";
@@ -16,28 +16,16 @@ import { widont } from "@/lib/typography";
 // page uses.
 export const runtime = "nodejs";
 
-// Prerender a card per post, alongside the pages themselves.
-//
-// Without this the route was the only dynamic non-API route on the site — the
-// build printed `ƒ /posts/-/opengraph-image` while every page around it was ○
-// or ●. Each scrape then paid for a Contentful query, a Satori render and a
-// cover fetch, on a route whose output only changes when the post does.
-//
-// Colocated metadata routes do not inherit the page's generateStaticParams, so
-// the slugs have to be enumerated again here. That is a second getAllPosts at
-// build time — getAllPosts is cache()-wrapped now, but React's cache() dedupes
-// only within a single request/render, and this route's own generateStaticParams
-// runs in a separate pass from the page's, so it stays a real second query —
-// one listing query per build, paid once, against 20-odd renders moved off the
-// request path.
-//
-// dynamicParams stays at its default of true, which is what makes this safe
-// for a post published through the webhook: a slug that was not in the build
-// still renders on demand, exactly as the whole route did before. The card is
-// then prerendered from the next deploy on.
-export async function generateStaticParams() {
-  return (await getAllPosts(false)).map((post) => ({ slug: post.slug }));
-}
+// Deliberately no generateStaticParams. This route was prerendered for a while,
+// a card baked per post at build time, and that was reversed: each PNG is
+// 828–968 KB, so 22 posts is ~19 MB of card in every deployment — production
+// and preview both — against a 10 GB store that keeps 30 days of them.
+// Prerendering does take a Contentful query and a Satori render off the scrape
+// path, but the card only changes when the post does, so Next renders it once
+// on first request and holds it in the full route cache until the `posts` tag
+// is purged by the publish webhook. If scrape latency is ever a real
+// complaint, the fix is caching, not restoring the export.
+// See docs/decisions.md, "The post OG card renders on demand, not at build".
 
 export const alt = `${SITE_TITLE} — post`;
 export const size = { width: 1200, height: 630 };

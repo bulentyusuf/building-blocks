@@ -1471,11 +1471,43 @@ duplicate fetch as a finding; it is fixed. Do not "simplify" a metadata call
 back to a narrower helper.
 
 `getPost` stays correct where nothing else fetches the post in the same pass, as
-in `app/posts/[slug]/opengraph-image.tsx`, which renders in its own request and
-carries its own `generateStaticParams` — colocated metadata routes do not
-inherit the page's. The duplicate `getAllPosts` across those two files is the
-accepted cost. Leave `dynamicParams` at its default `true`, so a post published
-through the webhook still gets a card on demand.
+in `app/posts/[slug]/opengraph-image.tsx`, which renders in its own request.
+Leave `dynamicParams` at its default `true`, so a post published through the
+webhook still gets a card on demand.
+
+### The post OG card renders on demand, not at build
+
+<!-- key: og-card-on-demand -->
+
+`app/posts/[slug]/opengraph-image.tsx` carried a `generateStaticParams` for a
+while, baking one card per post into every build. That is reversed here — and it
+was a real earlier decision, argued and merged, not something nobody thought
+about. This entry exists so the next reader does not quietly re-add the export.
+
+Storage is what decides it. Each card is a 1200×630 PNG of 828–968 KB, measured
+live. Twenty-two posts is roughly 19 MB baked into every deployment, preview and
+production alike. Hobby keeps 30 days of them, and at around 13 deployments a day
+that is most of the 10 GB Deployment Storage allowance — spent on 22 images a
+scraper fetches once.
+
+The earlier reasoning is not wrong, only partial. Prerendering does take a
+Contentful query and a Satori render off the scrape path, on a route whose
+output only changes when the post does. What it left out is that the saving is
+visible everywhere a contributor looks and the cost is visible nowhere: not the
+repo, not CI, not a build log — only a Vercel usage dashboard nobody opens until
+the allowance email arrives.
+
+On demand, Next renders each card once on first request and holds it in the full
+route cache until the publish webhook purges the `posts` tag: one Satori render
+per post per publish, not one per scrape.
+
+The rule: do not restore `generateStaticParams` on this route. If scrape latency
+is ever a real complaint — a slow first byte someone actually reports — the fix
+is caching, not prerendering, and it earns its own entry here.
+
+No per-card size lever is worth pulling. `next/og` emits PNG only, with no format
+option, and the cover panel is already fetched from Contentful at 480×630 jpg
+q80. Nobody should spend an afternoon trying to shrink these.
 
 ### Every fetcher in `lib/api.ts` is `cache()`-wrapped
 
@@ -1556,13 +1588,12 @@ early" into "never appears", and the second failure is silent where the first
 is obvious.
 
 **It is not one query.** `getPostAndMorePosts` carries its own, as do
-`getPost`, `getPostsByCategory` and `getRecentPostsByCategory`, and the
-`generateStaticParams` in both `app/posts/[slug]/page.tsx` and its
-`opengraph-image.tsx` calls `getAllPosts` separately again. Filtering
-`getAllPosts` alone would hide a post from every listing while `/posts/[slug]`
-still rendered it — `dynamicParams` defaults to `true`, so a slug missing from
-the build list still renders on demand through `getPost`'s own unfiltered
-query — which is a worse state than either extreme.
+`getPost`, `getPostsByCategory` and `getRecentPostsByCategory`, and
+`app/posts/[slug]/page.tsx`'s `generateStaticParams` calls `getAllPosts`
+again. Filtering `getAllPosts` alone would hide a post from every listing
+while `/posts/[slug]` still rendered it — `dynamicParams` defaults to `true`,
+so a slug missing from the build list still renders on demand through
+`getPost`'s own unfiltered query — which is a worse state than either extreme.
 
 **It would break the per-render dedupe.** `getAllPosts` is `cache()`-wrapped
 and reached twice on a post page from two directions that cannot see each
