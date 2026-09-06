@@ -204,6 +204,31 @@ describe("resolved CSP headers", () => {
     expect(search!.replace(WASM_TOKEN, "")).toBe(base);
   });
 
+  it("carries Cross-Origin-Opener-Policy on every route, including the relaxed ones", async () => {
+    // A plain presence check, not a pattern match, so no known-bad control:
+    // there is no "inverted" shape for a single key emitted by the catch-all
+    // alone to accidentally satisfy.
+    //
+    // The real risk here is not the header itself but ordering: /search,
+    // /pagefind and /posts each carry a later rule that overwrites
+    // Content-Security-Policy for that path. Checking only "/" would prove
+    // nothing about whether COOP — a different key, from the earlier
+    // catch-all rule — actually survives being merged with those later,
+    // narrower rules rather than being dropped alongside the key they do
+    // overwrite.
+    for (const path of [
+      "/",
+      "/search",
+      "/pagefind/pagefind-worker.js",
+      "/posts/some-post",
+    ]) {
+      const resolved = await resolveHeadersFor(path);
+      expect(resolved.get("cross-origin-opener-policy"), path).toBe(
+        "same-origin",
+      );
+    }
+  });
+
   it("flags the inverted ordering when one is introduced", async () => {
     // Known-bad control, kept the way opengraph-image.font.test.tsx keeps
     // its wrong font: the live rules reordered exactly as PR #425 had them,
