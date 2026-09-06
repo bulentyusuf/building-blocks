@@ -22,10 +22,10 @@ governs the rest: **solve the problem with the smallest thing that works inside
 the stack already here**, and treat reaching outside it as a claim needing
 evidence.
 
-That stack is Next, React, Contentful's GraphQL API, Tailwind, Shiki and
-date-fns, with Pagefind at build time. `package.json` lists fifteen runtime
-dependencies; before adding a sixteenth, say what it does that the fifteen
-cannot. "Fewer lines in this file" is not an answer.
+That stack is Next, React, Contentful's GraphQL API, Tailwind and Shiki, with
+Pagefind at build time. `package.json` lists fourteen runtime dependencies;
+before adding a fifteenth, say what it does that the fourteen cannot. "Fewer
+lines in this file" is not an answer.
 
 Four tests, in the order they usually bite:
 

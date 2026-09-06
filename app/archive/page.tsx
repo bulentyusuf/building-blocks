@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
-import { format } from "date-fns";
-import { enGB } from "date-fns/locale";
-import DateComponent from "../date";
+import DateComponent, { formatMonthYear } from "../date";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
 import { getAllPosts, getBrowseIntro } from "@/lib/api";
@@ -72,7 +70,7 @@ export default async function ArchivePage() {
           oldest && (
             <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
               {widont(
-                `${posts.length} ${posts.length === 1 ? "post" : "posts"} since ${format(new Date(oldest.date), "LLLL yyyy", { locale: enGB })}, newest first.`,
+                `${posts.length} ${posts.length === 1 ? "post" : "posts"} since ${formatMonthYear(oldest.date)}, newest first.`,
               )}
             </p>
           )
@@ -120,7 +118,7 @@ export default async function ArchivePage() {
                     <span className="order-2 shrink-0 text-sm tabular-nums text-brand-muted sm:order-1">
                       <DateComponent
                         dateString={post.date}
-                        formatString="d MMM"
+                        variant="dayMonth"
                       />
                       {/* The visible date drops the year because the section
                           heading carries it. Someone moving link to link skips
