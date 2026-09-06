@@ -1511,13 +1511,27 @@ where the static version sent 828793.
 So the trade is honest rather than free. Nineteen megabytes per deployment
 saved, one Satori render and one Contentful query paid per scrape. That cost
 lands on Fast Origin Transfer at roughly 880 KB a scrape, against a 10 GB
-monthly Hobby allowance sitting at 1.08 GB before this shipped. If that meter
-ever tightens, the levers are a `Cache-Control` header on the `ImageResponse`
-or `dynamic = "force-static"`, and either one earns its own entry here.
+monthly Hobby allowance sitting at 1.08 GB before this shipped.
 
-The rule: do not restore `generateStaticParams` on this route. If scrape latency
-is ever a real complaint — a slow first byte someone actually reports — the fix
-is caching, not prerendering, and it earns its own entry here.
+That per-scrape cost is bounded now, with the first of the two levers named
+above. The `ImageResponse` carries
+`Cache-Control: public, max-age=0, s-maxage=31536000, must-revalidate`, so
+Vercel's CDN holds the rendered PNG and serves it without re-rendering.
+`s-maxage` is the value the CDN reads; `max-age=0` keeps browsers revalidating,
+which matters because a card changes when its post is edited and there is no
+purge path for a CDN-cached response short of a new deployment. The limitation
+that comes with it: the CDN cache is keyed per deployment, so every deploy
+starts every card cold. That still caps re-renders at roughly one per card per
+deployment instead of one per scrape — a hard bound, not elimination. The
+remaining lever, if that bound is ever still too loose, is
+`dynamic = "force-static"`, which moves the card into the ISR cache that does
+survive deployments; it changes fetch semantics for the whole route segment, so
+it is a larger change and would need its own decision, not just a note here.
+
+The rule: do not restore `generateStaticParams` on this route. Scrape cost is a
+caching problem, and it is met — the `Cache-Control` header above. Scrape
+latency, if anyone ever reports a slow first byte, is the same kind of problem:
+reach for `force-static`, not the prerender.
 
 No per-card size lever is worth pulling. `next/og` emits PNG only, with no format
 option, and the cover panel is already fetched from Contentful at 480×630 jpg

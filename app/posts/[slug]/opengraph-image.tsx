@@ -202,6 +202,16 @@ export default async function OpengraphImage({
     </div>,
     {
       ...size,
+      headers: {
+        // The CDN holds the rendered card; the browser revalidates. Without
+        // this the route re-renders on every scrape, because it cannot enter
+        // the full route cache (see `og-card-on-demand`) and nothing else
+        // caches it. Vercel's CDN cache is per-deployment, so a deploy starts
+        // this cold, which is accepted: it caps re-renders at roughly one per
+        // card per deployment instead of one per scrape.
+        "Cache-Control":
+          "public, max-age=0, s-maxage=31536000, must-revalidate",
+      },
       fonts: [
         {
           name: "Bricolage Grotesque",
