@@ -1497,9 +1497,23 @@ visible everywhere a contributor looks and the cost is visible nowhere: not the
 repo, not CI, not a build log — only a Vercel usage dashboard nobody opens until
 the allowance email arrives.
 
-On demand, Next renders each card once on first request and holds it in the full
-route cache until the publish webhook purges the `posts` tag: one Satori render
-per post per publish, not one per scrape.
+It does not land in the full route cache, and the reason matters. Metadata image
+routes are statically optimised unless they use a request-time API or uncached
+data, and `fetchGraphQL` issues `POST` while Next memoises only `GET` (see
+`single-entry-cache` above). The post fetch is therefore uncached data, so this
+route was never a candidate for that cache. `generateStaticParams` was the only
+thing holding it off the dynamic path, and removing it drops it straight to
+fully dynamic rather than to ISR. Measured on production after the change: two
+consecutive requests both returned `x-vercel-cache: MISS` with
+`cache-control: public, max-age=0, must-revalidate`, and no `content-length`
+where the static version sent 828793.
+
+So the trade is honest rather than free. Nineteen megabytes per deployment
+saved, one Satori render and one Contentful query paid per scrape. That cost
+lands on Fast Origin Transfer at roughly 880 KB a scrape, against a 10 GB
+monthly Hobby allowance sitting at 1.08 GB before this shipped. If that meter
+ever tightens, the levers are a `Cache-Control` header on the `ImageResponse`
+or `dynamic = "force-static"`, and either one earns its own entry here.
 
 The rule: do not restore `generateStaticParams` on this route. If scrape latency
 is ever a real complaint — a slow first byte someone actually reports — the fix
