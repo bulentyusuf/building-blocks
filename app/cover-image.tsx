@@ -96,9 +96,11 @@ export default async function CoverImage({
   // get no movement (motion-safe: prefix), no JS.
   hover?: boolean;
 }) {
-  // Cold-cache LQIP: a tiny blurred preview underlays the frame so covers show a
-  // full colour wash from first paint rather than a stark void. Undefined when
-  // the fetch fails — the bg-brand-dark/5 tint on the wrapper is the fallback.
+  // Cold-cache LQIP: a tiny blurred preview that next/image paints as the
+  // image's own placeholder, cleared once the real bitmap decodes, so covers
+  // show a full colour wash from first paint rather than a stark void.
+  // Undefined when the fetch fails — the bg-brand-dark/5 tint on the wrapper
+  // is the fallback, and placeholder drops to "empty" below.
   const blurDataURL = await getBlurDataURL(image.url);
   const alt = coverAltText(image);
   // Prefer an explicit href; otherwise fall back to the post route for a slug.
@@ -124,6 +126,8 @@ export default async function CoverImage({
           hover,
       })}
       src={image.url}
+      placeholder={blurDataURL ? "blur" : "empty"}
+      blurDataURL={blurDataURL}
     />
   );
   return (
@@ -147,13 +151,6 @@ export default async function CoverImage({
           },
         )}
       >
-        {blurDataURL && (
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${blurDataURL})` }}
-          />
-        )}
         {linkHref ? (
           // Mouse affordance only, hidden from assistive tech and the tab
           // order. Every call site that passes a slug or href also renders a
