@@ -56,6 +56,14 @@ export default function NavDisclosure({
     // pointerdown rather than click: a click that starts inside the menu and
     // ends outside it (a drag, or a scroll that the browser resolves as a
     // click) should not count as dismissing.
+    //
+    // A pointerdown on <summary> itself hits the containment check below and
+    // returns early — deliberately. The native click that follows toggles the
+    // <details> on its own, no JS required, which is how the hamburger closes
+    // its own menu. Routing this through "click" instead, or carving summary
+    // out of the containment check so this handler closes it on pointerdown,
+    // both reintroduce the drag-starting-inside case the paragraph above
+    // exists to rule out — do not do either.
     const onPointerDown = (event: PointerEvent) => {
       if (!details.open) return;
       if (event.target instanceof Node && details.contains(event.target))
