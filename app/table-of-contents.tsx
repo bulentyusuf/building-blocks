@@ -230,6 +230,15 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   const onLinkClick = (slug: string) => armPin.current?.(slug);
 
+  // app/posts/[slug]/page.tsx re-derives this exact condition (inverted, as
+  // headings.length >= MIN_HEADINGS) to decide whether the sidebar <aside>
+  // needs its mb-4 — there is no TOC, so no gap to close below it. The two
+  // must stay in lockstep, and nothing enforces that but this comment: if
+  // this condition ever becomes more than a length check (say, bailing when
+  // every heading is an h3), page.tsx's copy silently goes stale and the
+  // ghost gap this was written to fix comes back with no test to catch it.
+  // Extract a shared exported hasTableOfContents(headings) at that point
+  // rather than letting a second condition drift back in.
   if (headings.length < MIN_HEADINGS) return null;
 
   return (
