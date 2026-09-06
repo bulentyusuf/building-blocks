@@ -198,7 +198,7 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
 ];
 
 // The first test in this suite pays a one-time cold-start penalty: dynamic
-// module compilation of the route and its dependency graph (e.g. date-fns,
+// module compilation of the route and its dependency graph (e.g. shiki,
 // layouts), plus axe-core's first-run rule and standard compilation inside
 // JSDOM. Under parallel test runner load, this initial test can take 2–4 s
 // (and timed out under Vitest's 5 000 ms default when /archive sat first in
