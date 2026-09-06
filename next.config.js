@@ -51,6 +51,16 @@ const securityHeaders = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
+  // Severs window.opener between this document and any cross-origin page that
+  // opened it or that it opens, so a page reached from an external link cannot
+  // reach back and navigate the tab it came from. It also puts the document in
+  // its own browsing context group, which is the precondition for
+  // cross-origin isolation if that is ever wanted.
+  //
+  // same-origin rather than same-origin-allow-popups: nothing here opens a
+  // popup it needs to keep talking to. Every external link is a plain
+  // target="_blank" that the reader navigates away into.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   {
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
