@@ -222,7 +222,7 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          <div className="mb-10">
+          <div className="mb-8 xl:mb-10">
             <CoverImage
               image={post.coverImage}
               wide
@@ -248,7 +248,7 @@ export default async function PostPage({
               at all — see the comment there. The two must move together. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
+            className={`xl:mb-0 ${headings.length >= MIN_HEADINGS ? "mb-8" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
