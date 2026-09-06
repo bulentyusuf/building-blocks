@@ -248,7 +248,7 @@ export default async function PostPage({
               at all — see the comment there. The two must move together. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-12" : ""}`}
+            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
