@@ -1552,13 +1552,15 @@ q80. Nobody should spend an afternoon trying to shrink these.
 <!-- key: shiki-fine-grained -->
 
 `lib/highlight.ts` builds one highlighter for ten languages and one theme, and
-for a long time it imported `createHighlighter` from `"shiki"`. That entry
-statically re-exports the whole of `@shikijs/langs`, so Next's file tracer
-followed it: the post route's traced-file manifest,
-`.next/server/app/posts/[slug]/page.js.nft.json`, pulled in **260** TextMate
-grammars, about **8.7 MB** on disk, against the ten the module ever loads. `@shikijs/langs`
-ships 361; 251 of the 260 traced were unreachable at runtime. The post route is
-the only one that traces any grammar at all.
+for a long time it imported `createHighlighter` from `"shiki"`. That entry's
+langs bundle holds a runtime array of `() => import("@shikijs/langs/<id>")`
+dynamic imports, one per grammar — reachable at runtime, so no bundler can
+eliminate them, and Next's file tracer follows every one: the post route's
+traced-file manifest, `.next/server/app/posts/[slug]/page.js.nft.json`, pulled
+in **260** TextMate grammars, about **8.7 MB** on disk, against the ten the
+module ever loads. `@shikijs/langs` ships 361; 251 of the 260 traced were
+unreachable at runtime. The post route is the only one that traces any grammar
+at all.
 
 The fix is to enumerate. `createHighlighterCore` from `shiki/core`, the
 oniguruma engine from `shiki/engine/oniguruma` with its wasm from `shiki/wasm`,
