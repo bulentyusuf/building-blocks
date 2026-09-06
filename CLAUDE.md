@@ -173,6 +173,10 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   arguments.** `cache()` dedupes identical calls, not equivalent ones. Do not
   "simplify" a metadata call back to a narrower helper.
   [→ `single-entry-cache`]
+- **`app/posts/[slug]/opengraph-image.tsx` has no `generateStaticParams` and
+  must not get one back** — 22 baked cards is ~19 MB of PNG per deployment
+  against a 10 GB store. Scrape latency is a caching problem, not a prerender
+  one. [→ `og-card-on-demand`]
 - **Three cache tags: `posts`, `pages`, `browseIntros`** (`CACHE_TAGS` in
   `lib/api.ts`). Anything unrecognised in the webhook purges everything, and a
   new fetcher passing no tag gets `posts`. `expire: 0` stays. [→ `cache-tags`]
