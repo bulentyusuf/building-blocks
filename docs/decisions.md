@@ -1528,6 +1528,15 @@ remaining lever, if that bound is ever still too loose, is
 survive deployments; it changes fetch semantics for the whole route segment, so
 it is a larger change and would need its own decision, not just a note here.
 
+Verifying that header is counter-intuitive, so do not read it back. Vercel's
+proxy consumes `s-maxage` on every request and does not forward it, returning
+`public, max-age=0, must-revalidate` to the client whether or not CDN caching
+is working — the same string the uncached route returned above. Curl a card
+that has not been fetched recently and read `x-vercel-cache` and `age` instead:
+`MISS` with `age: 0`, then `HIT` with a rising `age`, is the only evidence the
+header took effect. Every deploy resets this, so a fresh `MISS` proves nothing
+on its own.
+
 The rule: do not restore `generateStaticParams` on this route. Scrape cost is a
 caching problem, and it is met — the `Cache-Control` header above. Scrape
 latency, if anyone ever reports a slow first byte, is the same kind of problem:
