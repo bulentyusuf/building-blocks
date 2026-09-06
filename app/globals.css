@@ -383,24 +383,6 @@ html {
 }
 
 /*
-  Force the TOC panel open at xl+ regardless of the <details> [open] state.
-  This lets one component instance serve both mobile (real disclosure) and
-  desktop (always-visible sidebar) without a second IntersectionObserver.
-  The summary is hidden via xl:hidden on the element itself.
-*/
-@media (min-width: 1280px) {
-  /* Legacy engines hid closed <details> content via child display. */
-  .toc-details > :not(summary) {
-    display: block;
-  }
-  /* Modern engines hide it at the slot level (content-visibility), which the
-     child rule above can't reach. Override the slot directly. */
-  .toc-details::details-content {
-    content-visibility: visible;
-  }
-}
-
-/*
   Tufte-style sidenotes (lib/sidenote.tsx). Every element stays phrasing content
   so the reference never terminates its paragraph. Below 2xl the note is
   collapsed behind a checkbox toggle; at 2xl+ there is room outside the

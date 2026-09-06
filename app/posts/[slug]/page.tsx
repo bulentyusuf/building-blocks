@@ -12,7 +12,7 @@ import { postAuthors } from "@/lib/authors";
 import { extractHeadings } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
-import TableOfContents from "../../table-of-contents";
+import TableOfContents, { MIN_HEADINGS } from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
@@ -243,8 +243,11 @@ export default async function PostPage({
               per the separate mobile-AI decision. */}
           {/* TOC repeats every heading; excluded so headings are not
               double-weighted in search. */}
-          <aside data-pagefind-ignore className="mb-4 xl:mb-0">
-            <div className="xl:sticky xl:top-20 space-y-8 xl:pb-4">
+          <aside
+            data-pagefind-ignore
+            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
+          >
+            <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
               <div className="hidden xl:block">
                 <ExploreWithAI slug={slug} />
