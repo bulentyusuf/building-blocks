@@ -247,7 +247,7 @@ export default async function PostPage({
             data-pagefind-ignore
             className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
           >
-            <div className="xl:sticky xl:top-20 space-y-8 xl:pb-4">
+            <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
               <div className="hidden xl:block">
                 <ExploreWithAI slug={slug} />
