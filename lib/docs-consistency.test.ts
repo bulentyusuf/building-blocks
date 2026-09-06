@@ -68,8 +68,12 @@ describe("file paths named in the docs", () => {
         // Bare filenames are ambiguous (seed.json, package.json appear in prose
         // without a directory), and a path is only checkable if it says where.
         .filter((p) => p.includes("/"))
-        // Route-ish and generated paths that are not committed files.
-        .filter((p) => !p.startsWith("public/pagefind")),
+        // Route-ish and generated paths that are not committed files. Build
+        // artifacts under .next/ can never be checked here: `npm test` runs
+        // before `npm run build` in CI, so the tree does not exist yet. See #490.
+        .filter(
+          (p) => !p.startsWith("public/pagefind") && !p.startsWith(".next/"),
+        ),
     );
     const missing = [...paths].filter(
       (p) => !fs.existsSync(path.join(ROOT, p)),
