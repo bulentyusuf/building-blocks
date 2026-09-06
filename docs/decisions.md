@@ -1527,20 +1527,12 @@ q80. Nobody should spend an afternoon trying to shrink these.
 
 <!-- key: shiki-fine-grained -->
 
-<!--
-The .next/ path below is split across two code spans on purpose:
-lib/docs-consistency.test.ts asserts every backtick-quoted path in this file
-exists on disk, and a .next/ build artifact does not until `npm run build`
-runs, which is after the vitest suite. Tracked as issue #490 — once that guard
-skips .next/ the path can go back to a single span.
--->
-
 `lib/highlight.ts` builds one highlighter for ten languages and one theme, and
 for a long time it imported `createHighlighter` from `"shiki"`. That entry
 statically re-exports the whole of `@shikijs/langs`, so Next's file tracer
-followed it: the post route's traced-file manifest — `page.js.nft.json` under
-`.next/server/app/posts/[slug]/` — pulled in **260** TextMate grammars, about
-**8.7 MB** on disk, against the ten the module ever loads. `@shikijs/langs`
+followed it: the post route's traced-file manifest,
+`.next/server/app/posts/[slug]/page.js.nft.json`, pulled in **260** TextMate
+grammars, about **8.7 MB** on disk, against the ten the module ever loads. `@shikijs/langs`
 ships 361; 251 of the 260 traced were unreachable at runtime. The post route is
 the only one that traces any grammar at all.
 
