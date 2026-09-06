@@ -20,6 +20,8 @@
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^16.2.2",
     "@contentful/rich-text-types": "^17.2.7",
+    "@shikijs/langs": "^4.4.3",
+    "@shikijs/themes": "^4.4.3",
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/typography": "^0.5.20",
     "@vercel/analytics": "^2.0.1",
