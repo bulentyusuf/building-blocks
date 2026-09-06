@@ -243,6 +243,9 @@ export default async function PostPage({
               per the separate mobile-AI decision. */}
           {/* TOC repeats every heading; excluded so headings are not
               double-weighted in search. */}
+          {/* headings.length >= MIN_HEADINGS mirrors, inverted, the render
+              guard in table-of-contents.tsx that decides whether TOC renders
+              at all — see the comment there. The two must move together. */}
           <aside
             data-pagefind-ignore
             className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
