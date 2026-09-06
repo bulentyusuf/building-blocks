@@ -1,12 +1,14 @@
 import "server-only";
 // Grammars and the theme are enumerated as individual module imports rather
-// than pulled from the "shiki" convenience entry. That entry statically
-// references the whole of `@shikijs/langs`, so Next's file tracer followed it
-// and baked 260 TextMate grammars (~8.7 MB) into
-// `.next/server/app/posts/[slug]/page.js.nft.json` — against the ten languages
-// and one theme this module ever loads. Adding a language here means adding an
-// `@shikijs/langs/<name>` import beside its `LANGS` entry; miss the import and
-// that language degrades to the `escapeHtml` fallback with no error.
+// than pulled from the "shiki" convenience entry. That entry's langs bundle
+// holds a runtime array of `() => import("@shikijs/langs/<id>")` dynamic
+// imports, one per grammar — reachable at runtime, so no bundler can eliminate
+// them, and Next's file tracer follows every one. It baked 260 TextMate
+// grammars (~8.7 MB) into `.next/server/app/posts/[slug]/page.js.nft.json` —
+// against the ten languages and one theme this module ever loads. Adding a
+// language here means adding an `@shikijs/langs/<name>` import beside its
+// `LANGS` entry; miss the import and that language degrades to the
+// `escapeHtml` fallback with no error.
 // See docs/decisions.md, "Shiki grammars are imported one by one, never from
 // the meta-package".
 import { createHighlighterCore, type HighlighterCore } from "shiki/core";
