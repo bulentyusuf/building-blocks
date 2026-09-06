@@ -19,7 +19,58 @@ const PIN_SETTLE_MS = 1500;
 // nothing to navigate. The effect and the render read the same constant on
 // purpose: they were two different numbers once, and the effect did all its
 // work for a component that rendered nothing.
-const MIN_HEADINGS = 3;
+export const MIN_HEADINGS = 3;
+
+// The nav is rendered twice, once behind the mobile disclosure and once bare at
+// xl+. Exactly one is in the DOM at any viewport (the other is display:none via
+// the breakpoint class, which removes it from the accessibility tree as well as
+// the page), so there is never a duplicate "Table of contents" landmark.
+//
+// This replaces a single <details> forced visible from CSS at xl+. That version
+// left the element without its [open] attribute, so the accessibility tree
+// reported a collapsed widget whose <summary> was also hidden. Two renders of a
+// short list is a smaller cost than markup that lies about its own state.
+function TocNav({
+  headings,
+  activeId,
+  onLinkClick,
+}: {
+  headings: Heading[];
+  activeId: string | null;
+  onLinkClick: (slug: string) => void;
+}) {
+  return (
+    <nav aria-label="Table of contents" className="text-sm">
+      <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block">
+        On this page
+      </p>
+      <ul className="space-y-2 border-l border-brand-dark/10">
+        {headings.map((h) => (
+          <li key={h.slug}>
+            <a
+              href={`#${h.slug}`}
+              // The active entry is otherwise signalled by colour, weight and
+              // border alone. aria-current gives assistive tech the same
+              // position information sighted readers get.
+              aria-current={activeId === h.slug ? "location" : undefined}
+              onClick={() => onLinkClick(h.slug)}
+              className={`block border-l -ml-px pl-3 leading-snug transition-colors duration-200 ${
+                activeId === h.slug
+                  ? "border-brand-crimson text-brand-crimson font-medium"
+                  : "border-transparent text-brand-muted hover:text-brand-crimson"
+              }`}
+            >
+              {/* h.text is always a plain string; widont de-widows the entry in
+                  the narrow TOC column. The link target is h.slug, computed
+                  separately, so the NBSP never reaches the anchor. */}
+              {widont(h.text)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
 
 export default function TableOfContents({ headings }: { headings: Heading[] }) {
   const [activeId, setActiveId] = useState<string>("");
@@ -182,68 +233,55 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
   if (headings.length < MIN_HEADINGS) return null;
 
   return (
-    <details className="toc-details group">
-      {/*
-        summary is the mobile tap target. xl+ CSS hides it and forces the
-        panel open regardless of the [open] attribute (see globals.css
-        .toc-details rule), so one scroll listener serves both viewports.
-      */}
-      <summary className="xl:hidden list-none flex items-center justify-between gap-3 cursor-pointer select-none rounded-lg border border-brand-dark/10 bg-brand-dark/5 px-4 py-3 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
-        <span className="flex items-center gap-2">
+    <>
+      <details className="group xl:hidden">
+        {/*
+          summary is the mobile tap target and only exists on mobile now — the
+          whole disclosure is xl:hidden, so there is nothing here for xl+ to
+          hide or force open.
+        */}
+        <summary className="list-none flex items-center justify-between gap-3 cursor-pointer select-none rounded-lg border border-brand-dark/10 bg-brand-dark/5 px-4 py-3 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
+          <span className="flex items-center gap-2">
+            <svg
+              className="h-4 w-4 text-brand-crimson"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M3 4.75A.75.75 0 0 1 3.75 4h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 4.75Zm0 5A.75.75 0 0 1 3.75 9h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 9.75Zm0 5a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" />
+            </svg>
+            On this page
+          </span>
           <svg
-            className="h-4 w-4 text-brand-crimson"
+            className="h-4 w-4 text-brand-muted motion-safe:transition-transform motion-safe:duration-200 group-open:rotate-180"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"
             aria-hidden="true"
           >
-            <path d="M3 4.75A.75.75 0 0 1 3.75 4h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 4.75Zm0 5A.75.75 0 0 1 3.75 9h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 9.75Zm0 5a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" />
+            <path
+              fillRule="evenodd"
+              d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+              clipRule="evenodd"
+            />
           </svg>
-          On this page
-        </span>
-        <svg
-          className="h-4 w-4 text-brand-muted motion-safe:transition-transform motion-safe:duration-200 group-open:rotate-180"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-            clipRule="evenodd"
+        </summary>
+        <div className="pt-3">
+          <TocNav
+            headings={headings}
+            activeId={activeId}
+            onLinkClick={onLinkClick}
           />
-        </svg>
-      </summary>
-      <nav aria-label="Table of contents" className="text-sm pt-3 xl:pt-0">
-        <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block">
-          On this page
-        </p>
-        <ul className="space-y-2 border-l border-brand-dark/10">
-          {headings.map((h) => (
-            <li key={h.slug}>
-              <a
-                href={`#${h.slug}`}
-                // The active entry is otherwise signalled by colour, weight and
-                // border alone. aria-current gives assistive tech the same
-                // position information sighted readers get.
-                aria-current={activeId === h.slug ? "location" : undefined}
-                onClick={() => onLinkClick(h.slug)}
-                className={`block border-l -ml-px pl-3 leading-snug transition-colors duration-200 ${
-                  activeId === h.slug
-                    ? "border-brand-crimson text-brand-crimson font-medium"
-                    : "border-transparent text-brand-muted hover:text-brand-crimson"
-                }`}
-              >
-                {/* h.text is always a plain string; widont de-widows the
-                    entry in the narrow TOC column. The link target is h.slug,
-                    computed separately, so the NBSP never reaches the anchor. */}
-                {widont(h.text)}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </details>
+        </div>
+      </details>
+      <div className="hidden xl:block">
+        <TocNav
+          headings={headings}
+          activeId={activeId}
+          onLinkClick={onLinkClick}
+        />
+      </div>
+    </>
   );
 }
