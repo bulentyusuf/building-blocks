@@ -1,50 +1,73 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import ContentfulImage from "./contentful-image";
+import ContentfulImage, { contentfulLoader } from "./contentful-image";
 
-describe("ContentfulImage", () => {
-  it("starts transparent in the pending state, with no fade class and the incoming className kept", () => {
-    const html = renderToStaticMarkup(
-      <ContentfulImage
-        src="https://images.ctfassets.net/space/asset.jpg"
-        alt=""
-        width={100}
-        height={100}
-        className="object-cover"
-      />,
+describe("contentfulLoader", () => {
+  it("appends the transform query params for a Contentful asset", () => {
+    const url = contentfulLoader({
+      src: "https://images.ctfassets.net/space/asset.jpg",
+      width: 640,
+      quality: 80,
+    });
+    expect(url).toBe(
+      "https://images.ctfassets.net/space/asset.jpg?w=640&q=80&fm=webp",
     );
-
-    // The initial 'pending' render is invisible so the blur underlay shows
-    // through rather than a white frame.
-    expect(html).toContain("opacity-0");
-    expect(html).not.toContain("opacity-100");
-    // The fade is applied only on the network reveal path (reveal === "fade"),
-    // never in the pending baseline — so cached images never fade.
-    expect(html).not.toContain("transition-opacity");
-    // The caller's className is preserved through the merge.
-    expect(html).toContain("object-cover");
   });
 
-  // The LCP guard. A priority image is the LCP candidate on every page that has
-  // one, and Chromium's LCP algorithm skips fully transparent elements — so
-  // shipping opacity-0 and waiting for hydration to flip it moved the measured
-  // paint from "the preloaded bitmap arrived" to "React committed". This
-  // asserts the server HTML is already opaque, which is the whole fix; if it
-  // ever regresses, the symptom is a slower LCP with no visible change.
-  it("ships a priority image opaque, with no dependence on hydration", () => {
+  it("returns a non-Contentful src untouched", () => {
+    const url = contentfulLoader({
+      src: "https://example.com/asset.jpg",
+      width: 640,
+      quality: 80,
+    });
+    expect(url).toBe("https://example.com/asset.jpg");
+  });
+
+  // Known-bad control. The host check is `url.hostname !== CONTENTFUL_IMAGE_HOST`,
+  // an exact match rather than a substring test, for the same reason
+  // lib/csp-headers.test.ts's allowsFrameAncestor is exact rather than
+  // `.includes()`: a lookalike host containing the real one as a substring
+  // must not be treated as the real one. Without this, a loosened check (say,
+  // `src.includes(CONTENTFUL_IMAGE_HOST)`) would still pass the two tests
+  // above and start appending Contentful's transform params to a URL this
+  // repo does not control.
+  it("does not treat a lookalike host as Contentful", () => {
+    const url = contentfulLoader({
+      src: "https://evil.example/images.ctfassets.net/asset.jpg",
+      width: 640,
+      quality: 80,
+    });
+    expect(url).toBe("https://evil.example/images.ctfassets.net/asset.jpg");
+  });
+
+  it("defaults quality to 75 when none is given", () => {
+    const url = contentfulLoader({
+      src: "https://images.ctfassets.net/space/asset.jpg",
+      width: 640,
+    });
+    expect(url).toBe(
+      "https://images.ctfassets.net/space/asset.jpg?w=640&q=75&fm=webp",
+    );
+  });
+});
+
+describe("ContentfulImage", () => {
+  it("passes a blurDataURL through to the rendered placeholder", () => {
     const html = renderToStaticMarkup(
       <ContentfulImage
         src="https://images.ctfassets.net/space/asset.jpg"
         alt=""
         width={100}
         height={100}
-        priority
+        placeholder="blur"
+        blurDataURL="data:image/jpeg;base64,ABCD"
       />,
     );
 
-    expect(html).toContain("opacity-100");
-    expect(html).not.toContain("opacity-0");
-    // Straight to opaque, not a fade the LCP element would have to sit out.
-    expect(html).not.toContain("transition-opacity");
+    // next/image renders the placeholder as an inline SVG data URI background
+    // embedding the given blurDataURL as its <image href>, cleared once the
+    // real bitmap decodes — no reveal state or opacity handling left in this
+    // component for that to depend on.
+    expect(html).toContain("ABCD");
   });
 });

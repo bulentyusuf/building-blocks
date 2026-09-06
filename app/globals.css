@@ -373,15 +373,6 @@ html {
   color: var(--color-brand-bg);
 }
 
-/* Images fade in once loaded (see ContentfulImage). Without JS the load event
-   never fires, so force every image visible for no-JS visitors — important for
-   the forkable template. */
-@media (scripting: none) {
-  img {
-    opacity: 1 !important;
-  }
-}
-
 /*
   Tufte-style sidenotes (lib/sidenote.tsx). Every element stays phrasing content
   so the reference never terminates its paragraph. Below 2xl the note is
