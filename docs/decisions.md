@@ -1523,6 +1523,77 @@ No per-card size lever is worth pulling. `next/og` emits PNG only, with no forma
 option, and the cover panel is already fetched from Contentful at 480×630 jpg
 q80. Nobody should spend an afternoon trying to shrink these.
 
+### Shiki grammars are imported one by one, never from the meta-package
+
+<!-- key: shiki-fine-grained -->
+
+<!--
+The .next/ path below is split across two code spans on purpose:
+lib/docs-consistency.test.ts asserts every backtick-quoted path in this file
+exists on disk, and a .next/ build artifact does not until `npm run build`
+runs, which is after the vitest suite. Tracked as issue #490 — once that guard
+skips .next/ the path can go back to a single span.
+-->
+
+`lib/highlight.ts` builds one highlighter for ten languages and one theme, and
+for a long time it imported `createHighlighter` from `"shiki"`. That entry
+statically re-exports the whole of `@shikijs/langs`, so Next's file tracer
+followed it: the post route's traced-file manifest — `page.js.nft.json` under
+`.next/server/app/posts/[slug]/` — pulled in **260** TextMate grammars, about
+**8.7 MB** on disk, against the ten the module ever loads. `@shikijs/langs`
+ships 361; 251 of the 260 traced were unreachable at runtime. The post route is
+the only one that traces any grammar at all.
+
+The fix is to enumerate. `createHighlighterCore` from `shiki/core`, the
+oniguruma engine from `shiki/engine/oniguruma` with its wasm from `shiki/wasm`,
+the theme from `@shikijs/themes/min-dark`, and one `@shikijs/langs/<name>`
+import per language. `@shikijs/langs` and `@shikijs/themes` become direct
+dependencies for this — they were transitive through `shiki`, and importing
+through a package you don't declare is its own bad habit. `shiki` stays; it
+still provides `core`, the engine and the wasm.
+
+The saving is real but smaller than the count suggests. The 260 separately
+traced grammar files leave the function bundle entirely; the nine actually used
+do not vanish, they move inside the route's SSR chunk as tree-shaken static
+imports — roughly 1 MB — where the grep below can no longer see them. So the
+count reads 260 → 0 while the deployment shrinks by about 7.7 MB, not 8.7. The
+manifest shrinks too (`page.js.nft.json` roughly halves), but that is the list
+getting shorter, not the payload. Functions Storage on the Vercel dashboard is
+the only measurement that captures the real figure.
+
+Reproducing the count needs care, because the obvious grep is wrong twice. A
+character class of `[a-z0-9+.-]` stops at the first `/`, collapsing every path
+to `@shikijs/langs/dist`, and `**` needs `setopt globstar` in zsh. The form
+that works:
+
+```bash
+grep -rho '@shikijs/langs/dist/[a-z0-9+.-]*\.mjs' .next/server \
+  --include='*.nft.json' | sort -u | wc -l
+```
+
+This is recorded because it is how the bloat nearly went unmeasured.
+
+**The rule: import grammars and themes individually, never from `"shiki"`.**
+Adding a language is two edits that must stay in step — a `LANGS` entry and the
+matching `@shikijs/langs/<name>` import wired into `createHighlighterCore`.
+Forget the import and nothing breaks loudly: the language is still in `LANGS`,
+so `highlightCodeBlocks` calls `codeToHtml` with it, `codeToHtml` throws for the
+unloaded grammar, the `try/catch` swallows it and the block renders through
+`escapeHtml` as an unstyled `<pre>`. `lib/highlight.langs.test.ts` runs a
+snippet through every `LANGS` entry and fails if any comes back as the fallback,
+with a language absent from `LANGS` as the known-bad control.
+
+Two entries in `LANGS` need no grammar import. `"text"` is handled inside core —
+importing a grammar for it would be wrong. And `"bash"` is served by
+`@shikijs/langs/bash`, a two-line alias re-exporting `shellscript`; that import
+is correct and sufficient, and the loaded language still answers to `bash`,
+`sh`, `shell` and `zsh` as before.
+
+Do not swap the oniguruma engine for `createJavaScriptRegexEngine`. It is
+smaller but changes regex semantics, and a mis-highlight after both that and the
+import change would be impossible to bisect. A theme swap is also out — that is
+a visual change with its own review.
+
 ### Every fetcher in `lib/api.ts` is `cache()`-wrapped
 
 <!-- key: fetcher-cache -->

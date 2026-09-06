@@ -149,6 +149,11 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   `app/` or `lib/` — it regenerates the rule. Verify only against the deployed
   bundle; a local `@tailwindcss/postcss` compile reports false negatives.
   [→ `tailwind-scanning`]
+- **`lib/highlight.ts` imports each Shiki grammar and theme by name, never from
+  the `shiki` meta-package** — that entry traces all 260 grammars (~8.7 MB)
+  into the post route bundle. A new language needs its own `@shikijs/langs/*`
+  import beside its `LANGS` entry or it renders unhighlighted, silently.
+  [→ `shiki-fine-grained`]
 
 ## Accessibility
 
