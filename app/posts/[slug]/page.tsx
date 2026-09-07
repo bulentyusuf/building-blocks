@@ -222,23 +222,7 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          // 44px, not the 32px the pill's other side gets, because shadow-lg
-          // on CoverImage renders ~13px of visible darkening below its box
-          // edge — the margin box is 32px but the optical gap reads as ~13px
-          // shorter. This is an optical correction tuned to that shadow;
-          // changing shadow-lg (or removing it) invalidates the 44px and it
-          // needs re-measuring, not reapplying. xl:mb-10 is unchanged and
-          // unrelated — there is no pill at xl to balance against.
-          //
-          // 42px, not 44px: a pixel scan of the deployed page put the visible
-          // gap (cover's shadow edge to the pill's top border) at 33px
-          // against a 31px target, 2px over. Tailwind's scale steps in fours
-          // from here, so closing a 2px gap needs an arbitrary value —
-          // mb-[42px] is not a mistaken rounding of mb-10, it is measured.
-          // The target is 31 CSS px from the visible bottom edge of the
-          // shadow to the pill's border, at 2x device pixel ratio; re-measure
-          // rather than round this to a scale step if it drifts again.
-          <div className="mb-[42px] xl:mb-10">
+          <div className="mb-10">
             <CoverImage
               image={post.coverImage}
               wide
@@ -250,40 +234,38 @@ export default async function PostPage({
         {/*
           Grid begins AFTER the cover image. The header block above
           (category, title, image) is full-width.
-          Below xl: single column — standfirst, then byline (with date), then body.
-          At xl+: sidebar (TOC + AI) in the left track, content in the right.
+          Below xl: one flex column, reordered so the byline sits before the
+          table of contents and the body follows it — Head, then Aside, then
+          Body, regardless of source order.
+          At xl+: sidebar (TOC + AI) in the left track spanning both rows,
+          Head and Body stacked in the right track in that order — placed
+          explicitly by grid-column/row rather than relying on source order,
+          since Head now precedes Aside in the markup.
         */}
-        <div className="xl:grid xl:grid-cols-[1fr_3fr] xl:gap-x-10">
-          {/* Sidebar zone — TOC always rendered (collapsed disclosure on
-              mobile, sticky open panel at xl+). ExploreWithAI stays xl-only
-              per the separate mobile-AI decision. */}
+        <div className="flex flex-col xl:grid xl:grid-cols-[1fr_3fr] xl:gap-x-10">
+          {/* Head — standfirst and byline. */}
+          <div className="order-1 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-1 xl:mx-0">
+            <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
+              {widont(post.excerpt)}
+            </p>
+            <div className="mb-10">
+              <Avatar authors={authors} meta={dateline} />
+            </div>
+          </div>
+
+          {/* Aside — TOC always rendered (collapsed disclosure on mobile,
+              sticky open panel at xl+). ExploreWithAI stays xl-only per the
+              separate mobile-AI decision. xl:row-span-2 keeps the aside as
+              tall as Head+Body together, which is what the xl:sticky wrapper
+              inside it depends on. */}
           {/* TOC repeats every heading; excluded so headings are not
               double-weighted in search. */}
           {/* headings.length >= MIN_HEADINGS mirrors, inverted, the render
               guard in table-of-contents.tsx that decides whether TOC renders
               at all — see the comment there. The two must move together. */}
-          {/* mb-5, 20px, not the 32px the pill's other side gets, because the
-              standfirst's cap-top sits ~11px below its own margin-box top —
-              half-leading on text-xl leading-relaxed Literata is only ~1px,
-              but the distance from there down to a capital letter's cap
-              height adds the rest. 20px plus that ~11px reads as ~31px. This
-              is an optical correction tuned to Literata at text-xl
-              leading-relaxed on the standfirst; changing that paragraph's
-              face, size or leading invalidates the 20px and it needs
-              re-measuring, not reapplying.
-
-              22px, not 20px: a pixel scan of the deployed page put the
-              visible gap (pill's bottom border to the standfirst's cap-top)
-              at 29px against a 31px target, 2px short, in both disclosure
-              states. Tailwind's scale steps in fours from here, so closing a
-              2px gap needs an arbitrary value — mb-[22px] is not a mistaken
-              rounding of mb-6, it is measured. The target is 31 CSS px from
-              the pill's border to the cap-top of the standfirst's first
-              glyph, at 2x device pixel ratio; re-measure rather than round
-              this to a scale step if it drifts again. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-[22px]" : ""}`}
+            className={`order-2 mx-auto w-full max-w-2xl xl:order-none xl:col-start-1 xl:row-start-1 xl:row-span-2 xl:mx-0 xl:max-w-none xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-9" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
@@ -293,13 +275,8 @@ export default async function PostPage({
             </div>
           </aside>
 
-          <div className="mx-auto max-w-2xl xl:mx-0">
-            <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
-              {widont(post.excerpt)}
-            </p>
-            <div className="mb-10">
-              <Avatar authors={authors} meta={dateline} />
-            </div>
+          {/* Body — prose, tags, author bio. */}
+          <div className="order-3 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-2 xl:mx-0">
             {/* text-pretty on the prose container inherits into every child —
                 paragraphs and in-body headings alike — so line breaking just
                 avoids a lone last word, without the aggressive re-balancing of

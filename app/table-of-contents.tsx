@@ -237,13 +237,16 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   return (
     <>
-      <details className="group xl:hidden">
+      <details className="group overflow-hidden rounded-lg border border-brand-dark/10 bg-brand-dark/5 xl:hidden">
         {/*
           summary is the mobile tap target and only exists on mobile now — the
           whole disclosure is xl:hidden, so there is nothing here for xl+ to
-          hide or force open.
+          hide or force open. The card surface (border, background, rounded
+          corner) lives on the <details> above, not here, so the expanded
+          panel below is inside the same card rather than a separate block
+          sitting beneath it.
         */}
-        <summary className="list-none flex items-center justify-between gap-3 cursor-pointer select-none rounded-lg border border-brand-dark/10 bg-brand-dark/5 px-4 py-3 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
+        <summary className="list-none flex items-center justify-between gap-3 cursor-pointer select-none px-4 py-3 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
           <span className="flex items-center gap-2">
             <svg
               className="h-4 w-4 text-brand-crimson"
@@ -270,7 +273,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
             />
           </svg>
         </summary>
-        <div className="pt-3">
+        <div className="border-t border-brand-dark/10 px-4 pt-3 pb-4">
           <TocNav
             headings={headings}
             activeId={activeId}
