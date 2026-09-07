@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MIN_HEADINGS, type Heading } from "@/lib/headings";
+import { hasTableOfContents, type Heading } from "@/lib/headings";
 import {
   activationBandTop,
   pickActiveHeading,
@@ -89,7 +89,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
     // every layout change, the web-font swap included — and drove a
     // getBoundingClientRect per heading on each frame, all to compute an
     // active id for markup that returns null.
-    if (headings.length < MIN_HEADINGS) return;
+    if (!hasTableOfContents(headings)) return;
 
     const elements = headings
       .map((h) => document.getElementById(h.slug))
@@ -224,16 +224,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   const onLinkClick = (slug: string) => armPin.current?.(slug);
 
-  // app/posts/[slug]/page.tsx re-derives this exact condition (inverted, as
-  // headings.length >= MIN_HEADINGS) to decide whether the sidebar <aside>
-  // needs its mb-4 — there is no TOC, so no gap to close below it. The two
-  // must stay in lockstep, and nothing enforces that but this comment: if
-  // this condition ever becomes more than a length check (say, bailing when
-  // every heading is an h3), page.tsx's copy silently goes stale and the
-  // ghost gap this was written to fix comes back with no test to catch it.
-  // Extract a shared exported hasTableOfContents(headings) at that point
-  // rather than letting a second condition drift back in.
-  if (headings.length < MIN_HEADINGS) return null;
+  if (!hasTableOfContents(headings)) return null;
 
   return (
     <>

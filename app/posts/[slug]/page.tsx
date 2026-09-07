@@ -9,7 +9,7 @@ import { RichText } from "@/lib/rich-text";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
-import { extractHeadings, MIN_HEADINGS } from "@/lib/headings";
+import { extractHeadings, hasTableOfContents } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
@@ -260,12 +260,9 @@ export default async function PostPage({
               inside it depends on. */}
           {/* TOC repeats every heading; excluded so headings are not
               double-weighted in search. */}
-          {/* headings.length >= MIN_HEADINGS mirrors, inverted, the render
-              guard in table-of-contents.tsx that decides whether TOC renders
-              at all — see the comment there. The two must move together. */}
           <aside
             data-pagefind-ignore
-            className={`order-2 mx-auto w-full max-w-2xl xl:order-none xl:col-start-1 xl:row-start-1 xl:row-span-2 xl:mx-0 xl:max-w-none xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-9" : ""}`}
+            className={`order-2 mx-auto w-full max-w-2xl xl:order-none xl:col-start-1 xl:row-start-1 xl:row-span-2 xl:mx-0 xl:max-w-none xl:mb-0${hasTableOfContents(headings) ? " mb-9" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />

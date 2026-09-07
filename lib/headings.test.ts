@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, it, expect } from "vitest";
 import { BLOCKS } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
-import { extractHeadings, MIN_HEADINGS } from "./headings";
+import { extractHeadings, hasTableOfContents, MIN_HEADINGS } from "./headings";
 
 // Minimal rich-text node builders, matching the fixture shape in
 // rich-text.test.tsx.
@@ -109,5 +109,24 @@ describe("MIN_HEADINGS", () => {
       encoding: "utf-8",
     });
     expect(source).not.toMatch(/^\s*["']use client["']/m);
+  });
+});
+
+const dummyHeadings = (count: number) =>
+  Array.from({ length: count }, (_, i) => ({
+    text: `Heading ${i}`,
+    slug: `heading-${i}`,
+  }));
+
+// Literal 2 and 3 here, not MIN_HEADINGS - 1 and MIN_HEADINGS — comparing the
+// predicate against a copy of its own threshold would pass whether that
+// threshold is 3 or something else entirely. This pins the comparison itself.
+describe("hasTableOfContents", () => {
+  it("is false just below the threshold", () => {
+    expect(hasTableOfContents(dummyHeadings(2))).toBe(false);
+  });
+
+  it("is true at the threshold", () => {
+    expect(hasTableOfContents(dummyHeadings(3))).toBe(true);
   });
 });
