@@ -72,8 +72,11 @@ export default function Sidenote({
     <span className="sidenote-wrap">
       {/* In-text marker, shown at 2xl+ where the note floats into the margin.
           Decorative: the note text itself is the accessible content, read here
-          in DOM order. */}
-      <sup className="sidenote-ref" aria-hidden="true">
+          in DOM order. Pagefind indexes built HTML with no CSS and no
+          accessibility tree, so aria-hidden does not keep this out of the
+          index; without data-pagefind-ignore the bare number lands inside
+          excerpts as noise. */}
+      <sup className="sidenote-ref" aria-hidden="true" data-pagefind-ignore>
         {number}
       </sup>
       {/* The checkbox is the state. It is visually hidden rather than
@@ -87,8 +90,18 @@ export default function Sidenote({
         aria-controls={bodyId}
       />
       {/* Tap target, shown below 2xl. The <sup> is decorative, so the label's
-          accessible name comes from the visually hidden text beside it. */}
-      <label htmlFor={toggleId} className="sidenote-toggle">
+          accessible name comes from the visually hidden text beside it. Both
+          children are navigational furniture, not content someone would
+          search for: Pagefind reads the sr-only text same as any visible
+          text, so without data-pagefind-ignore on the label "Note N" and the
+          bare number would both land in the index and corrupt excerpts. The
+          attribute covers both children, so it does not need repeating on
+          either. */}
+      <label
+        htmlFor={toggleId}
+        className="sidenote-toggle"
+        data-pagefind-ignore
+      >
         <span className="sr-only">Note {number}</span>
         <sup aria-hidden="true">{number}</sup>
       </label>
