@@ -146,9 +146,10 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   and boilerplate there needs `data-pagefind-ignore` stated explicitly.
   [→ `pagefind-index-scope`]
 - **Never write a literal Tailwind utility name in a source comment** under
-  `app/` or `lib/` — it regenerates the rule. Verify only against the deployed
-  bundle; a local `@tailwindcss/postcss` compile reports false negatives.
-  [→ `tailwind-scanning`]
+  `app/` or `lib/` — it regenerates the rule, and a variant prefix does not
+  prevent it. `app/globals.css` is exempt, being unscanned.
+  `lib/tailwind-comment-scanning.test.ts` guards it; a clean run is necessary,
+  not sufficient — only the deployed bundle settles it. [→ `tailwind-scanning`]
 - **`lib/highlight.ts` imports each Shiki grammar and theme by name, never from
   the `shiki` meta-package** — that entry traces all 260 grammars (~8.7 MB)
   into the post route bundle. A new language needs its own `@shikijs/langs/*`
