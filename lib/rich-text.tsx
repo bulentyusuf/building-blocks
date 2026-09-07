@@ -394,7 +394,21 @@ export function RichText({
 
         if (entry.__typename === "PromptBlock") {
           return (
-            <figure className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline">
+            <figure
+              data-pagefind-weight="0.1"
+              className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
+            >
+              {/* Prompts are published content and stay indexed on purpose —
+                  data-pagefind-ignore would drop them from search entirely,
+                  which is the wrong trade. Pagefind's weight attribute feeds
+                  excerpt selection as well as ranking, so a low weight here
+                  (covering the figcaption label along with the prompt text,
+                  since the label is a caption for the prompt rather than
+                  prose) keeps a match from anchoring the excerpt over
+                  surrounding body text. 0.1 is a starting value, not derived
+                  from anything. This does not stop a prompt-only match from
+                  surfacing the post or appearing in its excerpt — weighting
+                  only decides which region wins when regions compete. */}
               {/* figcaption as figure's first child names the whole block
                   natively — no role or aria-labelledby needed. In dark mode
                   brand-crimson lifts (for link legibility); white text on the
