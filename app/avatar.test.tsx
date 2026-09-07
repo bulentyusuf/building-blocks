@@ -33,8 +33,8 @@ describe("Avatar, single author (acceptance criterion 1: byte-identical to befor
 
   it("renders one disc with no ring and no overlap class", () => {
     const out = html([author("bulent-yusuf", "Bulent Yusuf")]);
-    // The exact pre-authors wrapper: mr-4 w-12 h-12 shrink-0, no ring-*, no
-    // [&+*]:-mr-3.5 overlap. Both of those only exist on the stacked branch.
+    // The exact pre-authors wrapper: mr-4 w-12 h-12 shrink-0, no ring, and no
+    // sibling overlap margin. Both only exist on the stacked branch.
     expect(out).toContain('class="mr-4 w-12 h-12 shrink-0"');
     expect(out).not.toContain("ring-3");
     expect(out).not.toContain("ring-brand-bg");

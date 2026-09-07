@@ -48,8 +48,9 @@ const bodyOptions = {
 //
 // Responsive behaviour lives entirely in the .sidenote-* rules in globals.css.
 // Do not add Tailwind display utilities to these elements. Those rules are
-// unlayered and outrank anything in the utilities layer, so a `2xl:hidden` here
-// silently loses — that is what previously left both markers visible at 2xl.
+// unlayered and outrank anything in the utilities layer, so a display utility
+// carrying a `2xl` prefix here silently loses — that is what previously left
+// both markers visible at 2xl.
 //
 // The visible reference number here (`number`, a document-order index computed
 // in rich-text.tsx) and the "N. " prefix on the floated note (a CSS counter in

@@ -22,7 +22,7 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  *   - The breadcrumb, if any.
  *   - `heading` and `standfirst`, side by side — see the split masthead note
  *     below — wrapped in a `<header>` carrying a fixed `mb-8`, which is what
- *     the band's own `pb-8` was.
+ *     the band's own 32px bottom padding was.
  *   - A 3px rule, `border-brand-dark`, standing in for the band's own
  *     boundary — the colour step from navy to cream that once marked "the
  *     masthead ends here" for free. On one cream surface that step is gone,
@@ -39,7 +39,7 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  *     first content element, which is what Container's old "tight" top pad
  *     was. `contentOwnsLeading` suppresses THIS gap, not the header's margin.
  *
- * The band's inset was two numbers because it was two colours: `pb-8` of navy
+ * The band's inset was two numbers because it was two colours: 32px of navy
  * below the header, then `pt-6` of cream below the band's edge. They are one
  * surface now and they still do not collapse, because the rule sits between
  * them — and which side each number falls on is the whole point. Folding both
@@ -62,7 +62,7 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  *
  * **This is M5 from a five-option mockup, chosen after a left-flowing row
  * shipped and was rejected on sight.** The left-flowing version put a fixed
- * `gap-10` between the heading and a standfirst that started wherever the
+ * 40px gap between the heading and a standfirst that started wherever the
  * heading ended, on the reasoning that a wandering left edge was the point
  * rather than a defect. It looked like a mistake in review: a short heading
  * left the standfirst stranded in the middle of the row with nothing
@@ -70,7 +70,7 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  * now constant on every route — but `justify-between` alone reintroduces the
  * objection that sank right-anchoring the first time: a one-line standfirst
  * beside a short heading leaves a large empty gap in the middle. **The
- * standfirst's own `max-w-[20rem]` closes that gap**, by forcing most
+ * standfirst's own width cap closes that gap**, by forcing most
  * standfirsts to wrap to two lines rather than trailing off as one short
  * line at the far margin — see the standfirst's own note in each route for
  * the character budget that keeps the wrap at two lines and not three. The
@@ -79,12 +79,12 @@ import Breadcrumb, { type Crumb } from "./breadcrumb";
  *
  * `flex-col` below `md` is required, not decorative: a 60px heading is 330px
  * wide at its widest, and a 390px phone has 350px of content, so there is no
- * room for a standfirst beside it there. `items-baseline-last` matters more
+ * room for a standfirst beside it there. Last-baseline alignment matters more
  * with a two-line standfirst than it would with one: plain `baseline` aligns
  * FIRST baselines, which would hang the standfirst's second line below the
  * heading; last baseline closes both blocks at the bottom instead.
  *
- * The standfirst's own `max-w-[20rem]` and `text-right` carry `md:` prefixes
+ * The standfirst's own width cap and right alignment carry `md:` prefixes
  * for the same reason. Both classes exist to close the gap `justify-between`
  * leaves in the ROW; below `md` there is no row, so unprefixed they instead
  * shrank the standfirst to a 320px box and right-aligned its text inside

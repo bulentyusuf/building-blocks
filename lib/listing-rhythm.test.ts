@@ -103,7 +103,7 @@ describe("a wide page sits on the same grid as a narrow one", () => {
   });
 
   it("WidePage keeps the band's two insets on their own sides of the rule", () => {
-    // The band's inset was two numbers because it was two colours: pb-8 of
+    // The band's inset was two numbers because it was two colours: 32px of
     // navy below the header, then Container's pt-6 of cream below the band's
     // edge. One surface does not merge them, because the rule now sits where
     // the colour step used to, and which side each number falls on is the
@@ -189,9 +189,9 @@ describe("the home hero's title keeps a size step over a grid card's", () => {
   //
   // What this cannot see: the comparison below is literal equality of filtered
   // class tokens, not resolved cascade values, so two ramps whose token lists
-  // differ in LENGTH pass regardless of what they paint. A hero of
-  // text-3xl md:text-4xl lg:text-3xl against a card of text-2xl md:text-3xl
-  // renders both at 30px from lg up and this stays green, with or without the
+  // differ in LENGTH pass regardless of what they paint. A hero ramp that
+  // shrinks again at lg, against a card ramp one step below it, renders both
+  // at 30px from lg up and this stays green, with or without the
   // lg: capture. Resolving each list to a per-breakpoint size and asserting
   // the hero is strictly larger at each is the fix, and it is not this one.
   const SIZE_STEP = /^(?:(?:md|lg):)?text-(?:sm|base|lg|\d*xl|\[[^\]]+\])$/;
@@ -298,7 +298,7 @@ describe("a listing under the header contributes no leading of its own", () => {
 });
 
 describe("the hero's two-column split carries a gap at every width", () => {
-  // The regression: md:grid md:grid-cols-[3fr_2fr] md:gap-x-16 declares no
+  // The regression: a two-column md grid with a horizontal gap declares no
   // grid at all below md, so the two children rendered as plain stacked block
   // divs with nothing between them — the byline block and the excerpt sat
   // 0px apart on a phone, the largest join on the page carrying the smallest
@@ -309,8 +309,9 @@ describe("the hero's two-column split carries a gap at every width", () => {
   //
   // Anchored on the JSX className at line start, the same reason the leading
   // guard above anchors on the prop form: a comment mentioning these classes
-  // cannot make this pass by accident. Anchored further on grid-cols-[3fr_2fr]
-  // specifically — the file has two other bare `<div className="...">` lines
+  // cannot make this pass by accident. Anchored further on the two-column
+  // template specifically — the file has two other bare `<div className="...">`
+  // lines
   // (the cover wrapper, the byline row) that a looser pattern would match
   // first, since .exec() returns whichever occurs earliest in source order.
   const HERO_GRID = /^\s*<div className="([^"]*md:grid-cols-2[^"]*)">\s*$/m;
@@ -326,10 +327,9 @@ describe("the hero's two-column split carries a gap at every width", () => {
     expect(classes).toContain("grid");
     expect(classes).not.toContain("md:grid");
     // The second column has to stay behind md, and nothing above catches it.
-    // `md:grid` and `md:grid-cols-2` are different tokens, so the
-    // not.toContain above passes either way, and the regex anchoring this
-    // block matches a bare `grid-cols-2` as happily as the prefixed
-    // one.
+    // The prefixed grid and the prefixed column count are different tokens,
+    // so the not.toContain above passes either way, and the regex anchoring
+    // this block matches the unprefixed form as happily as the prefixed one.
     expect(classes).toContain("md:grid-cols-2");
   });
 

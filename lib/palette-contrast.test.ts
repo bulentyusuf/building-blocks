@@ -187,9 +187,9 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // shipped and was rejected on sight for a different reason
   // (docs/decisions.md, "The masthead splits into heading and standfirst")
   // — the row is right-anchored now, via M5 — and M5 brought a max-width
-  // BACK, `max-w-[20rem]`, this time to force a two-line wrap rather than to
-  // cap a stray one. It also added
-  // `text-right`. Both are required in the pattern below, not just checked
+  // BACK, a 20rem cap, this time to force a two-line wrap rather than to
+  // cap a stray one. It also added right alignment. Both are required in the
+  // pattern below, not just checked
   // afterwards, for the same reason text-brand-muted already was: a
   // standfirst that loses either one stops MATCHING rather than failing a
   // later assertion, and the guard exists to catch exactly that regression.
@@ -199,12 +199,12 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // it they shrank the standfirst to a 320px box and right-aligned its text
   // inside that box rather than the page. The pattern requires both prefixes
   // for the same reason it required the classes themselves — an unprefixed
-  // text-right shipping again is exactly this regression, and it must stop
+  // right alignment shipping again is exactly this regression, and it must stop
   // matching rather than pass silently.
   //
   // The author routes are the one exception and are checked separately below,
-  // against the OLD signature — max-w-3xl, no text-right — because they render
-  // through splitHeader={false} and were never touched by M5. A single
+  // against the OLD signature — max-w-3xl, no right alignment — because they
+  // render through splitHeader={false} and were never touched by M5. A single
   // pattern loose enough to match both signatures would not distinguish a
   // route that correctly kept the old style from one that regressed out of
   // the new one.
@@ -220,7 +220,7 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // file stayed green.
   //
   // So the count is asserted exactly, not just as non-zero. Requiring
-  // max-w-[20rem] and text-right in the pattern itself, rather than checking
+  // the width cap and right alignment in the pattern itself, rather than checking
   // them per match the way text-brand-muted is, is what keeps this map short:
   // Categories' and Authors' per-item card blurbs (a category description, an
   // author bio, both ordinary left-aligned body prose) share the OLD
@@ -256,8 +256,8 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
       expect(className).toMatch(/text-brand-muted/);
   });
 
-  // The old, pre-M5 signature — no text-right, and max-w-3xl rather than
-  // max-w-[20rem] — because these two routes render through splitHeader={false}
+  // The old, pre-M5 signature — no right alignment, and max-w-3xl rather than
+  // the 20rem cap — because these two routes render through splitHeader={false}
   // and were never brought into the row. "Render as they do today" is the
   // acceptance criterion for these two files specifically.
   const STANDFIRST_AUTHOR =

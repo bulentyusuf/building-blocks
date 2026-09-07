@@ -102,8 +102,8 @@ export default function Avatar({
         // row-reverse plus a reversed authors array puts the FIRST (lead)
         // author's disc in front, with no z-index and no stacking context:
         // the last element in DOM order sits visually first in a reversed
-        // row. -mr-3.5 (14px) overlap sits on every disc except the last one
-        // RENDERED, which is the lead author, because the row is reversed.
+        // row. A 14px negative right margin overlaps every disc except the
+        // last one RENDERED, the lead author, because the row is reversed.
         // Each disc carries its own ring in the page background colour —
         // without it the overlap reads as one shape rather than two
         // portraits. ring-brand-bg rather than a hardcoded hex because the
