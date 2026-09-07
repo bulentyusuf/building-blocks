@@ -222,8 +222,14 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          // The mobile margin is reduced to balance the TOC pill below it; the desktop value is unchanged because the pill doesn't exist there for it to balance against.
-          <div className="mb-8 xl:mb-10">
+          // 44px, not the 32px the pill's other side gets, because shadow-lg
+          // on CoverImage renders ~13px of visible darkening below its box
+          // edge — the margin box is 32px but the optical gap reads as ~13px
+          // shorter. This is an optical correction tuned to that shadow;
+          // changing shadow-lg (or removing it) invalidates the 44px and it
+          // needs re-measuring, not reapplying. xl:mb-10 is unchanged and
+          // unrelated — there is no pill at xl to balance against.
+          <div className="mb-11 xl:mb-10">
             <CoverImage
               image={post.coverImage}
               wide
@@ -247,9 +253,18 @@ export default async function PostPage({
           {/* headings.length >= MIN_HEADINGS mirrors, inverted, the render
               guard in table-of-contents.tsx that decides whether TOC renders
               at all — see the comment there. The two must move together. */}
+          {/* mb-5, 20px, not the 32px the pill's other side gets, because the
+              standfirst's cap-top sits ~11px below its own margin-box top —
+              half-leading on text-xl leading-relaxed Literata is only ~1px,
+              but the distance from there down to a capital letter's cap
+              height adds the rest. 20px plus that ~11px reads as ~31px. This
+              is an optical correction tuned to Literata at text-xl
+              leading-relaxed on the standfirst; changing that paragraph's
+              face, size or leading invalidates the 20px and it needs
+              re-measuring, not reapplying. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-8" : ""}`}
+            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-5" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
