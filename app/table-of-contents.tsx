@@ -240,7 +240,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
           whole disclosure is xl:hidden, so there is nothing here for xl+ to
           hide or force open.
         */}
-        <summary className="list-none flex items-center justify-between gap-3 cursor-pointer select-none rounded-lg border border-brand-dark/10 bg-brand-dark/5 px-4 py-1.5 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
+        <summary className="list-none flex items-center justify-between gap-3 cursor-pointer select-none rounded-lg border border-brand-dark/10 bg-brand-dark/5 px-4 py-2 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
           <span className="flex items-center gap-2">
             <svg
               className="h-4 w-4 text-brand-crimson"
