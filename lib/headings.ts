@@ -6,6 +6,24 @@ export interface Heading {
   slug: string;
 }
 
+// Below this a table of contents is a list as long as the article, so there is
+// nothing to navigate. table-of-contents.tsx's effect and render read the same
+// constant on purpose: they were two different numbers once, and the effect
+// did all its work for a component that rendered nothing.
+export const MIN_HEADINGS = 3;
+
+// Lives here, not in table-of-contents.tsx, because that module is "use
+// client" and a server component (app/posts/[slug]/page.tsx) cannot call a
+// function exported from a client module, even a pure one — Next.js treats
+// every export of a "use client" file as a reference to the client boundary.
+// This lets page.tsx ask the same question the TOC component asks itself in
+// its render guard, rather than restating the length check inverted and
+// trusting a comment to keep the two aligned. The margin on the sidebar
+// aside only makes sense when something renders inside it.
+export function hasTableOfContents(headings: Heading[]): boolean {
+  return headings.length >= MIN_HEADINGS;
+}
+
 // Listicle H2s carry a leading ordinal ("1. Zak McKracken..."). Strip it before
 // slugifying so the fragment survives a reorder or a renumber, which is the most
 // likely future edit to a Top-N post. Trailing punctuation is REQUIRED by the

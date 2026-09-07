@@ -9,10 +9,10 @@ import { RichText } from "@/lib/rich-text";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
-import { extractHeadings } from "@/lib/headings";
+import { extractHeadings, hasTableOfContents } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
-import TableOfContents, { hasTableOfContents } from "../../table-of-contents";
+import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
@@ -243,10 +243,12 @@ export default async function PostPage({
               per the separate mobile-AI decision. */}
           {/* TOC repeats every heading; excluded so headings are not
               double-weighted in search. */}
-          {/* hasTableOfContents mirrors the render guard in
-              table-of-contents.tsx that decides whether TOC renders at all —
-              a single exported predicate now, not a second condition kept in
-              sync by comment.
+          {/* hasTableOfContents (lib/headings.ts) is the same predicate
+              table-of-contents.tsx uses for its own render guard — a single
+              exported function, not a second condition kept in sync by
+              comment. It lives in lib/headings.ts rather than the component
+              itself because that module is "use client" and this is a
+              server component.
               mb-8 is the state-independent half of the mobile TOC spacing:
               it applies whether the disclosure is open or closed. The
               state-dependent half is pb-4 inside the <details> in

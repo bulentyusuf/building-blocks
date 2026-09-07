@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Heading } from "@/lib/headings";
+import { MIN_HEADINGS, hasTableOfContents, type Heading } from "@/lib/headings";
 import {
   activationBandTop,
   pickActiveHeading,
@@ -15,19 +15,11 @@ import { widont } from "@/lib/typography";
 // sooner regardless.
 const PIN_SETTLE_MS = 1500;
 
-// Below this a table of contents is a list as long as the article, so there is
-// nothing to navigate. The effect and the render read the same constant on
-// purpose: they were two different numbers once, and the effect did all its
-// work for a component that rendered nothing.
-export const MIN_HEADINGS = 3;
-
-// Exported so page.tsx can ask the same question the component asks itself,
-// rather than restating the condition inverted and trusting a comment to keep
-// the two aligned. The margin on the sidebar aside only makes sense when
-// something renders inside it.
-export function hasTableOfContents(headings: Heading[]): boolean {
-  return headings.length >= MIN_HEADINGS;
-}
+// MIN_HEADINGS and hasTableOfContents live in lib/headings.ts, not here —
+// this module is "use client", and page.tsx (a server component) needs to
+// call hasTableOfContents too. Re-exported so existing imports of
+// MIN_HEADINGS from this module keep working.
+export { MIN_HEADINGS };
 
 // The nav is rendered twice, once behind the mobile disclosure and once bare at
 // xl+. Exactly one is in the DOM at any viewport (the other is display:none via

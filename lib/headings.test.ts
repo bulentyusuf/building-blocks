@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { BLOCKS } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
-import { extractHeadings } from "./headings";
+import { extractHeadings, hasTableOfContents, MIN_HEADINGS } from "./headings";
+import type { Heading } from "./headings";
 
 // Minimal rich-text node builders, matching the fixture shape in
 // rich-text.test.tsx.
@@ -80,5 +81,30 @@ describe("extractHeadings slugging", () => {
       docOf(heading2(text("See the "), link("https://example.com", "docs"))),
     );
     expect(headings).toEqual([{ text: "See the docs", slug: "see-the-docs" }]);
+  });
+});
+
+// app/posts/[slug]/page.tsx asks this the same question
+// table-of-contents.tsx asks itself in its render guard, rather than
+// restating the length check inverted. If the two ever drift, the sidebar's
+// margin and the TOC's own render decision disagree — this is what would
+// catch that.
+describe("hasTableOfContents", () => {
+  const heading = (n: number): Heading => ({
+    text: `Heading ${n}`,
+    slug: `heading-${n}`,
+  });
+
+  it("is false just below MIN_HEADINGS", () => {
+    const headings = Array.from({ length: MIN_HEADINGS - 1 }, (_, i) =>
+      heading(i),
+    );
+    expect(hasTableOfContents(headings)).toBe(false);
+  });
+
+  it("is true at and above MIN_HEADINGS", () => {
+    const headings = Array.from({ length: MIN_HEADINGS }, (_, i) => heading(i));
+    expect(hasTableOfContents(headings)).toBe(true);
+    expect(hasTableOfContents([...headings, heading(MIN_HEADINGS)])).toBe(true);
   });
 });
