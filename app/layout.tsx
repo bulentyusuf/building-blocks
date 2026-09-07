@@ -159,12 +159,13 @@ function Header() {
             links, which carry the same wayfinding information on every route.
 
             The wordmark is a link on every route except home, where it is
-            plain text — see app/site-wordmark.tsx. In Next 16 a same-URL Link
-            click is a leaf-segment refresh rather than a route change, and
-            only a route change is assigned a scroll target, so on home the
-            link neither navigated nor returned the reader to the top. It does
-            navigate from everywhere else, which is most of the site and the
-            most conventional control on it, so it stays a link there. */}
+            a button that returns the reader to the top — see
+            app/site-wordmark.tsx. In Next 16 a same-URL Link click is a
+            leaf-segment refresh rather than a route change, and only a route
+            change is assigned a scroll target, so on home the link neither
+            navigated nor returned the reader to the top. It does navigate from
+            everywhere else, which is most of the site and the most conventional
+            control on it, so it stays a link there. */}
         <div className="flex items-baseline gap-3">
           <SiteWordmark title={SITE_TITLE} />
         </div>
