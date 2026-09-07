@@ -186,6 +186,16 @@ function Header() {
               aria-label="Menu"
               className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-1 -m-1"
             >
+              {/* Two icons rather than one morphing path. The menu closes on a
+                  second tap, on Escape and on an outside tap, but the trigger
+                  gave no sign it was a toggle at all — three static lines
+                  whether open or closed. The X is the only thing on screen
+                  telling a reader how to get out.
+
+                  group-open: reads the [open] attribute on the <details> in
+                  nav-disclosure.tsx, the same hook the table of contents
+                  chevron uses. No JS, no state, and the correct icon is in
+                  the server-rendered markup before hydration. */}
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -193,9 +203,20 @@ function Header() {
                 stroke="currentColor"
                 strokeWidth={2}
                 strokeLinecap="round"
-                className="h-5 w-5"
+                className="h-5 w-5 group-open:hidden"
               >
                 <path d="M3 6h18M3 12h18M3 18h18" />
+              </svg>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                className="hidden h-5 w-5 group-open:block"
+              >
+                <path d="M6 6l12 12M6 18L18 6" />
               </svg>
             </summary>
             <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-lg border border-white/10 bg-brand-header px-4 py-3 shadow-lg">
