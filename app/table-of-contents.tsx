@@ -21,6 +21,14 @@ const PIN_SETTLE_MS = 1500;
 // work for a component that rendered nothing.
 export const MIN_HEADINGS = 3;
 
+// Exported so page.tsx can ask the same question the component asks itself,
+// rather than restating the condition inverted and trusting a comment to keep
+// the two aligned. The margin on the sidebar aside only makes sense when
+// something renders inside it.
+export function hasTableOfContents(headings: Heading[]): boolean {
+  return headings.length >= MIN_HEADINGS;
+}
+
 // The nav is rendered twice, once behind the mobile disclosure and once bare at
 // xl+. Exactly one is in the DOM at any viewport (the other is display:none via
 // the breakpoint class, which removes it from the accessibility tree as well as
@@ -230,16 +238,7 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   const onLinkClick = (slug: string) => armPin.current?.(slug);
 
-  // app/posts/[slug]/page.tsx re-derives this exact condition (inverted, as
-  // headings.length >= MIN_HEADINGS) to decide whether the sidebar <aside>
-  // needs its mb-4 — there is no TOC, so no gap to close below it. The two
-  // must stay in lockstep, and nothing enforces that but this comment: if
-  // this condition ever becomes more than a length check (say, bailing when
-  // every heading is an h3), page.tsx's copy silently goes stale and the
-  // ghost gap this was written to fix comes back with no test to catch it.
-  // Extract a shared exported hasTableOfContents(headings) at that point
-  // rather than letting a second condition drift back in.
-  if (headings.length < MIN_HEADINGS) return null;
+  if (!hasTableOfContents(headings)) return null;
 
   return (
     <>
@@ -276,7 +275,13 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
             />
           </svg>
         </summary>
-        <div className="pt-3">
+        {/* pt-3 separates the panel from the summary above it. pb-4 separates the
+            last link from whatever follows the aside, and lives inside the <details>
+            on purpose: it only applies when the panel is open, so a collapsed pill
+            does not carry a gap sized for expanded content. The rest of the mobile
+            spacing is the aside's bottom margin in page.tsx, which applies in both
+            states. Changing one without the other unbalances the open state. */}
+        <div className="pt-3 pb-4">
           <TocNav
             headings={headings}
             activeId={activeId}

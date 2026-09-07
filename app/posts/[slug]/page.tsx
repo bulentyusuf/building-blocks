@@ -12,7 +12,7 @@ import { postAuthors } from "@/lib/authors";
 import { extractHeadings } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
-import TableOfContents, { MIN_HEADINGS } from "../../table-of-contents";
+import TableOfContents, { hasTableOfContents } from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
@@ -243,12 +243,21 @@ export default async function PostPage({
               per the separate mobile-AI decision. */}
           {/* TOC repeats every heading; excluded so headings are not
               double-weighted in search. */}
-          {/* headings.length >= MIN_HEADINGS mirrors, inverted, the render
-              guard in table-of-contents.tsx that decides whether TOC renders
-              at all — see the comment there. The two must move together. */}
+          {/* hasTableOfContents mirrors the render guard in
+              table-of-contents.tsx that decides whether TOC renders at all —
+              a single exported predicate now, not a second condition kept in
+              sync by comment.
+              mb-8 is the state-independent half of the mobile TOC spacing:
+              it applies whether the disclosure is open or closed. The
+              state-dependent half is pb-4 inside the <details> in
+              table-of-contents.tsx, which only exists when the panel is
+              open — together they take the open state from 32px to 48px
+              below the disclosure, matching the pre-#495 margin. space-y-8
+              stays scoped to xl: on purpose (see the comment there); it is
+              not the mechanism to widen for this. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
+            className={`xl:mb-0${hasTableOfContents(headings) ? " mb-8" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />

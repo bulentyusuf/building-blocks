@@ -3,7 +3,10 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup } from "@testing-library/react";
-import TableOfContents from "./table-of-contents";
+import TableOfContents, {
+  hasTableOfContents,
+  MIN_HEADINGS,
+} from "./table-of-contents";
 import type { Heading } from "@/lib/headings";
 
 // What the component does when it decides to render NOTHING.
@@ -95,5 +98,24 @@ describe("a table of contents that does render", () => {
     );
     unmount();
     expect(disconnect).toHaveBeenCalled();
+  });
+});
+
+// page.tsx asks hasTableOfContents the same question the component asks
+// itself in its render guard, rather than restating the length check
+// inverted. If the two ever drift, the sidebar's margin and the TOC's own
+// render decision disagree — this is what would catch that.
+describe("hasTableOfContents", () => {
+  it("is false just below MIN_HEADINGS", () => {
+    const headings = Array.from({ length: MIN_HEADINGS - 1 }, (_, i) =>
+      heading(i),
+    );
+    expect(hasTableOfContents(headings)).toBe(false);
+  });
+
+  it("is true at and above MIN_HEADINGS", () => {
+    const headings = Array.from({ length: MIN_HEADINGS }, (_, i) => heading(i));
+    expect(hasTableOfContents(headings)).toBe(true);
+    expect(hasTableOfContents([...headings, heading(MIN_HEADINGS)])).toBe(true);
   });
 });
