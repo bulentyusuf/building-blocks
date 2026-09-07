@@ -9,10 +9,10 @@ import { RichText } from "@/lib/rich-text";
 import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
-import { extractHeadings } from "@/lib/headings";
+import { extractHeadings, MIN_HEADINGS } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { highlightCodeBlocks } from "@/lib/highlight";
-import TableOfContents, { MIN_HEADINGS } from "../../table-of-contents";
+import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
@@ -222,7 +222,23 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          <div className="mb-10">
+          // 44px, not the 32px the pill's other side gets, because shadow-lg
+          // on CoverImage renders ~13px of visible darkening below its box
+          // edge — the margin box is 32px but the optical gap reads as ~13px
+          // shorter. This is an optical correction tuned to that shadow;
+          // changing shadow-lg (or removing it) invalidates the 44px and it
+          // needs re-measuring, not reapplying. xl:mb-10 is unchanged and
+          // unrelated — there is no pill at xl to balance against.
+          //
+          // 42px, not 44px: a pixel scan of the deployed page put the visible
+          // gap (cover's shadow edge to the pill's top border) at 33px
+          // against a 31px target, 2px over. Tailwind's scale steps in fours
+          // from here, so closing a 2px gap needs an arbitrary value —
+          // mb-[42px] is not a mistaken rounding of mb-10, it is measured.
+          // The target is 31 CSS px from the visible bottom edge of the
+          // shadow to the pill's border, at 2x device pixel ratio; re-measure
+          // rather than round this to a scale step if it drifts again.
+          <div className="mb-[42px] xl:mb-10">
             <CoverImage
               image={post.coverImage}
               wide
@@ -246,9 +262,28 @@ export default async function PostPage({
           {/* headings.length >= MIN_HEADINGS mirrors, inverted, the render
               guard in table-of-contents.tsx that decides whether TOC renders
               at all — see the comment there. The two must move together. */}
+          {/* mb-5, 20px, not the 32px the pill's other side gets, because the
+              standfirst's cap-top sits ~11px below its own margin-box top —
+              half-leading on text-xl leading-relaxed Literata is only ~1px,
+              but the distance from there down to a capital letter's cap
+              height adds the rest. 20px plus that ~11px reads as ~31px. This
+              is an optical correction tuned to Literata at text-xl
+              leading-relaxed on the standfirst; changing that paragraph's
+              face, size or leading invalidates the 20px and it needs
+              re-measuring, not reapplying.
+
+              22px, not 20px: a pixel scan of the deployed page put the
+              visible gap (pill's bottom border to the standfirst's cap-top)
+              at 29px against a 31px target, 2px short, in both disclosure
+              states. Tailwind's scale steps in fours from here, so closing a
+              2px gap needs an arbitrary value — mb-[22px] is not a mistaken
+              rounding of mb-6, it is measured. The target is 31 CSS px from
+              the pill's border to the cap-top of the standfirst's first
+              glyph, at 2x device pixel ratio; re-measure rather than round
+              this to a scale step if it drifts again. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-4" : ""}`}
+            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-[22px]" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
