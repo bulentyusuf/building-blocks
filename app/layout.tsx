@@ -216,9 +216,27 @@ function Header() {
                 strokeLinecap="round"
                 className="hidden h-5 w-5 group-open:block"
               >
-                <path d="M6 6l12 12M6 18L18 6" />
+                <path d="M5 5l14 14M5 19L19 5" />
               </svg>
             </summary>
+            {/* Dims the page under the open menu. The panel is opaque but nothing
+                separated it from the content behind it, so the two read as competing
+                layers rather than a menu over a page.
+
+                absolute + top-full rather than fixed inset-0: the containing block is
+                the sticky header, so top-full starts the scrim immediately below the
+                header bar. That keeps the header, the wordmark and the close X at full
+                brightness, which matters because the X is the way out.
+
+                pointer-events-none is load-bearing, not defensive. The scrim is a
+                child of the <details>, so if it captured taps the outside-tap handler
+                in nav-disclosure.tsx would see details.contains(target) === true and
+                refuse to close. Letting taps pass through leaves that behaviour
+                exactly as it is. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
+            />
             <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-lg border border-white/10 bg-brand-header px-4 py-3 shadow-lg">
               <ul className="space-y-2">
                 <li>
