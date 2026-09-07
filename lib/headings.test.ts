@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, it, expect } from "vitest";
 import { BLOCKS } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
-import { extractHeadings } from "./headings";
+import { extractHeadings, MIN_HEADINGS } from "./headings";
 
 // Minimal rich-text node builders, matching the fixture shape in
 // rich-text.test.tsx.
@@ -80,5 +82,32 @@ describe("extractHeadings slugging", () => {
       docOf(heading2(text("See the "), link("https://example.com", "docs"))),
     );
     expect(headings).toEqual([{ text: "See the docs", slug: "see-the-docs" }]);
+  });
+});
+
+// MIN_HEADINGS used to live in app/table-of-contents.tsx, a "use client"
+// module. app/posts/[slug]/page.tsx (a server component) imported it from
+// there for its own sidebar-margin decision, and a server component
+// importing a plain value across a "use client" boundary gets a client
+// reference rather than the value — headings.length >= MIN_HEADINGS compared
+// a real number against undefined, silently false, so the margin never
+// applied. Nothing failed loudly: no thrown error, no type error, just a
+// missing CSS class in the rendered HTML.
+//
+// Comparing MIN_HEADINGS to itself would pass whether it holds 3 or
+// undefined, so it proves nothing. This compares against the literal 3, and
+// guards the file it lives in has no "use client" directive — the actual
+// mechanism that turned a real number into a client reference — so either
+// half of the regression fails the suite.
+describe("MIN_HEADINGS", () => {
+  it("is the real number 3, not a client reference resolved as undefined", () => {
+    expect(MIN_HEADINGS).toBe(3);
+  });
+
+  it('lives in a module with no "use client" directive', () => {
+    const source = readFileSync(join(process.cwd(), "lib/headings.ts"), {
+      encoding: "utf-8",
+    });
+    expect(source).not.toMatch(/^\s*["']use client["']/m);
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Heading } from "@/lib/headings";
+import { MIN_HEADINGS, type Heading } from "@/lib/headings";
 import {
   activationBandTop,
   pickActiveHeading,
@@ -14,12 +14,6 @@ import { widont } from "@/lib/typography";
 // to outlast a web-font swap on a warm connection; the reader scrolling ends it
 // sooner regardless.
 const PIN_SETTLE_MS = 1500;
-
-// Below this a table of contents is a list as long as the article, so there is
-// nothing to navigate. The effect and the render read the same constant on
-// purpose: they were two different numbers once, and the effect did all its
-// work for a component that rendered nothing.
-export const MIN_HEADINGS = 3;
 
 // The nav is rendered twice, once behind the mobile disclosure and once bare at
 // xl+. Exactly one is in the DOM at any viewport (the other is display:none via

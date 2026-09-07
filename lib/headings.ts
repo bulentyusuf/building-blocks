@@ -6,6 +6,21 @@ export interface Heading {
   slug: string;
 }
 
+// Below this a table of contents is a list as long as the article, so there is
+// nothing to navigate. The effect and the render in table-of-contents.tsx read
+// the same constant on purpose: they were two different numbers once, and the
+// effect did all its work for a component that rendered nothing.
+//
+// This lives here rather than in table-of-contents.tsx, which is "use client",
+// because app/posts/[slug]/page.tsx (a server component) also needs the value
+// to decide the sidebar's own margin. A server component importing a plain
+// value across a "use client" boundary gets a client reference, not the
+// value — headings.length >= MIN_HEADINGS silently compared against
+// undefined, so the margin never applied and nothing surfaced the failure. A
+// module with no "use client" directive is a real, shared value on both
+// sides.
+export const MIN_HEADINGS = 3;
+
 // Listicle H2s carry a leading ordinal ("1. Zak McKracken..."). Strip it before
 // slugifying so the fragment survives a reorder or a renumber, which is the most
 // likely future edit to a Top-N post. Trailing punctuation is REQUIRED by the
