@@ -222,14 +222,10 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          // mb-12, not mb-8 to match the gap below the pill: CoverImage's
-          // shadow-lg bleeds visibly for about 18px below its own box edge
-          // (measured against the page background, #FAF5F1) regardless of
-          // margin size, so the margin here needs ~18px more than a plain
-          // gap to read as the same clean space. mb-12 lands the clean
-          // portion at ~30px, close enough to the pill's unshadowed 32px
-          // that the two read as equal.
-          <div className="mb-12">
+          // mb-8 balances the gap above the mobile TOC pill against the
+          // aside's mb-8 below it. xl:mb-10 is the original desktop value,
+          // unrelated to the pill — the pill only exists below xl.
+          <div className="mb-8 xl:mb-10">
             <CoverImage
               image={post.coverImage}
               wide
@@ -277,13 +273,7 @@ export default async function PostPage({
           </aside>
 
           <div className="mx-auto max-w-2xl xl:mx-0">
-            {/* xl:-mt-1 corrects an optical misalignment against the "On
-                this page" label in the sidebar: both boxes start at the same
-                y, but text-xs (16px line-height) and text-xl leading-relaxed
-                (32.5px line-height) put a different amount of leading above
-                the glyphs themselves, landing this paragraph's visible text
-                about 4px lower than the label's despite equal box tops. */}
-            <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty xl:-mt-1">
+            <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
               {widont(post.excerpt)}
             </p>
             <div className="mb-10">

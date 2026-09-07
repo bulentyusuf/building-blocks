@@ -15,12 +15,6 @@ import { widont } from "@/lib/typography";
 // sooner regardless.
 const PIN_SETTLE_MS = 1500;
 
-// MIN_HEADINGS and hasTableOfContents live in lib/headings.ts, not here —
-// this module is "use client", and page.tsx (a server component) needs to
-// call hasTableOfContents too. Re-exported so existing imports of
-// MIN_HEADINGS from this module keep working.
-export { MIN_HEADINGS };
-
 // The nav is rendered twice, once behind the mobile disclosure and once bare at
 // xl+. Exactly one is in the DOM at any viewport (the other is display:none via
 // the breakpoint class, which removes it from the accessibility tree as well as

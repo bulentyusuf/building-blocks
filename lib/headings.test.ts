@@ -95,6 +95,13 @@ describe("hasTableOfContents", () => {
     slug: `heading-${n}`,
   });
 
+  // The two tests below derive their fixtures from MIN_HEADINGS itself, so
+  // they'd stay green even if the constant changed value entirely. This
+  // pins the value the rest of this file, and the brief, assume.
+  it("is 3", () => {
+    expect(MIN_HEADINGS).toBe(3);
+  });
+
   it("is false just below MIN_HEADINGS", () => {
     const headings = Array.from({ length: MIN_HEADINGS - 1 }, (_, i) =>
       heading(i),
