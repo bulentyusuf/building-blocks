@@ -229,7 +229,16 @@ export default async function PostPage({
           // changing shadow-lg (or removing it) invalidates the 44px and it
           // needs re-measuring, not reapplying. xl:mb-10 is unchanged and
           // unrelated — there is no pill at xl to balance against.
-          <div className="mb-11 xl:mb-10">
+          //
+          // 42px, not 44px: a pixel scan of the deployed page put the visible
+          // gap (cover's shadow edge to the pill's top border) at 33px
+          // against a 31px target, 2px over. Tailwind's scale steps in fours
+          // from here, so closing a 2px gap needs an arbitrary value —
+          // mb-[42px] is not a mistaken rounding of mb-10, it is measured.
+          // The target is 31 CSS px from the visible bottom edge of the
+          // shadow to the pill's border, at 2x device pixel ratio; re-measure
+          // rather than round this to a scale step if it drifts again.
+          <div className="mb-[42px] xl:mb-10">
             <CoverImage
               image={post.coverImage}
               wide
@@ -261,10 +270,20 @@ export default async function PostPage({
               is an optical correction tuned to Literata at text-xl
               leading-relaxed on the standfirst; changing that paragraph's
               face, size or leading invalidates the 20px and it needs
-              re-measuring, not reapplying. */}
+              re-measuring, not reapplying.
+
+              22px, not 20px: a pixel scan of the deployed page put the
+              visible gap (pill's bottom border to the standfirst's cap-top)
+              at 29px against a 31px target, 2px short, in both disclosure
+              states. Tailwind's scale steps in fours from here, so closing a
+              2px gap needs an arbitrary value — mb-[22px] is not a mistaken
+              rounding of mb-6, it is measured. The target is 31 CSS px from
+              the pill's border to the cap-top of the standfirst's first
+              glyph, at 2x device pixel ratio; re-measure rather than round
+              this to a scale step if it drifts again. */}
           <aside
             data-pagefind-ignore
-            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-5" : ""}`}
+            className={`xl:mb-0${headings.length >= MIN_HEADINGS ? " mb-[22px]" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
