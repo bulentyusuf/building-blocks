@@ -21,6 +21,17 @@ export interface Heading {
 // sides.
 export const MIN_HEADINGS = 3;
 
+// The single answer to "does this post get a table of contents?". It was
+// written three times before this existed, twice negated and once not, with
+// comments in two files instructing the reader to keep them in step. The
+// sidebar's margin in page.tsx and the render guard in table-of-contents.tsx
+// have to agree or the aside contributes spacing for a component that renders
+// nothing — which is a defect nothing in CI can see, because both readings are
+// individually valid.
+export function hasTableOfContents(headings: Heading[]): boolean {
+  return headings.length >= MIN_HEADINGS;
+}
+
 // Listicle H2s carry a leading ordinal ("1. Zak McKracken..."). Strip it before
 // slugifying so the fragment survives a reorder or a renumber, which is the most
 // likely future edit to a Top-N post. Trailing punctuation is REQUIRED by the
