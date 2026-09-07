@@ -58,8 +58,8 @@ export default async function ArchivePage() {
       // themselves and stay current without anyone editing them. A Page
       // Intro entry can override it, but leaving that field empty is the
       // better default — typed prose here would be stale by the next post.
-      // Both branches carry the M5 signature — max-w-[20rem] plus
-      // text-right — since either one can be the rendered standfirst; see
+      // Both branches carry the M5 signature, the width cap plus right
+      // alignment, since either one can be the rendered standfirst; see
       // app/wide-page.tsx for what the two classes are doing.
       standfirst={
         intro?.standfirst ? (

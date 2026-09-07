@@ -15,7 +15,7 @@ export type Crumb = { label: string; href?: string };
  * available again.
  *
  * The one focus-visible exception the dark tone used to need — an explicit
- * white ring plus `outline-hidden` — is gone with it. Every link here now
+ * white ring plus a suppressed outline — is gone with it. Every link here now
  * takes the sitewide `:focus-visible` rule from `app/globals.css` like any
  * other crimson link, and needs nothing of its own.
  */

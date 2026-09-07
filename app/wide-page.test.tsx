@@ -87,7 +87,7 @@ describe("WidePage's split masthead", () => {
     // stranding a short standfirst in the middle of the row — see
     // docs/decisions.md, "The masthead splits into heading and standfirst".
     // justify-between is what anchors the standfirst's right edge instead;
-    // the standfirst's own max-w-[20rem] (checked per route, not here) is
+    // the standfirst's own width cap (checked per route, not here) is
     // what stops that anchor reintroducing the empty-middle problem.
     render(
       <WidePage heading={heading} standfirst={standfirst}>

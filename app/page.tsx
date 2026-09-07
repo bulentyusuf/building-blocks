@@ -127,7 +127,7 @@ function HeroPost({
           two-column grid below. Left carries the headline and the byline;
           right carries the standfirst and the tag row.
 
-          md:grid-cols-2 md:gap-x-16 lg:gap-x-32 matches the card grid beneath
+          The grid declared below matches the card grid beneath
           the divider, aligning the hero standfirst's left edge and width
           directly with the right-hand card below it.
 
@@ -136,7 +136,7 @@ function HeroPost({
           block and the excerpt), a clear step above the h2's own mb-4 to the
           byline so the mobile stack reads as two groups rather than four
           equally-weighted items. md:gap-y-0 drops it once the grid goes
-          two-column, where gap-x-16 / lg:gap-x-32 is the only gap this row has. */}
+          two-column, where the horizontal gaps are the only gap this row has. */}
       <div className="grid gap-y-6 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 md:gap-y-0">
         <div>
           {/* An h2, and so is every card title below, because the listing no
@@ -151,8 +151,8 @@ function HeroPost({
               published titles in this 566px column: 48px holds two lines for
               a short title but runs to four for a long one, and three lines
               is already the four-line failure's twin as far as a hero
-              reads. 40px holds every one of the six to two lines. lg:text-4xl
-              (36px, on-scale) also clears two lines in this column and is
+              reads. 40px holds every one of the six to two lines. The 36px
+              on-scale step also clears two lines in this column and is
               the fallback if 2.5rem is ever found objectionable; do not go
               back to 48px in a split column at this container width. */}
           <h2 className="mb-4 text-2xl md:text-3xl lg:text-[2.5rem] leading-tight text-pretty">
@@ -242,11 +242,11 @@ export default async function Page() {
         </h1>
       }
       // The split masthead's standfirst: text-lg (18px) and text-brand-muted
-      // like every other route's. max-w-[20rem] plus text-right is M5 — see
+      // like every other route's. The width cap plus right alignment is M5 — see
       // app/wide-page.tsx — and SITE_DESCRIPTION is written to hold two lines
       // at that width, same as every other route's standfirst.
       //
-      // md: on both max-w-[20rem] and text-right: below md there is no split
+      // The md: prefix on both is load-bearing: below md there is no split
       // row for either to be anchored against (WidePage stacks with flex-col),
       // so unprefixed they shrank this standfirst to a 320px box and
       // right-aligned its text inside it — a phantom right margin 30px short

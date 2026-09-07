@@ -107,7 +107,7 @@ export default async function AuthorPage({
       heading={
         <div className="flex items-center gap-6">
           {author.picture?.url && (
-            // No ring. This used to carry ring-white/25 so a dark-toned
+            // No ring. This used to carry a faint white ring so a dark-toned
             // portrait kept an edge against the navy band; on cream, like the
             // authors index card's own 80px portrait, a plain circle already
             // separates from the page.

@@ -15,11 +15,11 @@
  * standfirst in the middle. That part was already fixed by wrapping the slot
  * (`app/wide-page.tsx`) before this change. The deeper problem survived the
  * fix: with the caption as the standfirst column's last line,
- * `md:items-baseline-last` aligned the heading against the CAPTION's
+ * Last-baseline alignment put the heading against the CAPTION's
  * baseline rather than the standfirst's, which is what actually shoved the
  * standfirst upward relative to the heading — clutter was never the real
  * complaint, misalignment was. Inline in the `h1`, the heading has exactly
- * one baseline again, so `items-baseline-last` closes against the
+ * one baseline again, so that alignment closes against the
  * standfirst's own last line, which is what the layout was tuned for.
  *
  * The old objection to putting position in the header — recorded in the
