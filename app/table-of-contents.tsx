@@ -35,7 +35,16 @@ function TocNav({
 }) {
   return (
     <nav aria-label="Table of contents" className="text-sm">
-      <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block">
+      {/* xl:ml-[13px] lines this label's first glyph up with the link text
+          below: the <ul>'s border-l (1px) plus each link's own border-l
+          -ml-px pl-3 puts link text 13px in from the nav's left edge — 1px
+          of border the -ml-px doesn't cancel, plus 12px of padding. Measured
+          in a real browser with the actual fonts loaded rather than assumed,
+          since tracking-widest and the uppercase transform could have shifted
+          the visual glyph edge off the box edge; here they don't. Only
+          xl:block ever renders this element, so the unprefixed properties
+          stay as they are and only the indent is xl-scoped. */}
+      <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block xl:ml-[13px]">
         On this page
       </p>
       <ul className="space-y-2 border-l border-brand-dark/10">
