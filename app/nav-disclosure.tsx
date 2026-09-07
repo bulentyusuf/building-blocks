@@ -84,7 +84,10 @@ export default function NavDisclosure({
   }, []);
 
   return (
-    <details ref={detailsRef} className="md:hidden">
+    // group: unused in this file, but it lets the trigger's icon in
+    // layout.tsx respond to this element's [open] attribute via
+    // group-open:, the same mechanism the table of contents chevron uses.
+    <details ref={detailsRef} className="group md:hidden">
       {children}
     </details>
   );

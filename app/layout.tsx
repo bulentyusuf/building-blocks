@@ -186,6 +186,16 @@ function Header() {
               aria-label="Menu"
               className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-1 -m-1"
             >
+              {/* Two icons rather than one morphing path. The menu closes on a
+                  second tap, on Escape and on an outside tap, but the trigger
+                  gave no sign it was a toggle at all — three static lines
+                  whether open or closed. The X is the only thing on screen
+                  telling a reader how to get out.
+
+                  group-open: reads the [open] attribute on the <details> in
+                  nav-disclosure.tsx, the same hook the table of contents
+                  chevron uses. No JS, no state, and the correct icon is in
+                  the server-rendered markup before hydration. */}
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -193,11 +203,40 @@ function Header() {
                 stroke="currentColor"
                 strokeWidth={2}
                 strokeLinecap="round"
-                className="h-5 w-5"
+                className="h-5 w-5 group-open:hidden"
               >
                 <path d="M3 6h18M3 12h18M3 18h18" />
               </svg>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                className="hidden h-5 w-5 group-open:block"
+              >
+                <path d="M5 5l14 14M5 19L19 5" />
+              </svg>
             </summary>
+            {/* Dims the page under the open menu. The panel is opaque but nothing
+                separated it from the content behind it, so the two read as competing
+                layers rather than a menu over a page.
+
+                absolute + top-full rather than fixed inset-0: the containing block is
+                the sticky header, so top-full starts the scrim immediately below the
+                header bar. That keeps the header, the wordmark and the close X at full
+                brightness, which matters because the X is the way out.
+
+                pointer-events-none is load-bearing, not defensive. The scrim is a
+                child of the <details>, so if it captured taps the outside-tap handler
+                in nav-disclosure.tsx would see details.contains(target) === true and
+                refuse to close. Letting taps pass through leaves that behaviour
+                exactly as it is. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
+            />
             <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-lg border border-white/10 bg-brand-header px-4 py-3 shadow-lg">
               <ul className="space-y-2">
                 <li>
