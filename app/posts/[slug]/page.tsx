@@ -222,7 +222,7 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          <div className="mb-10">
+          <div className="mb-8">
             <CoverImage
               image={post.coverImage}
               wide
