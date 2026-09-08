@@ -40,13 +40,8 @@ export async function generateMetadata({
 }) {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  // Deliberately the same call the page component makes below, not the slimmer
-  // getPost. Both are wrapped in React's cache(), so the two run once per
-  // request and the page reuses this result instead of refetching. Calling
-  // getPost here would be a smaller query but a second one, since cache() only
-  // dedupes identical calls — which is how this page ended up issuing two
-  // requests for one post. getPost is still the right helper where nothing else
-  // fetches the post in the same pass, as in opengraph-image.tsx.
+  // Deliberately the same call the page component makes below, not the
+  // slimmer getPost. [→ `single-entry-cache`]
   const { post } = await getPostAndMorePosts(slug, isEnabled);
 
   if (!post) {
@@ -94,12 +89,9 @@ export default async function PostPage({
 }) {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  // getAllPosts alongside the post itself, because a pill may only render if
-  // its tag clears the threshold across the whole site, and that count cannot
-  // be derived from one post. getPostAndMorePosts fetches the same list
-  // internally to rank related posts, so this is the second of two calls in one
-  // render. getAllPosts is cache()-wrapped and both pass the same isDraftMode,
-  // so the second dedupes.
+  // getAllPosts alongside the post itself: a pill only renders if its tag
+  // clears the threshold across the whole site, which cannot be derived from
+  // one post. [→ `post-scheduling`, `fetcher-cache`]
   const [{ post, morePosts }, allPosts] = await Promise.all([
     getPostAndMorePosts(slug, isEnabled),
     getAllPosts(isEnabled),
@@ -173,28 +165,19 @@ export default async function PostPage({
     : [{ label: "Home", href: "/" }, { label: post.title }];
 
   return (
-    // The masthead's contents are the trail and the title; the excerpt stays
-    // where it is, in the body column below. A listing standfirst describes a
-    // collection to someone deciding whether to enter it, whereas a post
-    // excerpt introduces an article to a reader who has already arrived.
-    // No contentOwnsLeading, for the same reason home dropped it: the cover
-    // used to pull up 64px across the band's bottom edge and supply its own
-    // leading, and the pull-up went with the band. The article opens with a
-    // bare cover carrying no top margin, so it takes the shell's gap.
+    // The excerpt stays in the body column below, not the masthead — a
+    // listing standfirst describes a collection to someone deciding whether
+    // to enter it, a post excerpt introduces an article to a reader who has
+    // already arrived. No contentOwnsLeading: the cover used to pull up 64px
+    // across the band's bottom edge for its own leading; that pull-up is
+    // gone. [→ `band-retirement`]
     <WidePage
       crumbs={crumbs}
-      // No standfirst prop — see the comment above. With none, the split
-      // masthead has nothing to split against, so the heading falls back to
-      // the plain stack every narrow route uses too.
+      // No standfirst prop: the heading falls back to the plain stack every
+      // narrow route uses too.
       heading={
-        // data-pagefind-body a second time, because the h1 has left the
-        // article and Pagefind indexes only what sits inside a body region.
-        // meta.title survives without this, since Pagefind reads the page's
-        // first h1 wherever it is, so the regression is invisible in the
-        // results list. What is lost is the title's WORDS, which drop out of
-        // the searchable text and take every title-only term with them.
-        // Pagefind concatenates multiple body regions into one fragment, so
-        // this restores the index to exactly what it held before the move.
+        // data-pagefind-body a second time — the h1 has left the article, and
+        // Pagefind indexes only what sits inside a body region. [→ `pagefind-index-scope`]
         <h1
           data-pagefind-body
           className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty"
@@ -207,14 +190,13 @@ export default async function PostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
-      {/* data-pagefind-body scopes the Pagefind index to post content only.
-          Pages without this attribute are excluded from search entirely.
-          data-pagefind-meta="url" records the clean, extensionless route as the
-          result URL: Pagefind indexes the prerendered `<slug>.html` files, so
-          its derived url carries a `.html` that 404s on Next's routes. The
-          Component UI has no JS layer to rewrite it, so the fix lives in the
-          index — the result template reads `meta.url` in preference to that
-          derived url. */}
+      {/* data-pagefind-body scopes the index to post content only; pages
+          without it are excluded from search entirely. [→ `pagefind-index-scope`]
+          data-pagefind-meta="url" records the clean, extensionless route as
+          the result URL: Pagefind indexes the prerendered `<slug>.html`
+          files, so its derived url carries a `.html` that 404s on Next's
+          routes, and the Component UI has no JS layer to rewrite it — the
+          result template reads `meta.url` in preference instead. */}
       <article
         data-pagefind-body
         data-pagefind-meta="url[data-url]"
@@ -231,17 +213,12 @@ export default async function PostPage({
             />
           </div>
         )}
-        {/*
-          Grid begins AFTER the cover image. The header block above
-          (category, title, image) is full-width.
-          Below xl: one flex column, reordered so the byline sits before the
-          table of contents and the body follows it — Head, then Aside, then
-          Body, regardless of source order.
-          At xl+: sidebar (TOC + AI) in the left track spanning both rows,
-          Head and Body stacked in the right track in that order — placed
-          explicitly by grid-column/row rather than relying on source order,
-          since Head now precedes Aside in the markup.
-        */}
+        {/* Grid begins AFTER the cover image; the header block above is
+          full-width. Below xl: one flex column, reordered to Head, Aside,
+          Body regardless of source order. At xl+: sidebar spans both rows in
+          the left track, Head and Body stack in the right — placed
+          explicitly by grid-column/row since Head precedes Aside in the
+          markup. */}
         <div className="flex flex-col xl:grid xl:grid-cols-[1fr_3fr] xl:gap-x-10">
           {/* Head — standfirst and byline. */}
           <div className="order-1 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-1 xl:mx-0">
@@ -254,12 +231,10 @@ export default async function PostPage({
           </div>
 
           {/* Aside — TOC always rendered (collapsed disclosure on mobile,
-              sticky open panel at xl+). ExploreWithAI stays xl-only per the
-              separate mobile-AI decision. xl:row-span-2 keeps the aside as
-              tall as Head+Body together, which is what the xl:sticky wrapper
-              inside it depends on. */}
-          {/* TOC repeats every heading; excluded so headings are not
-              double-weighted in search. */}
+              sticky open panel at xl+). ExploreWithAI stays xl-only.
+              xl:row-span-2 keeps the aside as tall as Head+Body together,
+              which the xl:sticky wrapper inside it depends on.
+              [→ `pagefind-index-scope`] */}
           <aside
             data-pagefind-ignore
             className={`order-2 mx-auto w-full max-w-2xl xl:order-none xl:col-start-1 xl:row-start-1 xl:row-span-2 xl:mx-0 xl:max-w-none xl:mb-0${hasTableOfContents(headings) ? " mb-9" : ""}`}
@@ -274,18 +249,18 @@ export default async function PostPage({
 
           {/* Body — prose, tags, author bio. */}
           <div className="order-3 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-2 xl:mx-0">
-            {/* text-pretty on the prose container inherits into every child —
-                paragraphs and in-body headings alike — so line breaking just
-                avoids a lone last word, without the aggressive re-balancing of
-                text-wrap: balance. One class covers the whole article body.
+            {/* text-pretty on the prose container inherits into every
+                child — paragraphs and in-body headings alike — avoiding a
+                lone last word without text-wrap: balance's re-balancing.
+                One class covers the whole article body.
 
-                The heading sizes are em, so they track the prose base. h2 sits
-                at 1.6em rather than the 1.75em it carried before the base moved
-                to 1.125rem: the plugin keys a heading's margins to its own
+                Heading sizes are em, tracking the prose base: h2 sits at
+                1.6em, not the 1.75em it carried before the base moved to
+                1.125rem — the plugin keys a heading's margins to its own
                 font-size (2em above, 1em below), so an oversized h2 inflates
-                the space around it as well as the type. At 1.6em the gap above
-                lands at 57.6px, near where it sat before the bump, and the
-                h1-to-h2 step widens back out. */}
+                the space around it too. At 1.6em the gap above lands at
+                57.6px, near where it sat before, and the h1-to-h2 step
+                widens back out. */}
             <div className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h3:font-[600] prose-h4:text-[1.15em]">
               <RichText
                 content={post.content}
@@ -293,17 +268,15 @@ export default async function PostPage({
                 highlighted={highlighted}
               />
             </div>
-            {/* Below the body rather than in the sidebar: the sidebar is
-                xl-and-up only, so tags placed there would vanish on the
-                viewports most people read on. Every pill links into the /tags
-                glossary, and only tags that clear the threshold are rendered —
-                a hidden tag would otherwise link to an anchor that is not on
-                that page.
+            {/* Below the body, not the sidebar: the sidebar is xl-and-up
+                only, so tags there would vanish on the viewports most people
+                read on. Only tags clearing the threshold render, or a pill
+                would link to a page that doesn't exist.
 
-                The gap below the pills is not set here — it comes from the
-                author block's top margin, which drops to mt-6 when tags are
-                present so both sides of the band are 24px. Changing pt-6 here
-                without changing that leaves the row lopsided. */}
+                The gap below the pills isn't set here — the author block's
+                top margin drops to mt-6 when tags are present, so both sides
+                are 24px. Change pt-6 without that and the row goes
+                lopsided. */}
             {tags.length > 0 && (
               <nav
                 aria-label="Tags"

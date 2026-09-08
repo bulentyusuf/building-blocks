@@ -55,15 +55,8 @@ function AuthorLink({ author }: { author: AvatarAuthor }) {
 
 /**
  * The byline: one to three co-authors, portrait(s) and name(s), plus optional
- * meta beside them (a dateline).
- *
- * The array order is the credit order. A single author renders exactly as it
- * always has — one disc, no ring, name and meta beside it — because that is
- * every post on the site today and it must not visibly change. Two or three
- * authors get an overlapping portrait stack, the first (lead) author in
- * front, and their names on one line joined by an ampersand rather than
- * moved below the discs, matching the single-author shape as closely as the
- * extra name allows.
+ * meta beside them (a dateline). Array order is the credit order, lead first.
+ * [→ `authors-array`]
  *
  * The empty-authors case is handled here, not at the call sites. Both callers
  * pass meta unconditionally and let this decide. Do not add an
@@ -100,16 +93,11 @@ export default function Avatar({
     <div className="flex items-center">
       {stacked ? (
         // row-reverse plus a reversed authors array puts the FIRST (lead)
-        // author's disc in front, with no z-index and no stacking context:
-        // the last element in DOM order sits visually first in a reversed
-        // row. A 14px negative right margin overlaps every disc except the
-        // last one RENDERED, the lead author, because the row is reversed.
-        // Each disc carries its own ring in the page background colour —
-        // without it the overlap reads as one shape rather than two
-        // portraits. ring-brand-bg rather than a hardcoded hex because the
-        // ring has to follow the theme; checked against both schemes and
-        // against both routes this renders on (post page, home hero), which
-        // share the same bg-brand-bg body background.
+        // author's disc in front, no z-index needed: the last DOM element
+        // sits visually first in a reversed row. [→ `authors-array`]
+        // Each disc carries its own ring in the page background colour, or
+        // the overlap reads as one shape rather than two portraits.
+        // ring-brand-bg rather than a hardcoded hex so it follows the theme.
         <div className="mr-4 flex shrink-0 flex-row-reverse">
           {[...authors].reverse().map((author) => (
             <div
@@ -133,10 +121,8 @@ export default function Avatar({
           {stacked ? (
             authors.map((author, i) => (
               <Fragment key={author.slug ?? author.name}>
-                {/* The separator sits outside the anchors and before each
-                      name rather than after it, so the final item needs no
-                      special case. Ampersand, not "and", and no serial comma
-                      before it. */}
+                {/* Separator outside the anchors, before each name so the
+                      final item needs no special case. [→ `authors-array`] */}
                 {i > 0 && (i === last ? " & " : ", ")}
                 <AuthorLink author={author} />
               </Fragment>
