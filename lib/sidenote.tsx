@@ -27,8 +27,8 @@ const bodyOptions = {
 //
 // 1. Every element is phrasing content: <span>, <sup>, <input>, <label>. Do
 //    not introduce <details>, <summary> or <p> here — each closes an open
-//    paragraph in the parser, and `display: inline` cannot undo a parse-time
-//    split.
+//    paragraph in the parser and desyncs React's tree from the parsed DOM;
+//    `display: inline` cannot undo a parse-time split.
 // 2. Below 2xl the note opens with no JavaScript — a visually hidden checkbox
 //    driving `:checked ~ .sidenote-body` in CSS, not a button driving React
 //    state. Do not restore a <button>. The cost, accepted deliberately, is
