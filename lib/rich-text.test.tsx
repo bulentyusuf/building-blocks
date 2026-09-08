@@ -863,7 +863,7 @@ describe("prompt block thumbnail", () => {
       },
     }) as unknown as Content;
 
-  it("renders the thumbnail stacked below sm and floated from sm up", () => {
+  it("renders the thumbnail stacked below 480px and floated from 480px up", () => {
     const html = renderToStaticMarkup(
       <RichText
         content={promptContent({
@@ -875,7 +875,7 @@ describe("prompt block thumbnail", () => {
     );
 
     const span = html.match(/<span aria-hidden="true" class="([^"]*)"/);
-    expect(span?.[1]).toContain("sm:float-left");
+    expect(span?.[1]).toContain("min-[480px]:float-left");
     expect(span?.[1]?.split(" ")).not.toContain("hidden");
   });
 

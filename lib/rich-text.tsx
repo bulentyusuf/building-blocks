@@ -369,18 +369,27 @@ export function RichText({
               </figcaption>
               <div className="flow-root whitespace-pre-wrap break-words bg-gray-50 p-4 font-mono text-[0.78em] text-gray-800 dark:bg-white/5 dark:text-brand-dark">
                 {entry.image?.url && (
-                  /* Decorative. Floats left from sm up so text wraps around
-                     it; below sm it stacks above the prompt text instead,
-                     because a fixed 78px column inside this p-4 block leaves
-                     too narrow a measure to read comfortably at phone
-                     widths. mt-2 in the floated case is a nudge tuned by eye,
-                     not a computed constant: it corrects for the text's
-                     half-leading against the image box's none, and the exact
-                     gap depends on which font in the font-mono stack the
-                     browser resolves. */
+                  /* Decorative. Floats left from 480px up so text wraps
+                     around it; below that it stacks above the prompt text
+                     instead, because a fixed 78px column inside this p-4
+                     block leaves too narrow a measure to read comfortably at
+                     phone widths. The text measure beside the float is the
+                     viewport minus 164px (40px of gutters, 2px of borders,
+                     32px of padding, 78px of image, 12px of right margin).
+                     At 320px that is 156px, about 17 characters, which is why
+                     the image stacks there. 480px was chosen because it
+                     leaves about 316px, about 35 characters, roughly the same
+                     measure that reads acceptably stacked. Both character
+                     counts assume about 8.9px per character, measured from a
+                     deployed screenshot, and will shift if the mono stack
+                     resolves to a different font. mt-2 in the floated case is
+                     a nudge tuned by eye, not a computed constant: it
+                     corrects for the text's half-leading against the image
+                     box's none, and the exact gap depends on which font in
+                     the font-mono stack the browser resolves. */
                   <span
                     aria-hidden="true"
-                    className="relative mb-3 block h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 sm:float-left sm:mt-2 sm:mr-3 sm:mb-1"
+                    className="relative mb-3 block h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 min-[480px]:float-left min-[480px]:mt-2 min-[480px]:mr-3 min-[480px]:mb-1"
                   >
                     <ContentfulImage
                       src={entry.image.url}
