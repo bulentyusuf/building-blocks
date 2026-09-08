@@ -1,24 +1,13 @@
 @import "tailwindcss";
 
 /*
-  Keep the prose out of the bundle.
+  Keep the prose out of the bundle. [→ `tailwind-scanning`]
 
-  Tailwind v4 detects sources automatically: every file not excluded by
-  .gitignore is scanned for class-name candidates, markdown included. So a
-  utility merely NAMED in documentation is generated as if it were used —
-  docs/decisions.md's line explaining why a `scroll-mt-*` utility must not
-  coexist with scroll-padding was, by itself, emitting that utility into
-  production CSS after every component using it had been removed.
-  Documentation should not be able to change the artefact it documents.
-
-  Note this comment carefully does not spell the class out. Prose files can be
-  excluded wholesale, as below; source files cannot, so a literal class name in
-  a comment here would regenerate the very rule this removes. Ordinary English
-  that happens to match a utility is a different matter — see CLAUDE.md.
-
-  These three carry class names in prose and ship no markup of their own.
-  llms.txt and the READMEs describe the site to other tools; app/ and lib/ are
-  still scanned normally, so nothing a component uses is affected.
+  These three carry class names in prose and ship no markup of their own, so
+  they're excluded from Tailwind's automatic source detection; app/ and lib/
+  stay scanned normally. This comment deliberately does not spell out the
+  utility it exists to keep out — see CLAUDE.md on why naming one here would
+  defeat the exclusion below it.
 */
 @source not "../CLAUDE.md";
 @source not "../docs/decisions.md";
@@ -26,13 +15,9 @@
 
 @plugin '@tailwindcss/typography';
 
-/* The wordmark is the half that comes back. Home names itself in the band, so
-   the bar would repeat it about 60px above — until the reader scrolls the
-   masthead out of view, at which point the wordmark is the only wayfinding
-   left in the row and app/wordmark-fade.tsx fades it in.
-
-   A :has() rather than a usePathname keeps the header a server component and
-   ships no JS for the STATE this rule encodes. The fade is the one
+/* Home names itself in the masthead, about 60px above the bar, so the
+   wordmark hides here until the reader scrolls the masthead out of view.
+   [→ `wide-page-shell`] The fade (app/wordmark-fade.tsx) is the one
    enhancement that needs a script, and it degrades to exactly this rule, so
    scripts-off and pre-hydration readers get the steady hidden state rather
    than a broken half of the animated one. */
@@ -84,70 +69,40 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
 }
 
 @theme {
-  /* Two faces, three jobs. Display is headings and mastheads. Body is
-     everything you read, prose and the meta around it. UI is the display face
-     at smaller sizes — chrome that should not compete with prose: nav, labels,
-     pills, counts, an enumerated list, see docs/decisions.md.
-     --default-font-family is what Preflight puts on <body>, so body copy
-     flips with one token, and font-display / font-body / font-ui are
-     generated from these by Tailwind. Nothing names a family directly.
-
-     --font-ui resolving to the same family as --font-display is a choice, not a
-     redundancy to tidy away: the roles stay separate, so handing UI back to its
-     own face is one line here rather than a hunt through components. */
+  /* Three roles, generated from these tokens by Tailwind; --default-font-family
+     is what Preflight puts on <body>. Nothing names a family directly.
+     [→ `type-roles`] */
   --font-display: var(--font-bricolage);
   --font-body: var(--font-literata);
   --font-ui: var(--font-bricolage);
   --default-font-family: var(--font-body);
 
   --color-brand-crimson: #9e2238;
-  /* Chrome colour, carried by the sticky bar AND the footer. One token for
-     both, which is the point of the aubergine: the bar was #1E3A8A and the
-     footer #241B1D, 1.62 apart and in different hue families, so the top and
-     bottom of every page read as two unrelated surfaces. White on this is
-     15.66:1.
-
-     Retired with this change: --color-brand-band (the masthead band, #0F1C42
-     light / #1B2F6B dark) and --color-footer-bg (#241B1D light / #2E2420
-     dark). Three chrome tokens across two hue families become one.
-
-     The band could not survive this colour, and that is why it went first
-     rather than as a matter of taste. The repo's chrome ramp is a 1.60:1 step
-     between bar and band, band darker. #2B1C3F is dark enough that pure black
-     beneath it reaches only 1.34:1, so no band value fits under it at any hue.
-     Dark mode fails from the other side — see the dark override below.
-
-     Literal twins live in lib/constants.ts as BRAND_HEADER_COLOR and
-     BRAND_HEADER_COLOR_DARK, because the viewport themeColor and the PWA
-     manifest cannot read a custom property. lib/palette-contrast.test.ts holds
-     them to these values. */
+  /* Chrome colour, carried by the sticky bar AND the footer — one token for
+     both. White on this is 15.66:1. [→ `chrome-aubergine`] Literal twins live
+     in lib/constants.ts as BRAND_HEADER_COLOR and BRAND_HEADER_COLOR_DARK,
+     because the viewport themeColor and the PWA manifest cannot read a custom
+     property; lib/palette-contrast.test.ts holds them to these values. */
   --color-brand-header: #2b1c3f;
 
   --color-brand-dark: #241b1d;
   --color-brand-bg: #faf5f1;
   --color-brand-muted: #6b5a52;
 
-  /* Divider hairline. One token for every rule between list items, cards, and
-     panels, so the value inverts with the scheme instead of each component
-     carrying its own dark: variant. Frame borders (the border-2 around images)
-     are a heavier, separate role and deliberately do not use this. Neither
-     does a control boundary — see --color-control-edge below. */
+  /* Divider hairline, inverting with the scheme. [→ `border-roles`] Frame
+     borders and the control edge are separate roles and do not use this. */
   --color-hairline: #e5e7eb;
 
   /* The closed boundary around an interactive control, currently only the tag
-     pills. A third role alongside dividers and image frames, and not a divider
-     despite looking like one: a rule BETWEEN things is decorative and exempt
-     from contrast rules, whereas this edge is the only thing identifying the
-     control. Pill text is brand-muted, the same colour as the dates and meta
-     beside it, so with the edge invisible a pill is indistinguishable from
-     static text. On --color-hairline it sat at 1.14:1 (light) and 1.47:1
+     pills — not a divider, despite borrowing the token for years.
+     [→ `border-roles`] Pill text is brand-muted, the same colour as the dates
+     and meta beside it, so with the edge invisible a pill is indistinguishable
+     from static text. On --color-hairline it sat at 1.14:1 (light) and 1.47:1
      (dark); at 70% of the muted ink it clears WCAG 1.4.11's 3:1 in both
-     (3.15:1 and 4.37:1), which lib/tag-pill.test.ts asserts against these very
-     tokens.
+     (3.15:1 and 4.37:1).
 
-     Two literal values with a dark override, exactly as hairline does, rather
-     than color-mix() over var(--color-brand-muted). That derivation reads
-     better and compiles worse: Tailwind flattens a var() inside color-mix()
+     Two literal values with a dark override, rather than color-mix() over
+     var(--color-brand-muted): Tailwind flattens a var() inside color-mix()
      into an @supports (color: color-mix(in lab, red, red)) block with a
      LITERAL light-mode fallback outside it, so any engine without color-mix
      would paint the light edge on the dark page and lose the contrast this
@@ -233,17 +188,10 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
     --color-brand-dark: #f2eae4; /* warm off-white ink */
     --color-brand-muted: #b3a49c; /* lifted so meta text keeps AA on dark */
     --color-brand-crimson: #ec8494; /* lifted so links stay vivid + AAA on dark */
-    /* Lifted for the same reason the old bar navy was: a dark block cannot
-       read on a dark page. #2B1C3F behind it would sit at 1.02:1 against the
-       #17110F page, which is no block at all. #3B2A52 gives 1.46:1, clearing
-       the 1.4 block-visibility floor by 0.06 — the narrowest margin anywhere
-       in this palette, which is why lib/palette-contrast.test.ts asserts it.
-       White on it is 12.81:1.
-
-       That 0.06 is also the second half of why the band went first: a band a
-       1.55 step darker than this would sit BELOW the page and invert. Making
-       room for one would mean lifting this to roughly 2.18 against the page,
-       which is a markedly louder violet. */
+    /* #2B1C3F would sit at 1.02:1 on this page, no block at all; #3B2A52
+       gives 1.46:1, clearing the 1.4 floor by 0.06 — the narrowest margin in
+       this palette, why lib/palette-contrast.test.ts asserts it. White on it
+       is 12.81:1. [→ `chrome-aubergine`] */
     --color-brand-header: #3b2a52;
 
     /* Warm off-white at low alpha, matching the ink. The light #e5e7eb reads
@@ -280,18 +228,13 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
 }
 
 /*
-  All top-level headings inherit the display face (Bricolage Grotesque) sitewide. This is
-  the single mechanism — do not add per-component font-display classes. h4 and
-  below stay in the body face deliberately, for small UI headings.
+  All top-level headings inherit the display face sitewide — the single
+  mechanism; do not add per-component font-display classes. h4 and below stay
+  in the body face for small UI headings. [→ `type-roles`] This rule is also
+  why the footer's column labels are <p>, not <h4>. [→ `announced-links`]
 
-  This rule is why the footer's column labels are <p> rather than headings: as
-  h4 they skipped a level after the page's h2s, and promoting them to h2 to fix
-  that would have pulled them into Bricolage. See docs/decisions.md.
-
-  A grotesque needs more weight than a serif to hold the same presence, and less
-  manual tracking: Bricolage's opsz axis does the optical fitting that the
-  previous face needed compensating for by hand. Both values are starting points
-  to settle on the preview at the largest heading step, not fixed numbers.
+  Weight and tracking here are starting points to settle on the preview at the
+  largest heading step, not fixed numbers.
 */
 @layer base {
   h1,
@@ -352,11 +295,10 @@ html {
 }
 
 /*
-  One focus indicator for the whole site. Crimson picks up the accent token, so
-  it inverts with the scheme automatically (#9E2238 light, #EC8494 dark) and
-  clears 3:1 against both page backgrounds. Elements sitting on the sticky bar
-  or the footer override this locally with a white ring, because crimson on the
-  aubergine chrome does not clear contrast (2.04:1) — see app/layout.tsx.
+  One focus indicator for the whole site. Crimson clears 3:1 against both page
+  backgrounds (#9E2238 light, #EC8494 dark) and inverts with the scheme
+  automatically. Chrome overrides this locally with a white ring, since
+  crimson on the aubergine chrome is only 2.04:1. [→ `focus-indicator`]
 */
 @layer base {
   :focus-visible {
@@ -374,24 +316,12 @@ html {
 }
 
 /*
-  Tufte-style sidenotes (lib/sidenote.tsx). Every element stays phrasing content
-  so the reference never terminates its paragraph. Below 2xl the note is
-  collapsed behind a checkbox toggle; at 2xl+ there is room outside the
-  max-w-2xl prose column, so it floats into the right margin and the toggle goes
-  away.
+  Tufte-style sidenotes (lib/sidenote.tsx). [→ `sidenotes`] Below 2xl the note
+  collapses behind a checkbox toggle; at 2xl+ it floats into the right margin
+  outside the max-w-2xl prose column and the toggle goes away.
 
-  The open state is a :checked sibling selector rather than a class React sets,
-  so a note opens with scripts off and before hydration. Keep it that way — the
-  component ships no client JavaScript, and reverting to a JS toggle would make
-  note text unreadable without it.
-
-  All responsive display is owned here, not by Tailwind utilities in the markup.
-  These rules are unlayered and so outrank anything in the utilities layer — a
-  `2xl:hidden` in the component would silently lose to them, which is exactly the
-  bug that showed both markers at once.
-
-  counter-increment lives on the always-displayed wrapper, not on either marker,
-  since a display:none element does not advance a counter.
+  counter-increment lives on the always-displayed wrapper, not on either
+  marker, since a display:none element does not advance a counter.
 */
 .sidenote-wrap {
   display: inline;
@@ -405,10 +335,9 @@ html {
   color: var(--color-brand-crimson);
 }
 
-/* The state lives here. Visually hidden rather than display:none, because a
-   display:none control cannot be focused or reached by keyboard — it is CSS's
-   own toggle, not a decorative input. At 2xl+ it is removed outright, where
-   there is nothing to operate. */
+/* Visually hidden, not display:none — display:none cannot be focused or
+   reached by keyboard. [→ `sidenotes`] Removed outright at 2xl+, where there
+   is nothing to operate. */
 .sidenote-checkbox {
   position: absolute;
   width: 1px;
@@ -517,14 +446,11 @@ html {
 }
 
 @utility prose {
-  /* The plugin defaults to max-width: 65ch, and `ch` is the advance width of
-     the current font's zero glyph — so the measure drifts with the body face.
-     Inter's zero is 0.6309em and Literata's is 0.5790em, so swapping the body
-     face narrowed this column by 8% (656px to 602px at a 16px root) with no
-     width anywhere in the diff to point at. Every prose container is already
-     wrapped in a max-w-2xl parent, which declares the intended measure once, in
-     rem; neutralising the default hands it back. Do not add a rem value here as
-     well — one number, one place. app/globals.measure.test.ts guards this. */
+  /* Plugin measures in `ch`, keyed to the current font's zero glyph, so it
+     drifts with the body face — narrowed this column by 8% (656px to 602px at
+     a 16px root) when it last moved. [→ `prose-measure`] Do not add a rem
+     value here too; the measure lives on the max-w-2xl parent, one number in
+     one place. app/globals.measure.test.ts guards this. */
   max-width: none;
 
   /* Bumped from the plugin's 1rem. Literata's x-height is 0.507em against
@@ -563,7 +489,7 @@ html {
     padding-inline-end: 0;
   }
 
-  /* Map the typography plugin's slate palette to brand tokens (F9). This block
+  /* Map the typography plugin's slate palette to brand tokens. This block
      already outranks the plugin's own `.prose` variable defaults by source
      order, so setting the variables here re-tints every prose-inherited style
      (body, links, bold, bullets, hr, captions, table borders) at once. Code and
