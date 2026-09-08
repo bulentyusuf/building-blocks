@@ -2037,11 +2037,56 @@ is worth acting on:
   Contorting code to avoid English is a far worse trade than a few dozen bytes.
 
 **A caution on verifying this.** Compiling `app/globals.css` locally through
-`@tailwindcss/postcss` reports every one of these as absent, including the two
-that demonstrably ship — its scan root is narrower than `next build`'s. That
-false negative is how an incomplete fix was once reported as complete. The only
-trustworthy check is the deployed bundle:
+`@tailwindcss/postcss` and grepping for one class reports every one of these as
+absent, including the two that demonstrably ship — its scan root is narrower
+than `next build`'s. That false negative is how an incomplete fix was once
+reported as complete.
+
+The deployed bundle is what settles it. The command that does that:
 
 ```
-curl -s https://beuseful.net | grep -oE '/_next/static/chunks/[a-z0-9]+\.css'
+css=$(curl -s https://beuseful.net | grep -oE '/_next/static/[^"]+\.css' | head -1)
+curl -s "https://beuseful.net$css" | grep -o 'scroll-margin-top[^;}]*'
 ```
+
+The path is `/_next/static/immutable/chunks/<hash>.css` and the hash carries
+digits and hyphens, so an earlier version of this command anchored on
+`/_next/static/chunks/[a-z0-9]+\.css` and matched nothing at all for as long as
+it stood here.
+
+### Reopened, September 2026
+
+Three things were established by experiment rather than reasoning, and one of
+them narrows this entry.
+
+**`app/globals.css` is not scanned.** Tailwind excludes the stylesheet hosting
+its own `@import "tailwindcss"` from its content scan. Candidates planted in a
+comment there generate nothing; the same candidates in a comment in
+`app/layout.tsx` generate real rules. So the utility this file's scroll-offset
+note names is inert, and may stay. The rule against naming a literal applies to
+`.ts` and `.tsx` under `app/` and `lib/`, not to the stylesheet.
+
+**A variant prefix is not a fix.** `app/page.tsx` carried
+`md:grid-cols-2 md:gap-x-16` in prose and still generated bare `.grid-cols-2`
+and `.gap-x-16`. Removing the name is the only reliable answer.
+
+**Fifteen utilities were shipping unused** (#515), each named by a sentence
+describing markup that had been removed or rejected — one of them under a
+comment opening "No ring. This used to carry…". Clearing them took the deployed
+stylesheet from 68,608 to 67,568 bytes. `lib/toc-active.test.ts` saw none of it:
+it pinned its needle to one literal value and its second check matched only
+inside `className=`.
+
+**So a local compile is now used, in one specific shape.** A differential guard,
+landing with the implementation, compiles the stylesheet twice, once against the
+scanned tree and once against a comment-stripped mirror of it, and
+asserts the two produce the same rules. This is a _differential_ check, which is
+what makes it usable despite the caution above: both passes share the same
+narrow scan root, so it cannot invent a finding, and anything it does surface is
+real. It can still under-report relative to `next build`. **A clean run is
+necessary, not sufficient. The deployed bundle remains the arbiter.**
+
+The guard encodes the "leave ordinary English alone" bullet as
+`SPELLED_AS_ENGLISH`, currently `text-wrap` and `resize`, alongside a filter
+dropping every bare one-word utility. Adding to that set is reopening this
+entry again, and belongs here first.
