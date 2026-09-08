@@ -12,6 +12,89 @@ Each `###` heading carries a stable key on the line beneath it. `CLAUDE.md`
 cites those keys. `lib/docs-consistency.test.ts` fails if a citation names a key
 that is not here.
 
+## Index
+
+Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-consistency.test.ts` holds the two files to each other in both directions, so a key here always has a rule and a rule always has a key.
+
+**Page shape**
+
+- `band-retirement` — The masthead band was retired in favour of a 3px rule
+- `breadcrumbs` — Breadcrumbs, and the one page without them
+- `page-axis` — One axis, and it is the header measure
+- `wide-page-shell` — How the wide-page header is built
+
+**Headers and home**
+
+- `split-masthead` — The masthead splits into heading and standfirst, right-anchored
+- `home-hero` — The home hero splits 50/50, synced with the card grid beneath it, with Avatar kept whole
+- `cover-frames` — Covers take one of two frames, chosen by `wide`
+- `posts-per-page` — `POSTS_PER_PAGE` is five, and changing it is a design pass
+- `card-meta` — A card's meta line is the date alone, above the excerpt
+- `listing-shell` — The taxonomy listings and the index listing share one shell
+- `page-counter` — The page counter moves inline, into the heading
+
+**Type and styling**
+
+- `pagefind-ui` — Search runs on Pagefind's Component UI, and its quirks are upstream
+- `pagefind-index-scope` — What the Pagefind index deliberately excludes
+- `search-emblem` — The search emblem's dark-mode ground
+- `brand-colour-duplication` — Brand colour exists in two places on purpose
+- `chrome-aubergine` — Chrome is aubergine, one token for the bar and the footer
+- `tag-pills` — Tags render as pills, in one implementation
+- `border-roles` — Three border roles, and they are not interchangeable
+- `focus-indicator` — One focus indicator, set in `@layer base`
+- `scroll-offset` — One scroll offset, `scroll-padding-top` on `html`
+- `sidenotes` — Sidenotes carry several load-bearing constraints
+- `view-transitions` — Cross-document view transitions were removed, and why they never ran
+- `tag-pages` — Tags have their own pages, and `/tags` is the index
+- `type-roles` — Two faces, three roles, and no family named directly
+- `font-subsets` — Font preloading is `subsets: ["latin"]` only
+- `prose-measure` — The prose column is never measured in `ch`
+- `shiki-fine-grained` — Shiki grammars are imported one by one, never from the meta-package
+- `tailwind-scanning` — Documentation is excluded from Tailwind's source scanning
+
+**Accessibility**
+
+- `skip-link` — The skip link's target is focusable
+- `lightbox-mounted` — The lightbox trigger is gated on `mounted`, deliberately
+- `announced-links` — One announced link per card, and one description per figure
+- `scroll-region-names` — A scroll region's name carries its position, not its contents
+
+**Data and Contentful**
+
+- `csp-scoping` — CSP: `'unsafe-inline'` stays global, every relaxation is scoped to a route
+- `image-loader` — Image loader passes only `w`, `q`, `fm=webp` by design
+- `priority-opaque` — A `priority` image is opaque in the server HTML, and that is the LCP fix
+- `browse-copy` — Browse-page copy is editable, site identity is not
+- `authors-array` — Posts carry `authors`, an ordered array capped at three
+- `rich-text-links` — Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
+- `locale` — The site's locale is en-GB, everywhere
+- `single-entry-cache` — Single-entry fetchers are `cache()`-wrapped on purpose
+- `og-card-on-demand` — The post OG card renders on demand, not at build
+- `fetcher-cache` — Every fetcher in `lib/api.ts` is `cache()`-wrapped
+- `cache-tags` — Three cache tags, and the webhook picks between them
+- `post-scheduling` — Scheduling is Contentful's job, and `date` is not a gate
+- `collection-paging` — Every unbounded collection query pages, and must keep selecting `total`
+- `fixtures` — Contentful export/seed files are load-bearing and brittle
+- `node-pin` — One Node version pin, in `engines.node`
+- `rich-text-types-dupe` — Two copies of `@contentful/rich-text-types`, and only one ships
+- `two-spaces` — The content model lives in two spaces, and a schema change must reach both
+
+**Testing**
+
+- `og-font-guard` — The OG card's font is guarded by a real render, not a hash
+- `guard-limits` — What the guards catch, and what they cannot
+- `known-bad-controls` — Every pattern-matching guard needs a known-bad control
+
+**Workflow constants**
+
+- `reopening-decisions` — A settled design call is reopened in writing, not in a branch
+- `demo-site` — `demo-site` builds from this repo, off the `demo` branch
+
+**Bloat is the default failure mode**
+
+- `reviewed-items` — Other reviewed items, intentionally left as-is
+
 ## Accepted trade-offs and known non-issues
 
 Intentional. Do not "fix" or re-flag without a new reason.
@@ -2054,7 +2137,7 @@ digits and hyphens, so an earlier version of this command anchored on
 `/_next/static/chunks/[a-z0-9]+\.css` and matched nothing at all for as long as
 it stood here.
 
-### Reopened, September 2026
+#### Reopened, September 2026
 
 Three things were established by experiment rather than reasoning, and one of
 them narrows this entry.
