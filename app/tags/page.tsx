@@ -10,9 +10,7 @@ import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Same slug the component passes to getBrowseIntro below. getBrowseIntro is
-  // cache()-wrapped, so the two calls collapse into one request per render
-  // — but only while the arguments match.
+  // Same slug the component passes to getBrowseIntro below. [→ `single-entry-cache`]
   const { isEnabled } = await draftMode();
   return browsePageMetadata({
     slug: "tags",
@@ -24,14 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
 
-  // Posts grouped in memory. Contentful's GraphQL cannot filter on an
-  // Array<Link> field, and the linkedFrom workaround has no ordering, so a
-  // per-tag query could not preserve date_DESC. getAllPosts already sorts.
+  // Posts grouped in memory; getAllPosts already sorts date_DESC. [→ `tag-pages`]
   //
   // Descriptions come from a second query rather than riding on every post's
   // tagsCollection, which would weigh down the home page, feed and sitemap for
   // one page's benefit. Joined by slug below.
-  // Same arguments generateMetadata passes, so cache() collapses the two.
   const intro = await getBrowseIntro("tags", isEnabled);
   // Kept to two elements: adding a third with a different return shape made
   // TypeScript infer a union instead of a tuple, and posts silently lost every
@@ -83,11 +78,7 @@ export default async function TagsPage() {
               key={tag.slug}
               // The id stays, so any /tags#slug link shared before per-tag
               // pages existed still lands somewhere sensible. Nothing on the
-              // site generates those links any more. The offset that keeps the
-              // landing point clear of the sticky header is now
-              // `scroll-padding-top` on <html> (globals.css) rather than a
-              // scroll-mt here — the two are additive, so keeping both would
-              // overshoot.
+              // site generates those links any more. [→ `scroll-offset`]
               id={tag.slug}
               className="mb-10 last:mb-0"
             >
@@ -110,11 +101,7 @@ export default async function TagsPage() {
                       the far right and split it over two lines. Inline, it
                       simply follows the last word. whitespace-nowrap keeps
                       "3 posts" together when that word lands near the edge. */}
-                  {/* The name links to the tag's own page. This is what makes
-                      the glossary an index rather than the destination: it
-                      teases the posts, and the full list, breadcrumb and
-                      standfirst live at /tags/<slug> — the same relationship
-                      /categories has with a category page. */}
+                  {/* The name links to the tag's own page. [→ `tag-pages`] */}
                   <h2 className="mb-1 text-xl md:text-2xl">
                     <Link
                       href={`/tags/${tag.slug}`}
