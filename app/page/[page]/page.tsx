@@ -17,12 +17,9 @@ import {
 } from "@/lib/paginate";
 import { widont } from "@/lib/typography";
 
-// The BrowseIntro key, and the one place it is written. Both halves of this
-// route pass this same constant to getBrowseIntro for the reason /about and
-// /privacy pass one SLUG: cache() collapses identical calls, not equivalent
-// ones, so a second literal here is a second POST per render waiting to happen.
-//
-// It names the route rather than the content type, matching "archive",
+// The BrowseIntro key, and the one place it is written — both halves of this
+// route must pass this same constant. [→ `browse-copy`, `single-entry-cache`]
+// Names the route rather than the content type, matching "archive",
 // "categories", "tags" and "authors". No schema change was needed for it.
 const INTRO_SLUG = "latest-posts";
 
@@ -42,37 +39,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { page } = await params;
   // The component 404s on anything that is not a page number, so metadata has
-  // to agree — otherwise a title and a canonical are built out of the raw
-  // segment for a URL that is about to not exist.
+  // to agree. [→ `listing-shell`]
   const currentPage = parsePageParam(page);
   if (currentPage === null) {
     return { title: "Page not found" };
   }
 
-  // Same slug and same isEnabled the component passes below. getBrowseIntro is
-  // cache()-wrapped, so the two calls collapse into one request per render, but
-  // only while the arguments match — which is why draftMode() is resolved here
-  // rather than defaulted.
+  // Same slug and same isEnabled the component passes below, so the two
+  // cache()-wrapped calls collapse into one request per render.
   const { isEnabled } = await draftMode();
   const intro = await getBrowseIntro(INTRO_SLUG, isEnabled);
 
-  // The description falls back to the site's, exactly as browsePageMetadata
-  // does for the four section fronts. That helper cannot be reused here,
-  // because it builds its canonical from the slug and this route's is per page.
-  // Trimmed because a field holding only whitespace is an empty field.
-  //
-  // This is the one fallback in this route, and it is deliberate: a page with
-  // no description at all is worse in a search result than one carrying the
-  // site's, and SITE_DESCRIPTION is chrome rather than page copy, so it cannot
-  // be mistaken for an edit nobody made. The standfirst below takes the
-  // opposite line, and the note there says why.
+  // Falls back to the site's description, not browsePageMetadata's (that
+  // helper builds its canonical from the slug and this route's is per page).
+  // [→ `browse-copy`]
   const description = intro?.metaDescription?.trim() || SITE_DESCRIPTION;
 
   return {
     // The parsed number, never the raw segment: `Number()` accepts `0x2` and
-    // `2.000` as readily as `2`, and interpolating the segment made each of
-    // those spellings title itself and declare itself canonical. See
-    // parsePageParam in lib/paginate.ts.
+    // `2.000` as readily as `2`. [→ parsePageParam in lib/paginate.ts]
     title: `Latest Posts, Page ${currentPage}`,
     description,
     alternates: { canonical: `${SITE_URL}/page/${currentPage}` },
@@ -107,11 +92,8 @@ export default async function IndexPage({
 
   const posts = pageItems(allPosts, pageNumber);
 
-  // Home is the only link in the trail, because the last crumb is never one.
-  // The earlier reasoning against a trail here assumed it would be, and so
-  // concluded that both crumbs would point at /. They do not. The page number
-  // stays out of it, since position is a state rather than a level and
-  // PageCounter carries it inline in the heading below instead.
+  // Home is the only link in the trail, since the last crumb is never one.
+  // [→ `breadcrumbs`]
   //
   // No `emptyMessage`, because the guard above 404s past the last page, so
   // empty is unreachable and omitting the prop asserts that.
@@ -128,10 +110,7 @@ export default async function IndexPage({
       totalPages={totalPages}
       visibleTags={visibleTagSlugs(allPosts)}
       basePath="/"
-      // Title case, matching the "Latest Posts" heading this page continues
-      // on the index — and matching this page's own metadata title, which
-      // has always read "Latest Posts, Page N". The h1 was the only one of
-      // the three in sentence case.
+      // Title case, matching this page's own metadata title above.
       heading={
         <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
           Latest Posts{" "}
@@ -139,15 +118,8 @@ export default async function IndexPage({
         </h1>
       }
       // Never on / itself, where the masthead carries the site tagline
-      // instead. A standfirst repeating across the pages of one listing is
-      // already how every category reads.
-      //
-      // Rendered only when the entry has one, which is what the four section
-      // fronts do, and there is deliberately no fallback: hard-coded copy
-      // appearing in the CMS's slot is how the entry stops being the source of
-      // truth, with nothing on the page saying which of the two you are
-      // looking at. A fresh fork takes this path, because the fork seed is not
-      // being given a latest-posts entry in this change.
+      // instead. Rendered only when the entry has one, deliberately with no
+      // fallback. [→ `browse-copy`]
       standfirst={
         intro?.standfirst && (
           <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">

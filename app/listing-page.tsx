@@ -9,32 +9,15 @@ import type { CardPost } from "@/lib/types";
 /**
  * The shell every paginated listing shares — a category, tag or author page in
  * either its paginated or its unpaginated form, and the index listing at
- * /page/[page].
+ * /page/[page]. [→ `listing-shell`]
  *
- * Those seven routes rendered the same tree with the same props and differed
- * only in their `<header>`: a plain heading for a category or tag, a heading
- * beside a portrait for an author. So the header is `children` rather than a
- * set of props. Passing `name`, `description` and `avatar` and reassembling
- * them here would mean a conditional per difference, which is how a shared
- * component becomes harder to read than the seven copies it replaced.
- *
- * What is genuinely uniform lives here: the band, the listing itself, the
- * pager, and the empty state.
- *
- * `heading` and `standfirst` are therefore purely editorial — nothing
- * navigational — and pass straight through to WidePage, which is what lays
- * them out side by side; `splitHeader` passes through too, for the author
- * routes' exception (see app/wide-page.tsx). No local default on
- * `splitHeader`: nothing here reads the resolved value any more, so whatever
- * a caller passes (or omits) reaches WidePage exactly as given, and
- * WidePage's own `= true` default resolves it from there.
- *
- * The "N of M" position marker used to render here, appended after
- * `standfirst` on its own line. It does not any more — see
- * `app/page-counter.tsx` for the reversal and the full argument. Each of the
- * seven routes renders it inline inside its own `heading` now, so this
- * component has nothing left to do with pagination beyond the two numbers
- * the pager below already needed.
+ * The `<header>` is `children` rather than a set of props: reassembling
+ * `name`/`description`/`avatar` here per route would need a conditional per
+ * difference. `heading` and `standfirst` pass straight through to WidePage,
+ * which lays them out side by side; so does `splitHeader`, for the author
+ * routes' exception — no local default, so whatever a caller passes or omits
+ * reaches WidePage exactly as given, and WidePage's own default resolves it.
+ * [→ `page-counter`]
  */
 export default function ListingPage({
   crumbs,
@@ -79,15 +62,13 @@ export default function ListingPage({
   return (
     <WidePage
       crumbs={crumbs}
-      // The listing's own item padding is the space under the band — see the
-      // prop's note. The empty state below carries its own instead.
+      // [→ `band-retirement`]
       contentOwnsLeading
       heading={heading}
       standfirst={standfirst}
       splitHeader={splitHeader}
     >
-      {/* Stays here rather than in the band: it is a script tag, so its
-          position in the tree is irrelevant. */}
+      {/* A script tag, so its position in the tree is irrelevant. */}
       {jsonLd !== undefined && (
         <script
           type="application/ld+json"
@@ -106,9 +87,7 @@ export default function ListingPage({
             heading={null}
             priorityFirst
             visibleTags={visibleTags}
-            // The band closes the page above this list, so the listing's own
-            // opening rule would draw a second edge just below the first. It
-            // still closes at the bottom, which is what the pager sits under.
+            // [→ `border-roles`]
             openRule={false}
           />
           <Pagination

@@ -1,44 +1,24 @@
-// Listing pagination arithmetic, in one place.
-//
-// Six taxonomy routes (category, tag and author, each paginated and not) plus
-// the home index all did this by hand. Three expressions repeated that many
-// times is three chances to get an off-by-one wrong in one copy only, and the
-// symptom — a post missing from exactly one page of one taxonomy — is invisible
-// until someone scrolls to it.
-//
-// Deliberately free of next/navigation: a route's 404 and redirect decisions
-// are control flow and belong visible in the route. These are the sums.
+// Listing pagination arithmetic, in one place. Deliberately free of
+// next/navigation: a route's 404 and redirect decisions are control flow and
+// belong visible in the route. These are the sums. [→ `listing-shell`]
 
 import { POSTS_PER_PAGE } from "./constants";
 
 /**
  * A `[page]` route segment as a page number, or null when it is not one.
+ * Both the component and `generateMetadata` must read the segment through
+ * this, so they agree. [→ `listing-shell`]
  *
- * The four paginated routes each parsed this inline in their component and then
- * did not parse it at all in `generateMetadata`, which built a title and a
- * canonical out of the raw segment: `/page/abc` advertised
- * `<link rel="canonical" href=".../page/abc">` on a URL the component was about
- * to 404. Eight call sites, one predicate — the same argument the arithmetic
- * below is here for.
+ * Looser than the canonical form on purpose, because `Number()` accepts far
+ * more than digits: `2.0`, `%202`, `+2`, `2e0` and `0x2` all parse as 2.
+ * Tightening that is a duplicate-URL decision nobody has taken.
  *
- * Deliberately the exact test those components already made, so metadata and
- * render agree. It is looser than the canonical form, because `Number()`
- * accepts far more than digits: `2.0`, `%202`, `+2`, `2e0` and `0x2` all parse
- * as 2, as does `2.000…` to any depth.
- *
- * That looseness is still accepted — tightening it is a duplicate-URL decision
- * nobody has taken — but the RETURN VALUE is now what every caller renders, and
- * that part is not optional. A route interpolating the raw segment into its
- * title and canonical made each spelling declare itself canonical, so the one
- * mechanism that consolidates duplicates was pointed the wrong way; and with
- * `dynamicParams` at its default the accepted set is unbounded, so each
- * trailing zero minted its own ISR entry for identical content across seven
- * routes. Rendering the parsed number instead makes every spelling canonicalise
- * to `/page/2` while still resolving, which is the cheap half of the decision
- * without taking the expensive one.
- *
- * So: never interpolate the raw `[page]` segment into anything a reader or a
- * crawler sees. Use what this returns.
+ * The RETURN VALUE, not the raw segment, is what every caller must render:
+ * interpolating the raw segment into a title or canonical lets every spelling
+ * declare itself canonical, and with `dynamicParams` at its default the
+ * accepted set is unbounded, so each trailing zero would mint its own ISR
+ * entry for identical content. Never interpolate the raw `[page]` segment
+ * into anything a reader or a crawler sees — use what this returns.
  */
 export function parsePageParam(page: string): number | null {
   const pageNumber = Number(page);
