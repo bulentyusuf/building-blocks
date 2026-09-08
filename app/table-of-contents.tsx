@@ -18,12 +18,10 @@ const PIN_SETTLE_MS = 1500;
 // The nav is rendered twice, once behind the mobile disclosure and once bare at
 // xl+. Exactly one is in the DOM at any viewport (the other is display:none via
 // the breakpoint class, which removes it from the accessibility tree as well as
-// the page), so there is never a duplicate "Table of contents" landmark.
-//
-// This replaces a single <details> forced visible from CSS at xl+. That version
-// left the element without its [open] attribute, so the accessibility tree
-// reported a collapsed widget whose <summary> was also hidden. Two renders of a
-// short list is a smaller cost than markup that lies about its own state.
+// the page), so there is never a duplicate "Table of contents" landmark. Do not
+// collapse this back to one instance forced open with CSS at xl+: a <details>
+// without its [open] attribute reports a collapsed widget to the accessibility
+// tree even while visible.
 function TocNav({
   headings,
   activeId,
@@ -83,12 +81,9 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
   useEffect(() => {
     // The same threshold the render guard below uses, and it has to be the
-    // same one. At 0 this bailed and at 3 the component renders, so a post
-    // with one or two headings fell in the gap: it attached a scroll listener,
-    // a resize listener and a ResizeObserver on document.body — which fires on
-    // every layout change, the web-font swap included — and drove a
-    // getBoundingClientRect per heading on each frame, all to compute an
-    // active id for markup that returns null.
+    // same one — a mismatch attaches scroll/resize listeners and a
+    // ResizeObserver, driving a getBoundingClientRect per heading per frame,
+    // to compute an active id for markup that renders null.
     if (!hasTableOfContents(headings)) return;
 
     const elements = headings
@@ -97,11 +92,9 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
 
     if (elements.length === 0) return;
 
-    // The line a heading must cross to become active. Read from the scroll
-    // container's scroll-padding-top, which is what actually parks a targeted
-    // heading (globals.css). Previously this read the heading's own
-    // scroll-margin-top; that utility is gone, because scroll-padding covers
-    // keyboard focus as well as fragment links and the two would have summed.
+    // The line a heading must cross to become active, read from the scroll
+    // container's scroll-padding-top — never the heading's own
+    // scroll-margin-top. [→ `scroll-offset`]
     const bandTop = activationBandTop(
       window.getComputedStyle(document.documentElement).scrollPaddingTop,
     );
@@ -128,9 +121,8 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
     //   - resize: viewport height changes the geometry;
     //   - reflow: content ABOVE a heading changing height shifts it down with
     //     NO scroll or resize event — most visibly the display web font
-    //     swapping in after load. A ResizeObserver on the document body catches
-    //     that; the old IntersectionObserver got it free because the browser
-    //     re-evaluates intersections on layout change.
+    //     swapping in after load. A ResizeObserver on the document body
+    //     catches that.
     let frame = 0;
     const schedule = () => {
       if (frame) return;

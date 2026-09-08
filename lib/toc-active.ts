@@ -4,12 +4,11 @@
 // under the sticky header. That is the only question, and it is answered from
 // live geometry across every heading.
 //
-// An earlier version also had a "topmost heading currently intersecting the
-// observer band wins" branch. That branch is why the ToC used to jump to the
-// next section while the reader was still a screenful into the previous one:
-// the band's lower edge sat 30% down the viewport, so a heading that had only
-// just scrolled into view could claim the highlight. The band's lower edge
-// gets no vote. Do not reintroduce it.
+// Do not add a "topmost heading currently intersecting the observer band
+// wins" branch: that shape once made the ToC jump to the next section while
+// the reader was still a screenful into the previous one, because a heading
+// freshly scrolled into view could claim the highlight. The band's lower edge
+// gets no vote.
 
 /**
  * Where the activation line sits when the page's scroll offset cannot be read.
@@ -32,11 +31,8 @@ export const BAND_TOLERANCE_PX = 4;
  * The line a heading must cross to count as active, in px from the viewport top.
  *
  * Derived from the scroll container's own `scroll-padding-top` rather than
- * hardcoded, because that is the property parking a targeted heading. If the
- * two disagreed, clicking entry 7 would highlight entry 6 — which is why the
- * per-heading `scroll-mt-*` utilities had to go when scroll-padding arrived
- * rather than sit alongside it: they are additive, so the real landing point
- * would have been the sum while this read only one half.
+ * hardcoded, because that is the property parking a targeted heading — if the
+ * two disagreed, clicking entry 7 would highlight entry 6. [→ `scroll-offset`]
  *
  * @param scrollPaddingTop The computed `scrollPaddingTop`, e.g. "80px" or "auto".
  */
