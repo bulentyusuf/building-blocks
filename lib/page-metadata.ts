@@ -14,14 +14,13 @@ const SITE_CARD = [
 ];
 
 /**
- * The Open Graph and Twitter blocks, which are identical on every page that is
- * not a post and differ only in title, description, URL and image.
+ * The Open Graph and Twitter blocks, identical on every page that is not a
+ * post, differing only in title, description, URL and image. [→ `listing-shell`]
  *
- * Ten pages carried a hand-written copy of this — the four browse indexes and
- * the six taxonomy listings — so a change to the card size or the OG type meant
- * ten edits, and the copies had already drifted: an author page fell back to
- * the site card for `og:image` but emitted no `twitter:image` at all when the
- * author had no portrait. Both fall back here, so the two agree on every page.
+ * The ten call sites had already drifted before this collapsed them: an
+ * author page fell back to the site card for `og:image` but emitted no
+ * `twitter:image` at all when the author had no portrait. Both fall back
+ * here, so the two agree on every page.
  *
  * `title` is optional because the browse indexes deliberately omit
  * `twitter.title` and inherit the document title instead.
@@ -59,17 +58,11 @@ function socialCard({
 /**
  * Metadata for a browse page (/tags, /categories, /authors, /archive).
  *
- * The four had byte-identical metadata objects differing only in title and
- * path. Making the description editable meant converting each from a static
- * `export const metadata` to `generateMetadata`, which would have turned one
- * copy-paste into four; this collapses them instead.
- *
- * `slug` doubles as the route and as the BrowseIntro key, which is why they are
- * one argument rather than two — the entry for /tags has slug "tags".
+ * `slug` doubles as the route and as the BrowseIntro key, which is why they
+ * are one argument rather than two — the entry for /tags has slug "tags".
  *
  * Must be called with the same slug the page component passes to
- * getBrowseIntro(). That helper is cache()-wrapped, so identical calls collapse
- * into one request per render; different arguments would issue two.
+ * getBrowseIntro(). [→ `single-entry-cache`]
  */
 export async function browsePageMetadata({
   slug,

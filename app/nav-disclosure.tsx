@@ -43,10 +43,9 @@ export default function NavDisclosure({
     const details = detailsRef.current;
     if (!details) return;
 
-    // Escape returns focus to the summary. Closing without that leaves focus on
-    // a link inside a subtree that is now display:none, and the browser drops
-    // it to <body> — the reader is back at the top of the document with no
-    // announcement that anything moved.
+    // Returns focus to the summary — see the docblock above. Without it,
+    // focus sits on a link inside a subtree that just went display:none, and
+    // the browser drops it to <body> with no announcement that anything moved.
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape" || !details.open) return;
       details.open = false;
