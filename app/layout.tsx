@@ -63,14 +63,8 @@ export const metadata = {
 };
 export const viewport = {
   // Scheme-aware so the mobile address bar matches the sticky bar in both
-  // modes. colorScheme lets the UA theme native controls and scrollbars.
-  //
-  // These are TS literals rather than the CSS token, because neither the
-  // viewport export nor the PWA manifest can read a custom property. That
-  // makes them the one place the chrome colour can silently fall out of step
-  // with the bar it is meant to match — a mobile address bar still painting
-  // the old navy is invisible on every desktop. lib/palette-contrast.test.ts
-  // holds both against --color-brand-header in their own schemes.
+  // modes. TS literals, not the CSS token — neither this export nor the PWA
+  // manifest can read a custom property. [→ `chrome-aubergine`, `brand-colour-duplication`]
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: BRAND_HEADER_COLOR },
     { media: "(prefers-color-scheme: dark)", color: BRAND_HEADER_COLOR_DARK },
@@ -79,44 +73,28 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
-// Two faces, three jobs — see the token block in globals.css. Preload the latin
-// subset only. Dropping latin-ext from `subsets` does not reduce character
-// coverage: Next.js emits @font-face declarations with unicode-range for all
-// family subsets, so characters like ẞ (U+1E9E) still render seamlessly, they
-// are just fetched on demand by the browser rather than eagerly preloaded.
-// Preloading both subsets across styles injected 6 font files (~501 KB) into
-// <head>, saturating mobile bandwidth against the LCP hero image. Dropping
-// latin-ext eliminates 3 high-priority preloads (211,968 B / ~207 KiB).
-//
-// opsz only. The wdth axis (75-100) is why Bricolage is the right long-term
-// choice — it lets a long German compound narrow rather than drop a size step —
-// but nothing reaches for it today and the axis costs bytes for no current
-// benefit. Add it when the de-DE work actually needs it.
+// [→ `font-subsets`, `type-roles`]
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
   display: "swap",
   axes: ["opsz"],
 });
-// Literata carries the italic because it is the prose face: <em> in rich text
-// and the figure captions were browser-synthesised slants before this was
-// wired up. It is split across two next/font/google calls so the italic can
-// drop out of the preload set. preload is per-instance, and subsets is the only
-// per-file preload lever next/font/google exposes (google/loader.js:102 keys
-// preloading on subset membership, and style is not a subset), so one call
-// covering both styles preloads both or neither.
+// Split across two next/font/google calls so the italic can drop out of the
+// preload set: `preload` is per-instance, and `style` is not a subset, so one
+// call covering both styles preloads both or neither — `subsets` is the only
+// per-file preload lever the package exposes (google/loader.js:102 keys
+// preloading on subset membership).
 //
-// Both calls emit font-family: Literata, the real family name rather than a
-// generated one, so this is one family to the browser and native style
-// matching resolves <i> to the italic faces. No CSS selector targets italic
-// and none should: a selector-based approach would have to enumerate every
-// container rich text renders into, and would silently fall back to a
-// synthetic oblique on anything it missed.
+// Both calls emit font-family: Literata, the real family name, so this is one
+// family to the browser and native style matching resolves <i> to the italic
+// faces — no CSS selector targets italic, or it would need to enumerate every
+// container rich text renders into and fall back to synthetic oblique on
+// anything missed.
 //
-// The italic still loads, just on demand. All seven of its subset faces keep
-// their unicode-range, so coverage is unchanged. What goes away is 113,196 B
-// of High-priority bandwidth in <head> on every route, competing with the LCP
-// hero image, on the roughly half of pages that paint no italic at all.
+// The italic still loads, on demand, with unchanged unicode-range coverage.
+// What goes away is 113,196 B of High-priority bandwidth in <head> on every
+// route, competing with the LCP hero image, on pages that paint no italic.
 const literata = Literata({
   variable: "--font-literata",
   subsets: ["latin"],
@@ -140,63 +118,42 @@ const literataItalic = Literata({
 function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-brand-header shadow-xs">
-      {/* min-h-13 is 52px, which is py-3's 24px plus the 28px line box the
-          text-lg wordmark establishes. It is here because the bar's height
-          must not be a function of which of its children happen to render.
-          Nothing else in the row is as tall — the nav links are text-sm at 20px
-          — so on home, where the wordmark hides, the bar was rendering 8px
-          shorter and the chrome changed height as the reader navigated. */}
+      {/* min-h-13 is 52px: py-3's 24px plus the 28px line box the text-lg
+          wordmark establishes. The bar's height must not depend on which
+          children happen to render — nothing else in the row is as tall, so
+          on home, where the wordmark hides, the bar rendered 8px shorter and
+          the chrome changed height as the reader navigated. */}
       <div className="max-w-5xl mx-auto px-5 py-3 min-h-13 flex items-center justify-between gap-4">
-        {/* The wordmark hides itself on home, where the masthead names the site
-            60px below and the bar would say it twice. The rule is a :has() in
-            globals.css rather than a usePathname, so this stays a server
-            component and the site ships no JS for the hidden state itself.
-
-            The wordmark returns once the masthead scrolls out of view, via
-            app/wordmark-fade.tsx — past that point the bar carries no site name
-            at all and the reader has nothing in the chrome telling them where
-            they are. The tagline was retired in favour of the expanded nav
-            links, which carry the same wayfinding information on every route.
-
-            The wordmark is a link on every route except home, where it is
-            a button that returns the reader to the top — see
-            app/site-wordmark.tsx. In Next 16 a same-URL Link click is a
-            leaf-segment refresh rather than a route change, and only a route
-            change is assigned a scroll target, so on home the link neither
-            navigated nor returned the reader to the top. It does navigate from
-            everywhere else, which is most of the site and the most conventional
-            control on it, so it stays a link there. */}
+        {/* The wordmark hides itself on home via a :has() rule.
+            [→ `wide-page-shell`] It is a link on every route except home,
+            where it is a button that returns the reader to the top — in
+            Next 16 a same-URL Link click is a leaf-segment refresh rather
+            than a route change, and only a route change gets a scroll
+            target, so on home a Link would neither navigate nor scroll.
+            See app/site-wordmark.tsx. */}
         <div className="flex items-baseline gap-3">
           <SiteWordmark title={SITE_TITLE} />
         </div>
         {/* On mobile the full nav sits inside a <details> disclosure so the
-            bar stays at one row of links; from md up the disclosure is hidden
-            outright and a second, inline copy of the links takes over. The two
-            are mutually exclusive — md:hidden on the <details>, hidden md:flex
-            on the list — so only one is ever in the accessibility tree.
-
-            NOT the table-of-contents mechanism, which this comment used to
-            describe: that one keeps a single copy and forces the panel open at
-            xl+ with CSS. Duplicating the links is the cheaper answer here
-            because the two copies are laid out differently (a stacked panel
-            against an inline row), so a single copy would need the branch
-            anyway. */}
+            bar stays at one row of links; from md up the disclosure is
+            hidden outright and a second, inline copy takes over — mutually
+            exclusive (md:hidden / hidden md:flex) so only one is ever in the
+            accessibility tree. Not the table-of-contents mechanism, which
+            keeps a single copy and forces it open with CSS: the two copies
+            here are laid out differently (stacked panel vs. inline row), so
+            a single copy would need the branch anyway. */}
         <nav aria-label="Primary" className="flex items-center gap-4">
           <NavDisclosure>
             <summary
               aria-label="Menu"
               className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-1 -m-1"
             >
-              {/* Two icons rather than one morphing path. The menu closes on a
-                  second tap, on Escape and on an outside tap, but the trigger
-                  gave no sign it was a toggle at all — three static lines
-                  whether open or closed. The X is the only thing on screen
-                  telling a reader how to get out.
-
+              {/* Two icons, not one morphing path: the X is the only thing
+                  on screen telling a reader how to get out of the menu.
                   group-open: reads the [open] attribute on the <details> in
                   nav-disclosure.tsx, the same hook the table of contents
-                  chevron uses. No JS, no state, and the correct icon is in
-                  the server-rendered markup before hydration. */}
+                  chevron uses — no JS, no state, correct icon in the
+                  server-rendered markup before hydration. */}
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -220,20 +177,15 @@ function Header() {
                 <path d="M5 5l14 14M5 19L19 5" />
               </svg>
             </summary>
-            {/* Dims the page under the open menu. The panel is opaque but nothing
-                separated it from the content behind it, so the two read as competing
-                layers rather than a menu over a page.
-
-                absolute + top-full rather than fixed inset-0: the containing block is
-                the sticky header, so top-full starts the scrim immediately below the
-                header bar. That keeps the header, the wordmark and the close X at full
-                brightness, which matters because the X is the way out.
-
-                pointer-events-none is load-bearing, not defensive. The scrim is a
-                child of the <details>, so if it captured taps the outside-tap handler
-                in nav-disclosure.tsx would see details.contains(target) === true and
-                refuse to close. Letting taps pass through leaves that behaviour
-                exactly as it is. */}
+            {/* Dims the page under the open menu, which otherwise reads as a
+                competing layer rather than a menu over a page.
+                absolute + top-full rather than fixed inset-0: the containing
+                block is the sticky header, so the scrim starts immediately
+                below it, keeping the header, wordmark and close X at full
+                brightness. pointer-events-none is load-bearing: the scrim is
+                a child of the <details>, so if it captured taps the
+                outside-tap handler in nav-disclosure.tsx would see
+                details.contains(target) === true and refuse to close. */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
@@ -315,17 +267,13 @@ function Header() {
               About
             </Link>
           </div>
-          {/* Icon-only link: the accessible name comes from aria-label, and
-              the SVG is hidden from assistive tech so it is not announced as
-              an unlabelled image. No icon library — inline SVG keeps the
-              dependency count at zero.
-
-              p-3 -m-3 is the WCAG 2.5.5 touch target: padding grows the hit
-              area to 44px (a 20px icon plus 2×12px) while the matching
-              negative margin cancels its footprint in the row's layout, so
-              the bar's own height calculation never sees it. The 36px it
-              replaces already cleared 2.5.8's 24px AA floor — this is the
-              AAA-grade figure, not a defect being fixed. */}
+          {/* Icon-only link: accessible name from aria-label, SVG hidden
+              from assistive tech so it isn't announced as an unlabelled
+              image. p-3 -m-3 is the WCAG 2.5.5 touch target: padding grows
+              the hit area to 44px while the matching negative margin
+              cancels its footprint, so the bar's height calculation never
+              sees it. The 36px it replaces already cleared 2.5.8's 24px AA
+              floor — this is the AAA-grade figure, not a fix. */}
           <Link
             href="/search"
             aria-label="Search"
@@ -353,16 +301,7 @@ function Header() {
 // Shared link treatment for the footer: quiet by default, visible focus ring
 // matching the skip-link convention above.
 //
-// The footer's faintest tint is white/72, raised from white/65 by the aubergine
-// change. Not a taste call and not a rider: the footer used to sit on #2E2420
-// in dark, where white/65 gave 7.21 and cleared AAA. It shares the bar's
-// #3B2A52 now, which is lighter, and white/65 there is 6.37 — under the 7:1
-// floor lib/palette-contrast.test.ts enforces on footer small print. white/72
-// gives 7.44 dark and 8.71 light.
-//
-// The light surface alone would not have needed this (white/65 on #2B1C3F is
-// 7.35), which is exactly how it gets missed: the scheme that fails is the one
-// nobody has open.
+// The footer's faintest tint is white/72, not white/65. [→ `chrome-aubergine`]
 const footerLink =
   "font-ui text-white/80 hover:text-white transition-colors duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
 
@@ -382,14 +321,8 @@ function Footer() {
           </div>
 
           {/* Column 2 — browse: top-level section links. */}
-          {/* The column label is a <p>, not a heading. As an <h4> it sat
-              directly after the page's h2s and skipped a level on every page
-              whose deepest heading is an h2 — post pages, /about, /privacy,
-              /search and all four browse indexes — which axe reports as
-              heading-order. Promoting it to h2 instead would flip it to
-              Bricolage, since globals.css gives the display face to h1-h3. It
-              loses nothing as a <p>: the nav already carries aria-label="Browse",
-              so the landmark is named either way. Same for Colophon below. */}
+          {/* The column label is a <p>, not a heading. [→ `announced-links`]
+              Same for Colophon below. */}
           <nav aria-label="Browse">
             <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Browse
@@ -486,9 +419,8 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://images.ctfassets.net" />
       </head>
       <body className="min-h-screen flex flex-col bg-brand-bg text-brand-dark">
-        {/* top-2 centres the 36px link in the 52px header band. If the header's
-            py-3 or the masthead's text-lg ever changes, this needs revisiting —
-            it is a computed value, not an arbitrary one. */}
+        {/* top-2 centres the 36px link in the 52px header band, a computed
+            value. [→ `scroll-offset`] */}
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-brand-header focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
@@ -496,14 +428,9 @@ export default async function RootLayout({
           Skip to content
         </a>
         <Header />
-        {/* tabIndex={-1} makes the skip link's target focusable. Following a
-            fragment moves the sequential-focus starting point in current
-            Chrome and Firefox, so Tab continues from here — but it does not
-            move focus itself, and Safari has historically not moved the
-            starting point either, leaving the reader who just used the skip
-            link tabbing from the top of the document again. One attribute,
-            and the link keeps its promise everywhere. It adds no tab stop:
-            -1 is reachable programmatically, never sequentially. */}
+        {/* tabIndex={-1} makes the skip link's target focusable.
+            [→ `skip-link`] Adds no tab stop: -1 is reachable
+            programmatically, never sequentially. */}
         <main id="main" tabIndex={-1} className="grow">
           {children}
         </main>
