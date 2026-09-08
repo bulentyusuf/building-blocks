@@ -342,3 +342,93 @@ describe("llms.txt attribution guidance", () => {
     expect(line).not.toMatch(/the author named on that page/);
   });
 });
+
+describe("docs/decisions.md's index stays in step with its entries", () => {
+  // The index added in #520 is the only way into a 2,175-line file that carries
+  // 55 entries under two headings. An index nobody maintains is worse than
+  // none: it reads as authoritative while quietly omitting whatever was added
+  // last, and the omission is invisible to a reader who does not already know
+  // the entry exists.
+  //
+  // This is the same failure the two checks above prevent between CLAUDE.md and
+  // docs/decisions.md, one level down.
+  //
+  // What it does NOT check, deliberately: which section a key is filed under.
+  // The index groups by the CLAUDE.md section whose rules cite each key, and
+  // holding that mechanically would fail whenever a rule moves between sections
+  // or is cited from two of them, which two already are. A key in the wrong
+  // group is a reader's problem to spot; a key in no group at all is this
+  // check's.
+  const keysIn = (doc: string) =>
+    [...doc.matchAll(/<!-- key: ([a-z0-9-]+) -->/g)].map((m) => m[1]);
+
+  // Everything between "## Index" and the next H2. Sliced on the next heading
+  // rather than on the one that follows today, so renaming that section does
+  // not silently empty this.
+  const indexSection = (doc: string) => {
+    const start = doc.indexOf("\n## Index");
+    if (start === -1) return "";
+    const rest = doc.slice(start + 1);
+    const end = rest.indexOf("\n## ", 1);
+    return end === -1 ? rest : rest.slice(0, end);
+  };
+
+  const listedIn = (doc: string) =>
+    [...indexSection(doc).matchAll(/^- `([a-z0-9-]+)`/gm)].map((m) => m[1]);
+
+  it("lists every entry, and lists nothing that is not one", () => {
+    const decisions = read("docs/decisions.md");
+    const entries = keysIn(decisions);
+    const listed = listedIn(decisions);
+
+    // Non-vacuous: a missing index section would make both filters below pass
+    // on empty input.
+    expect(entries.length).toBeGreaterThan(40);
+    expect(listed.length).toBeGreaterThan(40);
+
+    expect(entries.filter((k) => !listed.includes(k))).toEqual([]);
+    expect(listed.filter((k) => !entries.includes(k))).toEqual([]);
+  });
+
+  it("reports an entry the index omits", () => {
+    // Known-bad control. An entry added without an index line is the likely
+    // failure, and it has to surface rather than pass on a shorter list.
+    const doc = [
+      "\n## Index\n",
+      "- `cover-frames` — a listed entry\n",
+      "\n## Entries\n",
+      "<!-- key: cover-frames -->\n",
+      "<!-- key: page-axis -->\n",
+    ].join("");
+
+    expect(keysIn(doc).filter((k) => !listedIn(doc).includes(k))).toEqual([
+      "page-axis",
+    ]);
+  });
+
+  it("reports an index line pointing at no entry", () => {
+    // The reciprocal. A renamed or deleted key leaves the index naming
+    // something unreachable, which is exactly how the old CLAUDE.md markers
+    // rotted before the check above existed.
+    const doc = [
+      "\n## Index\n",
+      "- `cover-frames` — a listed entry\n",
+      "- `no-such-entry` — a line nothing backs\n",
+      "\n## Entries\n",
+      "<!-- key: cover-frames -->\n",
+    ].join("");
+
+    expect(listedIn(doc).filter((k) => !keysIn(doc).includes(k))).toEqual([
+      "no-such-entry",
+    ]);
+  });
+
+  it("finds nothing when the index section is absent", () => {
+    // The failure the non-vacuous assertions above guard against, stated
+    // directly: no "## Index" heading must yield an empty list rather than
+    // scanning the whole file and appearing to pass.
+    expect(
+      listedIn("<!-- key: cover-frames -->\n- `cover-frames` — x\n"),
+    ).toEqual([]);
+  });
+});
