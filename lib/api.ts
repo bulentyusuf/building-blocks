@@ -22,11 +22,10 @@ import type {
   AuthorCollectionResponse,
 } from "./types";
 
-// Every rich-text asset selection, in one place. Five queries embed this and
-// they were byte-identical, so a field added to one and not the others was a
-// silent inconsistency waiting to happen — which is how width and height came
-// to be missing everywhere at once. width and height feed the figure's aspect
-// ratio; without them every image was laid out 3:2.
+// Every rich-text asset selection, in one place — five queries embed this, and
+// a field added to one and not the others is a silent inconsistency. `width`
+// and `height` feed the figure's aspect ratio; drop either and every image
+// lays out 3:2.
 const ASSET_BLOCK_FIELDS = `
   sys {
     id
@@ -134,16 +133,13 @@ const POST_GRAPHQL_FIELDS = `
   }
 `;
 
-// Slim fragment for listing previews (e.g. the categories landing page). Pulls
-// only what a card renders, so we don't fetch full rich-text content + links
-// for posts we're only teasing. Posts returned with this fragment are partial:
-// `content`, `author`, `updatedDate`, `category` are absent. Don't read them.
+// Slim fragment for listing previews. Posts returned with this fragment are
+// partial: `content`, `author`, `updatedDate`, `category` are absent. Don't
+// read them.
 //
-// `tagsCollection` is here because cards render pills on the index pages, and
-// it stays cheap: two short strings per tag, capped at 3. It is not the weight
-// this fragment exists to avoid — that is the rich-text body, its embedded
-// code blocks and assets, and the author bio. `description` is deliberately
-// not selected; see getAllTags on why the gloss stays out of listing queries.
+// `tagsCollection` is here despite that: two short strings per tag, capped at
+// 3, is not the weight this fragment exists to avoid — the rich-text body, its
+// embedded code blocks and assets, and the author bio are.
 const CARD_GRAPHQL_FIELDS = `
   slug
   title
@@ -165,24 +161,20 @@ const CARD_GRAPHQL_FIELDS = `
   }
 `;
 
-// Listing fragment for getAllPosts. It is the union of fields the sitewide
-// listing consumers actually render — the home hero + cards, pagination, the RSS
-// feed, and the sitemap — which is everything in POST_GRAPHQL_FIELDS minus the
-// two heavy branches none of them read: the full rich-text `content` (body JSON
-// plus every embedded asset and CodeBlock source) and the author `bio`. Omitting
-// them keeps the entire body text of every post out of the home/feed/sitemap ISR
-// cache entries. Posts returned with this fragment are partial: `content` and
-// `author.bio` are absent. The per-post detail page uses POST_GRAPHQL_FIELDS.
+// Listing fragment for getAllPosts — everything in POST_GRAPHQL_FIELDS minus
+// the two heavy branches none of its consumers read: the full rich-text
+// `content` and the author `bio`. Posts returned with this fragment are
+// partial: `content` and `author.bio` are absent. The per-post detail page
+// uses POST_GRAPHQL_FIELDS.
 //
-// tagsCollection rides along because /tags groups this result in memory rather
-// than querying per tag: Contentful's GraphQL cannot filter on an Array<Link>
-// field at all, and its linkedFrom workaround has no ordering, so a per-tag
-// query could not reproduce date_DESC.
+// tagsCollection rides along because grouping by tag happens in memory rather
+// than per-tag query — Contentful's GraphQL cannot filter on an Array<Link>
+// field. [→ `tag-pages`]
 //
 // These template literals are GraphQL, not JavaScript. A `//` comment inside
 // one is a syntax error the API rejects with 400, which fails every post query
-// rather than the field it sits next to. Keep prose out here; use `#` if a note
-// truly must sit inline.
+// rather than the field it sits next to. Use `#` for a note that must sit
+// inline.
 const LIST_GRAPHQL_FIELDS = `
   slug
   title
@@ -248,18 +240,14 @@ const realRetryDelay: RetryDelay = (ms) =>
 
 let retryDelay: RetryDelay = realRetryDelay;
 
-// A test seam, and the only supported way to make the retry loop fast in a
-// test. Each retry-exhausting case otherwise spends 1.5 seconds of real time
-// waiting, which made the suite roughly two thirds sleep. The tempting
-// alternative is to shrink GRAPHQL_RETRY_BASE_MS, but that changes how long
-// production actually waits on Contentful in order to suit a test. Replace the
-// delay, never the constant. Called with no argument, restores the real one.
+// A test seam, the only supported way to make the retry loop fast in a test.
+// Replace the delay, never GRAPHQL_RETRY_BASE_MS itself — shrinking the
+// constant changes how long production actually waits on Contentful to suit a
+// test. Called with no argument, restores the real one.
 export function setRetryDelayForTests(next: RetryDelay = realRetryDelay): void {
-  // This has to be exported to be reachable — fetchGraphQL is module-private and
-  // the tests drive it through the public getters — which also makes it callable
-  // from application code, where disabling the backoff would quietly turn three
-  // retries into three immediate hammers on Contentful. Refusing in production
-  // keeps the seam useful where it is needed and inert where it is not.
+  // Exported so the tests can reach it, which also makes it callable from
+  // application code — where disabling the backoff would quietly turn three
+  // retries into three immediate hammers on Contentful. Refused in production.
   if (process.env.NODE_ENV === "production") {
     throw new Error(
       "setRetryDelayForTests must not be called in production. It exists only so the test suite can skip the real backoff.",
@@ -276,21 +264,7 @@ type GraphQLVariables = Record<string, unknown>;
 
 /**
  * The cache tags this module attaches, and the whole set of them.
- *
- * Every request used to carry "posts", including the ones fetching CMS Pages
- * and browse intros — so there was one tag on the site and no way to
- * invalidate anything narrowly. Editing /about purged every post page, which
- * cannot be right: nothing about an about-page body reaches a post.
- *
- * Only these two split off, and the split is not arbitrary. A Post, Author,
- * Category or Tag edit genuinely does reach the post pages — a renamed tag
- * shows on every card and pill, a new post changes the "Read Next" backfill
- * and the tag-visibility threshold sitewide — so those stay on POSTS and a
- * publish still purges broadly, correctly. A Page or a Browse Intro reaches
- * only its own route and the sitemap, and the sitemap reads getAllPages, so
- * PAGES covers it.
- *
- * app/api/revalidate/route.ts maps a webhook's content type onto these.
+ * [→ `cache-tags`]
  */
 export const CACHE_TAGS = {
   /** Posts and everything a post renders: authors, categories, tags. */
@@ -308,8 +282,7 @@ export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
 type GraphQLEnvelope = { data?: unknown; errors?: unknown[] };
 
 // Trimmed because a trailing newline pasted into a host's environment variable
-// UI is a common and otherwise baffling failure. An absent variable used to
-// produce a request to `/spaces/undefined` and a 404 that named nothing useful.
+// UI is a common failure otherwise silently passed through to the request URL.
 function requireEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) {
@@ -320,9 +293,9 @@ function requireEnv(name: string): string {
   return value;
 }
 
-// preview keeps its default here on purpose. fetchGraphQL is module-private and
-// is never a cache() memo key, so the no-defaults rule covering the exported
-// fetchers below does not reach it.
+// preview keeps its default here on purpose: fetchGraphQL is module-private
+// and never a cache() memo key, so the no-defaults rule covering the exported
+// fetchers below [→ `fetcher-cache`] does not reach it.
 async function fetchGraphQL<T>(
   query: string,
   preview = false,
@@ -351,17 +324,15 @@ async function fetchGraphQL<T>(
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ query, variables }),
-        // Defaults to POSTS, so a new fetcher added without thinking about
-        // tags is over-invalidated rather than under-invalidated. Getting this
-        // wrong in the safe direction costs a render; the other direction
-        // serves stale content with nothing to say so.
+        // Defaults to POSTS, deliberately the safe direction to be wrong in.
+        // [→ `cache-tags`]
         next: { tags: [tag] },
       });
     } catch (cause) {
       // Socket-level failure rather than an HTTP response. Worth another go.
-      // The cause is attached rather than stringified, because the underlying
-      // stack is the only thing that distinguishes a DNS failure from a reset
-      // connection from a TLS error once this surfaces in a build log.
+      // `cause` is attached rather than stringified — the underlying stack is
+      // what distinguishes a DNS failure from a reset connection from a TLS
+      // error once this surfaces in a build log.
       lastError = new Error(
         `Contentful GraphQL request failed: ${String(cause)}`,
         {
@@ -417,26 +388,15 @@ async function fetchGraphQL<T>(
 }
 
 // Contentful returns at most 100 items from a collection and reports the real
-// count only in `total`. A query that asks for neither therefore takes the
-// first 100 and says nothing, which is the worst shape a limit can have: the
-// 101st post would vanish from the sitemap, the feed, the archive, the tag
-// glossary, the home pagination and generateStaticParams at once, with no
-// error anywhere and no page missing from the build log.
-//
-// So every unbounded collection pages through instead. Under 100 items this is
-// exactly one request, identical to what it replaced — the loop exits on the
-// first pass because `total` is already satisfied.
-//
-// The page size stays at Contentful's own 100 rather than being raised toward
-// the documented 1000 maximum. A larger page is fewer round-trips but a higher
-// per-query complexity score, and the complexity budget is not something this
-// repo can check in CI (no credentials), so the safe number is the one the API
-// already returns by default. Raise it only against a real measurement.
+// count only in `total`. Under 100 items this is exactly one request; the loop
+// exits on the first pass because `total` is already satisfied.
+// [→ `collection-paging`]
 const COLLECTION_PAGE_SIZE = 100;
 
 // The query must accept `$limit: Int!` and `$skip: Int!`, pass both to the
 // collection, and select `total` alongside `items` — without `total` there is
 // nothing to page against and the first response is all you get.
+// [→ `collection-paging`]
 async function fetchAllCollectionItems<T>(
   collection: string,
   query: string,
@@ -479,22 +439,12 @@ function extractPost(fetchResponse: PostCollectionResponse): Post | undefined {
 // Tag slugs that clear MIN_POSTS_PER_TAG across the whole site, for pages that
 // render tag pills but only fetch a slice of posts.
 //
-// Category and author pages fetch their own posts only. Counting tags across
-// that slice would hide tags the /tags glossary shows, and would render pills
-// for tags whose /tags/[slug] page 404s. So this pulls the full list: one extra
-// listing query on those pages, accepted because the alternative is a pill that
-// dead-ends.
-//
-// The home pages already hold getAllPosts. They should still pass
-// visibleTagSlugs(allPosts) straight through rather than calling this — a
-// legibility choice, not a correctness one, see getAllPosts below.
-//
-// This exists for the two category routes specifically. Every other listing
-// holds allPosts and calls the pure visibleTagSlugs(allPosts) directly, but the
-// category pages hold getPostsByCategory output, which is a filtered subset,
-// and a tag only shows if it clears MIN_POSTS_PER_TAG across the whole site.
-// They cannot derive that from what they have, so the fetch is the point rather
-// than an oversight. Do not delete this as redundant.
+// Exists for the two category routes specifically, whose held post list is
+// already filtered by category — a tag only shows if it clears
+// MIN_POSTS_PER_TAG across the whole site, which they cannot derive from a
+// filtered subset. [→ `tag-pages`] Every other listing holds `allPosts` and
+// calls the pure `visibleTagSlugs(allPosts)` directly instead. Do not delete
+// this as redundant with that.
 export const getVisibleTagSlugs = cache(
   async (isDraftMode: boolean): Promise<Set<string>> => {
     return visibleTagSlugs(await getAllPosts(isDraftMode));
@@ -502,31 +452,17 @@ export const getVisibleTagSlugs = cache(
 );
 
 // cache()-wrapped because the post page reaches this twice per render from two
-// directions that cannot see each other: getPostAndMorePosts calls it to rank
-// related posts, and the page calls it again for the sitewide tag counts, which
-// cannot be derived from one post. cache() dedupes identical calls and both
-// pass the same isDraftMode, so the second is a dedupe rather than a request.
+// directions that cannot see each other. [→ `post-scheduling`, `fetcher-cache`]
 //
-// It has to be cache(), because nothing below it dedupes. Checked against the
-// installed Next 16.3.3 source, node_modules/next/dist/server/lib/patch-fetch.js:
-// the Data Cache is gated on a fetch setting an explicit `cache` or
-// `next.revalidate` option, not on the HTTP method. fetchGraphQL sets neither,
-// only next: { tags }, so autoNoCache applies and the response is never
-// persisted. The tag still attaches to the enclosing page's Full Route Cache
-// entry, which is what makes revalidateTag work, but that is a different
-// mechanism from the response being reused. A comment here previously claimed
-// the second call was free because it was "ISR-cached"; it was not.
-//
-// Callers that hold this result should keep passing it down rather than
-// re-fetching. That is now a legibility preference rather than a correctness
-// one, and the call sites say so in one line each rather than repeating this.
-//
-// No fetcher in this file declares a defaulted or optional parameter. cache()
-// keys on the argument list as it was passed, so getAllPosts() and
-// getAllPosts(false) are two memo entries meaning the same thing, and the
-// second is a duplicate query nothing reports. Requiring the argument makes
-// tsc hold that, which is cheaper and more durable than a guard scanning call
-// sites for omitted arguments.
+// It has to be cache(), because nothing below it dedupes on its own. Checked
+// against the installed Next 16.3.3 source,
+// node_modules/next/dist/server/lib/patch-fetch.js: the Data Cache is gated on
+// a fetch setting an explicit `cache` or `next.revalidate` option, not on the
+// HTTP method. fetchGraphQL sets neither, only `next: { tags }`, so
+// autoNoCache applies and the response is never persisted. The tag still
+// attaches to the enclosing page's Full Route Cache entry, which is what makes
+// revalidateTag work, but that is a different mechanism from the response
+// being reused — the response is not "ISR-cached".
 export const getAllPosts = cache(
   async (isDraftMode: boolean): Promise<ListPost[]> => {
     return fetchAllCollectionItems<ListPost>(
@@ -546,9 +482,10 @@ export const getAllPosts = cache(
 );
 
 // A single post, listing fragment only — no related/backfill queries and no
-// heavy `content`/`bio`. For consumers that need just the post's own fields
-// (e.g. generateMetadata), where fetching morePosts via getPostAndMorePosts
-// would fire 1–2 extra GraphQL round-trips whose result is then discarded.
+// heavy `content`/`bio`. For a consumer that needs just the post's own fields,
+// where fetching morePosts via getPostAndMorePosts would fire 1–2 extra
+// GraphQL round-trips whose result is then discarded. `getPost` stays correct
+// only where nothing else fetches the post in the same pass. [→ `single-entry-cache`]
 // Returns a partial post: `content` and `author.bio` are absent (see ListPost).
 export const getPost = cache(
   async (slug: string, preview: boolean): Promise<ListPost | undefined> => {
@@ -595,15 +532,8 @@ export const getPostAndMorePosts = cache(
   },
 );
 
-// A CMS Page (about, privacy), body included.
-//
-// cache()-wrapped for the same reason getBrowseIntro is: both routes that use
-// it call it TWICE per render, once in generateMetadata and once in the
-// component. Next only memoises GET and fetchGraphQL issues POST, so without
-// this /about and /privacy each issued two identical requests — and this
-// fragment carries the whole page body, so it was the most expensive duplicate
-// on the site. The two calls must pass the same arguments, which is why both
-// resolve draftMode() first and pass the same SLUG constant.
+// A CMS Page (about, privacy), body included. cache()-wrapped for the same
+// reason getBrowseIntro is, below. [→ `single-entry-cache`]
 export const getPage = cache(
   async (slug: string, preview: boolean): Promise<Page | undefined> => {
     const entry = await fetchGraphQL<PageCollectionResponse>(
@@ -641,22 +571,14 @@ export const getAllPages = cache(
     }`,
       isDraftMode,
       { preview: isDraftMode },
-      // The sitemap is this query's other consumer, so PAGES busts it too — which
-      // is what a newly published or unpublished Page needs.
+      // The sitemap is this query's other consumer, so PAGES busts it too.
       CACHE_TAGS.PAGES,
     );
   },
 );
 
 // The editable standfirst and meta description for a browse page.
-//
-// cache()-wrapped because every page that uses it calls it TWICE: once in
-// generateMetadata and once in the component. Next only memoises GET and
-// fetchGraphQL issues POST, so without this each of those pages would issue two
-// identical requests per render. The two calls must pass the same arguments —
-// cache() dedupes identical calls, not equivalent ones — which is why both
-// resolve draftMode() first and pass the same slug. Same trap as
-// getPostAndMorePosts on the post route.
+// cache()-wrapped for the same reason as the others above. [→ `single-entry-cache`, `browse-copy`]
 //
 // Returns undefined when no entry exists. Callers fall back rather than throw,
 // so a fork with an empty space renders a page with just its heading instead of
@@ -686,16 +608,12 @@ export const getBrowseIntro = cache(
   },
 );
 
-// Tags with their descriptions, for the /tags glossary.
-//
-// Deliberately a separate query rather than adding `description` to
-// LIST_GRAPHQL_FIELDS' tagsCollection. That fragment feeds the home page, the
-// feed and the sitemap, and exists to keep weight out of their ISR entries;
-// carrying a gloss on every listing so one page can print it would undo that.
-// The glossary joins these to the grouped posts by slug.
-// One tag, for its landing page. cache()-wrapped because generateMetadata and
-// the page component both need it, and cache() only dedupes identical calls —
-// see the note on getPostAndMorePosts.
+// Tags with their descriptions, for the /tags glossary. Deliberately a
+// separate query rather than adding `description` to LIST_GRAPHQL_FIELDS'
+// tagsCollection — that fragment exists to keep weight out of the ISR entries
+// it feeds, and a gloss on every listing would undo that. cache()-wrapped
+// because generateMetadata and the page component both need it.
+// [→ `single-entry-cache`]
 export const getTagBySlug = cache(
   async (slug: string, isDraftMode: boolean): Promise<Tag | undefined> => {
     const entries = await fetchGraphQL<TagCollectionResponse>(
@@ -717,10 +635,7 @@ export const getTagBySlug = cache(
 );
 
 // Posts carrying a tag are filtered in memory by postsWithTag in lib/tags.ts,
-// not fetched here. There is no per-tag query to write — Contentful's GraphQL
-// cannot filter a collection on an Array<Link> field. That is the whole reason,
-// and it has nothing to do with request counts: every fetcher in this file is
-// cache()-wrapped, so a wrapper would have been redundant rather than costly.
+// not fetched here — there is no per-tag query to write. [→ `tag-pages`]
 
 export const getAllTags = cache(
   async (isDraftMode: boolean): Promise<Tag[]> => {
@@ -788,22 +703,15 @@ export const getCategoryBySlug = cache(
 );
 
 // Every post in a category, newest first and uncapped — the category index
-// paginates this in memory with .slice(), so it needs the whole set to know how
-// many pages there are.
+// paginates this in memory with .slice(), so it needs the whole set to know
+// how many pages there are.
 //
-// Uses the card fragment, not POST_GRAPHQL_FIELDS. Both consumers pass the
-// result straight to <MoreStories morePosts={...}>, which takes CardPost[] —
-// five fields. Fetching the full fragment pulled every post's rich-text body,
-// every embedded CodeBlock's source, every linked asset and the author bio, and
-// then rendered an excerpt from it. That whole payload also sat in the ISR cache
-// entry for each category page.
-//
-// If a caller ever needs `category`, `author` or `updatedDate` here, add
-// LIST_GRAPHQL_FIELDS rather than reaching back for the full one.
-//
-// cache() keys on the full argument list, so this only dedupes calls for the
-// same (slug, isDraftMode) pair — the first fetcher in this file where the
-// memo key is not just the draft-mode boolean.
+// Uses the card fragment, not POST_GRAPHQL_FIELDS: both consumers pass the
+// result straight to <MoreStories morePosts={...}>, which takes CardPost[].
+// The full fragment's rich-text body, embedded assets and author bio would
+// otherwise sit unused in this route's ISR cache entry too. If a caller ever
+// needs `category`, `author` or `updatedDate` here, add LIST_GRAPHQL_FIELDS
+// rather than reaching back for the full one.
 export const getPostsByCategory = cache(
   async (slug: string, isDraftMode: boolean): Promise<CardPost[]> => {
     return fetchAllCollectionItems<CardPost>(
@@ -823,12 +731,9 @@ export const getPostsByCategory = cache(
 );
 
 // Recent posts in a category, capped server-side. Same card fragment as
-// getPostsByCategory above; the difference is the limit. This one teases a few
-// posts on the categories landing page, that one returns the whole category so
-// the index can paginate it.
-//
-// cache() keys on (slug, limit, isDraftMode) here, so a call only dedupes
-// against another asking for the same slug and the same cap.
+// getPostsByCategory above; the difference is the limit — this one teases a
+// few posts on the categories landing page, that one returns the whole
+// category so the index can paginate it.
 export const getRecentPostsByCategory = cache(
   async (
     slug: string,
@@ -881,10 +786,9 @@ export const getAuthorBySlug = cache(
   },
 );
 
-// There is no getPostsByAuthor. `authors` is an Array<Link>, and Contentful's
-// GraphQL cannot filter a collection on one — where: { authors: { slug } }
-// does not exist, the same wall postsWithTag hit. Author pages fetch
-// getAllPosts once and filter in memory with postsByAuthor, in lib/authors.ts.
+// There is no getPostsByAuthor. `authors` is an Array<Link>, the same wall
+// postsWithTag hit. [→ `tag-pages`] Author pages fetch getAllPosts once and
+// filter in memory with postsByAuthor, in lib/authors.ts.
 
 export const getAllAuthors = cache(
   async (isDraftMode: boolean): Promise<Author[]> => {
