@@ -369,18 +369,18 @@ export function RichText({
               </figcaption>
               <div className="flow-root whitespace-pre-wrap break-words bg-gray-50 p-4 font-mono text-[0.78em] text-gray-800 dark:bg-white/5 dark:text-brand-dark">
                 {entry.image?.url && (
-                  /* Decorative, floats only from sm up so text wraps around it
-                     rather than sitting in a fixed column. Hidden below sm,
-                     where a fixed 78px column would leave too narrow a strip
-                     beside it to read (WCAG 1.4.10) — the image carries no
-                     information, so hiding it costs nothing. mt-2 is a nudge
-                     tuned by eye, not a computed constant: it corrects for the
-                     text's half-leading against the image box's none, and the
-                     exact gap depends on which font in the font-mono stack the
+                  /* Decorative. Floats left from sm up so text wraps around
+                     it; below sm it stacks above the prompt text instead,
+                     because a fixed 78px column inside this p-4 block leaves
+                     too narrow a measure to read comfortably at phone
+                     widths. mt-2 in the floated case is a nudge tuned by eye,
+                     not a computed constant: it corrects for the text's
+                     half-leading against the image box's none, and the exact
+                     gap depends on which font in the font-mono stack the
                      browser resolves. */
                   <span
                     aria-hidden="true"
-                    className="relative mt-2 mb-1 mr-3 hidden h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 sm:float-left sm:block"
+                    className="relative mb-3 block h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 sm:float-left sm:mt-2 sm:mr-3 sm:mb-1"
                   >
                     <ContentfulImage
                       src={entry.image.url}
