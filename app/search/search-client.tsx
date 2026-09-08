@@ -23,13 +23,11 @@ declare module "react" {
 }
 
 // Custom result template in Pagefind's template syntax ({{ }} escaped,
-// {{+ +}} raw, {{#if}}/{{#each … as …}} blocks, `|` filters). It is a static
-// string we author — no user input — so injecting it as HTML is safe. House
-// list idiom (matching more-stories and archive): display-face title, ink link that
-// goes crimson on hover, body excerpt, heading-scoped sub-results. The main
-// link must be an <a> for the components' keyboard navigation. `meta.url` is
-// read first so the clean route from data-pagefind-meta wins over Pagefind's
-// `.html` file path; `{{+ excerpt +}}` keeps the <mark> highlights.
+// {{+ +}} raw, {{#if}}/{{#each … as …}} blocks, `|` filters). [→ `reviewed-items`]
+// House list idiom (matching more-stories and archive). The main link must be
+// an <a> for the components' keyboard navigation. `meta.url` is read first so
+// the clean route from data-pagefind-meta wins over Pagefind's `.html` file
+// path.
 const RESULT_TEMPLATE = `
 <script type="text/pagefind-template">
   <li class="result-item py-6">
@@ -65,18 +63,14 @@ export default function SearchClient() {
     loadedRef.current = true;
 
     // Failure detection only; the loading itself is the hoisted pair below.
-    //
-    // The handler cannot go on that <script>, and this is a hard React rule
-    // rather than a preference: isHostHoistableType refuses to hoist a script
-    // carrying onLoad or onError, so an inline handler would silently put the
-    // module back after hydration and undo the whole change. Hence a second
-    // element for the listener.
-    //
-    // It costs no request. A module URL is fetched and evaluated once per
-    // document, so this resolves against the same module-map entry the hoisted
-    // script created and fires load or error off it. The index only exists
-    // after a production build, so on `next dev` it errors, which is what the
-    // fallback below is for.
+    // The handler cannot go on that <script>: React's isHostHoistableType
+    // refuses to hoist a script carrying onLoad or onError, so an inline
+    // handler would silently put the module back after hydration. Hence a
+    // second element for the listener — it costs no request, since a module
+    // URL is fetched and evaluated once per document and this resolves
+    // against the same module-map entry the hoisted script created. The
+    // index only exists after a production build, so on `next dev` it
+    // errors, which is what the fallback below is for.
     const probe = document.createElement("script");
     probe.type = "module";
     probe.src = "/pagefind/pagefind-component-ui.js";
@@ -99,20 +93,17 @@ export default function SearchClient() {
 
   return (
     <div className="pagefind-scope">
-      {/* Hoisted into <head> by React rather than appended after hydration.
+      {/* Hoisted into <head> by React rather than appended after hydration:
+          the browser starts both the module and the CSS during the initial
+          parse instead of after a hydrate-then-fetch chain. Do not move
+          these into the effect below — that reintroduces four sequential
+          round-trips before the input does anything, with the stylesheet
+          landing after first paint and reflowing what's on screen.
+
           Both files are a build-time static bundle emitted into
           public/pagefind/ by `postbuild`, not an npm package — loading the
           build's own copy (rather than @pagefind/component-ui) is what
           guarantees they match the CLI version that wrote the index.
-
-          They used to be created in the effect below, which meant nothing
-          about search existed in the server HTML and the critical path was
-          hydrate, then module, then Pagefind's core, then the WASM, then the
-          index: four sequential round-trips before the input did anything,
-          with the stylesheet landing after first paint and reflowing what was
-          already on screen. In <head> the browser starts both during the
-          initial parse, so the module and the CSS overlap hydration instead of
-          following it.
 
           precedence is what makes React hoist and dedupe the stylesheet, and
           it must be present or the element renders in place as ordinary
@@ -129,9 +120,7 @@ export default function SearchClient() {
           X"). The component fills the text; globals.css styles it and hides it
           while the input is empty. */}
       <pagefind-summary></pagefind-summary>
-      {/* The result template is a static, self-authored string (see
-          RESULT_TEMPLATE) injected as the element's only child; there is no
-          user input, so dangerouslySetInnerHTML is safe here. */}
+      {/* RESULT_TEMPLATE, static and self-authored. [→ `reviewed-items`] */}
       <pagefind-results dangerouslySetInnerHTML={{ __html: RESULT_TEMPLATE }} />
     </div>
   );
