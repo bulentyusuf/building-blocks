@@ -38,6 +38,7 @@ yarn-error.log*
 GEMINI.md
 .gemini/
 .aider*
+.claude/settings.local.json
 
 # typescript
 *.tsbuildinfo
