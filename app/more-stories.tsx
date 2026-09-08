@@ -8,19 +8,16 @@ import { widont } from "@/lib/typography";
 
 type Variant = "grid" | "list";
 
-// Pills sit below the excerpt, not above the title. Above it they would be the
-// first interactive thing in the card and would route the reader away from the
-// listing before they reached the headline; worse, the count varies from one to
-// three and wraps at three, so they would push each title down by a different
-// amount and titles would stop aligning with the top of their cover images.
-// Below the excerpt that variability lands at the foot of the card, where
-// nothing depends on it.
+// Pills sit below the excerpt, not above the title: above it they'd be the
+// first interactive thing in the card, routing the reader away before they
+// reach the headline, and the count varies from one to three and wraps at
+// three, so titles would stop aligning with the top of their cover images.
+// [→ `tag-pills`]
 //
-// aria-label rather than a visible "Tagged" label. The post page carries one
-// because it appears once there; repeated down a listing it is five identical
-// labels of pure noise, and the pill shape already reads as a tag. Screen
-// readers still need the row named, hence the label — without it this is an
-// unexplained list of links on every card.
+// aria-label rather than a visible "Tagged" label — repeated down a listing a
+// visible label is five identical words of pure noise, and the pill shape
+// already reads as a tag; screen readers still need the row named.
+//
 // Exported for the home hero, which is a listing item in everything but its
 // component. One pill implementation means the pill changes in one place.
 export function TagRow({
@@ -68,11 +65,9 @@ function PostPreview({
 
   if (variant === "list") {
     return (
-      // Symmetric vertical padding on every item, the first included, and it
-      // is never dropped. This is the list's rhythm: whatever sits above an
-      // item — a hairline, or the bottom edge of the masthead band — belongs
-      // this far from the cover below it. Zeroing it for the first item made
-      // that post hug the band while every post after it breathed.
+      // Symmetric vertical padding on every item, the first included, never
+      // dropped: whatever sits above an item belongs this far from the cover
+      // below it. [→ `listing-shell`]
       <article className="grid grid-cols-1 gap-5 py-10 md:grid-cols-[2fr_3fr] md:gap-8 md:items-start md:py-12">
         {coverImage && (
           <div>
@@ -82,13 +77,12 @@ function PostPreview({
               priority={priority}
               hover
               // Capped in px above the point the container stops growing.
-              // Container is max-w-5xl with px-5, so content tops out at 984px,
-              // and this grid is [2fr_3fr] with a 32px gap — the cover track is
-              // (984 - 32) * 2/5 = 381px and never widens again. A bare 40vw
-              // kept growing with the viewport: at 1440px it claimed 576px, so
-              // at DPR 2 the browser asked for 1152 and took the 1200
-              // derivative where 828 covers it. The vw clause stays for the
-              // fluid range below 1024px, where it is accurate.
+              // Container is max-w-5xl with px-5 (984px content), this grid is
+              // [2fr_3fr] with a 32px gap: cover track is (984 - 32) * 2/5 =
+              // 381px and never widens further. A bare 40vw kept growing with
+              // the viewport — at 1440px it claimed 576px, requesting a 1152
+              // derivative at DPR 2 where 828 covers it. The vw clause stays
+              // for the fluid range below 1024px, where it is accurate.
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 40vw, 381px"
             />
           </div>
@@ -126,11 +120,9 @@ function PostPreview({
     <article className="flex h-full flex-col">
       {coverImage && (
         <div className="mb-4">
-          {/* Covers on this grid are authored 1920x1080. A bare 3:2 frame
-              cropped 15.6% off the width of every one of them. wide keeps the
-              mobile 3:2 (a full-width 16:9 on a phone is a letterbox strip)
-              and renders the source uncropped from md up, which also puts
-              these cards on the same aspect as the hero above them. */}
+          {/* wide: a bare 3:2 frame crops 15.6% off these 1920x1080 covers.
+              [→ `cover-frames`] Also puts these cards on the same aspect as
+              the hero above them. */}
           <CoverImage
             slug={slug}
             image={coverImage}
@@ -141,14 +133,10 @@ function PostPreview({
           />
         </div>
       )}
-      {/* The list card's own ramp, so the two variants agree about how big a
-          card headline is. They did not before: this was a flat text-3xl,
-          the Vercel template's value from when the grid was only ever the
-          post page's Read Next teaser, and as home's main listing that put
-          the card headline within 6px of the hero at desktop and level with
-          it on mobile, with nothing showing because the two variants never
-          shared a page. It also stops all four cards forcing two lines at
-          the 428px cell this grid resolves to inside the 984px content cap. */}
+      {/* The grid variant's own ramp, matched to the list variant's so the two
+          agree on card headline size. Stops all four cards forcing two lines
+          at the 428px cell this grid resolves to inside the 984px content
+          cap. */}
       <Heading className="text-2xl md:text-3xl mb-3 leading-snug text-pretty">
         <Link
           href={`/posts/${slug}`}
@@ -182,11 +170,10 @@ export default function MoreStories({
   morePosts: CardPost[];
   variant?: Variant;
   // Whether the run draws its own opening and closing hairlines. Defaults to
-  // true for a list, which is every listing route, and false for a grid,
-  // which is the post page's Read Next teaser. Home is the exception that
-  // needs it explicitly: it renders a grid but it IS a listing, and the pager
-  // below it draws no rule of its own precisely because it expects the run
-  // above to have closed itself. An unruled grid there leaves the pager
+  // true for a list (every listing route) and false for a grid (ordinarily the
+  // post page's Read Next teaser). Home passes it explicitly: it renders a
+  // grid but IS a listing, and its pager draws no rule of its own — it expects
+  // the run above to have closed itself, so an unruled grid leaves it
   // floating under nothing.
   ruled?: boolean;
   heading: string | null;
@@ -194,61 +181,29 @@ export default function MoreStories({
   // heroless listing pages (index page 2+, category pages) where that image is
   // the LCP. Leave false where a hero already owns priority (index page 1).
   priorityFirst?: boolean;
-  // Pass to show tag pills; omit for no pills. It is the visibility set rather
-  // than a boolean on purpose: a pill links to `/tags/[slug]`, and that route
-  // 404s for a tag below MIN_POSTS_PER_TAG, so an unfiltered pill can point at
-  // a dead URL. Requiring the set makes it impossible to switch pills on
-  // without deciding that question.
-  //
-  // A tag page passes this set minus its own slug: every post there carries
-  // that tag, so repeating it on each card says nothing.
-  //
-  // The set must be computed from ALL posts, via visibleTagSlugs(getAllPosts()).
-  // Deriving it from the posts on one category or author page counts a subset
-  // and would hide tags the glossary shows.
+  // Pass to show tag pills; omit for no pills. The visibility set rather than
+  // a boolean on purpose — a pill links to `/tags/[slug]`, which 404s below
+  // MIN_POSTS_PER_TAG — so requiring the set makes it impossible to switch
+  // pills on without deciding that question. Must be computed from ALL posts;
+  // a category or author page's own subset would hide tags the glossary
+  // shows. [→ `tag-pages`]
   visibleTags?: Set<string>;
-  // Drops the opening rule, keeping the closing one. For a listing that already
-  // has an edge above it — the banded browsing pages, where the navy block ends
-  // where the list begins — the top rule draws a second boundary a few pixels
-  // under the first. The item padding stays: see the note under `container` for
-  // why the two must not move together. The CLOSING rule is not optional either
-  // way, because the pager below relies on it.
+  // Drops the opening rule, keeping the closing one — for a listing that
+  // already has an edge above it from its own wide-page header. The CLOSING
+  // rule is not optional either way; the pager below relies on it.
+  // [→ `border-roles`]
   openRule?: boolean;
 }) {
-  // The list closes itself. divide-y rules between items left the first one
-  // with nothing above it, so a listing began mid-air and only ended because
-  // the pager happened to draw a rule above itself — which meant a single-page
-  // listing, where the pager renders nothing, was open at both ends.
+  // The list closes itself: border-y puts the same hairline above the first
+  // item and below the last, so a single-page listing (where the pager
+  // renders nothing) isn't open at both ends. Do not give the pager a border
+  // too, or the two land in the same row and print a double line.
+  // [→ `border-roles`]
   //
-  // border-y here puts the same hairline above the first item and below the
-  // last, so the whole run reads as one evenly ruled block on every page and
-  // owns its own edges. The pager no longer draws that closing rule; it keeps
-  // its top padding and sits below this one. Do not give it a border again, or
-  // the two land in the same row and print a double line.
-  //
-  // Ruled by default on a list and unruled by default on a grid, because the
-  // grid variant is ordinarily a teaser block on the post page, not a listing,
-  // and has no rules between its cells to continue. Home is the one caller
-  // that renders a grid and passes ruled explicitly: it IS a listing, and its
-  // pager below relies on this run having closed itself exactly as the list
-  // variant does.
-  //
-  // openRule=false drops the top half only. A banded page already ends the navy
-  // block where the list starts, so the opening rule lands just under that edge
-  // and reads as a stray line rather than the start of anything.
-  //
-  // The item padding is NOT dropped with it. Each item is py-10 md:py-12, so a
-  // hairline sits that far from the cover below it; the band's bottom edge is
-  // playing the same role, and it should sit the same distance away. Zeroing it
-  // made the first post hug the band while every post after it breathed — the
-  // rhythm broke at exactly the point the reader starts reading. The page that
-  // owns the band contributes no gap of its own instead (WidePage).
-  //
-  // A ruled grid carries that same py-10 md:py-12 as its own container inset
-  // rather than on each cell, for the same reason: a grid cell has no padding
-  // of its own, so without it the opening rule would sit flush against the
-  // first row of covers and the rhythm would break at exactly the point the
-  // reader starts reading.
+  // The item padding is NOT dropped with openRule=false: each item's
+  // py-10 md:py-12 is the distance a hairline keeps from the cover below it,
+  // and the wide-page header's own 3px rule plays a hairline's part here too.
+  // [→ `listing-shell`]
   const container =
     variant === "list"
       ? `flex flex-col divide-y divide-hairline${
@@ -260,9 +215,7 @@ export default function MoreStories({
             : ""
         }`;
 
-  // When the section renders its own h2 heading, post titles sit one level
-  // below it (h3). With no section heading, the page h1 is the parent, so post
-  // titles step up to h2 to avoid skipping a level.
+  // [→ `page-axis`]
   const titleAs = heading ? "h3" : "h2";
 
   return (
