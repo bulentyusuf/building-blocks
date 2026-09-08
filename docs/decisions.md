@@ -2077,9 +2077,9 @@ stylesheet from 68,608 to 67,568 bytes. `lib/toc-active.test.ts` saw none of it:
 it pinned its needle to one literal value and its second check matched only
 inside `className=`.
 
-**So a local compile is now used, in one specific shape.** A differential guard,
-landing with the implementation, compiles the stylesheet twice, once against the
-scanned tree and once against a comment-stripped mirror of it, and
+**So a local compile is now used, in one specific shape.**
+`lib/tailwind-comment-scanning.test.ts` compiles the stylesheet twice, once
+against the scanned tree and once against a comment-stripped mirror of it, and
 asserts the two produce the same rules. This is a _differential_ check, which is
 what makes it usable despite the caution above: both passes share the same
 narrow scan root, so it cannot invent a finding, and anything it does surface is
