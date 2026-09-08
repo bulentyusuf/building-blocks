@@ -835,3 +835,58 @@ describe("embedded asset alt text and captions", () => {
     },
   );
 });
+
+describe("prompt block thumbnail", () => {
+  const promptRef = {
+    nodeType: BLOCKS.EMBEDDED_ENTRY,
+    data: {
+      target: { sys: { id: "prompt1", type: "Link", linkType: "Entry" } },
+    },
+    content: [],
+  };
+
+  const promptContent = (entry: Record<string, unknown>): Content =>
+    ({
+      json: {
+        nodeType: BLOCKS.DOCUMENT,
+        data: {},
+        content: [promptRef],
+      } as unknown as Document,
+      links: {
+        assets: { block: [] },
+        entries: {
+          block: [
+            { sys: { id: "prompt1" }, __typename: "PromptBlock", ...entry },
+          ],
+          inline: [],
+        },
+      },
+    }) as unknown as Content;
+
+  it("renders the thumbnail stacked below 480px and floated from 480px up", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={promptContent({
+          prompt: "Draw a cat",
+          image: { url: "https://images.ctfassets.net/a.jpg" },
+        })}
+        headings={[]}
+      />,
+    );
+
+    const span = html.match(/<span aria-hidden="true" class="([^"]*)"/);
+    expect(span?.[1]).toContain("min-[480px]:float-left");
+    expect(span?.[1]?.split(" ")).not.toContain("hidden");
+  });
+
+  it("renders no thumbnail span when the entry has no image", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={promptContent({ prompt: "Draw a cat" })}
+        headings={[]}
+      />,
+    );
+
+    expect(html).not.toContain('aria-hidden="true"');
+  });
+});
