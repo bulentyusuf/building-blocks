@@ -23,17 +23,12 @@ function headingText(node: Block | Inline): string {
     .join("");
 }
 
-// A table's w-full stretches to the full prose measure, and content-driven
-// auto layout then spreads that surplus across every column regardless of
-// need — a single digit in a "Posts" column was landing in a column wide
-// enough for a sentence. w-[1%] plus whitespace-nowrap is the standard fix
-// for auto table layout: it tells the column "your minimum is your own
-// content", freeing the surplus for columns that actually use it. This is
-// safe to infer per cell, unlike the alignment case it superficially
-// resembles: column width is the max across every cell in it regardless of
-// which ones ask to shrink, so a column mixing short and long values just
-// falls back to ordinary auto sizing — never a visible mismatch the way a
-// header disagreeing with its own column's alignment was.
+// w-full plus auto table layout spreads surplus width across every column
+// regardless of need — a single digit in a "Posts" column landing in a column
+// wide enough for a sentence. w-[1%] plus whitespace-nowrap fixes it per cell:
+// column width is still the max across every cell, so a column mixing short
+// and long values falls back to ordinary sizing rather than a visible
+// mismatch.
 function isShortValue(node: Block | Inline): boolean {
   const text = headingText(node).trim();
   return text !== "" && /^\d+(\.\d+)?$/.test(text);
@@ -56,15 +51,12 @@ function RichTextAsset({
 
   // `title` is the alt text, so a title that is really a filing label reaches
   // a screen reader as though it described the picture. Checking only for an
-  // ABSENT title would be a guard that can never fire — Contentful requires
-  // the field — which is how a whole library of filename stems and generator
-  // output shipped with every check green. lib/placeholder-title.ts carries
-  // the argument and the known-bad control.
+  // ABSENT title would never fire — Contentful requires the field.
+  // lib/placeholder-title.ts carries the argument and the known-bad control.
   //
-  // A missing `description` is NOT warned on. It means only that no caption
-  // renders, which is a legitimate editorial choice and is already the case on
-  // several published figures. Alt is the accessibility floor; a caption is
-  // an addition.
+  // A missing `description` is NOT warned on: it means only that no caption
+  // renders, a legitimate editorial choice. Alt is the accessibility floor; a
+  // caption is an addition.
   if (isPlaceholderTitle(asset.title, asset.fileName)) {
     console.warn(
       `[rich-text] Embedded asset ${asset.sys.id} has no usable title (${JSON.stringify(asset.title ?? null)}), so its alt text does not describe the image.`,
@@ -88,19 +80,12 @@ function RichTextAsset({
       ) : (
         <ContentfulImage
           src={asset.url}
-          // The asset's title, which is a different string from the caption
-          // below and describes what is depicted rather than commenting on it.
-          // These were once the same field, which is why the image had to go
-          // decorative to avoid announcing one sentence twice. They are not
-          // the same field any more, so it does not.
-          //
           // "" when no title is set, never a filename and never a guess. The
           // build warning above is what surfaces that case.
           alt={asset.title ?? ""}
-          // The asset's real shape, with 3:2 as the fallback for an asset that
-          // carries no dimensions — see the same pair in lightbox-image.tsx.
-          // w-full h-auto means the bitmap wins once loaded either way, so a
-          // wrong ratio here is a layout shift rather than a wrong render.
+          // 3:2 fallback for an asset with no dimensions — same pair as
+          // lightbox-image.tsx. w-full h-auto means a wrong ratio here is a
+          // layout shift, not a wrong render.
           width={asset.width ?? 1200}
           height={asset.height ?? 800}
           priority={priority}
@@ -148,24 +133,13 @@ export function RichText({
   // Document-order number for inline sidenotes, feeding each note's aria-label
   // and its in-text marker. The floated note's own "N." prefix comes from a CSS
   // counter (globals.css); both count once per note in order, so they agree.
+  // [→ `sidenotes`]
   let sidenoteIndex = 1;
   // Document-order number for tables, feeding each scroll region's accessible
-  // name. Every table on the site was named the literal "Table", so two in one
-  // post were indistinguishable in the list a screen reader keeps of regions —
-  // which is the list that exists to tell them apart.
-  //
-  // An ordinal rather than a name derived from the header row, and that is the
-  // considered choice rather than the lazy one: those header cells are
-  // announced again the moment the reader enters the table, so naming the
-  // region after them is a duplicate announcement of exactly the kind the rest
-  // of this file exists to remove. Contentful's table model carries no caption
-  // field to use instead. A position is the one thing the region can say that
-  // the table itself does not.
+  // name. [→ `scroll-region-names`]
   let tableIndex = 0;
-  // The same, for code blocks. A block with a filename is already named by it;
-  // one without fell back to the literal "Code block", so a post with two
-  // unnamed snippets had two identically named regions for the same reason the
-  // tables did.
+  // The same, for code blocks. A block with a filename is already named by it.
+  // [→ `scroll-region-names`]
   let codeBlockIndex = 0;
 
   // The post title is the page's only h1, so a stray h1 in body content would
@@ -191,59 +165,40 @@ export function RichText({
         const isPlainRun =
           node.content?.length === 1 && node.content[0]?.nodeType === "text";
         return (
-          // No scroll-mt here. The offset that parks a fragment-linked
-          // heading below the sticky header is `scroll-padding-top` on <html>
-          // (globals.css), which covers keyboard focus too. The two are
-          // additive, so a scroll-margin here would push the landing point
-          // past the line app/table-of-contents.tsx activates on.
+          // No scroll-mt here — scroll-padding-top on <html> replaced it and
+          // the two are additive. [→ `scroll-offset`]
           <h2 id={slug} className="group/heading">
             {isPlainRun ? widont(text) : children}
             {slug ? (
               <a
                 href={`#${slug}`}
-                // Pagefind indexes raw text content, and honours neither
-                // aria-hidden nor opacity-0 — so without this the glyph is
-                // concatenated onto the heading in the index and surfaces as a
-                // trailing "#" in both the sub-result title and the excerpt.
-                // The h2's own id is untouched, so Pagefind still builds a
-                // sub-result anchor for the heading; only the marker drops out.
+                // Keeps the glyph out of the indexed excerpt. Does not by
+                // itself keep it out of the sub-result title — see the span
+                // below. [→ `pagefind-index-scope`]
                 data-pagefind-ignore
-                // The visible glyph is decorative, so it is hidden from the
-                // accessibility tree and the link carries a real name instead.
-                // Without this every permalink announces as "number sign".
-                // The name is deliberately just "Permalink", not "Permalink to
-                // <heading>": the anchor sits inside the <h2>, so accessible-
-                // name-from-content folds this label into the heading's own
-                // name. A descriptive label would make every heading announce
-                // its title twice. Per-section descriptive links live in the
-                // ToC, which is where AT users reach for them anyway.
+                // The visible glyph is decorative and hidden from the
+                // accessibility tree; the link carries a real name instead, or
+                // every permalink announces as "number sign". Just
+                // "Permalink", not "Permalink to <heading>": the anchor sits
+                // inside the <h2>, so accessible-name-from-content folds this
+                // label into the heading's own name already.
                 aria-label="Permalink"
-                // The negative right margin cancels the anchor's own advance,
-                // so it consumes no width when the line is measured and can
-                // never be pushed onto a line of its own. Without it the marker
-                // wraps whenever a heading's last line is nearly full, and
-                // because it is opacity-0 rather than hidden that line still
-                // takes its height — an empty band under the heading, on a
-                // heading that looks like it had room to spare. Measured in
-                // Chromium across 201 column widths: 15 of them orphaned the
-                // marker before, none after.
+                // The negative right margin cancels the anchor's own advance
+                // so it can never be pushed onto a line of its own — without
+                // it, an opacity-0 wrapped marker still takes its line's
+                // height, leaving an empty band under the heading. Measured in
+                // Chromium across 201 column widths: 15 orphaned the marker
+                // before, none after.
                 //
-                // Deliberately not zero-width, which fixes the wrap equally
-                // well and collapses the focus ring to a 2px bar beside the
-                // glyph instead of tracing it. The cost is that the marker can
-                // overhang the measure by up to about 22px when the last line
-                // is completely full, which is inside the gutter it sits in.
+                // Deliberately not zero-width, which would collapse the focus
+                // ring to a 2px bar instead of tracing the glyph. Costs up to
+                // about 22px of overhang on a completely full last line, which
+                // is inside the gutter it sits in.
                 className="ml-2 -mr-[1em] inline-block align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
               >
-                {/* The glyph is CSS generated content, not a text node, and
-                    that is load-bearing rather than stylistic. Pagefind reads
-                    a heading anchor's text straight from the DOM and does NOT
-                    honour data-pagefind-ignore when it does so — only when
-                    assembling the page's body content. So with a text node
-                    here, every sub-result title in search ended in a stray
-                    "#" even with the ignore attribute in place. Generated
-                    content is invisible to it. Do not put the character back
-                    in the markup. */}
+                {/* CSS generated content, not a text node — load-bearing, not
+                    stylistic. Do not put the character back in the markup.
+                    [→ `pagefind-index-scope`] */}
                 <span aria-hidden="true" className="after:content-['#']" />
               </a>
             ) : null}
@@ -274,18 +229,13 @@ export function RichText({
         </blockquote>
       ),
       [BLOCKS.TABLE]: (_node: Block | Inline, children: ReactNode) => {
-        // Horizontal scroll rather than reflow: a table narrower than its
-        // content is unreadable, and Contentful gives no column hints to
-        // restructure from. tabIndex makes the scroll container reachable by
-        // keyboard (2.1.1); a focusable scroll region needs a role and an
-        // accessible name or a screen reader announces an unlabelled stop.
-        // Two nested wrappers: overflow-hidden on the outer element clips the
-        // header fill to the rounded corners, overflow-x-auto on the inner one
-        // scrolls — one element can't do both without losing the radius.
-        //
-        // The name carries the table's position, so a post with several of
-        // them gives the reader something to tell the regions apart by. See
-        // tableIndex above for why it is a number rather than the header row.
+        // Horizontal scroll rather than reflow: Contentful gives no column
+        // hints to restructure from. tabIndex makes the scroll container
+        // keyboard-reachable (2.1.1); a focusable scroll region needs a role
+        // and an accessible name or it announces unlabelled. Two nested
+        // wrappers because one element can't both clip to the radius
+        // (overflow-hidden) and scroll (overflow-x-auto). Name is a position,
+        // not the header row. [→ `scroll-region-names`]
         const position = ++tableIndex;
         return (
           <div className="not-prose my-8 overflow-hidden rounded-lg border border-table-edge">
@@ -398,27 +348,19 @@ export function RichText({
               data-pagefind-weight="0.1"
               className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
             >
-              {/* Prompts are published content and stay indexed on purpose —
-                  data-pagefind-ignore would drop them from search entirely,
-                  which is the wrong trade. Pagefind's weight attribute feeds
-                  excerpt selection as well as ranking, so a low weight here
-                  (covering the figcaption label along with the prompt text,
-                  since the label is a caption for the prompt rather than
-                  prose) keeps a match from anchoring the excerpt over
-                  surrounding body text. 0.1 is a starting value, not derived
-                  from anything. This does not stop a prompt-only match from
-                  surfacing the post or appearing in its excerpt — weighting
-                  only decides which region wins when regions compete. */}
+              {/* Prompts stay indexed on purpose — data-pagefind-ignore would
+                  drop them from search entirely. The low weight (covering the
+                  figcaption label too, since it's a caption not prose) keeps a
+                  match from anchoring the excerpt over surrounding body text
+                  without stopping a prompt-only match from surfacing the post.
+                  0.1 is a starting value, not derived from anything. */}
               {/* figcaption as figure's first child names the whole block
-                  natively — no role or aria-labelledby needed. In dark mode
-                  brand-crimson lifts (for link legibility); white text on the
-                  lifted hue fails AA at 2.53:1, so the header ink goes dark
-                  (6.64:1). The label is not mono: at this size a fixed-advance
-                  face draws stems thin enough that measured contrast stops
-                  predicting legibility, and the label is a caption rather than a
-                  verbatim string. It also sits at the body's size rather than
-                  below it — a label smaller than the content it names had
-                  nothing to justify it. */}
+                  natively. In dark mode brand-crimson lifts for link
+                  legibility; white text on the lifted hue fails AA at 2.53:1,
+                  so the header ink goes dark instead (6.64:1). Not mono — at
+                  this size a fixed-advance face draws stems too thin for
+                  measured contrast to predict legibility, and the label is a
+                  caption, not a verbatim string. */}
               <figcaption className="flex items-center justify-between bg-brand-crimson px-4 py-2 text-[0.78em] font-semibold text-white dark:text-surface-dark">
                 <span className="min-w-0 flex-1">
                   {entry.label || "Prompt"}
@@ -427,16 +369,15 @@ export function RichText({
               </figcaption>
               <div className="flow-root whitespace-pre-wrap break-words bg-gray-50 p-4 font-mono text-[0.78em] text-gray-800 dark:bg-white/5 dark:text-brand-dark">
                 {entry.image?.url && (
-                  /* Decorative thumbnail: floats only from sm up, so text
-                     wraps around it rather than sitting in a fixed column for
-                     the whole prompt. Hidden below sm, where a fixed 78px
-                     column would leave too narrow a strip beside it to read
-                     (WCAG 1.4.10); the image carries no information, so
-                     hiding it there costs nothing. mt-2 corrects for the
-                     text's half-leading, which the image box has none of —
-                     the exact gap depends on which font in the font-mono
-                     stack the browser actually resolves, so treat this as a
-                     nudge tuned by eye rather than a computed constant. */
+                  /* Decorative, floats only from sm up so text wraps around it
+                     rather than sitting in a fixed column. Hidden below sm,
+                     where a fixed 78px column would leave too narrow a strip
+                     beside it to read (WCAG 1.4.10) — the image carries no
+                     information, so hiding it costs nothing. mt-2 is a nudge
+                     tuned by eye, not a computed constant: it corrects for the
+                     text's half-leading against the image box's none, and the
+                     exact gap depends on which font in the font-mono stack the
+                     browser resolves. */
                   <span
                     aria-hidden="true"
                     className="relative mt-2 mb-1 mr-3 hidden h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 sm:float-left sm:block"
@@ -463,9 +404,7 @@ export function RichText({
         const entry = content.links.entries?.inline?.find(
           (e) => e.sys.id === id,
         );
-        // Same defensive shape as the block case: an unresolved id (draft or
-        // deleted entry) or a non-Sidenote inline embed renders nothing rather
-        // than throwing.
+        // Same defensive shape as the block case. [→ `sidenotes`]
         if (!entry || entry.__typename !== "Sidenote") return null;
 
         return <Sidenote content={entry.note} number={sidenoteIndex++} />;

@@ -8,8 +8,7 @@ export interface Heading {
 
 // Below this a table of contents is a list as long as the article, so there is
 // nothing to navigate. The effect and the render in table-of-contents.tsx read
-// the same constant on purpose: they were two different numbers once, and the
-// effect did all its work for a component that rendered nothing.
+// the same constant on purpose.
 //
 // This lives here rather than in table-of-contents.tsx, which is "use client",
 // because app/posts/[slug]/page.tsx (a server component) also needs the value
@@ -21,12 +20,10 @@ export interface Heading {
 // sides.
 export const MIN_HEADINGS = 3;
 
-// The single answer to "does this post get a table of contents?". It was
-// written three times before this existed, twice negated and once not, with
-// comments in two files instructing the reader to keep them in step. The
+// The single answer to "does this post get a table of contents?". The
 // sidebar's margin in page.tsx and the render guard in table-of-contents.tsx
 // have to agree or the aside contributes spacing for a component that renders
-// nothing — which is a defect nothing in CI can see, because both readings are
+// nothing — a defect nothing in CI can see, because both readings are
 // individually valid.
 export function hasTableOfContents(headings: Heading[]): boolean {
   return headings.length >= MIN_HEADINGS;
