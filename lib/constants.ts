@@ -1,15 +1,11 @@
-// Resolution order, most specific first.
-//
-// 1. NEXT_PUBLIC_SITE_URL, the explicit setting. Needed for a custom domain and
-//    the only one of the three that survives moving off Vercel.
-// 2. VERCEL_PROJECT_PRODUCTION_URL, so a fork deployed without step 1 emits its
-//    real domain rather than localhost. Vercel sets this at both build and
-//    runtime, and always to the production domain even inside a preview
-//    deployment, which is what canonicals and feed links want. VERCEL_URL is
-//    deliberately not used: it is per-deployment, so it would change canonicals
-//    on every push, and it is unreachable when Standard Deployment Protection
-//    is enabled.
-// 3. localhost, for `next dev`.
+// Resolution order, most specific first: NEXT_PUBLIC_SITE_URL (the explicit
+// setting, and the only one of the three that survives moving off Vercel),
+// then VERCEL_PROJECT_PRODUCTION_URL (so a fork deployed without the first
+// emits its real domain rather than localhost — set at both build and
+// runtime, always to the production domain even inside a preview deployment),
+// then localhost for `next dev`. VERCEL_URL is deliberately not used: it is
+// per-deployment, so it would change canonicals on every push, and it is
+// unreachable when Standard Deployment Protection is enabled.
 //
 // Both sources go through normaliseOrigin, because a bare domain is the
 // commonest way to set either by hand and Vercel documents its own production
@@ -80,35 +76,11 @@ function parseHostname(url: string): string {
 
 export const SITE_HOSTNAME = parseHostname(SITE_URL);
 
-// Site identity is a code constant with an environment override, and the
-// override exists for one caller: demo-site, which builds this same repo from
-// the `demo` branch against a different Contentful space. The two projects run
-// identical code and differ only in environment variables, so a demo wanting
-// its own name has no other lever. Editing this on `demo` would end the
-// fast-forward sync — `git push origin main:demo` would stop being a
-// fast-forward and the weekly sync workflow would start failing — which is the
-// source divergence the one-repo setup exists to avoid.
-//
-// This is not the "move site identity into the CMS" change docs/decisions.md rejects.
-// That one puts constants fourteen files deep behind a network fetch on routes
-// that never touch Contentful. This is build-time config in the same shape as
-// NEXT_PUBLIC_SITE_URL above, and the default in code is still the live name,
-// so a fork that sets nothing is unaffected.
-//
-// All four are NEXT_PUBLIC_ despite every current read being server-side. Each
-// is rendered on the page, so nothing is being withheld, and the prefix means a
-// future client component reading one gets the configured value rather than
-// silently falling back to the default in the browser alone.
-//
-// The four are exactly the constants that name or place the site: the two the
-// masthead renders, the footer blurb, and the repository the footer links to.
-// Title and description in particular move together, because app/page.tsx
-// renders them as home's masthead and the standfirst directly beneath it, so
-// overriding one leaves the band half-renamed.
-//
-// SITE_AUTHOR is deliberately not among them. It credits whoever wrote the
-// posts, which on any deployment of this repo is still the same person, and the
-// feed's author is a truthful credit rather than a name to disguise.
+// Site identity is a code constant with an environment override, set on
+// demo-site only. [→ `demo-site`] All four are NEXT_PUBLIC_ despite every
+// current read being server-side, so a future client component reading one
+// gets the configured value rather than silently falling back to the default
+// in the browser alone.
 //
 // Resolution is `?.trim() || fallback` in all four. Do not tidy it to `??`: an
 // unset variable on Vercel is frequently an empty string rather than undefined,
@@ -137,50 +109,32 @@ export const SITE_REPO_URL =
   process.env.NEXT_PUBLIC_SITE_REPO_URL?.trim() ||
   "https://github.com/bulentyusuf/building-blocks";
 
-// Posts shown per listing page (index and category). On page 1 of the index
-// the hero counts as one of these, so every page holds the same number of posts.
+// Posts shown per listing page. [→ `posts-per-page`]
 export const POSTS_PER_PAGE = 5;
 
-// Authors a post can carry, matched to the Contentful size validation on
-// `authors` (max 3, no minimum) on both spaces. lib/api.ts's
-// authorsCollection(limit: MAX_AUTHORS) must use this same number, or the two
-// silently disagree: a fourth author would vanish from every query with no
-// error anywhere, the same trap as tagsCollection(limit: 3).
+// Must match lib/api.ts's authorsCollection(limit: MAX_AUTHORS) and the
+// Contentful size validation on both spaces — a fourth author would silently
+// vanish from every query if they disagree. [→ `authors-array`]
 export const MAX_AUTHORS = 3;
 
-// The RSS <author> address, and the one identity value with NO default.
-//
-// It used to be derived as `contact@` plus the hostname, which meant any
-// deployment that set NEXT_PUBLIC_SITE_URL and nothing else began publishing a
-// mailbox at its own domain in a machine-readable file, in every item of the
-// feed, without anyone having decided that mailbox exists. Inferring an address
-// is not the same as having one.
-//
-// So it is opt-in, and app/feed.xml/route.ts omits the <author> element
-// entirely when it is unset — <author> is optional in RSS 2.0, and no element
-// is the honest answer to "we were not told". Set AUTHOR_EMAIL to turn it back
-// on. Deliberately not NEXT_PUBLIC_, unlike the four identity overrides above:
-// this one is read on the server only, and the prefix would inline an address
-// into the client bundle for no reader's benefit.
+// The RSS <author> address, and the one identity value with NO default. It is
+// opt-in: app/feed.xml/route.ts omits the <author> element entirely when unset
+// — <author> is optional in RSS 2.0, and no element is the honest answer to
+// "we were not told". Deliberately not NEXT_PUBLIC_, unlike the four identity
+// overrides above: this one is read on the server only.
 export const AUTHOR_EMAIL = process.env.AUTHOR_EMAIL?.trim() || "";
 
-// Chrome colour, carried by the sticky bar and the footer. CSS twin lives in
-// app/globals.css as --color-brand-header; keep both at #2B1C3F (CSS @theme
-// cannot import from TS). Feeds the light-scheme viewport themeColor and the
-// PWA manifest's theme_color.
+// Chrome colour. CSS twin lives in app/globals.css as --color-brand-header;
+// CSS @theme cannot import from TS, so a change touches both files.
+// [→ `brand-colour-duplication`, `chrome-aubergine`]
 export const BRAND_HEADER_COLOR = "#2B1C3F";
 
-// Dark-scheme chrome, used for the scheme-aware viewport themeColor so the
-// mobile address bar matches the bar in dark mode. CSS twin is the
-// --color-brand-header override under prefers-color-scheme: dark in globals.css.
-//
-// Both were navy (#1E3A8A / #2E4A9E) until the aubergine change. They are the
-// only copies of the chrome colour that live outside globals.css, so
-// lib/palette-contrast.test.ts holds each against its own scheme's token.
+// Dark-scheme twin, same reason. lib/palette-contrast.test.ts holds each
+// literal against its own scheme's token.
 export const BRAND_HEADER_COLOR_DARK = "#3B2A52";
 
-// BCP-47 default locale for html lang and hreflang. Matches the renamed
-// Contentful default locale (en-GB). Phase 1 localisation makes this per-route.
+// BCP-47 default locale for html lang and hreflang. [→ `locale`] Phase 1
+// localisation makes this per-route.
 export const DEFAULT_LOCALE = "en-GB";
 
 // Open Graph locale format uses an underscore, not a hyphen.

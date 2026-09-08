@@ -5,18 +5,16 @@ export interface Asset {
     id: string;
   };
   url: string;
-  // The caption, rendered as the figure's figcaption. NOT the alt text — see
+  // The caption, rendered as the figure's figcaption, NOT the alt text — see
   // `title` below. One field cannot serve both: 21 of the 24 cover assets are
   // also embedded as figures, so a shared field would have to be empty and
-  // populated at once.
+  // populated at once. [→ `announced-links`]
   description: string;
-  // The asset's Contentful `title`, rendered as the image's alt text. Optional
-  // and nullable: Contentful returns null when no title is set, and a payload
-  // cached before this field was queried carries neither.
+  // Optional and nullable: Contentful returns null when no title is set, and a
+  // payload cached before this field was queried carries neither.
   title?: string | null;
   // Read only by the build-time placeholder check in lib/placeholder-title.ts,
-  // which compares the title against it — a title that is just the filename is
-  // the defect that shipped. Nothing renders this.
+  // which compares the title against it. Nothing renders this. [→ `announced-links`]
   fileName?: string | null;
   // Optional and nullable on purpose. Contentful returns null for both on a
   // non-image asset, and a payload cached before these were queried carries
@@ -86,16 +84,13 @@ export interface AuthorCollectionResponse {
 
 export interface CoverImage {
   url: string;
-  // The asset's Contentful `title`, used as the image's alt text. Optional and
-  // nullable on purpose: Contentful returns null when no title is set, and a
-  // payload cached before this field was queried carries neither. Every
-  // consumer falls back to "" rather than assuming a string.
+  // Used as the image's alt text. Optional and nullable: Contentful returns
+  // null when no title is set, and a payload cached before this field was
+  // queried carries neither. Every consumer falls back to "" rather than
+  // assuming a string.
   title?: string | null;
-  // Not rendered. It is here so isPlaceholderTitle can compare the title
-  // against the filename stem, which is the only way to tell a description
-  // from a filing label — see app/cover-image.tsx, which is the one place that
-  // reads it. Without it the alt-text guard could not run on a cover at all,
-  // and for a long time it did not.
+  // Never rendered — exists only so isPlaceholderTitle can compare the title
+  // against the filename stem. [→ `announced-links`]
   fileName?: string | null;
 }
 
@@ -125,7 +120,7 @@ export interface TagCollectionResponse {
 // Editable copy at the top of a browse page, one entry per route. Both text
 // fields are optional to READ even though standfirst is required in the CMS: a
 // fork with an empty space has no entry at all, and the pages degrade rather
-// than break. See getBrowseIntro in lib/api.ts.
+// than break. [→ `browse-copy`]
 export interface BrowseIntro {
   title: string;
   slug: string;
@@ -160,9 +155,7 @@ export interface Post {
   // The co-authored byline, ordered: the first entry is the lead author. Items
   // can be null — Contentful returns null in a link array for an unpublished
   // entry — so read this through postAuthors() in lib/authors.ts, which filters
-  // them out, rather than reaching in directly. `author`, singular, stays
-  // populated alongside this as the migration's rollback; do not query it in
-  // new code.
+  // them out, rather than reaching in directly. [→ `authors-array`]
   authorsCollection?: { items: (Author | null)[] };
 }
 
@@ -195,15 +188,14 @@ export interface CardPostCollectionResponse {
   };
 }
 
-// A post as returned by the sitewide listing query (getAllPosts / LIST_GRAPHQL_FIELDS).
-// It carries the card and byline fields the home page, feed, and sitemap render,
-// but omits the heavy `content` body and the author `bio` — those are absent, so
-// don't read them. Use getPostAndMorePosts / getPostsByCategory for a full Post.
-// List queries fetch authors without bios. LIST_GRAPHQL_FIELDS selects name,
-// slug and picture under authorsCollection but not bio, so typing the items as
-// full Authors would let a bio render from a list-sourced post: typechecks
-// fine, renders nothing, no error anywhere. The old singular `author` field
-// carried this same Omit for the same reason.
+// A post as returned by the sitewide listing query (getAllPosts /
+// LIST_GRAPHQL_FIELDS): omits `content` and author `bio`, both absent — don't
+// read them. Use getPostAndMorePosts / getPostsByCategory for a full Post.
+//
+// authorsCollection is typed with bio omitted deliberately: LIST_GRAPHQL_FIELDS
+// doesn't select it, so typing the items as full Authors would let a bio render
+// from a list-sourced post — typechecks fine, renders nothing, no error
+// anywhere.
 export type ListPost = Omit<Post, "content" | "authorsCollection"> & {
   authorsCollection?: { items: (Omit<Author, "bio"> | null)[] };
 };
