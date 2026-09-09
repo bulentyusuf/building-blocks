@@ -130,9 +130,6 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   or `focus-visible:outline-*` to components. [→ `focus-indicator`]
 - **One scroll offset, `scroll-padding-top: 5rem` on `html`.** Never
   `scroll-mt-*`; they are additive and cannot coexist. [→ `scroll-offset`]
-- **Sidenote elements stay phrasing content**, ship zero client JS, and keep all
-  responsive display in the unlayered `.sidenote-*` rules rather than utilities
-  in the component. [→ `sidenotes`]
 - **Tags are pills via `app/tag-pill.tsx`.** A tag as metadata is a pill; a tag
   as destination is a link. There is no third treatment.
   [→ `tag-pills`, `tag-pages`]

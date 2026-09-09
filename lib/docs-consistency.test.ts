@@ -35,7 +35,19 @@ const BRIEFINGS = fs.existsSync(path.join(ROOT, "docs"))
       .map((f) => `docs/${f}`)
   : [];
 
-const CHECKED = [...DOCS, ...BRIEFINGS];
+// .claude/rules/*.md are instructions Claude Code loads when it reads matching
+// files, so a stale path in one reaches a PR the same way a stale path in
+// docs/ does — with less chance of a human noticing, since nobody opens the
+// file to read it. Guarded like BRIEFINGS: empty scope until a rule exists.
+const RULES_DIR = path.join(ROOT, ".claude", "rules");
+const RULES = fs.existsSync(RULES_DIR)
+  ? fs
+      .readdirSync(RULES_DIR)
+      .filter((f) => f.endsWith(".md"))
+      .map((f) => `.claude/rules/${f}`)
+  : [];
+
+const CHECKED = [...DOCS, ...BRIEFINGS, ...RULES];
 
 const pkg = JSON.parse(read("package.json")) as {
   scripts: Record<string, string>;
@@ -430,5 +442,51 @@ describe("docs/decisions.md's index stays in step with its entries", () => {
     expect(
       listedIn("<!-- key: cover-frames -->\n- `cover-frames` — x\n"),
     ).toEqual([]);
+  });
+});
+
+// A rule in .claude/rules/ loads only when Claude Code reads a file matching
+// one of its `paths` patterns. A pattern left stale by a rename or a deletion
+// never errors — the rule simply stops loading, in every future session, with
+// nothing in CI or in the file itself saying so. That is the same shape as
+// the four guards in known-bad-controls that passed while what they guarded
+// was broken, so it needs a known-bad control of its own.
+describe("path-scoped rule patterns resolve to real files", () => {
+  const FRONTMATTER = /^---\n([\s\S]*?)\n---/;
+
+  // A small regex over the frontmatter block, not a YAML parser: the only
+  // shape this needs to read is a `paths:` list of quoted strings. If a rule
+  // file ever needs more than that, this should fail loudly rather than parse
+  // it loosely.
+  const parsePaths = (text: string): string[] => {
+    const frontmatter = FRONTMATTER.exec(text)?.[1] ?? "";
+    const pathsBlock = /paths:\n((?:[ \t]+- "[^"]+"\n?)+)/.exec(
+      frontmatter,
+    )?.[1];
+    if (pathsBlock === undefined) return [];
+    return [...pathsBlock.matchAll(/- "([^"]+)"/g)].map((m) => m[1]);
+  };
+
+  // Driven off the same function the real check below uses, so the known-bad
+  // control below proves this matcher, not a reimplementation of it.
+  const unmatched = (patterns: string[]): string[] =>
+    patterns.filter((p) => fs.globSync(p, { cwd: ROOT }).length === 0);
+
+  it("finds a non-empty paths list in at least one rule", () => {
+    // Non-vacuous: an unparseable frontmatter returns [] for every rule, which
+    // would let the per-rule check below pass on nothing to check.
+    const lists = RULES.map((rule) => parsePaths(read(rule)));
+    expect(lists.some((list) => list.length > 0)).toBe(true);
+  });
+
+  it.each(RULES)("every paths pattern matches a real file (%s)", (rule) => {
+    expect(unmatched(parsePaths(read(rule)))).toEqual([]);
+  });
+
+  it("reports a pattern that matches nothing", () => {
+    // Known-bad control.
+    expect(unmatched(["lib/sidenote.tsx", "lib/no-such-file.tsx"])).toEqual([
+      "lib/no-such-file.tsx",
+    ]);
   });
 });
