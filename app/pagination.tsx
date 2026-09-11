@@ -31,15 +31,22 @@ export default function Pagination({
   // items now, so the word can hide below sm, and whitespace between flex
   // items is discarded rather than rendered. 4px against Literata's 3.2px
   // space at 16px, and it scales with the type because it is a rem.
+  //
+  // Below sm the cells drop to a 2rem floor with 0.5rem of padding, putting the
+  // seven-cell worst case (page 3 of 5) at 15.5rem. Against a 390px viewport
+  // that fits up to a root font size of 21.7px, where 2.5rem/1rem crossed over
+  // at 18.6px and wrapped on any reader with enlarged type. The widest thing
+  // any cell carries below sm is a bold ellipsis at 0.922rem, so the 2rem
+  // floor sets every cell and none of them reflow. flex-wrap on the ul still
+  // catches anything past the crossover.
   const cell =
-    "inline-flex h-10 min-w-10 items-center justify-center gap-1 rounded-md px-3 text-base transition-colors duration-200";
+    "inline-flex h-10 min-w-8 sm:min-w-10 items-center justify-center gap-1 rounded-md px-2 sm:px-3 text-base transition-colors duration-200";
 
-  // Below sm the row cannot afford the words. Seven 40px cells and six 4px
-  // gaps is 304px, inside the 350px Container's px-5 leaves on a 390px phone.
-  // With the words it measured 368px on the middle pages, where the window
-  // shows all five numbers and no ellipsis, and the excess became
-  // document-level horizontal scroll. The bare arrow is 9.12px wide, so
-  // min-w-10 still sets the cell and the touch target does not change.
+  // Below sm the row cannot afford the words: with them, it measured 368px on
+  // the middle pages, where the window shows all five numbers and no
+  // ellipsis, and the excess became document-level horizontal scroll. The
+  // bare arrow is 9.12px wide, so the min-width floor still sets the cell and
+  // the touch target does not change.
   //
   // The accessible name comes from aria-label on the link, or is suppressed by
   // aria-hidden on the disabled span, so neither of these spans is announced
