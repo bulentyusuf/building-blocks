@@ -119,9 +119,7 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   white one. The footer's faintest tint is `white/72`. [→ `chrome-aubergine`]
 - **The search emblem's ground stays cream `#FAF5F1` in both schemes**, so
   anything rendered on it uses literal hex in dark mode, never brand tokens.
-  The art is a static `public/search-emblem.svg` loaded via `<img>`, not a
-  page-level CSS class — nothing outside the file can style it, so a brand
-  token cannot reach it even in principle. [→ `search-emblem`]
+  [→ `search-emblem`]
 - **Three border roles, not interchangeable**: `--color-hairline` (dividers,
   inverts on its own, never add a `dark:` variant), `--color-control-edge`
   (`app/tag-pill.tsx` only, carries a WCAG 1.4.11 contrast floor), and the
@@ -151,8 +149,7 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   `lib/tailwind-comment-scanning.test.ts` guards it; a clean run is necessary,
   not sufficient — only the deployed bundle settles it. [→ `tailwind-scanning`]
 - **`lib/highlight.ts` imports each Shiki grammar and theme by name, never from
-  the `shiki` meta-package** — that entry traces all 260 grammars (~8.7 MB)
-  into the post route bundle. A new language needs its own `@shikijs/langs/*`
+  the `shiki` meta-package.** A new language needs its own `@shikijs/langs/*`
   import beside its `LANGS` entry or it renders unhighlighted, silently.
   [→ `shiki-fine-grained`]
 
@@ -180,9 +177,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   "simplify" a metadata call back to a narrower helper.
   [→ `single-entry-cache`]
 - **`app/posts/[slug]/opengraph-image.tsx` has no `generateStaticParams` and
-  must not get one back** — 22 baked cards is ~19 MB of PNG per deployment
-  against a 10 GB store. Scrape latency is a caching problem, not a prerender
-  one. [→ `og-card-on-demand`]
+  must not get one back.** [→ `og-card-on-demand`]
 - **Three cache tags: `posts`, `pages`, `browseIntros`** (`CACHE_TAGS` in
   `lib/api.ts`). Anything unrecognised in the webhook purges everything, and a
   new fetcher passing no tag gets `posts`. `expire: 0` stays. [→ `cache-tags`]
@@ -205,9 +200,8 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   and move together. `author`, singular, still exists; do not query it in new
   code. [→ `authors-array`]
 - **Post scheduling goes through Contentful's scheduled publishing**, never a
-  `date` filter in the query. Revalidation is webhook-only, so nothing would
-  fire when a date passed and a filtered post would never appear at all.
-  `date` is display metadata, not a gate. [→ `post-scheduling`]
+  `date` filter in the query. `date` is display metadata, not a gate.
+  [→ `post-scheduling`]
 - **A schema change reaches both spaces first, then merges, then syncs
   `demo`** — live `rczsnwq9z69e` and Demo Site `18c3oqmr28q0`. Update
   `contentful/export.json`, `contentful/seed.json` and `public/llms.txt` in the
