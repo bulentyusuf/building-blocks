@@ -1111,13 +1111,34 @@ bylines for the OG image). In the RSS feed, each author emits their own
 `<dc:creator>` element via the Dublin Core extension (`xmlns:dc`), avoiding the
 single-author and mandatory-email constraints of base RSS 2.0.
 
-`author`, singular, is not deleted, and it has not been omitted either —
-that is phase 4, and phase 4 has not happened. It stays present, populated
-and queryable until phase 3 is verified in production; that is the point of
-an additive migration, that a post never lacks an author and rollback is
-"revert the code," not "restore the data." `AuthorBioCard` still reads it
-today. Do not query it in new code, and do not read this entry as saying
-the retirement is done.
+**The singular `author` field is gone from the live space, and this entry said
+otherwise until September 2026.** It described an additive migration with a
+four-phase retirement and phase 4 outstanding — the field staying present,
+populated and queryable so that a post never lacked an author and rollback was
+"revert the code" rather than "restore the data". That was true while the
+migration ran. The field was removed from `rczsnwq9z69e:master` as part of the
+same work, on 3 September 2026, and neither this file nor the template caught
+up for a fortnight.
+
+Three separate things carry the name, and conflating them is what let the
+correction sit unnoticed. The `author` **content type** is alive and is what
+`authors` links to. The `authors` **field** on Post is the array. The `author`
+**field** on Post is the one that is gone. A sentence saying "author still
+exists" is true of the first and false of the third, which is why this entry
+now says which it means every time.
+
+Nothing in `lib/api.ts` selects the singular field, which is why its removal
+broke nothing and went unnoticed: a query naming a field the schema lacks is a
+GraphQL error that fails the whole query rather than the one selection, so the
+site would have stopped rendering rather than degraded. `AuthorBioCard` reads
+from `authorsCollection` and always did; the claim here that it read the
+singular field was wrong.
+
+**Nothing in CI can catch this class of drift.** The template's export and seed
+agreed with each other throughout and were both wrong against the live space, so
+a repo-internal check would have sat green. Only a comparison against the space
+would have caught it, and CI has no Contentful credentials — see "What the
+guards catch, and what they cannot" below, where that gap is already recorded.
 
 There is no `getPostsByAuthor`. Contentful GraphQL cannot filter a collection
 on `Array<Link>`, so author pages fetch `getAllPosts` once and filter with

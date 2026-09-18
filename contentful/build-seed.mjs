@@ -339,7 +339,6 @@ const entries = [
         paragraph(text(LOREM2)),
       ),
     ),
-    author: loc(link("author-alex")),
     authors: loc([link("author-alex")]),
     category: loc(link("cat-main-quest")),
     tags: loc([link("tag-craft")]),
@@ -390,7 +389,6 @@ const entries = [
         paragraph(text(LOREM4)),
       ),
     ),
-    author: loc(link("author-sam")),
     // The only seeded post with more than one author, so a fork's build
     // exercises the co-authored byline: the overlapping portrait stack and
     // the ampersand name line. Sam is lead here, listed first.
@@ -408,7 +406,6 @@ const entries = [
     // the table of contents correctly rendering nothing below the three-H2
     // threshold. Do not "fix" it by adding headings.
     content: loc(doc(paragraph(text(LOREM)), paragraph(text(LOREM2)))),
-    author: loc(link("author-alex")),
     authors: loc([link("author-alex")]),
     category: loc(link("cat-main-quest")),
     tags: loc([link("tag-detours")]),
