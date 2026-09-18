@@ -198,8 +198,8 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   are the two deliberate exceptions. [→ `locale`]
 - **Posts carry `authors`, an ordered array capped at three**, first entry is
   the lead. The Contentful size validation and the GraphQL `limit` are both 3
-  and move together. `author`, singular, still exists; do not query it in new
-  code. [→ `authors-array`]
+  and move together. There is no singular `author` field; the `author` content
+  type is what `authors` links to. [→ `authors-array`]
 - **Post scheduling goes through Contentful's scheduled publishing**, never a
   `date` filter in the query. `date` is display metadata, not a gate.
   [→ `post-scheduling`]
