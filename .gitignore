@@ -43,3 +43,6 @@ GEMINI.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local-only skill: reads a private archive, useless to a fork.
+.claude/skills/self-plagiarism/
