@@ -35,7 +35,21 @@ const BRIEFINGS = fs.existsSync(path.join(ROOT, "docs"))
       .map((f) => `docs/${f}`)
   : [];
 
-const CHECKED = [...DOCS, ...BRIEFINGS];
+// A skill under .claude/skills/ is a checklist an auditor follows, so a path
+// that has moved out from under it sends the reader to a file that is not
+// there. Same exposure as a briefing, so it takes the same check. Guarded on
+// existence for the same reason BRIEFINGS is: the directory is real scope when
+// it exists and empty scope when it does not.
+const SKILLS_DIR = path.join(ROOT, ".claude", "skills");
+const SKILLS = fs.existsSync(SKILLS_DIR)
+  ? fs
+      .readdirSync(SKILLS_DIR, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => `.claude/skills/${e.name}/SKILL.md`)
+      .filter((p) => fs.existsSync(path.join(ROOT, p)))
+  : [];
+
+const CHECKED = [...DOCS, ...BRIEFINGS, ...SKILLS];
 
 const pkg = JSON.parse(read("package.json")) as {
   scripts: Record<string, string>;
