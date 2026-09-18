@@ -9,10 +9,11 @@ import type { ReactElement } from "react";
 
 // Accessibility coverage for the routes app/a11y.test.tsx does not reach.
 //
-// That file composes six page SHAPES by hand — a listing, a banded listing, the
-// index listing, home, the post page, the prompt block — which is the right way
-// to test a shape shared by many routes. It leaves ten of the site's sixteen
-// routes with no axe run at all, and those ten carry the least conventional
+// That file composes six page SHAPES by hand — a listing, a listing through the
+// shared shell, the index listing, home, the post page, the prompt block —
+// which is the right way to test a shape shared by many routes. It leaves seven
+// of the site's sixteen routes with no axe run at all, plus the not-found page,
+// and those carry the least conventional
 // markup on the site: the archive's two tab stops per row and its sr-only year,
 // the glossary's grouped lists and count spans, the author portraits, the
 // category thumbnails, the small-caps "read more" links, the error pages'
