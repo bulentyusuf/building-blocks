@@ -196,7 +196,7 @@ Pagefind reads raw text content and honours neither `aria-hidden` nor
 `opacity-0`, so anything inside a body region that a sighted reader would not
 think of as the post's own words needs `data-pagefind-ignore` stated
 explicitly, regardless of how it is hidden visually or from assistive tech.
-Three things earn it today, all inside `<article>`:
+Five things earn it today, all inside `<article>`:
 
 - **The table of contents** (`app/posts/[slug]/page.tsx`) repeats every
   heading in the post, which would double-weight them against the body text
@@ -242,6 +242,21 @@ Three things earn it today, all inside `<article>`:
   either. Accepted at 22 posts and three personas; making an author's bio
   findable from their own page is a separate decision about which routes
   join the index, not a follow-up owed to this one.
+
+- **The sidenote marker and its toggle label** (`lib/sidenote.tsx`). Both are
+  navigational furniture rather than the note's content, and `aria-hidden` on
+  the marker does nothing here for the reason above. Without the attribute the
+  bare number lands in excerpts as noise, and the label's screen-reader-only
+  "Note N" lands beside it — Pagefind reads visually hidden text exactly as it
+  reads visible text. One attribute on the label covers both its children, so
+  it is not repeated on either. The note body itself stays indexed; it is the
+  post's own words.
+
+- **The new-window hint** (`app/new-window-hint.tsx`). Pagefind indexes built
+  HTML with no browser and no accessibility tree, so the screen-reader-only
+  class does not keep it out. Without the attribute every external link in
+  every post body drops "(opens in a new window)" into the searchable text and
+  into any excerpt near one.
 
 Left in deliberately: the `Tagged` row at the foot of a post. Tag names are
 real signal — a post tagged Retro Gaming should match that query — and the
@@ -1000,10 +1015,13 @@ _override_: leave it empty and the counter renders, which is why `standfirst` is
 optional on the content type. The override is all-or-nothing and untrimmed, so
 whitespace would suppress the counter and render an empty paragraph.
 
-Site-level constants stay in code. `SITE_TITLE` alone is read by fourteen files
-— the web manifest, the feed, and page metadata throughout — routes that never
-touch Contentful. Moving those behind a network fetch is a much larger change
-than editing a standfirst; not the obvious next step.
+Site-level constants stay in code. `SITE_TITLE` alone is read across the app —
+the web manifest, the feed, the wordmark, the OG card and page metadata on
+every route that renders any — including routes that never touch Contentful.
+Moving those behind a network fetch is a much larger change than editing a
+standfirst; not the obvious next step. It was sixteen source files in September
+2026, and the figure is stated here as a shape rather than a count because it
+moves with every new route and nothing checks it.
 
 The four `NEXT_PUBLIC_` identity overrides are not a counterexample: build-time
 config resolved once at module scope, with the live values still the defaults in
@@ -1815,9 +1833,16 @@ writing first, per `reopening-decisions`.
 
 `fetchAllCollectionItems` in `lib/api.ts` pages through Contentful's 100-item
 ceiling, and argues why a query asking for neither a limit nor `total` is the
-worst shape a limit can have. Seven unbounded fetchers go through it:
-`getAllPosts`, `getAllPages`, `getAllTags`, `getAllCategories`, `getAllAuthors`,
-`getPostsByCategory`, `getPostsByAuthor`.
+worst shape a limit can have. Six unbounded fetchers go through it:
+`getAllPosts`, `getAllPages`, `getAllTags`, `getAllCategories`, `getAllAuthors`
+and `getPostsByCategory`.
+
+This entry listed a seventh, `getPostsByAuthor`, until September 2026. That
+function does not exist and the contradiction sat in this file: see "Posts
+carry `authors`, an ordered array capped at three" above, which says so and
+explains why — Contentful cannot filter a collection on `Array<Link>`, so
+author pages fetch `getAllPosts` once and filter in memory instead. A reader
+adding a list query was being sent to a fetcher they could not find.
 
 **A query handed to it must accept `$limit: Int!` and `$skip: Int!`, pass both
 to the collection, and select `total` beside `items`.** Drop `total` and the
@@ -2110,10 +2135,14 @@ The exclusions work and do not solve the whole problem, because `app/` and
 is worth acting on:
 
 - **Never name a literal utility in a source comment** — it regenerates the
-  rule. Hence the notes in `app/globals.css` and `lib/toc-active.test.ts` saying
-  "the utility" instead of spelling it, and the test there asserting the literal
+  rule. Hence the note in `app/globals.css` saying "the utility" instead of
+  spelling it, and the test in `lib/toc-active.test.ts` asserting the literal
   appears nowhere under `app/` or `lib/`, assembling its needle at runtime so
-  the assertion is not itself the offence.
+  the assertion is not itself the offence. That file's own comments do spell
+  the utility, in the wildcard and regex forms, neither of which is a valid
+  candidate and neither of which ships — the differential guard in
+  `lib/tailwind-comment-scanning.test.ts` is what proves that rather than
+  inspection.
 - **Leave ordinary English alone.** `.collapse`, `.invisible`, `.static` and
   `.text-wrap` ship because comments contain those words; `.resize` ships
   because `app/table-of-contents.tsx` calls `addEventListener("resize", …)`.
