@@ -23,8 +23,8 @@ the stack already here**, and treat reaching outside it as a claim needing
 evidence.
 
 That stack is Next, React, Contentful's GraphQL API, Tailwind and Shiki, with
-Pagefind at build time. `package.json` lists fourteen runtime dependencies;
-before adding a fifteenth, say what it does that the fourteen cannot. "Fewer
+Pagefind at build time. `package.json` lists sixteen runtime dependencies;
+before adding a seventeenth, say what it does that the sixteen cannot. "Fewer
 lines in this file" is not an answer.
 
 Four tests, in the order they usually bite:
