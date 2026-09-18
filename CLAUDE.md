@@ -150,7 +150,8 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   not sufficient — only the deployed bundle settles it. [→ `tailwind-scanning`]
 - **`lib/highlight.ts` imports each Shiki grammar and theme by name, never from
   the `shiki` meta-package.** A new language needs its own `@shikijs/langs/*`
-  import beside its `LANGS` entry or it renders unhighlighted, silently.
+  import beside its `LANGS` entry, and the Code Block dropdown must offer
+  nothing `LANGS` lacks, or it renders unhighlighted, silently.
   [→ `shiki-fine-grained`]
 
 ## Accessibility
