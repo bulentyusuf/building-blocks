@@ -362,12 +362,13 @@ describe("listing page", () => {
   });
 });
 
-describe("banded listing page", () => {
-  // One of the ten browsing routes, rendered through the real shared shell so
-  // the band, its breadcrumb and the listing under it are the shipped ones.
-  // Structural only: the band's whole point is a colour change, and this suite
-  // disables axe's color-contrast rule because jsdom computes no boxes. The
-  // numeric guard for the band lives in lib/palette-contrast.test.ts.
+describe("listing page through the shared shell", () => {
+  // One of the ten browsing routes, rendered through the real ListingPage so
+  // the header, its breadcrumb and the listing under it are the shipped ones.
+  // That is what separates this from the hand-assembled "listing page" fixture
+  // above. Structural only: this suite disables axe's color-contrast rule
+  // because jsdom computes no boxes, and the numeric guards live in
+  // lib/palette-contrast.test.ts.
   const render = () =>
     renderPage(
       <RootLayout>
@@ -397,8 +398,8 @@ describe("banded listing page", () => {
     expect(duplicateLinksInMain()).toEqual([]);
   });
 
-  it("keeps heading levels contiguous across the move into the band", async () => {
-    // The h1 left <Container> for a full-bleed sibling above it. Document
+  it("keeps heading levels contiguous across the move into the header", async () => {
+    // The h1 left <Container> for a sibling above it. Document
     // order is what heading-order reads, so this is the check that the move
     // did not reorder anything relative to the listing's h2s.
     await render();
@@ -411,7 +412,7 @@ describe("banded listing page", () => {
     }
   });
 
-  it("has exactly one h1, and it is the band's", async () => {
+  it("has exactly one h1, and it is the header's", async () => {
     await render();
     const h1s = [...document.querySelectorAll("h1")];
     expect(h1s).toHaveLength(1);
@@ -419,7 +420,7 @@ describe("banded listing page", () => {
   });
 
   it("renders exactly one breadcrumb trail", async () => {
-    // The band owns the trail now. Two would mean a route kept its own after
+    // The shell owns the trail. Two would mean a route kept its own after
     // the shell grew one — a duplicate landmark and a duplicate tab sequence.
     await render();
     expect(
@@ -438,7 +439,7 @@ describe("the index listing, which carries a trail again", () => {
   // fixture below and docs/decisions.md, "The page counter moves inline, into
   // the heading").
   //
-  // `crumbs` stays optional on the band regardless. Home is the only route
+  // `crumbs` stays optional on WidePage regardless. Home is the only route
   // using that now, which is correct, since home is the root.
   const render = (currentPage: number) =>
     renderPage(
@@ -452,7 +453,7 @@ describe("the index listing, which carries a trail again", () => {
           basePath="/"
           // Wired to PageCounter exactly as app/page/[page]/page.tsx wires
           // it, rather than a bare <h1>, so this fixture exercises the real
-          // shape rather than the shape the band used to have.
+          // shape rather than the shape it had before the counter moved.
           heading={
             <h1>
               Latest Posts{" "}
@@ -461,7 +462,7 @@ describe("the index listing, which carries a trail again", () => {
           }
           // Fixture prose. The real standfirst comes from the browseIntro
           // entry keyed "latest-posts" and nothing here asserts its wording,
-          // so this stands in for "the band has a standfirst" and no more.
+          // so this stands in for "the header has a standfirst" and no more.
           standfirst={
             <p className="text-lg leading-relaxed text-pretty">
               A standfirst, of the length one usually runs to.
@@ -491,7 +492,7 @@ describe("the index listing, which carries a trail again", () => {
     }
   });
 
-  it("has exactly one h1, and it is the band's", async () => {
+  it("has exactly one h1, and it is the header's", async () => {
     await render(2);
     const h1s = [...document.querySelectorAll("h1")];
     expect(h1s).toHaveLength(1);
@@ -517,7 +518,7 @@ describe("the index listing, which carries a trail again", () => {
   });
 });
 
-describe("home, whose band carries the masthead as its h1", () => {
+describe("home, whose header carries the masthead as its h1", () => {
   // The masthead is home's h1 and everything below it is an h2, hero and cards
   // alike, because the listing renders no heading of its own. One flat list of
   // siblings under one page title.
@@ -599,7 +600,7 @@ describe("home, whose band carries the masthead as its h1", () => {
     expect(hero!.getAttribute("href")).toBe("/posts/a");
   });
 
-  it("keeps heading levels contiguous below a band with no heading in it", async () => {
+  it("keeps heading levels contiguous below a header with no listing heading in it", async () => {
     await render();
     const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
       (h) => Number(h.tagName[1]),
