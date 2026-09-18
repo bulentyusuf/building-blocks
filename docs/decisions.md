@@ -68,6 +68,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `browse-copy` — Browse-page copy is editable, site identity is not
 - `authors-array` — Posts carry `authors`, an ordered array capped at three
 - `rich-text-links` — Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
+- `json-ld` — Every structured-data block goes through `jsonLdHtml`
 - `locale` — The site's locale is en-GB, everywhere
 - `single-entry-cache` — Single-entry fetchers are `cache()`-wrapped on purpose
 - `og-card-on-demand` — The post OG card renders on demand, not at build
@@ -1056,13 +1057,16 @@ the standalone package parses fine, which is what sank an earlier display face.
 - `dangerouslySetInnerHTML` for Shiki output in `lib/rich-text.tsx`: trusted CMS
   input, and the renderer allowlists URL schemes.
 - **Pagefind's `{{+ excerpt +}}`** in `app/search/search-client.tsx` is the
-  site's other raw HTML sink, and belongs on this list rather than being left
-  implied by a code comment. The `{{+ +}}` form is Pagefind's unescaped
-  interpolation and is what preserves the `<mark>` highlights; the content
+  site's other unescaped raw HTML sink, and belongs on this list rather than
+  being left implied by a code comment. The `{{+ +}}` form is Pagefind's
+  unescaped interpolation and preserves the `<mark>` highlights; the content
   reaches it from post bodies through the build-time index, so it inherits the
   same trusted-CMS model as the Shiki output above. The template around it is
   ours and static — the `{{ }}` interpolations in it, `meta.title` and the
-  hrefs, are escaped and `safeUrl`-filtered by Pagefind.
+  hrefs, are escaped and `safeUrl`-filtered by Pagefind. There is a third sink,
+  the structured-data blocks, and it is not on this list because it does not
+  rely on the trusted-CMS model — it escapes on the way in. See "Every
+  structured-data block goes through `jsonLdHtml`" below.
 - The sitemap filters CMS `Page` entries through `ROUTED_PAGE_SLUGS` in
   `app/sitemap-xml/route.ts`, so a newly published Page cannot inject a URL with
   no route. Only `/about` and `/privacy` are routed today, both hardcoded; add
@@ -1525,6 +1529,39 @@ rather than relying on `documentToReactComponents`' default, which emits
 `data.uri` as-is. Sidenote bodies did rely on the default, which let a
 `javascript:` href through in a note while the post body rejected the same href.
 Do not copy the renderer to a second location — that drift caused the gap.
+
+### Every structured-data block goes through `jsonLdHtml`
+
+<!-- key: json-ld -->
+
+`jsonLdHtml` in `lib/json-ld.ts` is the only thing that serialises a JSON-LD
+object into a `<script type="application/ld+json">`. Beyond plain
+`JSON.stringify` it escapes the three HTML-significant characters to their
+`\uXXXX` forms, so a value cannot close the script element early or be misread
+by the parser on the way in.
+
+Three call sites, all of which must go through it: `app/breadcrumb.tsx`,
+`app/listing-page.tsx` and `app/posts/[slug]/page.tsx`. The reason is
+consistency rather than a live threat — the values come from trusted CMS data
+today, so the escaping is defence-in-depth. A block built inline would be
+correct for exactly as long as nobody changed what feeds it, and nothing
+anywhere would say when that stopped being true.
+
+**This is the site's third raw-HTML sink and the only one that escapes.** The
+other two are on the reviewed-items list above: the highlighted code in
+`lib/rich-text.tsx` and Pagefind's unescaped excerpt interpolations in
+`app/search/search-client.tsx`. Both are accepted on the trusted-CMS model with
+no escaping of their own. That difference is the thing to hold in view when
+auditing the three as a set — two are arguments for why raw HTML is safe here,
+and this is the one place the argument is not leant on.
+
+`lib/json-ld.test.ts` covers the escaping and keeps a known-bad control beside
+it on the authors node. **What no test covers is the rule itself**: a fourth
+block built inline would pass the whole suite. That is a decision rather than
+an oversight. A source-scanning guard here would be machinery for a problem
+that has not happened, and three call sites are cheap to check by reading. If
+a fourth appears, the guard becomes worth its known-bad control and this entry
+is where to say so.
 
 ### The site's locale is en-GB, everywhere
 

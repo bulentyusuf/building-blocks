@@ -223,6 +223,9 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   `frame-ancestors` are relaxed per route only — `/search` plus
   `/pagefind/*`, and `/posts/*` respectively — never on the catch-all.
   [→ `csp-scoping`]
+- **Every JSON-LD block goes through `jsonLdHtml`** (`lib/json-ld.ts`), which
+  escapes the three HTML-significant characters before the string reaches
+  `dangerouslySetInnerHTML`. Do not build one inline. [→ `json-ld`]
 
 ## Testing
 

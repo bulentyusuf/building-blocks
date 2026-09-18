@@ -358,8 +358,8 @@ describe("llms.txt attribution guidance", () => {
 });
 
 describe("docs/decisions.md's index stays in step with its entries", () => {
-  // The index added in #520 is the only way into a 2,175-line file that carries
-  // 55 entries under two headings. An index nobody maintains is worse than
+  // The index added in #520 is the only way into a long file carrying dozens of
+  // entries under two headings. An index nobody maintains is worse than
   // none: it reads as authoritative while quietly omitting whatever was added
   // last, and the omission is invisible to a reader who does not already know
   // the entry exists.
