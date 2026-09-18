@@ -1689,8 +1689,8 @@ q80. Nobody should spend an afternoon trying to shrink these.
 
 <!-- key: shiki-fine-grained -->
 
-`lib/highlight.ts` builds one highlighter for ten languages and one theme, and
-for a long time it imported `createHighlighter` from `"shiki"`. That entry's
+`lib/highlight.ts` builds one highlighter for eleven languages and one theme,
+and for a long time it imported `createHighlighter` from `"shiki"`. That entry's
 langs bundle holds a runtime array of `() => import("@shikijs/langs/<id>")`
 dynamic imports, one per grammar — reachable at runtime, so no bundler can
 eliminate them, and Next's file tracer follows every one: the post route's
@@ -1739,11 +1739,27 @@ unloaded grammar, the `try/catch` swallows it and the block renders through
 snippet through every `LANGS` entry and fails if any comes back as the fallback,
 with a language absent from `LANGS` as the known-bad control.
 
-Two entries in `LANGS` need no grammar import. `"text"` is handled inside core —
-importing a grammar for it would be wrong. And `"bash"` is served by
-`@shikijs/langs/bash`, a two-line alias re-exporting `shellscript`; that import
-is correct and sufficient, and the loaded language still answers to `bash`,
-`sh`, `shell` and `zsh` as before.
+One entry in `LANGS` needs no grammar import. `"text"` is handled inside core
+— importing a grammar for it would be wrong. Two more are served by alias
+modules rather than by a grammar of their own name, and both are correct and
+sufficient as written: `@shikijs/langs/bash` is a two-line re-export of
+`shellscript`, and the loaded language still answers to `bash`, `sh`, `shell`
+and `zsh`; `@shikijs/langs/yml` is the same shape over `yaml`.
+
+**`"yml"` was offered by the CMS and absent from `LANGS` for an unknown
+period.** It is not the loud failure the paragraph above describes, because a
+language missing from `LANGS` never reaches `codeToHtml` at all —
+`highlightCodeBlocks` substitutes `"text"` before the call, so there is no throw
+to catch and the block renders through core as plain, themed and unhighlighted.
+An editor picking it from the dropdown saw a code block that simply had no
+colour. `lib/highlight.langs.test.ts` could not see it either: that guard
+iterates `LANGS`, and a language missing from `LANGS` is not in `LANGS` to
+iterate.
+
+So the dropdown and `LANGS` are now held against each other, in the same file,
+with a known-bad control. **Only one direction is a defect.** `LANGS` may hold a
+language the dropdown does not offer — a grammar loaded ahead of the model,
+which costs bytes and renders nothing wrong. The reverse is what shipped.
 
 Do not swap the oniguruma engine for `createJavaScriptRegexEngine`. It is
 smaller but changes regex semantics, and a mis-highlight after both that and the
@@ -2088,6 +2104,11 @@ each gap has already let a defect through:
   against the live space — CI has no Contentful credentials. A language added to
   the live Code Block took a fortnight to reach the export with every test
   passing throughout. Keeping the export in step after a schema edit is manual.
+  One half of that gap is now closed: `lib/highlight.langs.test.ts` holds the
+  export's Code Block dropdown against `LANGS`, so a language the template
+  offers and the highlighter cannot load fails in CI. The live-space half is
+  unchanged and unguardable here, so a green run says the template agrees with
+  the code, never that the space does.
 - **`app/a11y.test.tsx`** cannot check `color-contrast` or `target-size`, and
   cannot be made to: both need a layout engine, and jsdom computes no boxes and
   applies no stylesheet, so axe would report a false pass. Contrast is covered

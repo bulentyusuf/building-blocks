@@ -5,7 +5,7 @@ import "server-only";
 // imports, one per grammar — reachable at runtime, so no bundler can eliminate
 // them, and Next's file tracer follows every one. It baked 260 TextMate
 // grammars (~8.7 MB) into `.next/server/app/posts/[slug]/page.js.nft.json` —
-// against the ten languages and one theme this module ever loads. Adding a
+// against the eleven languages and one theme this module ever loads. Adding a
 // language here means adding an `@shikijs/langs/<name>` import beside its
 // `LANGS` entry; miss the import and that language degrades to the
 // `escapeHtml` fallback with no error.
@@ -23,6 +23,7 @@ import jsx from "@shikijs/langs/jsx";
 import markdown from "@shikijs/langs/markdown";
 import tsx from "@shikijs/langs/tsx";
 import typescript from "@shikijs/langs/typescript";
+import yml from "@shikijs/langs/yml";
 import type { CodeBlock, Content } from "./types";
 
 const THEME = "min-dark"; // themes
@@ -40,6 +41,7 @@ export const LANGS = [
   "css",
   "html",
   "markdown",
+  "yml",
   "text",
 ] as const;
 
@@ -49,9 +51,9 @@ function getHighlighter() {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighterCore({
       themes: [minDark],
-      // Nine grammars for ten `LANGS` entries: "text" resolves inside core and
-      // needs no grammar import. The other nine line up with LANGS by name
-      // (`bash` is an alias re-exporting `shellscript`).
+      // Ten grammars for eleven `LANGS` entries: "text" resolves inside core
+      // and needs no grammar import. The other ten line up with LANGS by name
+      // (`bash` and `yml` are aliases re-exporting `shellscript` and `yaml`).
       langs: [
         typescript,
         tsx,
@@ -62,6 +64,7 @@ function getHighlighter() {
         css,
         html,
         markdown,
+        yml,
       ],
       engine: createOnigurumaEngine(import("shiki/wasm")),
     }).catch((error) => {
