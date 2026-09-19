@@ -113,8 +113,8 @@ export const SITE_REPO_URL =
 export const POSTS_PER_PAGE = 5;
 
 // Must match lib/api.ts's authorsCollection(limit: MAX_AUTHORS) and the
-// Contentful size validation on both spaces — a fourth author would silently
-// vanish from every query if they disagree. [→ `authors-array`]
+// Contentful size validation on the live space — a fourth author would
+// silently vanish from every query if they disagree. [→ `authors-array`]
 export const MAX_AUTHORS = 3;
 
 // The RSS <author> address, and the one identity value with NO default. It is

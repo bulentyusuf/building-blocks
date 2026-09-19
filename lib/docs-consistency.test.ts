@@ -6,10 +6,10 @@ import path from "node:path";
 //
 // CLAUDE.md, README.md and public/llms.txt carry a lot of prose about how the
 // repo works, and prose is the only artefact here with no verification path:
-// code has tsc, formatting has Prettier, behaviour has vitest, the two
-// Contentful spaces have contentful-fixtures.test.ts. These checks cover the
-// part of the prose that is mechanically checkable — the names of things, and
-// the handful of specific claims that have already gone wrong once.
+// code has tsc, formatting has Prettier, behaviour has vitest, the Contentful
+// space has contentful-fixtures.test.ts. These checks cover the part of the
+// prose that is mechanically checkable — the names of things, and the handful
+// of specific claims that have already gone wrong once.
 //
 // They do NOT attempt general claim verification, which only a reader catches:
 // a sentence can name a real file or state a plausible number and still describe
