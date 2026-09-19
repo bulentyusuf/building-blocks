@@ -79,7 +79,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `fixtures` — Contentful export/seed files are load-bearing and brittle
 - `node-pin` — One Node version pin, in `engines.node`
 - `rich-text-types-dupe` — Two copies of `@contentful/rich-text-types`, and only one ships
-- `two-spaces` — The content model lives in two spaces, and a schema change must reach both
+- `schema-changes` — A schema change reaches the live space before the code that queries it
 
 **Testing**
 
@@ -90,7 +90,6 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 **Workflow constants**
 
 - `reopening-decisions` — A settled design call is reopened in writing, not in a branch
-- `demo-site` — `demo-site` builds from this repo, off the `demo` branch
 - `preview-on-request` — Vercel previews build on request, and production skips documentation-only changes
 
 **Bloat is the default failure mode**
@@ -1604,13 +1603,6 @@ default locale. It is the **template's** content model, imported by people
 forking this repo into their own space, not a mirror of the live space. Do not
 "correct" it.
 
-**Demo Site inherits that exception.** `18c3oqmr28q0` was imported from
-`export.json`, so its only locale is `en-US` while the live space is `en-GB`.
-The code never notices, because no query passes a locale and each space returns
-its own default — but a direct write to Demo Site, by MCP or by script, must key
-its fields `en-US`. The connector refuses `list_locales` there, so a rejected
-write is what tells you. This is the one place an `en-US` is not a regression.
-
 ### Single-entry fetchers are `cache()`-wrapped on purpose
 
 <!-- key: single-entry-cache -->
@@ -2006,24 +1998,23 @@ Vercel reads that file too, so installs and deployments now fail loudly on an
 incompatible dependency instead of accepting it silently. That is the point.
 Resolve the conflict; do not restore the file.
 
-### The content model lives in two spaces, and a schema change must reach both
+### A schema change reaches the live space before the code that queries it
 
-<!-- key: two-spaces -->
+<!-- key: schema-changes -->
 
-`rczsnwq9z69e` is the live space. `18c3oqmr28q0` is **Demo Site**, which the
-`demo-site` Vercel project builds from this same repo. A field or type added to
-the live space and queried in `lib/api.ts` but absent from Demo Site fails that
-build with `Cannot query field "x"`, and because a GraphQL error rejects the
-whole query rather than the one selection, every page dies — adding
-`tagsCollection` took the demo down exactly this way.
+`rczsnwq9z69e` is the live space. A field or type queried in `lib/api.ts` but
+absent from the space fails the build with `Cannot query field "x"`, and because
+a GraphQL error rejects the whole query rather than the one selection, every
+page dies. So the order for any schema change is: **the space first, then
+merge.** The repo's fixtures are a second copy, making two places to keep in
+step.
 
-So the order for any schema change is: **both spaces first, then merge, then
-sync `demo`.** The repo's fixtures are a third copy, making three places to keep
-in step. That last step matters more than it looks: `demo-site` no longer builds
-on merges to `main`, so nothing checks the demo space against the queries until
-`demo` moves. `.github/workflows/sync-demo.yml` runs the same push weekly, so a
-forgotten step surfaces within seven days rather than on an unrelated future
-sync.
+Until September 2026 there was a second space, **Demo Site**
+(`18c3oqmr28q0`), feeding a `demo-site` Vercel project that built from a `demo`
+branch of this repo, synced weekly by a scheduled workflow. All three were
+retired together. beuseful.net is the demonstration of this codebase, and the
+second space was a copy every schema change had to reach before it could merge.
+Reinstating a demo deployment reopens this entry first.
 
 **`public/llms.txt` describes the content model and editorial rules.** A CI job
 (`.github/workflows/llms-link-check.yml`) checks that its markdown links resolve,
@@ -2046,75 +2037,6 @@ job. Publishing, unpublishing and deleting are unavailable regardless;
 activating a type, publishing entries and deleting anything are manual steps in
 the web UI. Entries cannot be created against a type that has not been
 activated, so a new type is always two trips: activate, then populate.
-
-### `demo-site` builds from this repo, off the `demo` branch
-
-<!-- key: demo-site -->
-
-One repo, two Vercel projects running **identical code**, differing only in
-environment variables — a different Contentful space, tokens,
-`NEXT_PUBLIC_SITE_URL`, and the four identity overrides below. There is no
-source divergence to manage, so do not fork the repo to separate them; one repo
-feeding several projects is the designed path (Vercel allows 25 per repository).
-
-**The demo names itself through four `NEXT_PUBLIC_` overrides** — `SITE_TITLE`,
-`SITE_DESCRIPTION`, `SITE_FOOTER_BLURB` and `SITE_REPO_URL`, each prefixed —
-set on `demo-site` only; `lib/constants.ts` carries the argument. They exist
-because identical code is the whole design, so renaming the demo in source would
-rename the live site too, and renaming it on `demo` would end the fast-forward
-sync. All four are dashboard settings, so they share the fragility of the three
-below — unset, the demo silently answers to the live site's name and links to
-its repository. Title and description move together, because home renders them
-as masthead and standfirst. `SITE_AUTHOR` is deliberately not among them.
-
-Three dashboard settings keep `demo-site` off `main`'s critical path. None is
-expressible in this repo and all are easy to lose, since a dashboard setting
-leaves no trace in the codebase and survives no project rebuild:
-
-- **Production Branch is `demo`**, not `main`, so merging a PR no longer
-  triggers a demo production build. Settings → **Environments** →
-  **Production** → **Branch Tracking**, not Settings → Git.
-- **Ignored Build Step is "Only build production"** (Settings → **Build and
-  Deployment**), so PR pushes report as cancelled rather than building. Leave
-  it: it guards the production path and costs nothing.
-- **Preview → Branch Tracking is disabled** (Settings → **Environments** →
-  **Preview**). Off rather than narrowed, because Preview cannot be scoped to a
-  branch: with `demo` taken by Production its selector is greyed out at "All
-  unassigned branches", so the toggle is the only lever. Left enabled it created
-  a `demo-site` deployment for every push to `main` and every PR branch — those
-  burn no build minutes but are real deployment objects, and the cap is on
-  deployments. Nothing was lost; a one-off preview is still reachable with
-  `vercel deploy`. **A missing `Preview – demo-site` check is the expected
-  state.**
-
-`demo` is protected by its own GitHub ruleset, `demo branch protection`
-(id 20204826), with exactly two rules: `deletion` and `non_fast_forward`.
-**Deliberately not `pull_request`** — both routes onto this branch push directly
-(the manual push below and `.github/workflows/sync-demo.yml`), so requiring a PR
-would protect the branch by making it unmaintainable; copying `main`'s ruleset
-across is the obvious wrong move. The two rules close the two ways it can
-actually be damaged: deleting it breaks demo-site's Production branch tracking,
-and `non_fast_forward` moves an invariant the sync workflow can only assert in a
-shell script onto the server.
-
-Refresh the demo deliberately, when the template has changed in a way worth
-showing:
-
-```
-git push origin main:demo
-```
-
-A fast-forward inside one repo, so it cannot conflict when main's history is
-linear. A non-squash PR merge adds a merge commit that makes `main:demo` a
-non-fast-forward update; the demo branch's `non_fast_forward` protection rule
-blocks it. In that case, open a PR from `main` to `demo` and merge it on
-GitHub — the UI merge creates a merge commit on demo that advances it without
-triggering the non-fast-forward rule. **Do not automate this on
-push to `main`** — that reinstates the per-merge build these settings exist to
-remove; a scheduled workflow is the middle ground if the demo goes stale.
-Vercel's deployment caps are scoped to the **account**, not the project, and the
-hourly cap on Hobby (100) equals the daily one, so a burst of merges can exhaust
-a day's worth inside an hour.
 
 ### Vercel previews build on request, and production skips documentation-only changes
 
@@ -2149,21 +2071,22 @@ deliberate, usually to pick up a changed environment variable), a `git diff`
 error, and a missing `VERCEL_ENV` all exit 1. A wrong skip leaves the live site
 behind, while a wrong build only costs storage.
 
-**It is set in the dashboard, not in `vercel.json`.** A `vercel.json`
-`ignoreCommand` applies to every project that builds from this repo and
-overrides each one's own setting, which would replace `demo-site`'s "Only build
-production" (see `demo-site` above). Settings → **Build and Deployment** →
-**Ignored Build Step** → **Custom**, command `bash scripts/vercel-ignore-build.sh`.
-Like `demo-site`'s settings, it leaves no trace in the repo, so it is recorded
-here.
+**It is set in the dashboard, not in `vercel.json`.** Settings → **Build and
+Deployment** → **Ignored Build Step** → **Custom**, command
+`bash scripts/vercel-ignore-build.sh`. The choice dates from when a second
+Vercel project built from this repo, and a `vercel.json` `ignoreCommand` would
+have overridden that project's own setting too. A dashboard setting leaves no
+trace in the repo, so it is recorded here.
 
 **Getting a preview.** Put `[preview]` in the pushed commit's message. An empty
 commit does it without touching a file: `git commit --allow-empty -m "chore:
 request a preview [preview]"`. The marker is read from the commit Vercel builds,
 which is the last one in a push.
 
-Skipped deployments still count towards Vercel's deployment caps (see
-`demo-site` above). They store nothing, and Canceled deployments are kept for
+Skipped deployments still count towards Vercel's deployment caps, which are
+scoped to the **account**, not the project. The hourly cap on Hobby (100)
+equals the daily one, so a burst of pushes can exhaust a day's worth inside an
+hour. Skipped deployments store nothing, and Canceled deployments are kept for
 one day.
 
 ### What the guards catch, and what they cannot

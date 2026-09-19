@@ -20,7 +20,7 @@ Every item is something already argued here. The value is catching the undo.
 
 1. `docs/decisions.md`, especially the entries keyed `csp-scoping`,
    `reviewed-items`, `rich-text-links`, `node-pin`, `rich-text-types-dupe` and
-   `two-spaces`. The `reviewed-items` entry is a list of things already
+   `schema-changes`. The `reviewed-items` entry is a list of things already
    reviewed and deliberately left alone; re-raising one is the most common way
    this audit wastes a reader's time.
 2. The comment block at the top of `next.config.js`, which carries the full

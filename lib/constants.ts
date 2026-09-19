@@ -76,11 +76,11 @@ function parseHostname(url: string): string {
 
 export const SITE_HOSTNAME = parseHostname(SITE_URL);
 
-// Site identity is a code constant with an environment override, set on
-// demo-site only. [→ `demo-site`] All four are NEXT_PUBLIC_ despite every
-// current read being server-side, so a future client component reading one
-// gets the configured value rather than silently falling back to the default
-// in the browser alone.
+// Site identity is a code constant with an environment override, so a fork or
+// a second deployment can name itself without editing this file. All four are
+// NEXT_PUBLIC_ despite every current read being server-side, so a future client
+// component reading one gets the configured value rather than silently falling
+// back to the default in the browser alone.
 //
 // Resolution is `?.trim() || fallback` in all four. Do not tidy it to `??`: an
 // unset variable on Vercel is frequently an empty string rather than undefined,
