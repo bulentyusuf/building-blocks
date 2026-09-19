@@ -143,8 +143,8 @@ within seconds. Two things it does not do, both expected:
 - **Search will not find the post until the next deployment.** The index is
   built by `postbuild`, not by revalidation.
 - **A schema change does not travel this way at all.** If staging turned up a
-  field the model lacks, that is two spaces plus the repo's fixtures, in that
-  order, and it is not part of staging a post.
+  field the model lacks, that is the live space plus the repo's fixtures, in
+  that order, and it is not part of staging a post.
 
 ## Do not
 
