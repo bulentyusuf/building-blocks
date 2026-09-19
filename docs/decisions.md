@@ -91,6 +91,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 
 - `reopening-decisions` — A settled design call is reopened in writing, not in a branch
 - `demo-site` — `demo-site` builds from this repo, off the `demo` branch
+- `preview-on-request` — Vercel previews build on request, and production skips documentation-only changes
 
 **Bloat is the default failure mode**
 
@@ -2114,6 +2115,56 @@ remove; a scheduled workflow is the middle ground if the demo goes stale.
 Vercel's deployment caps are scoped to the **account**, not the project, and the
 hourly cap on Hobby (100) equals the daily one, so a burst of merges can exhaust
 a day's worth inside an hour.
+
+### Vercel previews build on request, and production skips documentation-only changes
+
+<!-- key: preview-on-request -->
+
+`scripts/vercel-ignore-build.sh` is the `building-blocks` project's Ignored
+Build Step. Exit 0 skips the build, and Vercel marks the deployment Canceled
+with no stored output. Exit 1 builds. `lib/vercel-ignore-build.test.ts` runs it
+against a throwaway repository for every branch of its logic.
+
+**Why.** On 19 September 2026 Functions Storage stood at 11.7 GB against Hobby's
+10 GB, all of it in this project: 125 retained deployments at about 94 MB each.
+Deployments had been retained for 30 days, and the September consolidation
+sprint built 86 of them in six days. In the week before, 15 of 24 deployments
+were pull request previews, often several per pull request because every push
+builds again. CI already runs the full build on every pull request, so a
+preview's only product is a link. Production retention was cut to one week the
+same day. This entry is the other half.
+
+**What it does.** A preview builds only when the commit message contains
+`[preview]`. Anything else Vercel labels a preview is skipped. Production builds
+unless every change since the last successful deployment sits in `CLAUDE.md`,
+`README.md`, `docs/` or `.claude/`. Those four are exactly the paths
+`app/globals.css` leaves out of Tailwind's scan, and no build code reads them,
+so a change confined to them cannot alter the output. Test files are not on the
+list, because Tailwind does scan them and a class string in a test can put a
+rule in the bundle.
+
+**Every doubtful path builds.** No comparison commit, a comparison commit
+missing from Vercel's limited clone, a redeploy of the live commit (always
+deliberate, usually to pick up a changed environment variable), a `git diff`
+error, and a missing `VERCEL_ENV` all exit 1. A wrong skip leaves the live site
+behind, while a wrong build only costs storage.
+
+**It is set in the dashboard, not in `vercel.json`.** A `vercel.json`
+`ignoreCommand` applies to every project that builds from this repo and
+overrides each one's own setting, which would replace `demo-site`'s "Only build
+production" (see `demo-site` above). Settings → **Build and Deployment** →
+**Ignored Build Step** → **Custom**, command `bash scripts/vercel-ignore-build.sh`.
+Like `demo-site`'s settings, it leaves no trace in the repo, so it is recorded
+here.
+
+**Getting a preview.** Put `[preview]` in the pushed commit's message. An empty
+commit does it without touching a file: `git commit --allow-empty -m "chore:
+request a preview [preview]"`. The marker is read from the commit Vercel builds,
+which is the last one in a push.
+
+Skipped deployments still count towards Vercel's deployment caps (see
+`demo-site` above). They store nothing, and Canceled deployments are kept for
+one day.
 
 ### What the guards catch, and what they cannot
 

@@ -245,7 +245,8 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 ## Workflow constants
 
 Protected main, squash merges only, one concern per PR, conventional commit
-messages, descriptive branch names.
+messages, descriptive branch names. Vercel previews build only for a commit
+whose message contains `[preview]`. [→ `preview-on-request`]
 
 A settled call is reopened in writing, in its own commit, before the
 implementing branch opens. A branch that edits the documentation and the code it
