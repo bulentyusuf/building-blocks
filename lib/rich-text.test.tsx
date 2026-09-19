@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
 import { extractHeadings } from "./headings";
-import { RichText } from "./rich-text";
+import { RichText, numericColumns } from "./rich-text";
 import type { Content } from "./types";
 
 // Minimal rich-text node builders.
@@ -888,5 +888,105 @@ describe("prompt block thumbnail", () => {
     );
 
     expect(html).not.toContain('aria-hidden="true"');
+  });
+});
+
+describe("numeric table columns", () => {
+  const cell = (nodeType: string, value: string) => ({
+    nodeType,
+    data: {},
+    content: [paragraph(value)],
+  });
+  const row = (nodeType: string, ...values: string[]) => ({
+    nodeType: BLOCKS.TABLE_ROW,
+    data: {},
+    content: values.map((v) => cell(nodeType, v)),
+  });
+  const table = (header: string[], ...body: string[][]) => ({
+    nodeType: BLOCKS.TABLE,
+    data: {},
+    content: [
+      row(BLOCKS.TABLE_HEADER_CELL, ...header),
+      ...body.map((values) => row(BLOCKS.TABLE_CELL, ...values)),
+    ],
+  });
+
+  // Shaped like the Criterion post's first table: a rank with a tied-rank
+  // dash, two text columns, a year, a catalogue number with a leading #, and
+  // a count.
+  const criterion = table(
+    ["Rank", "Title", "Director", "Year", "Spine #", "Direct Picks"],
+    ["1", "Do the Right Thing", "Spike Lee", "1989", "#97", "20"],
+    ["—", "All That Jazz", "Bob Fosse", "1979", "#724", "18"],
+    ["4", "8½", "Federico Fellini", "1963", "#140", "18"],
+  );
+
+  it("flags each column that holds only numbers and placeholders", () => {
+    expect(numericColumns(criterion as never)).toEqual([
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+    ]);
+  });
+
+  it("does not flag a column with one word in it", () => {
+    // Known-bad control. A single non-numeric value must keep the whole
+    // column start-aligned, or a mostly numeric column of mixed content
+    // would right-align its words too.
+    const mixed = table(["Posts"], ["12"], ["many"], ["3"]);
+    expect(numericColumns(mixed as never)).toEqual([false]);
+  });
+
+  it("does not flag a column of placeholders alone", () => {
+    const blank = table(["Notes"], ["—"], [""]);
+    expect(numericColumns(blank as never)).toEqual([false]);
+  });
+
+  it("accepts commas, decimals, currency and percentages", () => {
+    const money = table(["Price"], ["£1,299.50"], ["$12"], ["45%"]);
+    expect(numericColumns(money as never)).toEqual([true]);
+  });
+
+  it("marks every cell of a numeric column, header included, and no other", () => {
+    // Matches the attribute, not the class names: every cell carries the
+    // variant classes that respond to it, so only the attribute tells them
+    // apart.
+    const html = renderToStaticMarkup(
+      <RichText
+        content={{
+          json: {
+            nodeType: BLOCKS.DOCUMENT,
+            data: {},
+            content: [criterion],
+          } as unknown as Document,
+          links: { assets: { block: [] } },
+        }}
+        headings={[]}
+      />,
+    );
+    const marked = [
+      ...html.matchAll(/<t[hd][^>]* data-numeric=""[^>]*>(.*?)<\/t[hd]>/g),
+    ].map((m) => m[1].replace(/<[^>]+>/g, ""));
+    expect(marked).toEqual([
+      "Rank",
+      "Year",
+      "Spine #",
+      "Direct Picks",
+      "1",
+      "1989",
+      "#97",
+      "20",
+      "—",
+      "1979",
+      "#724",
+      "18",
+      "4",
+      "1963",
+      "#140",
+      "18",
+    ]);
   });
 });
