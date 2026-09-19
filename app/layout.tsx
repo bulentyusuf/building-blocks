@@ -142,11 +142,18 @@ function Header() {
             keeps a single copy and forces it open with CSS: the two copies
             here are laid out differently (stacked panel vs. inline row), so
             a single copy would need the branch anyway. */}
-        <nav aria-label="Primary" className="flex items-center gap-4">
+        {/* The wider gap below md is room for two 44px hit areas side by
+            side. Menu and Search each reach 12px past their icons, which is
+            24px between them, so the old 16px gap made them overlap. From md
+            up the disclosure is not rendered and the original gap returns. */}
+        <nav aria-label="Primary" className="flex items-center gap-6 md:gap-4">
           <NavDisclosure>
+            {/* Same 44px touch target as Search, built the same way (see the
+                comment there). It was 28px, so the two icons beside each
+                other took different taps to hit. */}
             <summary
               aria-label="Menu"
-              className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-1 -m-1"
+              className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-3 -m-3"
             >
               {/* Two icons, not one morphing path: the X is the only thing
                   on screen telling a reader how to get out of the menu.
