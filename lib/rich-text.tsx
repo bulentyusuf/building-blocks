@@ -7,7 +7,8 @@ import ContentfulImage from "./contentful-image";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { Block, Inline } from "@contentful/rich-text-types";
-import type { ReactNode } from "react";
+import { Children, cloneElement, isValidElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { Asset, Content } from "./types";
 import type { Heading } from "./headings";
 import { widont } from "./typography";
@@ -32,6 +33,33 @@ function headingText(node: Block | Inline): string {
 function isShortValue(node: Block | Inline): boolean {
   const text = headingText(node).trim();
   return text !== "" && /^\d+(\.\d+)?$/.test(text);
+}
+
+// A column reads as numeric when every body cell is a number or an empty
+// placeholder, and at least one is a number. Such a column is right-aligned in
+// tabular figures, header included, so values compare digit by digit down the
+// column and the header sits over them. The test is per column rather than per
+// cell because alignment is a column property: one right-aligned number in a
+// column of words reads as a mistake. A number may carry a leading # or
+// currency sign, thousands commas, a decimal part and a trailing %. A dash or
+// an empty cell is a placeholder, as for a tied rank.
+const NUMERIC_CELL = /^[#£$€]?\d[\d,]*(\.\d+)?%?$/;
+const PLACEHOLDER_CELL = /^[-–—]?$/;
+
+export function numericColumns(table: Block | Inline): boolean[] {
+  const columns: string[][] = [];
+  for (const row of table.content ?? []) {
+    const cells = (row as Block).content ?? [];
+    cells.forEach((cell, i) => {
+      if (cell.nodeType !== BLOCKS.TABLE_CELL) return;
+      (columns[i] ??= []).push(headingText(cell as Block).trim());
+    });
+  }
+  return columns.map(
+    (values = []) =>
+      values.some((v) => NUMERIC_CELL.test(v)) &&
+      values.every((v) => NUMERIC_CELL.test(v) || PLACEHOLDER_CELL.test(v)),
+  );
 }
 
 function RichTextAsset({
@@ -228,7 +256,7 @@ export function RichText({
           {children}
         </blockquote>
       ),
-      [BLOCKS.TABLE]: (_node: Block | Inline, children: ReactNode) => {
+      [BLOCKS.TABLE]: (node: Block | Inline, children: ReactNode) => {
         // Horizontal scroll rather than reflow: Contentful gives no column
         // hints to restructure from. tabIndex makes the scroll container
         // keyboard-reachable (2.1.1); a focusable scroll region needs a role
@@ -237,6 +265,25 @@ export function RichText({
         // (overflow-hidden) and scroll (overflow-x-auto). Name is a position,
         // not the header row. [→ `scroll-region-names`]
         const position = ++tableIndex;
+        // Cells render before their table, so a cell cannot know its column.
+        // The flag is added here instead, as a data attribute the cell's own
+        // classes already respond to.
+        const numeric = numericColumns(node);
+        const rows = Children.map(children, (row) => {
+          if (!isValidElement<{ children?: ReactNode }>(row)) return row;
+          return cloneElement(row, {
+            children: Children.map(row.props.children, (cell, i) =>
+              numeric[i] && isValidElement(cell)
+                ? cloneElement(
+                    cell as ReactElement<{ "data-numeric"?: string }>,
+                    {
+                      "data-numeric": "",
+                    },
+                  )
+                : cell,
+            ),
+          });
+        });
         return (
           <div className="not-prose my-8 overflow-hidden rounded-lg border border-table-edge">
             <div
@@ -246,7 +293,7 @@ export function RichText({
               aria-label={`Table ${position}`}
             >
               <table className="w-full border-collapse text-[0.9em]">
-                <tbody>{children}</tbody>
+                <tbody>{rows}</tbody>
               </table>
             </div>
           </div>
@@ -271,7 +318,7 @@ export function RichText({
         // always correct here.
         <th
           scope="col"
-          className={`border-b border-table-edge bg-table-header px-3 py-3 text-start font-semibold ${
+          className={`border-b border-table-edge bg-table-header px-3 py-3 text-start font-semibold data-numeric:text-end ${
             isShortValue(node) ? "w-[1%] whitespace-nowrap" : ""
           }`}
         >
@@ -280,7 +327,7 @@ export function RichText({
       ),
       [BLOCKS.TABLE_CELL]: (node: Block | Inline, children: ReactNode) => (
         <td
-          className={`px-3 py-3 text-start align-top ${
+          className={`px-3 py-3 text-start align-top data-numeric:text-end data-numeric:tabular-nums ${
             isShortValue(node) ? "w-[1%] whitespace-nowrap" : ""
           }`}
         >
