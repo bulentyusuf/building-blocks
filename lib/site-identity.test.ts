@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-// Four constants take an environment override so demo-site can name and place
-// itself without diverging from main — title, description, footer blurb and
-// repo URL; lib/constants.ts carries the full argument. What this guards is the
+// Four constants take an environment override so a fork or a second deployment
+// can name and place itself without editing source: title, description, footer
+// blurb and repo URL. lib/constants.ts carries the full argument. What this guards is the
 // resolution, which has one trap in it, plus SITE_AUTHOR staying outside the
 // group.
 //

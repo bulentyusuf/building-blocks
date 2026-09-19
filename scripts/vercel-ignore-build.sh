@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# The Ignored Build Step for the building-blocks Vercel project. It lives in
-# the dashboard, not in vercel.json, because a vercel.json ignoreCommand would
-# also override demo-site's own setting, and both projects build from this repo.
-# [→ `preview-on-request`]
+# The Ignored Build Step for the building-blocks Vercel project. It is set in
+# the dashboard rather than in vercel.json, a choice made while a second Vercel
+# project also built from this repo. [→ `preview-on-request`]
 #
 # Exit 0 tells Vercel to skip: the deployment is marked Canceled and stores no
 # output. Exit 1 tells it to build. Every path that is unsure of itself exits 1,

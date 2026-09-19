@@ -194,8 +194,8 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   `INLINES.HYPERLINK` override. Do not copy the renderer to a second location.
   [→ `rich-text-links`]
 - **The locale is `en-GB` everywhere.** Any `en-US`, `en_US` or American date
-  formatting is a regression. `contentful/export.json` and the Demo Site space
-  are the two deliberate exceptions. [→ `locale`]
+  formatting is a regression. `contentful/export.json` is the one deliberate
+  exception. [→ `locale`]
 - **Posts carry `authors`, an ordered array capped at three**, first entry is
   the lead. The Contentful size validation and the GraphQL `limit` are both 3
   and move together. There is no singular `author` field; the `author` content
@@ -203,13 +203,13 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 - **Post scheduling goes through Contentful's scheduled publishing**, never a
   `date` filter in the query. `date` is display metadata, not a gate.
   [→ `post-scheduling`]
-- **A schema change reaches both spaces first, then merges, then syncs
-  `demo`** — live `rczsnwq9z69e` and Demo Site `18c3oqmr28q0`. Update
-  `contentful/export.json`, `contentful/seed.json` and `public/llms.txt` in the
-  same pass. Content type IDs are immutable. [→ `two-spaces`, `fixtures`]
+- **A schema change reaches the live space `rczsnwq9z69e` before it merges.**
+  Update `contentful/export.json`, `contentful/seed.json` and `public/llms.txt`
+  in the same pass. Content type IDs are immutable.
+  [→ `schema-changes`, `fixtures`]
 - **Treat the Contentful MCP connector as read-only.** Activating a type,
   publishing, unpublishing, deleting and asset updates are web-UI jobs.
-  [→ `two-spaces`]
+  [→ `schema-changes`]
 - **The Node major is written once, in `engines.node`**, as an exact major.
   Do not add `.nvmrc`, `volta.node`, `devEngines.runtime` or a hardcoded
   `node-version:`. `@types/node` follows the runtime major, not latest.
@@ -267,12 +267,3 @@ before pushing. `contentful/export.json` and `contentful/seed.json` are in
 `.prettierignore` on purpose, because the generator writes the seed with
 `JSON.stringify(payload, null, 2)` and a formatter reflowing it would put the
 committed file permanently at odds with `npm run build:seed`.
-
-Refresh the demo deliberately, when the template has changed in a way worth
-showing:
-
-```
-git push origin main:demo
-```
-
-Do not automate this on push to `main`. [→ `demo-site`]
