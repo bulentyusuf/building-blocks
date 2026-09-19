@@ -140,7 +140,11 @@ export default function LightboxImage({
           // while adding nothing for assistive tech. The button names the
           // action; the image describes itself.
           aria-label="Enlarge image"
-          className="block w-full cursor-zoom-in focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-crimson focus-visible:ring-offset-2"
+          // No local focus styling. The sitewide indicator in app/globals.css
+          // already clears 3:1 on both page grounds, and the local override it
+          // replaced drew a pure white gap between image and indicator, which
+          // showed as a pale stripe on the dark page. [→ `focus-indicator`]
+          className="block w-full cursor-zoom-in"
         >
           {image}
         </button>
@@ -167,6 +171,10 @@ export default function LightboxImage({
               type="button"
               onClick={close}
               aria-label="Close enlarged image"
+              // One of the sitewide focus exceptions. This button sits on the
+              // dimmed overlay, where crimson falls to roughly 1.7:1 against
+              // the darkened ground (#9E2238 on #323130), so it takes white
+              // instead, which clears 12:1. [→ `focus-indicator`]
               className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/40 bg-black/40 text-white hover:bg-brand-crimson focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               <svg

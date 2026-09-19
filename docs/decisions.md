@@ -716,9 +716,12 @@ local override. Three exceptions, each with its contrast reasoning in the file:
 the coloured header and footer bands (where the `outline-hidden` is required,
 not decorative); the code-block scroll regions in `lib/rich-text.tsx`, which
 draw inward because their `overflow-hidden` parent clips anything outside, so a
-`ring-*` is not an alternative; and the two fixed controls, `app/back-to-top.tsx`
-and `app/exit-preview-button.tsx`. The last was once "simplified" and reverted;
-do not propose it again.
+`ring-*` is not an alternative; and the three controls that sit on their own
+dark ground, `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the close
+button in `lib/lightbox-image.tsx`, whose dimmed overlay drops crimson to about
+1.7:1. The lightbox's "Enlarge image" trigger is not an exception and uses the
+sitewide rule. The last group was once "simplified" and reverted; do not
+propose it again.
 
 ### One scroll offset, `scroll-padding-top` on `html`
 
