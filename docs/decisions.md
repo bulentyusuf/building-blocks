@@ -666,11 +666,24 @@ measured 331px in the same column. Letting the heading break mid-word trades
 a widow for something worse to read, a word split like "Bluep" over "rint" at
 display size.
 
-What this costs: widow protection on this one heading in Firefox and older
-Safari, where `text-pretty` does nothing. Chrome and recent Safari still avoid
-the widow, through `text-pretty` on the same heading. Every other title on the
-site — cards, taxonomy names, the home hero — keeps calling `widont()`, since
-none of them sit in a column narrow enough to reproduce this.
+The widow is covered by `text-balance` on the same heading. `text-pretty` was
+there first and was measured doing nothing: across the 23 posts published as of
+September 2026 it left two widowed headings at 1440px, 1280px and 1024px and
+three at 768px, which is exactly what no wrapping strategy at all left. It
+earns its place only on a phone, where it took ten widows down to six at 375px.
+`text-balance` takes every width from 768px up to zero and 375px to one, and
+adds no horizontal scroll at any width measured, a 20px root included.
+
+Seven headings still widow at 375px with a 20px root and no line-breaking
+strategy reaches them, because at that size the last word is itself most of a
+line — "instructions" and "Blueprint" are the clearest. Only hyphenation or the
+glue would move those, and the glue is what this entry exists to keep out.
+
+`text-balance` also reaches more readers than what it replaced. Firefox has
+supported it since 121 and has never supported `text-pretty` at all, so Firefox
+had no protection on this heading before. Every other title on the site —
+cards, taxonomy names, the home hero — keeps calling `widont()`, since none of
+them sit in a column narrow enough to reproduce this.
 
 ### Tags render as pills, in one implementation
 
