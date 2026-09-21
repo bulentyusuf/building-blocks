@@ -103,18 +103,8 @@ describe("a wide page sits on the same grid as a narrow one", () => {
   });
 
   it("WidePage keeps the band's two insets on their own sides of the rule", () => {
-    // The band's inset was two numbers because it was two colours: 32px of
-    // navy below the header, then Container's pt-6 of cream below the band's
-    // edge. One surface does not merge them, because the rule now sits where
-    // the colour step used to, and which side each number falls on is the
-    // whole point.
-    //
-    // Folding both into the header's bottom margin preserves the TOTAL and
-    // moves all of it above the boundary, which leaves the first content
-    // element flush against a 3px line on home, the post page and the four
-    // section fronts. The ruled listings hide it, because their items carry
-    // py-10 md:py-12 of their own — which is why a green suite is not evidence
-    // here and why this asserts both halves separately.
+    // Why the two insets stay on their own sides of the rule, and why a green
+    // suite is not evidence either way. [→ `band-retirement`]
     const wide = read("app/wide-page.tsx");
     expect(wide).toMatch(/<header className="mb-8">/);
     expect(wide).toMatch(/contentOwnsLeading \? undefined : "pt-6"/);

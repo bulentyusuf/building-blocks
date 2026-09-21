@@ -361,6 +361,15 @@ assumed the band's deepened inset; it never shipped, so nothing live depended
 on it, but it needs re-deriving against a contained cover if it is ever
 picked up.
 
+The `tone` prop's dark treatment existed for a measured reason, recorded here
+because the prop no longer carries it. `brand-crimson` computed to 1.35:1 on
+the band's navy, so the dark trail could not use the accent at all: it took a
+white ring and an opacity hover in place of ordinary link styling, and an
+explicit white focus ring with a suppressed outline in place of the sitewide
+`:focus-visible` rule. Every trail sits on cream now, takes the accent, and
+needs no focus treatment of its own — which is why `app/breadcrumb.tsx` is not
+among the three exceptions under `focus-indicator`.
+
 `--color-brand-band` and its dark-mode lift were left in `app/globals.css`
 through Phase 1, unreferenced, and Phase 2 removed them along with
 `--color-footer-bg`.
