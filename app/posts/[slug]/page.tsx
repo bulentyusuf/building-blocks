@@ -180,12 +180,13 @@ export default async function PostPage({
         // Pagefind indexes only what sits inside a body region. [→ `pagefind-index-scope`]
         <h1
           data-pagefind-body
-          className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty"
+          className="text-4xl leading-tight md:text-5xl lg:text-6xl text-balance"
         >
           {/* Not widont(): gluing the final two words with a non-breaking
               space can make that pair wider than this column at this ramp,
-              which overflows rather than merely wrapping badly. The className
-              above still avoids the widow in Chrome and recent Safari.
+              which overflows rather than merely wrapping badly. The
+              text-balance above covers the widow instead, measured across
+              every published post as none at 768px and wider.
               [→ `heading-widont`] */}
           {post.title}
         </h1>
