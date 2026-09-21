@@ -99,6 +99,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   re-raised as a finding. [→ `cover-frames`]
 - **`POSTS_PER_PAGE` is five** and changing it is a four-route design pass, not
   a constant bump. [→ `posts-per-page`]
+- **The post `h1` renders `post.title` directly, never through `widont()`.**
+  The glued last two words can outgrow that column; the heading's own className
+  still covers the widow in Chrome and Safari. [→ `heading-widont`]
 
 ## Type and styling
 

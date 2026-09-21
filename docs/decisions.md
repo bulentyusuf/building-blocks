@@ -32,6 +32,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `card-meta` — A card's meta line is the date alone, above the excerpt
 - `listing-shell` — The taxonomy listings and the index listing share one shell
 - `page-counter` — The page counter moves inline, into the heading
+- `heading-widont` — The post `h1` renders its title directly, without `widont()`
 
 **Type and styling**
 
@@ -642,6 +643,33 @@ on cards would need a per-route exception on `/categories/[slug]` and its
 paginated pages, where the category names the page the reader is already on.
 Adding `category` to `CardPost` was proposed and rejected, which also leaves
 `CARD_GRAPHQL_FIELDS` in `lib/api.ts` unchanged.
+
+### The post `h1` renders its title directly, without `widont()`
+
+<!-- key: heading-widont -->
+
+`app/posts/[slug]/page.tsx`. Every other heading and title on the site calls
+`widont()`, which glues the final two words with a non-breaking space so a
+wrapped title never ends on a lone last word. The post `h1` is the one place
+that reliably breaks it: at that heading's wide ramp, the glued pair can be
+wider on its own than the header column, which overflows rather than merely
+wrapping badly — worse than the widow the glue exists to prevent. Four
+published posts reflowed sideways for exactly this reason, all of them only at
+a 20px root font size, and dropping the glue from this one heading took all
+four to zero. That is what proves the cause, rather than just fitting it.
+
+Two other fixes were tried and rejected. A length guard inside `widont()`
+cannot work, because character count does not track rendered width: a
+fourteen-character glued pair measured 338px and a fifteen-character one
+measured 331px in the same column. Letting the heading break mid-word trades
+a widow for something worse to read, a word split like "Bluep" over "rint" at
+display size.
+
+What this costs: widow protection on this one heading in Firefox and older
+Safari, where `text-pretty` does nothing. Chrome and recent Safari still avoid
+the widow, through `text-pretty` on the same heading. Every other title on the
+site — cards, taxonomy names, the home hero — keeps calling `widont()`, since
+none of them sit in a column narrow enough to reproduce this.
 
 ### Tags render as pills, in one implementation
 
