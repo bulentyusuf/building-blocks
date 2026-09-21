@@ -37,3 +37,32 @@ describe("scrollbar gutter", () => {
     expect(html![1]).toMatch(/overflow-y:\s*scroll/);
   });
 });
+
+describe("prose overflow", () => {
+  // An unbreakable string, a bare URL or a command in inline code, is laid out
+  // at its full intrinsic width. That widens the document rather than merely
+  // overhanging the column, so the whole page scrolls sideways and a phone
+  // reader loses the left margin on every line. Six instances across three
+  // posts were live when this rule went in. Nothing else here can catch it:
+  // the axe run in app/a11y.test.tsx is under jsdom, which computes no boxes.
+  const block = () => {
+    const start = css.indexOf("@utility prose");
+    return css.slice(start, css.indexOf("\n}", start));
+  };
+
+  it("lets prose break a word rather than widen the document", () => {
+    // Comments are stripped because the note above the declaration describes
+    // the property, and describing it is not declaring it.
+    const declarations = block().replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(declarations).toMatch(/overflow-wrap:\s*break-word/);
+  });
+
+  it("would catch the declaration being commented out", () => {
+    // Known-bad control. The check above strips comments precisely so that a
+    // declaration moved into one stops counting, and that only holds if the
+    // stripping works.
+    const commented = "@utility prose {\n  /* overflow-wrap: break-word; */\n}";
+    const declarations = commented.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(declarations).not.toMatch(/overflow-wrap:\s*break-word/);
+  });
+});

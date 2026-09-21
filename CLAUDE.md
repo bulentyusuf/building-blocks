@@ -110,6 +110,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   including for `de-DE` work. [→ `font-subsets`]
 - **Never measure a prose column in `ch`.** The measure lives on `max-w-2xl`
   parents. [→ `prose-measure`]
+- **`@utility prose` carries `overflow-wrap: break-word`.** An unbreakable URL
+  or command widens the document and scrolls the whole page sideways on a
+  phone. Do not narrow it to a child selector. [→ `prose-overflow`]
 - **Chrome is aubergine**, `#2B1C3F` light and `#3B2A52` dark, declared in both
   `app/globals.css` and `lib/constants.ts` because the manifest and viewport
   `themeColor` cannot read CSS custom properties. Any change touches both.
