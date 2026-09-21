@@ -211,18 +211,37 @@ export function RichText({
                 // inside the <h2>, so accessible-name-from-content folds this
                 // label into the heading's own name already.
                 aria-label="Permalink"
-                // The negative right margin cancels the anchor's own advance
-                // so it can never be pushed onto a line of its own — without
-                // it, an opacity-0 wrapped marker still takes its line's
-                // height, leaving an empty band under the heading. Measured in
-                // Chromium across 201 column widths: 15 orphaned the marker
-                // before, none after.
+                // The negative right margin cancels most of the anchor's own
+                // advance so it is almost never pushed onto a line of its own.
+                // An opacity-0 wrapped marker still takes its line's height,
+                // leaving an empty band under the heading. Measured in Chromium
+                // across 201 column widths: 15 orphaned the marker at 0, none
+                // at 1em.
                 //
                 // Deliberately not zero-width, which would collapse the focus
-                // ring to a 2px bar instead of tracing the glyph. Costs up to
-                // about 22px of overhang on a completely full last line, which
-                // is inside the gutter it sits in.
-                className="ml-2 -mr-[1em] inline-block align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
+                // ring to a 2px bar instead of tracing the glyph.
+                //
+                // 0.75em rather than 1em, which is the value that shipped
+                // first. At 1em the anchor overhangs by about 26px against a
+                // 20px page gutter, so a heading whose last line ends near the
+                // column edge pushes the glyph past the viewport and the whole
+                // page scrolls sideways. That is WCAG 2.1 SC 1.4.10 Reflow and
+                // it is luck rather than text size which headings hit it:
+                // scripts/audit-a11y.mjs found one, "New Horizons, complete"
+                // in the Wagner keyboard post, scrolling 6px at a 20px root.
+                //
+                // Clipping the overhang was the obvious alternative and is
+                // wrong: the glyph is also the focus indicator for a focusable
+                // link, so clipping it leaves a control a keyboard reaches and
+                // cannot see.
+                //
+                // The cost is measured, not assumed. Across 23 posts and 140
+                // headings at both a 16px and a 20px root, 0.75em orphans the
+                // marker once and 0.5em orphans it twice, against none at 1em.
+                // One empty band is cosmetic and a page that scrolls sideways
+                // is not, which is the same trade lib/typography.ts records for
+                // widont.
+                className="ml-2 -mr-[0.75em] inline-block align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
               >
                 {/* CSS generated content, not a text node — load-bearing, not
                     stylistic. Do not put the character back in the markup.
