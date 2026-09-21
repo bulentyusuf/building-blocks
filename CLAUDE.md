@@ -99,6 +99,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   re-raised as a finding. [→ `cover-frames`]
 - **`POSTS_PER_PAGE` is five** and changing it is a four-route design pass, not
   a constant bump. [→ `posts-per-page`]
+- **The post `h1` renders `post.title` directly, never through `widont()`.**
+  The glued last two words can outgrow that column; the heading's own className
+  still covers the widow in Chrome and Safari. [→ `heading-widont`]
 
 ## Type and styling
 
@@ -154,6 +157,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   the `shiki` meta-package.** A new language needs its own `@shikijs/langs/*`
   import beside its `LANGS` entry, and the Code Block dropdown must offer
   nothing `LANGS` lacks. [→ `shiki-fine-grained`]
+- **`lib/highlight.ts` replaces min-dark's comment colour at highlight time.**
+  The theme's own is 3.43:1 on its ground. Do not drop the replacement or add
+  a CSS override beside it. [→ `shiki-comment-contrast`]
 
 ## Accessibility
 

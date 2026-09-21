@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { widont } from "./typography";
 
 // widont's job is to stop a heading ending on a lone word. Its failure mode is
@@ -60,6 +62,47 @@ describe("widont still glues from three words up", () => {
   it("binds a trailing parenthesised year when there is a line to widow onto", () => {
     expect(widont("Zak McKracken and the Alien Mindbenders (1988)")).toBe(
       `Zak McKracken and the Alien Mindbenders${NBSP}(1988)`,
+    );
+  });
+});
+
+describe("the post h1 does not glue", () => {
+  // The constraint lives with the function rather than with the page, because
+  // it is a fact about widont: its output is unbreakable, and the post h1 is
+  // the one place on the site where an unbreakable pair of ordinary words is
+  // wider than the column it sits in. An audit of the deployed site found four
+  // posts scrolling sideways at a 20px root, up to 45px, and swapping the glued
+  // space back to an ordinary one took every one of them to zero.
+  const page = readFileSync(
+    join(__dirname, "..", "app", "posts", "[slug]", "page.tsx"),
+    "utf8",
+  );
+
+  const h1Block = (source: string) => {
+    const start = source.indexOf("<h1");
+    return source.slice(start, source.indexOf("</h1>", start));
+  };
+
+  it("renders the title unglued", () => {
+    const block = h1Block(page);
+
+    // Non-vacuous: the block has to be the real one before its contents mean
+    // anything.
+    expect(block).toContain("data-pagefind-body");
+    expect(block).toContain("{post.title}");
+
+    // Comments are stripped because the note above the title explains why
+    // widont is absent, and naming it there is not calling it.
+    expect(block.replace(/\{\/\*[\s\S]*?\*\/\}/g, "")).not.toContain("widont(");
+  });
+
+  it("would catch the call coming back", () => {
+    // Known-bad control. The check above strips comments, and that only proves
+    // anything if a real call still registers.
+    const bad = `<h1 data-pagefind-body>{widont(post.title)}</h1>`;
+
+    expect(h1Block(bad).replace(/\{\/\*[\s\S]*?\*\/\}/g, "")).toContain(
+      "widont(",
     );
   });
 });

@@ -13,6 +13,12 @@ const NBSP = String.fromCharCode(0x00a0);
  * Use on short display strings (titles and headings), not on body prose: it
  * only protects the very last line, and gluing two long words can force a wide
  * last line in a narrow column.
+ *
+ * And not on the post h1, which is the largest type on the site in the
+ * narrowest column it ever occupies. The token-count guard below cannot help
+ * there: the glued pair is two ordinary words and the failure is that they are
+ * too wide at that size, not that there are too few of them.
+ * [→ `heading-widont`]
  */
 export function widont(text: string): string {
   // Below three tokens there is nothing to cure. With two words the "final

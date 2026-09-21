@@ -182,7 +182,12 @@ export default async function PostPage({
           data-pagefind-body
           className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty"
         >
-          {widont(post.title)}
+          {/* Not widont(): gluing the final two words with a non-breaking
+              space can make that pair wider than this column at this ramp,
+              which overflows rather than merely wrapping badly. The className
+              above still avoids the widow in Chrome and recent Safari.
+              [→ `heading-widont`] */}
+          {post.title}
         </h1>
       }
     >
