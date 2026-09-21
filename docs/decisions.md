@@ -50,6 +50,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `type-roles` — Two faces, three roles, and no family named directly
 - `font-subsets` — Font preloading is `subsets: ["latin"]` only
 - `prose-measure` — The prose column is never measured in `ch`
+- `prose-overflow` — Prose breaks an unbreakable string rather than scrolling the page
 - `shiki-fine-grained` — Shiki grammars are imported one by one, never from the meta-package
 - `tailwind-scanning` — Documentation is excluded from Tailwind's source scanning
 
@@ -1254,6 +1255,48 @@ resizes on any body-face swap — Inter's zero is 0.6309em against Literata's
 0.5790em, an 8% narrowing with no width anywhere in the diff.
 `app/globals.measure.test.ts` guards the override and the absence of any
 `ch`-measured column.
+
+### Prose breaks an unbreakable string rather than scrolling the page
+
+<!-- key: prose-overflow -->
+
+A string with no break opportunity — a bare URL, a command line, anything in
+inline `code` — is laid out at its full intrinsic width no matter how narrow
+the column is. It does not simply overhang the column: it widens the document,
+and the page then scrolls horizontally. On a phone that costs the reader the
+left margin of every line on the page, not just the line at fault, which is
+WCAG 2.1 SC 1.4.10 Reflow.
+
+`scripts/audit-a11y.mjs` found seven instances across four posts on the
+deployed site, three of them at the default text size and all seven at a 20px
+root. The worst, on `/posts/automated-backup-contentful-github-actions`, needed
+604px of width in a 375px viewport. Nothing in the repo could have caught them:
+the axe run in `app/a11y.test.tsx` is under jsdom, which computes no boxes.
+
+`overflow-wrap: break-word` on `@utility prose`, not on a child selector. Two
+of the three posts overflowed through inline `code` and a narrower rule scoped
+to `code` fixes those, but the third is a command sitting in a bare paragraph
+with a non-breaking space in it, and that one needs the rule on the column.
+Measured across every affected route and a set of unaffected ones, all seven
+go to zero and nothing else moves.
+
+Five reflow findings from the same audit are **not** this. They are post `h1`
+titles that stop fitting once the root font size rises, and the heading
+permalink glyph, all of them at a 20px root and none of them a string that
+cannot break. This rule leaves them exactly as they were.
+
+`break-word` rather than `anywhere`: it breaks a word only when the line has no
+other option, so ordinary prose is untouched. The rule inserts no character —
+copied text is byte-identical and `hyphens` stays `manual` — so a command
+copied off a wrapped line is still the command. Code blocks are unaffected
+because `white-space: pre` outranks it; they keep scrolling inside their own
+`overflow-x: auto` wrapper.
+
+Where a break lands is a separate question from whether the page scrolls. The
+bare-paragraph command already broke at the hyphen in `--depth=1` before this
+rule existed, and still does; the rule only pulls the remainder of the line
+back onto the page. Commands belong in a code block, which scrolls instead of
+wrapping, and that is a content fix rather than a stylesheet one.
 
 ### One axis, and it is the header measure
 

@@ -462,6 +462,22 @@ html {
      one place. app/globals.measure.test.ts guards this. */
   max-width: none;
 
+  /* A string with no break opportunity in it, typically a URL or a command in
+     inline code, is laid out at its full width whatever the column is. It does
+     not merely overhang: it widens the document, so the whole page scrolls
+     sideways on a phone and the reader loses the left margin on every line. An
+     audit of the deployed site found seven instances across four posts, the
+     worst scrolling 229px in a 375px viewport at a 20px root size.
+
+     break-word rather than anywhere, because it breaks a word only when the
+     line has no other option, so ordinary prose is untouched. Nothing inserts
+     a character: the copied text is identical and `hyphens` stays manual. Code
+     blocks are unaffected because `white-space: pre` wins, and they keep
+     scrolling inside their own wrapper rather than wrapping.
+
+     [→ `prose-overflow`] app/globals.measure.test.ts guards this. */
+  overflow-wrap: break-word;
+
   /* Bumped from the plugin's 1rem. Literata's x-height is 0.507em against
      Inter's 0.546em, so it reads about 7% smaller at the same nominal size, and
      the measure now comes from max-w-2xl in rem, which does not scale with this
