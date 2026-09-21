@@ -8,25 +8,15 @@ import type { AxeResults, Result } from "axe-core";
 import type { ReactElement } from "react";
 
 // Accessibility coverage for the routes app/a11y.test.tsx does not reach.
+// That file covers six page shapes by hand; this one renders the REAL route
+// components, with only the CMS mocked, inside the real RootLayout. Between
+// them the two files cover all sixteen routes, plus the not-found page, which
+// the sixteen do not include. [→ `guard-limits`]
 //
-// That file composes six page SHAPES by hand — a listing, a listing through the
-// shared shell, the index listing, home, the post page, the prompt block —
-// which is the right way to test a shape shared by many routes. It leaves seven
-// of the site's sixteen routes with no axe run at all, plus the not-found page,
-// and those carry the least conventional
-// markup on the site: the archive's two tab stops per row and its sr-only year,
-// the glossary's grouped lists and count spans, the author portraits, the
-// category thumbnails, the small-caps "read more" links, the error pages'
-// helpful-links nav.
-//
-// So this file does the other thing: it renders the REAL route components, with
-// only the CMS mocked, inside the real RootLayout. Between them the two files
-// cover every route.
-//
-// Same two rules are disabled for the same reason as the other file — both need
-// a layout engine, and jsdom computes no boxes and applies no stylesheet, so
-// axe would report a false pass. Contrast is asserted numerically against the
-// tokens in lib/palette-contrast.test.ts and lib/tag-pill.test.ts instead.
+// The same two rules are disabled here as there, and for the same reason:
+// both need a layout engine that jsdom does not provide, so axe would report
+// a false pass. Contrast is asserted numerically in
+// lib/palette-contrast.test.ts and lib/tag-pill.test.ts instead.
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/font/google", () => ({
