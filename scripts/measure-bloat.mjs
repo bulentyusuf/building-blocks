@@ -1,9 +1,19 @@
 #!/usr/bin/env node
-// Measures the bloat signals the audit-bloat skill reads. Numbers only. The
-// judgement about what each number means lives in SKILL.md beside this file.
+// Measures the bloat signals in this repository and prints them. Numbers only.
+// What a given number means is a reading someone has to make, and the arguments
+// that inform it are in docs/decisions.md.
 //
-// Run from the repository root: node .claude/skills/audit-bloat/measure.mjs
-// Add --self-test to prove the duplication detector before trusting it.
+// It reports the CLAUDE.md line budget, the longest rules in that file, the
+// longest decision entries, which source comments share eight-word runs with
+// the documentation, the longest comment blocks, and the runtime dependency
+// count.
+//
+// Run from the repository root with npm run measure:bloat.
+//
+// Add --self-test to prove the duplication detector before trusting any figure
+// it prints. The self test lifts real text out of docs/decisions.md, asserts it
+// is found, then asserts invented text is not. If it fails, every duplication
+// figure after it is meaningless.
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
