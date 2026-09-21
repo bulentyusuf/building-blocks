@@ -157,6 +157,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   the `shiki` meta-package.** A new language needs its own `@shikijs/langs/*`
   import beside its `LANGS` entry, and the Code Block dropdown must offer
   nothing `LANGS` lacks. [→ `shiki-fine-grained`]
+- **`lib/highlight.ts` replaces min-dark's comment colour at highlight time.**
+  The theme's own is 3.43:1 on its ground. Do not drop the replacement or add
+  a CSS override beside it. [→ `shiki-comment-contrast`]
 
 ## Accessibility
 

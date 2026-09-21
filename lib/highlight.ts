@@ -27,6 +27,26 @@ import yml from "@shikijs/langs/yml";
 import type { CodeBlock, Content } from "./types";
 
 const THEME = "min-dark"; // themes
+
+// min-dark sets comments in #6B737C, which measures 3.43:1 against the theme's
+// own #1F1F1F ground where WCAG AA asks 4.5:1 for body-sized text. Nothing in
+// the repo could see it: lib/palette-contrast.test.ts recomputes ratios from
+// the stylesheet, and a theme colour never appears there. An audit of the
+// rendered site found it.
+//
+// Replaced at highlight time rather than overridden in CSS, which is Shiki's
+// own mechanism for this and leaves no specificity argument behind. #858F9A is
+// the same hue lifted until it clears the floor, at 5.02:1. It stays the
+// dimmest token in the theme, the next being #F97583 at 6.20:1, so comments
+// still read as secondary.
+//
+// Four other theme colours also fail against that ground and are deliberately
+// left alone, because no code sample on the site renders them: #800080 at
+// 1.75:1 (debug-token), #CD3131 at 3.20:1 (error-token), #316BCD at 3.23:1
+// (info-token) and #1976D2 at 3.58:1 (markdown inline link). A sample that
+// uses one is a new finding, not a regression of this.
+// [→ `shiki-comment-contrast`]
+const COLOR_REPLACEMENTS = { "#6b737c": "#858f9a" } as const;
 // Exported for lib/highlight.langs.test.ts, which runs a snippet through every
 // entry and asserts real theme markup comes back rather than the escapeHtml
 // fallback. It is otherwise the internal allowlist highlightCodeBlocks checks a
@@ -100,7 +120,14 @@ export async function highlightCodeBlocks(
       ? (b.language as string)
       : "text";
     try {
-      map.set(b.sys.id, hl.codeToHtml(b.code, { lang, theme: THEME }));
+      map.set(
+        b.sys.id,
+        hl.codeToHtml(b.code, {
+          lang,
+          theme: THEME,
+          colorReplacements: COLOR_REPLACEMENTS,
+        }),
+      );
     } catch {
       map.set(
         b.sys.id,

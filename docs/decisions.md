@@ -53,6 +53,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `prose-measure` — The prose column is never measured in `ch`
 - `prose-overflow` — Prose breaks an unbreakable string rather than scrolling the page
 - `shiki-fine-grained` — Shiki grammars are imported one by one, never from the meta-package
+- `shiki-comment-contrast` — The highlighter replaces min-dark's comment colour
 - `tailwind-scanning` — Documentation is excluded from Tailwind's source scanning
 
 **Accessibility**
@@ -1781,6 +1782,44 @@ reach for `force-static`, not the prerender.
 No per-card size lever is worth pulling. `next/og` emits PNG only, with no format
 option, and the cover panel is already fetched from Contentful at 480×630 jpg
 q80. Nobody should spend an afternoon trying to shrink these.
+
+### The highlighter replaces min-dark's comment colour
+
+<!-- key: shiki-comment-contrast -->
+
+min-dark sets comments in `#6B737C` against its own `#1F1F1F` ground, which
+measures 3.43:1 where WCAG 2.1 SC 1.4.3 asks 4.5:1 for text at this size.
+Nothing in the repo could see it. `lib/palette-contrast.test.ts` and
+`lib/tag-pill.test.ts` recompute ratios from the stylesheet, and a theme colour
+never appears there; the axe run in `app/a11y.test.tsx` is under jsdom, which
+applies no stylesheet and computes no boxes. `scripts/audit-a11y.mjs` found it
+on the deployed site.
+
+`colorReplacements` at highlight time, which is Shiki's own mechanism for this,
+rather than a CSS rule targeting the token span. The colours are inline styles
+on those spans, so a CSS override would need to outrank them and would leave a
+specificity argument in the stylesheet for the next person to unpick.
+
+`#858F9A` is the theme's own hue lifted until it clears the floor, at 5.02:1.
+It stays the dimmest token in the theme, the next being `#F97583` at 6.20:1, so
+comments still read as secondary rather than being flattened into the rest of
+the block.
+
+Four other colours in the theme also fail against that ground and are
+deliberately left alone: `#800080` at 1.75:1 on `token.debug-token`, `#CD3131`
+at 3.20:1 on `token.error-token`, `#316BCD` at 3.23:1 on `token.info-token`,
+and `#1976D2` at 3.58:1 on a markdown inline link. No code sample on the site
+renders any of them. A sample that does is a new finding rather than a
+regression of this one, and the guard below reports it as such.
+
+The theme itself stays. Swapping it is a bundle-weight decision argued under
+`shiki-fine-grained` and replacing one colour costs nothing by comparison.
+
+`lib/highlight.contrast.test.ts` recomputes the ratio from the markup the
+renderer emits, over one sample per grammar, and fails on any colour below the
+floor. It needs no known-bad control because it recomputes rather than matching
+a pattern, and it asserts a non-empty colour set first so it cannot pass
+vacuously.
 
 ### Shiki grammars are imported one by one, never from the meta-package
 
