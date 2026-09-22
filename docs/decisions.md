@@ -67,7 +67,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 
 - `csp-scoping` — CSP: `'unsafe-inline'` stays global, every relaxation is scoped to a route
 - `image-loader` — Image loader passes only `w`, `q`, `fm=webp` by design
-- `priority-opaque` — A `priority` image is opaque in the server HTML, and that is the LCP fix
+- `priority-opaque` — Every image is opaque in the server HTML, and that is the LCP fix
 - `browse-copy` — Browse-page copy is editable, site identity is not
 - `authors-array` — Posts carry `authors`, an ordered array capped at three
 - `rich-text-links` — Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
@@ -712,18 +712,31 @@ treatment. Adding a fourth would be.
 Cropping is CSS-side (`object-cover`). The absence of Contentful's
 crop/focus/height params is a decision, not an omission.
 
-### A `priority` image is opaque in the server HTML, and that is the LCP fix
+### Every image is opaque in the server HTML, and that is the LCP fix
 
 <!-- key: priority-opaque -->
 
-`lib/contentful-image.tsx` starts its reveal state at `instant` when `priority`
-is set, so the LCP candidate never waits on hydration; the file carries the
-argument. Chromium's LCP algorithm skips fully transparent elements, so the
-`opacity-0` every image once shipped with meant the measured paint was the React
-commit rather than the (preloaded) bitmap's arrival, and `@media (scripting:
-none)` does not cover the pre-hydration window. Lazy body images keep the full
-pending → instant/fade machine, and `lib/contentful-image.test.tsx` asserts both
-halves. Do not collapse the branch back to one initial state.
+`lib/contentful-image.tsx` holds no reveal state. `next/image`'s own
+`placeholder="blur"` handling paints the `blurDataURL` and clears it on decode
+without ever setting opacity to 0, which is what the three-state pending →
+instant/fade machine here used to reimplement by hand. That opacity matters.
+Chromium's LCP algorithm skips fully transparent elements, so the `opacity-0`
+every image once shipped with meant the measured paint was the React commit
+rather than the (preloaded) bitmap's arrival, and `@media (scripting: none)` did
+not cover the pre-hydration window. The `priority` escape hatch that worked
+around all that, and the media query beside it, both went when the machine did.
+The key name is historical, and `priority` is not a special case here any more.
+Do not reintroduce an opacity-based reveal.
+
+The `"use client"` directive at the top of that file stays. `contentfulLoader`
+is handed to `next/image` as the `loader` prop, and a prop that takes a function
+has to be serialised across the server/client boundary, which only a Client
+Component can do. Next's own `loader` example carries the directive for that
+reason. It reads as dead because the component has no state and no hooks, and an
+audit flagged it as dead on exactly that reasoning in September 2026. Removing
+it fails the build, and it would not move any consumer onto the client or off
+the server in any case, because a Server Component may import a Client Component
+and stay on the server.
 
 **A `sizes` value must stop growing where its container does.** `Container` is
 `max-w-5xl` with `px-5`, so content tops out at 984px, and a bare `vw` clause
