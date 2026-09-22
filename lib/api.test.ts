@@ -1,4 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+// api.ts imports "server-only", which throws when evaluated outside a React
+// Server Component. Same stub lib/blur.test.ts uses, for the same reason.
+vi.mock("server-only", () => ({}));
+
 import { getAllAuthors, setRetryDelayForTests } from "@/lib/api";
 
 const AUTHORS = {
