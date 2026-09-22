@@ -1,3 +1,4 @@
+import "server-only";
 import { cache } from "react";
 import { visibleTagSlugs } from "./tags";
 import { relatedPosts } from "./related";

@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { NextRequest } from "next/server";
+
+// This suite pulls CACHE_TAGS from lib/api.ts, which imports "server-only"
+// and throws when evaluated outside a React Server Component. Same stub the
+// other suites use.
+vi.mock("server-only", () => ({}));
+
 import { CACHE_TAGS } from "@/lib/api";
 
 // What a Contentful webhook firing actually purges.
