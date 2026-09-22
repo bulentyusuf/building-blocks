@@ -1,3 +1,12 @@
+// This directive is load-bearing, despite the component holding no state and
+// no hooks. `contentfulLoader` below is handed to next/image as the `loader`
+// prop, and a prop that takes a function has to be serialised across the
+// server/client boundary, which only a Client Component can do. Next's own
+// `loader` example carries the directive for that reason. Removing it does
+// not push consumers onto the client or pull them off the server either,
+// because a Server Component may import a Client Component and stay on the
+// server.
+// See docs/decisions.md, "Every image is opaque in the server HTML".
 "use client";
 import Image, { type ImageProps } from "next/image";
 import { CONTENTFUL_IMAGE_HOST } from "./contentful-host";

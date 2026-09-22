@@ -195,8 +195,9 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   becomes the whole result. [→ `collection-paging`]
 - **The image loader passes only `w`, `q` and `fm=webp`.** Cropping is CSS-side.
   [→ `image-loader`]
-- **A `priority` image renders opaque in the server HTML**, and a `sizes` value
-  stops growing where its container does (984px). [→ `priority-opaque`]
+- **Every image renders opaque in the server HTML**, `next/image` owns the blur
+  placeholder, and the `"use client"` in `lib/contentful-image.tsx` is
+  load-bearing. A `sizes` value stops growing at 984px. [→ `priority-opaque`]
 - **Every rich-text hyperlink goes through `lib/rich-text-link.tsx`** as the
   `INLINES.HYPERLINK` override. Do not copy the renderer to a second location.
   [→ `rich-text-links`]
