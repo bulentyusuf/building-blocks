@@ -234,6 +234,7 @@ export default async function PostPage({
                 data-pagefind-ignore
                 className="absolute bottom-2 right-2 inline-flex h-11 items-center gap-1.5 rounded-full bg-black/85 px-3.5 font-ui text-sm font-semibold text-white no-underline shadow-md hover:bg-black md:bottom-3.5 md:right-3.5 focus-visible:outline-white focus-visible:-outline-offset-4"
               >
+                {/* Lucide 'brush' icon, ISC licence. */}
                 <svg
                   aria-hidden="true"
                   width="15"
@@ -245,9 +246,9 @@ export default async function PostPage({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M4 20c4 0 5-2 5-4a3 3 0 0 0-3-3c-2 0-3 1.5-3 3.5" />
-                  <path d="M9.5 13.5L20 3" />
-                  <path d="M15 4l5 5" />
+                  <path d="m11 10 3 3" />
+                  <path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z" />
+                  <path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031" />
                 </svg>
                 Prompt<span className="sr-only"> for this cover image</span>
               </a>
