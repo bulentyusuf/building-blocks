@@ -895,6 +895,32 @@ describe("prompt block thumbnail", () => {
 
     expect(html).not.toContain('aria-hidden="true"');
   });
+
+  it("gives the cover prompt the id the hero pill links to", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={promptContent({ prompt: "Draw a cat" })}
+        headings={[]}
+        coverPromptId="prompt1"
+      />,
+    );
+
+    expect(html).toContain('id="cover-prompt"');
+  });
+
+  // Known-bad control for the test above: a prompt block that is not the
+  // cover's must not take the anchor, or the pill would land on it.
+  it("leaves every other prompt block without the id", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={promptContent({ prompt: "Draw a cat" })}
+        headings={[]}
+        coverPromptId="someOtherEntry"
+      />,
+    );
+
+    expect(html).not.toContain('id="cover-prompt"');
+  });
 });
 
 describe("numeric table columns", () => {

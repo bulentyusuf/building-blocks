@@ -142,12 +142,17 @@ export function RichText({
   highlighted,
   lightbox = true,
   prioritizeFirstImage = false,
+  coverPromptId,
 }: {
   content: Content;
   headings: Heading[];
   highlighted?: Map<string, string>;
   lightbox?: boolean;
   prioritizeFirstImage?: boolean;
+  // The prompt block that made the post's cover, from coverPromptId() in
+  // lib/cover-prompt.ts. That block alone gets the id the hero's "Prompt"
+  // pill links to. Absent everywhere but the post page.
+  coverPromptId?: string;
 }) {
   // Single source of truth for heading ids. `headings` comes from
   // extractHeadings() on the page. documentToReactComponents walks in document
@@ -411,6 +416,10 @@ export function RichText({
         if (entry.__typename === "PromptBlock") {
           return (
             <figure
+              // A fixed id rather than one derived from the entry: the hero
+              // pill in app/posts/[slug]/page.tsx links to this literal, and
+              // only one block per post can match.
+              id={entry.sys.id === coverPromptId ? "cover-prompt" : undefined}
               data-pagefind-weight="0.1"
               className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
             >
