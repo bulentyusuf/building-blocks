@@ -11,6 +11,7 @@ import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
 import { extractHeadings, hasTableOfContents } from "@/lib/headings";
 import { readingTimeMinutes } from "@/lib/reading-time";
+import { coverPromptId } from "@/lib/cover-prompt";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
@@ -149,6 +150,7 @@ export default async function PostPage({
     </span>
   );
 
+  const promptId = coverPromptId(post);
   const headings = extractHeadings(post.content.json);
   const highlighted = await highlightCodeBlocks(post.content);
 
@@ -210,13 +212,47 @@ export default async function PostPage({
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
-          <div className="mb-10">
+          <div className="relative mb-10">
             <CoverImage
               image={post.coverImage}
               wide
               priority
               sizes="(max-width: 768px) calc(100vw - 2.5rem), 1024px"
             />
+            {promptId && (
+              // Jumps to the prompt block that made this cover. Sits over the
+              // image rather than below it so the page below the cover keeps
+              // its position. Near-opaque black rather than a brand token:
+              // brand-dark swaps value in dark mode, and the pill sits on an
+              // image of any tone, so its ground cannot follow the scheme.
+              // The focus ring is drawn inside the pill in white for the same
+              // reason, since the sitewide crimson ring would land on the
+              // image. 44px tall at every width to meet the touch target.
+              // data-pagefind-ignore keeps the label out of search excerpts.
+              <a
+                href="#cover-prompt"
+                data-pagefind-ignore
+                className="absolute bottom-2 right-2 inline-flex h-11 items-center gap-1.5 rounded-full bg-black/85 px-3.5 font-ui text-sm font-semibold text-white no-underline shadow-md hover:bg-black md:bottom-3.5 md:right-3.5 focus-visible:outline-white focus-visible:-outline-offset-4"
+              >
+                {/* Lucide 'brush' icon, ISC licence. */}
+                <svg
+                  aria-hidden="true"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m11 10 3 3" />
+                  <path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z" />
+                  <path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031" />
+                </svg>
+                Prompt<span className="sr-only"> for this cover image</span>
+              </a>
+            )}
           </div>
         )}
         {/* Grid begins AFTER the cover image; the header block above is
@@ -272,6 +308,7 @@ export default async function PostPage({
                 content={post.content}
                 headings={headings}
                 highlighted={highlighted}
+                coverPromptId={promptId}
               />
             </div>
             {/* Below the body, not the sidebar: the sidebar is xl-and-up

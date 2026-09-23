@@ -721,6 +721,12 @@ html {
     border-radius: 0.25rem;
     animation: target-flash 1.8s ease-out 1;
   }
+
+  /* The cover prompt, reached from the pill on the post hero. No
+     border-radius here: the figure keeps its own rounded-lg corners. */
+  #cover-prompt:target {
+    animation: target-flash 1.8s ease-out 1;
+  }
 }
 
 @keyframes target-flash {
