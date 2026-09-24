@@ -1002,15 +1002,32 @@ refactor, and a pattern anchored on the first attribute.
 
 <!-- key: tailwind-scanning -->
 
-Tailwind generates a rule for any class-name candidate in a scanned file, prose
-included. `app/globals.css` carries `@source not` for `CLAUDE.md`,
-`docs/decisions.md`, `README.md` and `.claude`. `app/` and `lib/` are scanned,
-so never name a literal utility in a source comment there; a variant prefix does
-not stop it. `app/globals.css` itself is not scanned. Ordinary English words
-that happen to be utilities are left alone.
+Tailwind generates a rule for every class-name candidate in a scanned file,
+prose included. `app/globals.css` carries `@source not` for `CLAUDE.md`,
+`docs/decisions.md`, `README.md` and `.claude`, and that half stays: one line a
+file, and markdown quotes utilities constantly. The stylesheet hosting the
+`@import` is not scanned, so its comments may name anything. `app/` and `lib/`
+are scanned and cannot be excluded, and a variant prefix does not prevent a leak
+(`md:grid-cols-2` in prose once produced a bare `.grid-cols-2`). The remedy is
+short comments with a `[→ key]` pointer. That is guidance, not a gate.
 
-`lib/tailwind-comment-scanning.test.ts` compiles the stylesheet with and without
-comments and requires the same rules, with a planted candidate as its control. Widening its English allowlist
-reopens this entry.
-A clean run is necessary, not sufficient: its scan root is narrower than
-`next build`'s, and the deployed bundle settles it.
+**Reopened, September 2026: the comment guard is retired**, in writing with
+numbers, not weakened to let a change pass. It was green when removed. Gone are
+the CLAUDE.md rule, lib/tailwind-comment-scanning.test.ts (200 lines), its
+`SPELLED_AS_ENGLISH` allowlist and a needle in `lib/toc-active.test.ts`.
+Measured against `b1fa4fa`, minified, the guard found zero rules. Comments add
+1,032 bytes raw and 133 gzipped (61,440 against 60,408, 11,119 against 10,986),
+all nine rules ordinary English words (`.collapse`, `.static`, `.outline` and
+six more) it exempted on purpose. Its lifetime win (#515) was fifteen rules,
+68,608 to 67,568 bytes, about 1.5%. The deployed bundle was not re-measured,
+since beuseful.net was unreachable. A rule that ships unused costs bytes and
+nothing else. What stays: the `@source not` lines, and the `scroll-mt-*` check
+in `lib/toc-active.test.ts`, which guards behaviour [→ `scroll-offset`].
+
+If leaks look worth chasing again, the deployed bundle settles it. A local
+compile under-reports, its scan root narrower than `next build`'s.
+
+```
+css=$(curl -s https://beuseful.net | grep -oE '/_next/static/[^"]+\.css' | head -1)
+curl -s "https://beuseful.net$css" | wc -c
+```
