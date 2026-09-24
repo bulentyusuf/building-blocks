@@ -156,10 +156,6 @@ export default function LightboxImage({
     };
   }, [open, close]);
 
-  const reduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
   // The asset's real shape, which is what both renders below are laid out
   // against. Contentful returns null for these on a non-image asset and a
   // payload cached before they were queried has neither, so 3:2 remains as a
@@ -270,9 +266,7 @@ export default function LightboxImage({
             aria-labelledby={caption ? titleId : undefined}
             aria-label={caption ? undefined : alt || "Enlarged image"}
             onClick={close}
-            className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 md:p-8 ${
-              reduceMotion ? "" : "transition-opacity duration-200"
-            }`}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 md:p-8"
           >
             <button
               ref={closeRef}
