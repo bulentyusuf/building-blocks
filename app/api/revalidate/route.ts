@@ -28,8 +28,7 @@ async function tagsToRevalidate(request: NextRequest): Promise<CacheTag[]> {
 }
 
 export async function POST(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers);
-  const secret = requestHeaders.get("x-vercel-reval-key");
+  const secret = request.headers.get("x-vercel-reval-key");
   const expected = process.env.CONTENTFUL_REVALIDATE_SECRET;
 
   if (!safeCompare(secret, expected)) {
