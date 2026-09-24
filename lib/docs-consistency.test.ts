@@ -111,7 +111,7 @@ describe("CLAUDE.md stays inside its line budget", () => {
 
 // Only ever lowered. A new entry is paid for by trimming another.
 // [→ `reopening-decisions`]
-const DECISIONS_MD_LINE_CEILING = 1065;
+const DECISIONS_MD_LINE_CEILING = 1058;
 
 // trimEnd() so this agrees with `wc -l`.
 const overCeiling = (text: string, ceiling: number) =>
