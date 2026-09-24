@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, beforeAll, vi } from "vitest";
 import { render, cleanup, act } from "@testing-library/react";
 import LightboxImage from "./lightbox-image";
 
@@ -10,6 +10,22 @@ import LightboxImage from "./lightbox-image";
 // depends on the picture's width in the post, measured through a ref that
 // passes through lib/contentful-image.tsx. If that ref stops reaching the img,
 // the control silently never appears, and only a mounted render shows it.
+
+// jsdom has no showModal() or close(). The stubs keep the one contract the
+// component relies on: close() clears [open] and fires the dialog's own close
+// event, which is where every way out (Escape included) ends up.
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = vi.fn(function (
+    this: HTMLDialogElement,
+  ) {
+    this.setAttribute("open", "");
+  });
+  HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
+    if (!this.hasAttribute("open")) return;
+    this.removeAttribute("open");
+    this.dispatchEvent(new Event("close"));
+  };
+});
 
 let shownWidth = 672;
 const realRect = HTMLImageElement.prototype.getBoundingClientRect;
@@ -41,6 +57,7 @@ function mount(assetWidth: number, assetHeight: number) {
 
 afterEach(() => {
   cleanup();
+  vi.mocked(HTMLDialogElement.prototype.showModal).mockClear();
   HTMLImageElement.prototype.getBoundingClientRect = realRect;
   shownWidth = 672;
 });
@@ -70,7 +87,7 @@ describe("lightbox enlarge control after mount", () => {
       container.querySelector("button")?.click();
     });
 
-    const figure = document.querySelector<HTMLElement>("[role=dialog] figure");
+    const figure = document.querySelector<HTMLElement>("dialog figure");
     expect(figure?.style.width).toContain("1920px");
     expect(figure?.style.width).not.toContain("2048px");
   });
@@ -90,26 +107,106 @@ describe("lightbox enlarge control after mount", () => {
   });
 });
 
-describe("lightbox scroll-lock", () => {
-  // The page scrolls on html, not body, because app/globals.css gives html
-  // overflow-y: scroll to reserve the scrollbar's column. Once html's overflow
-  // is anything but visible, body's overflow no longer reaches the viewport,
-  // so a lock set on body alone left the page scrolling freely behind the open
-  // lightbox. Only html's inline style says whether the lock can hold.
-  it("locks html while open and restores it on close", () => {
+describe("lightbox dialog", () => {
+  const openLightbox = () => {
     screen(2560, 1330);
-    const { container } = mount(1920, 1080);
-    const html = document.documentElement;
-    expect(html.style.overflow).toBe("");
+    const utils = mount(1920, 1080);
+    const trigger = utils.container.querySelector<HTMLButtonElement>(
+      "button[aria-label='Enlarge image']",
+    )!;
+    act(() => trigger.click());
+    const dialog = utils.container.querySelector("dialog")!;
+    return { ...utils, trigger, dialog };
+  };
+
+  it("carries no dialog where the control is withheld", () => {
+    screen(2560, 1330);
+    const { container } = mount(772, 772);
+
+    expect(container.querySelector("dialog")).toBeNull();
+  });
+
+  it("opens as a modal and focuses the close button", () => {
+    const { dialog } = openLightbox();
+
+    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe(
+      "Close enlarged image",
+    );
+  });
+
+  it("closes from the close button and returns focus to the trigger", () => {
+    const { dialog, trigger } = openLightbox();
 
     act(() => {
-      container.querySelector("button")!.click();
+      dialog
+        .querySelector<HTMLButtonElement>(
+          "button[aria-label='Close enlarged image']",
+        )!
+        .click();
     });
-    expect(html.style.overflow).toBe("hidden");
 
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    });
-    expect(html.style.overflow).toBe("");
+    expect(dialog.hasAttribute("open")).toBe(false);
+    expect(dialog.querySelector("figure")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("follows a close the platform makes on its own, such as Escape", () => {
+    // Escape is the browser's job now. What the component owns is following
+    // the close event it ends in, so the contents unmount and focus returns.
+    const { dialog, trigger } = openLightbox();
+
+    act(() => dialog.close());
+
+    expect(dialog.querySelector("figure")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("stays open on a click on the picture and closes on one beside it", () => {
+    const { dialog } = openLightbox();
+
+    act(() => dialog.querySelector<HTMLImageElement>("figure img")!.click());
+    expect(dialog.hasAttribute("open")).toBe(true);
+
+    act(() => dialog.click());
+    expect(dialog.hasAttribute("open")).toBe(false);
+  });
+
+  it("is named by its caption when there is one, by the alt otherwise", () => {
+    screen(2560, 1330);
+    HTMLImageElement.prototype.getBoundingClientRect = () =>
+      ({ width: shownWidth }) as DOMRect;
+    const { container } = render(
+      <LightboxImage
+        src="https://images.ctfassets.net/x/y.jpg"
+        alt="A tabby asleep on a keyboard"
+        caption="Bruno, unbothered"
+        width={1920}
+        height={1080}
+      />,
+    );
+    act(() => container.querySelector("button")!.click());
+
+    const dialog = container.querySelector("dialog")!;
+    const caption = dialog.querySelector("figcaption")!;
+    expect(dialog.getAttribute("aria-labelledby")).toBe(caption.id);
+    expect(dialog.hasAttribute("aria-label")).toBe(false);
+
+    cleanup();
+    const { dialog: bare } = openLightbox();
+    expect(bare.getAttribute("aria-label")).toBe("A placeholder");
+    expect(bare.hasAttribute("aria-labelledby")).toBe(false);
+  });
+
+  it("leaves the page's inline styles alone", () => {
+    // The scroll lock is a stylesheet rule on html:has(dialog:modal), guarded
+    // in app/globals.measure.test.ts. Script touching overflow again would be
+    // the hand-rolled lock coming back. [→ `lightbox-dialog`]
+    openLightbox();
+
+    expect(document.documentElement.style.overflow).toBe("");
+    expect(document.body.style.overflow).toBe("");
+    expect(document.body.style.paddingRight).toBe("");
   });
 });
