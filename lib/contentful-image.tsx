@@ -1,35 +1,19 @@
-// This directive is load-bearing, despite the component holding no state and
-// no hooks. `contentfulLoader` below is handed to next/image as the `loader`
-// prop, and a prop that takes a function has to be serialised across the
-// server/client boundary, which only a Client Component can do. Next's own
-// `loader` example carries the directive for that reason. Removing it does
-// not push consumers onto the client or pull them off the server either,
-// because a Server Component may import a Client Component and stay on the
-// server.
-// See docs/decisions.md, "Every image is opaque in the server HTML".
+// Load-bearing despite no hooks: the loader is a function prop, which only a
+// Client Component can pass to next/image. [→ `priority-opaque`]
 "use client";
 import type { Ref } from "react";
 import Image, { type ImageProps } from "next/image";
 import { CONTENTFUL_IMAGE_HOST } from "./contentful-host";
 
-// ref is declared because next/image's own props type leaves it out, though
-// the component accepts one. React 19 hands a function component its ref as
-// an ordinary prop, so the spread below carries it through to the img.
-// lib/lightbox-image.tsx measures the picture through it.
+// next/image's props type omits ref; React 19 passes it through as a prop.
 type ContentfulImageProps = Omit<ImageProps, "loader" | "src"> & {
   src: string;
   ref?: Ref<HTMLImageElement>;
 };
 
-// The transform query params below are only meaningful for assets served from
-// Contentful's Images API, so we host-check before appending them rather than
-// trusting whatever URL the CMS hands us. Anything else is returned untouched
-// (CSP img-src is the hard backstop on what can load).
+// Transform params only for Contentful's host; anything else passes untouched.
 
-// Exported only so lib/contentful-image.test.tsx can assert its query-string
-// behaviour directly, with fixed inputs, rather than through next/image's own
-// width-candidate selection. Not a general-purpose utility — nothing outside
-// this file and its test should import it.
+// Exported for its test only.
 export const contentfulLoader = ({
   src,
   width,
@@ -49,13 +33,6 @@ export const contentfulLoader = ({
 };
 
 export default function ContentfulImage(props: ContentfulImageProps) {
-  // No reveal state. next/image's own placeholder handling paints the
-  // blurDataURL on the image and clears it on decode, which is what the
-  // three-state machine here was reimplementing. It does it without ever
-  // setting opacity to 0, which is why the old version needed a priority
-  // escape hatch (Chromium's LCP algorithm skips fully transparent elements,
-  // so the LCP candidate was the hydration tick rather than the moment the
-  // preloaded bitmap arrived) and a `@media (scripting: none)` override for
-  // no-JS readers. Neither is needed now.
+  // No reveal state, and never opacity 0. [→ `priority-opaque`]
   return <Image loader={contentfulLoader} {...props} />;
 }

@@ -7,23 +7,15 @@ import {
   DEFAULT_OG_LOCALE,
 } from "./constants";
 
-// The site's own card, used by every page with no image of its own.
 const SITE_CARD_URL = "/be_useful.jpg";
 const SITE_CARD = [
   { url: SITE_CARD_URL, width: 1200, height: 630, alt: SITE_TITLE },
 ];
 
 /**
- * The Open Graph and Twitter blocks, identical on every page that is not a
- * post, differing only in title, description, URL and image. [→ `listing-shell`]
- *
- * The ten call sites had already drifted before this collapsed them: an
- * author page fell back to the site card for `og:image` but emitted no
- * `twitter:image` at all when the author had no portrait. Both fall back
- * here, so the two agree on every page.
- *
- * `title` is optional because the browse indexes deliberately omit
- * `twitter.title` and inherit the document title instead.
+ * Open Graph and Twitter blocks for every non-post page, so og and twitter
+ * images fall back to the site card together. `title` is optional because the
+ * browse indexes inherit the document title. [→ `listing-shell`]
  */
 function socialCard({
   title,
@@ -34,7 +26,7 @@ function socialCard({
   title?: string;
   description: string;
   url: string;
-  /** Entity-specific images, e.g. an author's portrait. Absent → the site card. */
+  /** Absent means the site card. */
   images?: string[];
 }): Pick<Metadata, "openGraph" | "twitter"> {
   return {
@@ -56,13 +48,8 @@ function socialCard({
 }
 
 /**
- * Metadata for a browse page (/tags, /categories, /authors, /archive).
- *
- * `slug` doubles as the route and as the BrowseIntro key, which is why they
- * are one argument rather than two — the entry for /tags has slug "tags".
- *
- * Must be called with the same slug the page component passes to
- * getBrowseIntro(). [→ `single-entry-cache`]
+ * `slug` is both the route and the BrowseIntro key. Pass the same slug the
+ * page passes to getBrowseIntro(). [→ `single-entry-cache`]
  */
 export async function browsePageMetadata({
   slug,
@@ -75,9 +62,7 @@ export async function browsePageMetadata({
 }): Promise<Metadata> {
   const intro = await getBrowseIntro(slug, isDraftMode);
 
-  // Falls back to the site description rather than rendering an empty tag: a
-  // missing entry should cost the page its bespoke snippet, not its metadata.
-  // Trimmed because a field holding only whitespace is an empty field.
+  // A missing or blank entry falls back to the site description.
   const description = intro?.metaDescription?.trim() || SITE_DESCRIPTION;
   const url = `${SITE_URL}/${slug}`;
 
@@ -89,15 +74,7 @@ export async function browsePageMetadata({
   };
 }
 
-/**
- * Metadata for one taxonomy listing — a category, tag or author page, in either
- * its unpaginated or its paginated form.
- *
- * The six routes differ in four values and agreed on the other thirty lines.
- * `canonical` is passed whole rather than assembled from a slug because the
- * paginated routes append `/page/N` to it, and a route that knows its own URL
- * is clearer than a helper that reconstructs it.
- */
+/** A category, tag or author listing, paginated or not. */
 export function listingMetadata({
   title,
   description,
