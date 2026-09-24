@@ -15,7 +15,6 @@ import {
   DEFAULT_OG_LOCALE,
 } from "@/lib/constants";
 import BackToTop from "./back-to-top";
-import SidenoteEnterKey from "./sidenote-enter-key";
 import WordmarkFade from "./wordmark-fade";
 import SiteWordmark from "./site-wordmark";
 import NewWindowHint from "./new-window-hint";
@@ -398,7 +397,6 @@ export default async function RootLayout({
         <Footer />
         {isEnabled && <ExitPreviewButton />}
         <BackToTop />
-        <SidenoteEnterKey />
         <WordmarkFade />
         <Analytics />
         <SpeedInsights />
