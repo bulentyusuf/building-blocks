@@ -14,6 +14,9 @@ import { useEffect } from "react";
 // Delegated from the document rather than bound per note, so lib/sidenote.tsx
 // stays a server component. Handling the key on the input itself would drag the
 // whole sidenote tree back into the client bundle to buy one key.
+//
+// Mounted by the post page alone. Sidenotes are inline entries, and only a
+// post's body queries those, so no other route has a checkbox to listen for.
 export default function SidenoteEnterKey() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
