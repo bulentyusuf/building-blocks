@@ -354,7 +354,8 @@ bottom margin preserves the total and puts all of it above the boundary, which
 leaves the first content element flush against a 3px line on home, the post
 page and the four section fronts. The ruled listings hide it, because their
 items carry `py-10 md:py-12` of their own, so a green suite is not evidence
-either way — `lib/listing-rhythm.test.ts` asserts both halves separately.
+either way — the layout test in lib (listing-rhythm.layout.test.tsx) measures
+both halves separately, in a browser.
 
 `contentOwnsLeading` therefore suppresses the gap **below** the rule, never
 the header's margin above it. A prop meaning "the content below supplies its
@@ -2322,6 +2323,34 @@ each gap has already let a defect through:
   pattern per route rather than a skip, so a duplicate of any other shape still
   fails there — and each allowance asserts the duplication still occurs, so it
   cannot outlive the design it was written for.
+
+- **The spacing rhythm is measured, not matched** (reopened September 2026).
+  The layout test in lib (listing-rhythm.layout.test.tsx) renders home, a tag
+  listing and `/archive` through the real routes with only the CMS mocked,
+  compiles `app/globals.css` with the real Tailwind plugin, and measures the
+  result in Chromium through `playwright-core` at 375px and 1280px. It asserts
+  relations, not values: on the listing, rule-to-first-cover equals
+  hairline-to-next-cover; home's ruled grid opens with that same inset; home
+  and `/archive` open the same non-zero gap below the rule; and the header sits
+  the same distance above the rule on all three. It replaced eight tests in
+  `lib/listing-rhythm.test.ts` that matched class strings in source. **That is
+  a stronger guard replacing weaker ones, not a weakening**: the old tests
+  failed on a refactor that kept the pixels, and passed on any spacing break
+  they did not happen to name. Its known-bad controls rerun the whole
+  measurement on the listing broken the two ways this rhythm has actually
+  broken (the first item's top padding zeroed, and a gap added below the rule)
+  and require both to be reported.
+
+  It runs inside `npm test` rather than as a fourth CI step, so the gate stays
+  at three steps and needs neither `next start` nor Contentful credentials. The
+  cost is that `npm test` now needs a Chromium-family browser. It looks at
+  `CHROME_PATH`, then `CHROME_BIN` (which GitHub's Ubuntu runners set to their
+  preinstalled Chrome), then the usual install locations, and it fails rather
+  than skips when none is found, because a skipped guard reads as a passing
+  one. What it cannot see: real fonts, since `next/font` is mocked, so only
+  padding, margin and border distances are asserted and never text-driven
+  heights; and real image files, since covers are sized by their aspect-ratio
+  box.
 
 - **`lib/paginate.test.ts`** covers the page arithmetic the six taxonomy routes
   and the home index share, including that every item lands on exactly one page.
