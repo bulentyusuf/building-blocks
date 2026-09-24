@@ -1,7 +1,8 @@
 "use client";
 
 // Replaces the root layout when it throws, so it renders its own <html> and no
-// chrome. The font variables are bypassed, so type falls back to system.
+// chrome. The font variables are bypassed, so type falls back to system. Keep
+// the globals.css import, or the brand tokens stop resolving here.
 
 import "./globals.css";
 import { useEffect } from "react";

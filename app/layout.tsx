@@ -143,8 +143,10 @@ function Header() {
                 <path d="M5 5l14 14M5 19L19 5" />
               </svg>
             </summary>
-            {/* Scrim under the open menu. It must ignore pointer events, or
-                the outside-tap handler sees a tap inside and will not close. */}
+            {/* Scrim under the open menu, positioned against the sticky header
+                rather than the viewport so the bar stays undimmed. It must
+                ignore pointer events, or the outside-tap handler sees a tap
+                inside and will not close. */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"

@@ -4,9 +4,9 @@ import type { Tag } from "@/lib/types";
 // One pill for cards and the post page. [→ `tag-pills`]
 type Size = "default" | "compact";
 
-// Both sizes use the same type; compact only tightens padding. Horizontal
-// padding clears the corner radius, which is half the height, so the label
-// does not sit in the curve.
+// Both sizes use the same type as the card date, so tags do not read as a
+// footnote; do not shrink compact. Horizontal padding clears the corner radius,
+// which is half the height, so each size keeps its own; do not equalise them.
 const SIZES: Record<Size, string> = {
   default: "px-4 py-1 text-sm",
   compact: "px-3.5 py-0.5 text-sm",
