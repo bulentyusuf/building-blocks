@@ -42,7 +42,10 @@ Four tests, in the order they usually bite:
   rather than an oversight. [→ `reviewed-items`]
 
 When an elegant version and a thorough version both work, ship the elegant one
-and write down what it does not cover. Documentation obeys this too.
+and write down what it does not cover. Documentation obeys this too. A decision
+entry is the decision, the reason and what reopens it, about 20 lines, history
+left to git; a source comment is a line or two plus a `[→ key]`.
+[→ `reopening-decisions`]
 
 ## Page shape
 
