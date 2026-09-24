@@ -2,32 +2,17 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-// Documentation drift, caught mechanically.
-//
-// CLAUDE.md, README.md and public/llms.txt carry a lot of prose about how the
-// repo works, and prose is the only artefact here with no verification path:
-// code has tsc, formatting has Prettier, behaviour has vitest, the Contentful
-// space has contentful-fixtures.test.ts. These checks cover the part of the
-// prose that is mechanically checkable — the names of things, and the handful
-// of specific claims that have already gone wrong once.
-//
-// They do NOT attempt general claim verification, which only a reader catches:
-// a sentence can name a real file or state a plausible number and still describe
-// it wrongly. What they stop is the cheaper failure: a rename, a removal, or a
-// schema flip quietly turning an instruction into a dead end.
+// Documentation drift, caught mechanically: the names of things and the few
+// specific claims that have gone wrong once. Not general claim checking, which
+// only a reader can do. [→ `guard-limits`]
 
 const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
 
 const DOCS = ["CLAUDE.md", "docs/decisions.md", "README.md"] as const;
 
-// Anything under docs/ is a briefing an implementer reads before writing code,
-// so a dead path or a stale repo name there does not merely mislead a reader,
-// it reaches a PR. That happened once: de-localisation-briefing.md landed on
-// main naming the pre-rename repo, and none of these checks looked at the
-// directory. The directory was later removed, which is why this is guarded
-// rather than unconditional. It is empty scope today and real scope the moment
-// a doc reappears, which is the point.
+// Briefings under docs/ reach PRs, so they get the same checks. Empty scope
+// today; real scope the moment one appears.
 const BRIEFINGS = fs.existsSync(path.join(ROOT, "docs"))
   ? fs
       .readdirSync(path.join(ROOT, "docs"))
@@ -35,11 +20,7 @@ const BRIEFINGS = fs.existsSync(path.join(ROOT, "docs"))
       .map((f) => `docs/${f}`)
   : [];
 
-// A skill under .claude/skills/ is a checklist an auditor follows, so a path
-// that has moved out from under it sends the reader to a file that is not
-// there. Same exposure as a briefing, so it takes the same check. Guarded on
-// existence for the same reason BRIEFINGS is: the directory is real scope when
-// it exists and empty scope when it does not.
+// Skills are checklists an auditor follows; same exposure as a briefing.
 const SKILLS_DIR = path.join(ROOT, ".claude", "skills");
 const SKILLS = fs.existsSync(SKILLS_DIR)
   ? fs
@@ -63,8 +44,6 @@ describe("npm scripts named in the docs", () => {
     );
     const missing = [...named].filter((s) => !pkg.scripts[s]);
 
-    // A doc telling a forker to run a script that was renamed sends them
-    // straight into an npm error on their first five minutes with the repo.
     expect(missing).toEqual([]);
   });
 });
@@ -79,12 +58,9 @@ describe("file paths named in the docs", () => {
         ),
       ]
         .map((m) => m[1])
-        // Bare filenames are ambiguous (seed.json, package.json appear in prose
-        // without a directory), and a path is only checkable if it says where.
+        // Bare filenames are ambiguous, so only paths with a directory.
         .filter((p) => p.includes("/"))
-        // Route-ish and generated paths that are not committed files. Build
-        // artifacts under .next/ can never be checked here: `npm test` runs
-        // before `npm run build` in CI, so the tree does not exist yet. See #490.
+        // Generated paths; .next/ does not exist when tests run. See #490.
         .filter(
           (p) => !p.startsWith("public/pagefind") && !p.startsWith(".next/"),
         ),
@@ -98,14 +74,10 @@ describe("file paths named in the docs", () => {
 });
 
 describe("the CI gate CLAUDE.md describes", () => {
-  // CLAUDE.md said the gate was "`tsc --noEmit` + the vitest suite +
-  // `npm run format:check`" while the workflow ran format:check, npm test and
-  // npm run build, with no tsc step at all. Believing it means running a local
-  // check that is not the gate and skipping the build that is.
+  // CLAUDE.md once named a tsc step CI never ran and omitted the build.
   const workflow = read(".github/workflows/ci.yml");
   const commands = [...workflow.matchAll(/^\s+run: (.+)$/gm)]
     .map((m) => m[1].trim())
-    // `npm ci` installs; it is setup, not a gate.
     .filter((c) => c !== "npm ci");
 
   it("names every command the workflow actually runs", () => {
@@ -116,9 +88,7 @@ describe("the CI gate CLAUDE.md describes", () => {
   });
 
   it("is not describing a step the workflow dropped", () => {
-    // The other direction: CLAUDE.md must not promise a gate that no longer
-    // exists. tsc is the specific one that was wrong, and the sentence now
-    // says explicitly that CI does not run it.
+    // The reverse: no promised step the workflow dropped.
     const claude = read("CLAUDE.md");
     const gateSentence = /The CI gate is[^.]*\./.exec(claude)?.[0] ?? "";
 
@@ -127,38 +97,23 @@ describe("the CI gate CLAUDE.md describes", () => {
   });
 });
 
-// CLAUDE.md is read in full at the start of every Claude Code session, so its
-// length is a running cost rather than a style preference. It reached 1,734
-// lines before the split that produced docs/decisions.md, at which point the
-// reasoning moved out and this budget went in to keep it out. An entry that
-// cannot be stated in a few lines belongs in docs/decisions.md with a marker
-// pointing at it; raising this number instead is how the split gets undone.
+// CLAUDE.md is read at the start of every session. Raising this number
+// instead of moving prose to docs/decisions.md undoes the split.
 const CLAUDE_MD_LINE_BUDGET = 280;
 
 describe("CLAUDE.md stays inside its line budget", () => {
   it("is no longer than the budget", () => {
-    // trimEnd() before splitting: a file ending in a newline (every committed
-    // file here does) otherwise counts one extra empty element, so this and
-    // `wc -l` agree on what "N lines" means. They disagreed by one before —
-    // the budget could read 260 while `wc -l` already showed 260, so a human
-    // checking the file against the number would trim to the wrong target and
-    // still see it fail.
+    // trimEnd() so this agrees with `wc -l`.
     const lines = read("CLAUDE.md").trimEnd().split("\n").length;
     expect(lines).toBeLessThanOrEqual(CLAUDE_MD_LINE_BUDGET);
   });
 });
 
 describe("every decision marker in CLAUDE.md resolves", () => {
-  // CLAUDE.md cites docs/decisions.md by key rather than by heading text, so a
-  // heading can be reworded without breaking the link. What it cannot survive
-  // is the entry being deleted or the key being renamed on one side only —
-  // which leaves a short rule pointing at nothing, and no reader any way to
-  // find the argument. This is the check that the split does not rot.
+  // A key renamed or deleted on one side leaves a rule pointing at nothing.
   const keysIn = (doc: string) =>
     new Set([...doc.matchAll(/<!-- key: ([a-z0-9-]+) -->/g)].map((m) => m[1]));
-  // A citation can name more than one key in a single bracket, e.g.
-  // `[→ \`a\`, \`b\`]`, so this reads every backtick-quoted key inside the
-  // bracket rather than assuming the bracket closes after the first one.
+  // A bracket can hold several keys.
   const markersIn = (doc: string) =>
     [...doc.matchAll(/\[→ ([^\]]+)\]/g)].flatMap((m) =>
       [...m[1].matchAll(/`([a-z0-9-]+)`/g)].map((k) => k[1]),
@@ -170,7 +125,7 @@ describe("every decision marker in CLAUDE.md resolves", () => {
 
   it("finds a key in docs/decisions.md for every marker", () => {
     const markers = markersIn(read("CLAUDE.md"));
-    // Non-vacuous: an empty marker list would pass the filter below trivially.
+    // Non-vacuous.
     expect(markers.length).toBeGreaterThan(20);
     expect(unresolved(read("CLAUDE.md"), read("docs/decisions.md"))).toEqual(
       [],
@@ -178,19 +133,14 @@ describe("every decision marker in CLAUDE.md resolves", () => {
   });
 
   it("reports a marker whose key is not in docs/decisions.md", () => {
-    // Known-bad control. A key removed from docs/decisions.md must surface as
-    // an unresolved marker rather than passing quietly.
+    // Known-bad control.
     expect(
       unresolved("[→ `no-such-entry`]", "<!-- key: cover-frames -->"),
     ).toEqual(["no-such-entry"]);
   });
 
   it("reports an unresolved key inside a multi-key marker", () => {
-    // Known-bad control for the multi-key bracket form specifically. The
-    // regex above once stopped at the first closing backtick, so a marker
-    // like `[→ \`a\`, \`b\`]` matched nothing at all and both keys went
-    // unchecked — silently, since an unmatched marker looks the same as a
-    // resolved one to the filter above.
+    // Known-bad control for the multi-key form, which the regex once missed.
     expect(
       unresolved(
         "[→ `cover-frames`, `no-such-entry`]",
@@ -200,10 +150,7 @@ describe("every decision marker in CLAUDE.md resolves", () => {
   });
 
   it("cites every key docs/decisions.md defines", () => {
-    // The reciprocal direction. A marker with no key is a rule pointing at
-    // nothing; a key with no marker is an argument nothing in the short layer
-    // can reach — an auditor reading CLAUDE.md has no way to find it, which
-    // is the exact failure this split exists to prevent.
+    // The reverse: a key nothing cites is unreachable from CLAUDE.md.
     const cited = new Set(markersIn(read("CLAUDE.md")));
     const orphans = [...keysIn(read("docs/decisions.md"))].filter(
       (k) => !cited.has(k),
@@ -213,8 +160,7 @@ describe("every decision marker in CLAUDE.md resolves", () => {
   });
 
   it("reports a key nothing in CLAUDE.md cites", () => {
-    // Known-bad control. An argument with no rule pointing at it is
-    // unreachable from the file a session actually reads.
+    // Known-bad control.
     const cited = new Set(markersIn("[→ `cover-frames`]"));
     expect(
       [...keysIn("<!-- key: cover-frames -->\n<!-- key: orphan -->")].filter(
@@ -224,17 +170,56 @@ describe("every decision marker in CLAUDE.md resolves", () => {
   });
 });
 
+describe("every decision marker in source resolves", () => {
+  // Source comments point at entries by key, so a renamed or deleted key would
+  // leave them dangling. This file is skipped: it holds deliberate bad keys.
+  const keys = new Set(
+    [...read("docs/decisions.md").matchAll(/<!-- key: ([a-z0-9-]+) -->/g)].map(
+      (m) => m[1],
+    ),
+  );
+  const dangling = (text: string) =>
+    [...text.matchAll(/\[→ ([^\]]+)\]/g)]
+      .flatMap((m) => [...m[1].matchAll(/`([a-z0-9-]+)`/g)].map((k) => k[1]))
+      .filter((key) => !keys.has(key));
+
+  const sources = (dir: string): string[] =>
+    fs
+      .readdirSync(path.join(ROOT, dir), { withFileTypes: true })
+      .flatMap((e) =>
+        e.isDirectory()
+          ? sources(path.join(dir, e.name))
+          : /\.tsx?$/.test(e.name)
+            ? [path.join(dir, e.name)]
+            : [],
+      );
+
+  it("finds a key in docs/decisions.md for every marker under app/ and lib/", () => {
+    const files = [...sources("app"), ...sources("lib")].filter(
+      (f) => !f.endsWith("docs-consistency.test.ts"),
+    );
+    // Non-vacuous: the trimmed comments carry dozens of markers.
+    const cited = files.flatMap((f) =>
+      [...read(f).matchAll(/\[→ /g)].map(() => f),
+    );
+    expect(cited.length).toBeGreaterThan(20);
+    expect(
+      files.flatMap((f) => dangling(read(f)).map((k) => `${f}: ${k}`)),
+    ).toEqual([]);
+  });
+
+  it("reports a marker whose key is not in docs/decisions.md", () => {
+    // Known-bad control, the multi-key form included.
+    expect(dangling("// x [→ `cover-frames`, `no-such-entry`]")).toEqual([
+      "no-such-entry",
+    ]);
+  });
+});
+
 describe("the repo URL is the same everywhere", () => {
   it("matches SITE_REPO_URL across constants, README and llms.txt", () => {
-    // The rename from nextjs-blog-draft-mode to building-blocks had to touch
-    // four files. GitHub redirects the old URL, so a missed one keeps working
-    // and stays wrong indefinitely — nothing would ever surface it.
-    //
-    // The pattern reaches past an environment override to the quoted default,
-    // because that default is the canonical repository and is what these
-    // documents describe; a deployment pointing its footer somewhere else says
-    // nothing about them. It stops at the statement's semicolon so it cannot
-    // wander into the next declaration if the override is ever removed.
+    // GitHub redirects the old name, so a missed reference never surfaces.
+    // Reads the quoted default, which is the canonical repository.
     const constants = read("lib/constants.ts");
     const url = /SITE_REPO_URL\s*=[^;]*?["']([^"']+)["']/.exec(constants)?.[1];
     expect(url, "SITE_REPO_URL not found in lib/constants.ts").toBeTruthy();
@@ -245,13 +230,8 @@ describe("the repo URL is the same everywhere", () => {
     }
   });
 
-  // README.md line 5 is the deliberate exception: it links Vercel's upstream
-  // TEMPLATE, vercel.com/templates/next.js/nextjs-blog-draft-mode, which is
-  // their URL and not ours. The old check carved that out by requiring a
-  // github.com prefix, which made it blind to the bare `owner/name` form —
-  // exactly the form that once shipped undetected in a since-removed planning
-  // doc under docs/. Removing Vercel's URL first and then rejecting the name
-  // outright is both stricter and narrower.
+  // Vercel's upstream template URL is theirs, so it is removed before the old
+  // name is rejected outright, which also catches the bare owner/name form.
   const VERCEL_TEMPLATE_URL =
     "vercel.com/templates/next.js/nextjs-blog-draft-mode";
   const staleRepoNames = (text: string) =>
@@ -271,16 +251,14 @@ describe("the repo URL is the same everywhere", () => {
   });
 
   it("catches the bare owner/name form", () => {
-    // Known-bad control. This is the shape of reference the github.com-prefixed
-    // pattern used to miss.
+    // Known-bad control: the form the old pattern missed.
     expect(
       staleRepoNames("see `bulentyusuf/nextjs-blog-draft-mode` for details."),
     ).toHaveLength(1);
   });
 
   it("still permits Vercel's own template URL", () => {
-    // The other direction. A detector that fires on README.md line 5 would be
-    // turned off within a week.
+    // A detector firing on README.md's template link would be switched off.
     expect(
       staleRepoNames(
         "https://vercel.com/templates/next.js/nextjs-blog-draft-mode",
@@ -289,10 +267,7 @@ describe("the repo URL is the same everywhere", () => {
   });
 
   it("would scan a briefing if docs/ held one", () => {
-    // The scan is empty scope right now, so nothing above proves it works.
-    // This drives the same filter over a fixture listing rather than the real
-    // directory, which is the only way to tell "docs/ is clean" apart from
-    // "docs/ is not being read".
+    // Known-bad control for the empty docs/ scope.
     const listing = ["de-localisation-briefing.md", "notes.txt", "README.md"];
     const scanned = listing
       .filter((f) => f.endsWith(".md"))
@@ -307,19 +282,13 @@ describe("the repo URL is the same everywhere", () => {
 
 describe("the author cap is the same everywhere", () => {
   it("matches MAX_AUTHORS across constants and README", () => {
-    // The README told forkers a post links to "one author and one category"
-    // for the whole of the day the field became an array of three. Nothing
-    // surfaced it: the schema check in contentful-fixtures.test.ts pins
-    // MAX_AUTHORS to the Contentful validation, and the GraphQL limit reads
-    // the same constant, so code and CMS agreed with each other while the
-    // document describing them to a forker was wrong.
+    // The README once said "one author" for a day after the cap became three,
+    // while code and CMS agreed with each other.
     const constants = read("lib/constants.ts");
     const max = Number(/MAX_AUTHORS\s*=\s*(\d+)/.exec(constants)?.[1]);
     expect(max, "MAX_AUTHORS not found in lib/constants.ts").toBeGreaterThan(0);
 
-    // House style spells out one to ten, so the prose carries the word and
-    // not the numeral. Falling back to the digit keeps the check working if
-    // the cap ever goes past ten, where the style rule flips anyway.
+    // House style spells one to ten as words.
     const words = [
       "zero",
       "one",
@@ -344,10 +313,7 @@ describe("the author cap is the same everywhere", () => {
 
 describe("llms.txt attribution guidance", () => {
   it("does not send a model looking for a single author", () => {
-    // This is an instruction, not a description, so a stale version does not
-    // merely misinform, it makes a model drop a real co-author's name. The
-    // link checker in llms-link-check.yml verifies the URLs in this file and
-    // nothing verifies the sentences.
+    // An instruction to a model: stale, it drops a real co-author's name.
     const llms = read("public/llms.txt");
     const line = /^- Attribute each post.*$/m.exec(llms)?.[0] ?? "";
     expect(line, "no attribution line found in public/llms.txt").toBeTruthy();
@@ -358,27 +324,12 @@ describe("llms.txt attribution guidance", () => {
 });
 
 describe("docs/decisions.md's index stays in step with its entries", () => {
-  // The index added in #520 is the only way into a long file carrying dozens of
-  // entries under two headings. An index nobody maintains is worse than
-  // none: it reads as authoritative while quietly omitting whatever was added
-  // last, and the omission is invisible to a reader who does not already know
-  // the entry exists.
-  //
-  // This is the same failure the two checks above prevent between CLAUDE.md and
-  // docs/decisions.md, one level down.
-  //
-  // What it does NOT check, deliberately: which section a key is filed under.
-  // The index groups by the CLAUDE.md section whose rules cite each key, and
-  // holding that mechanically would fail whenever a rule moves between sections
-  // or is cited from two of them, which two already are. A key in the wrong
-  // group is a reader's problem to spot; a key in no group at all is this
-  // check's.
+  // An index that omits the newest entry reads as complete. Which group a key
+  // sits under is not checked; a key in no group is.
   const keysIn = (doc: string) =>
     [...doc.matchAll(/<!-- key: ([a-z0-9-]+) -->/g)].map((m) => m[1]);
 
-  // Everything between "## Index" and the next H2. Sliced on the next heading
-  // rather than on the one that follows today, so renaming that section does
-  // not silently empty this.
+  // Sliced to the next H2, whatever it is called.
   const indexSection = (doc: string) => {
     const start = doc.indexOf("\n## Index");
     if (start === -1) return "";
@@ -395,8 +346,7 @@ describe("docs/decisions.md's index stays in step with its entries", () => {
     const entries = keysIn(decisions);
     const listed = listedIn(decisions);
 
-    // Non-vacuous: a missing index section would make both filters below pass
-    // on empty input.
+    // Non-vacuous.
     expect(entries.length).toBeGreaterThan(40);
     expect(listed.length).toBeGreaterThan(40);
 
@@ -405,8 +355,7 @@ describe("docs/decisions.md's index stays in step with its entries", () => {
   });
 
   it("reports an entry the index omits", () => {
-    // Known-bad control. An entry added without an index line is the likely
-    // failure, and it has to surface rather than pass on a shorter list.
+    // Known-bad control.
     const doc = [
       "\n## Index\n",
       "- `cover-frames` — a listed entry\n",
@@ -421,9 +370,7 @@ describe("docs/decisions.md's index stays in step with its entries", () => {
   });
 
   it("reports an index line pointing at no entry", () => {
-    // The reciprocal. A renamed or deleted key leaves the index naming
-    // something unreachable, which is exactly how the old CLAUDE.md markers
-    // rotted before the check above existed.
+    // The reverse: a renamed key leaves the index pointing at nothing.
     const doc = [
       "\n## Index\n",
       "- `cover-frames` — a listed entry\n",
@@ -438,9 +385,7 @@ describe("docs/decisions.md's index stays in step with its entries", () => {
   });
 
   it("finds nothing when the index section is absent", () => {
-    // The failure the non-vacuous assertions above guard against, stated
-    // directly: no "## Index" heading must yield an empty list rather than
-    // scanning the whole file and appearing to pass.
+    // No index heading yields nothing, not the whole file.
     expect(
       listedIn("<!-- key: cover-frames -->\n- `cover-frames` — x\n"),
     ).toEqual([]);
