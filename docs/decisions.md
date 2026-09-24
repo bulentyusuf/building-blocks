@@ -443,10 +443,11 @@ The scroll lock is one unlayered rule in `app/globals.css`,
 `html:has(dialog:modal)` with `overflow: hidden` and `scrollbar-gutter:
 stable`. It targets `html` because `html` is the scroller once it carries
 `overflow-y: scroll`; a lock on `body` alone let the page scroll behind the
-dialog (#568). The gutter stops a sideways step as the scrollbar goes.
-Accepted: Firefox 111 to 120 lack `:has()`, so the page scrolls behind the
-dialog there, and Safari before 18.2 ignores `scrollbar-gutter`, so classic
-scrollbars shift the page while it is open.
+dialog (#568). The gutter stops a sideways step as the scrollbar goes; the
+painted Firefox-on-macOS gutter that rules it out for `html` sitewide shows here
+only under the backdrop. Accepted: `:has()` reached Firefox in 121, so Firefox
+111 to 120 scroll the page behind the dialog, and Safari before 18.2 ignores
+`scrollbar-gutter`, so classic scrollbars shift the page while it is open.
 
 ### One announced link per card, and one description per figure
 
