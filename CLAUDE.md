@@ -172,8 +172,9 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 - **The skip link's target (`<main id="main">`) carries `tabIndex={-1}`**,
   needed in browsers that don't move focus on a fragment jump. [→ `skip-link`]
 - **The lightbox's enlarge button renders only after `mounted`**, never
-  unconditionally — an unmounted trigger would announce an affordance that
-  does nothing with scripts off. [→ `lightbox-mounted`]
+  unconditionally, and the enlarged view is a native `<dialog>` opened with
+  `showModal()`. Do not add a hand-rolled focus trap, Escape handler or JS
+  scroll lock beside it. [→ `lightbox-mounted`, `lightbox-dialog`]
 
 ## Data and Contentful
 
