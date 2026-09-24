@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import LightboxImage, { worthEnlarging } from "./lightbox-image";
+import nextConfig from "../next.config.js";
+import LightboxImage, {
+  WIDEST_SERVED_FILE,
+  worthEnlarging,
+} from "./lightbox-image";
 
 // renderToStaticMarkup never runs effects, so `mounted` stays false and this is
 // exactly the HTML a reader with JavaScript disabled is left holding.
@@ -204,6 +208,32 @@ describe("whether enlarging is worth offering", () => {
         viewportHeight: 2000,
         rootFontSize: 16,
         shownWidth: 580,
+        assetWidth: 3000,
+        assetHeight: 1000,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("the widest file the site serves", () => {
+  it("matches the largest image width next.config.js asks for", () => {
+    // The lightbox stops at this width because no file wider than it ever
+    // reaches the reader. If deviceSizes gains a larger entry and this does
+    // not follow, big photos are held smaller than they need to be. If it
+    // loses one, they are stretched past the file again.
+    expect(WIDEST_SERVED_FILE).toBe(Math.max(...nextConfig.images.deviceSizes));
+  });
+
+  it("holds the judgement to the served file, not the stored asset", () => {
+    // 3000 wide as stored, but the reader receives 1920. Against a picture
+    // shown at 1600 in the post that is a gain of 1.2, under the bar, where
+    // the stored width would claim 1.875.
+    expect(
+      worthEnlarging({
+        viewportWidth: 3840,
+        viewportHeight: 2160,
+        rootFontSize: 16,
+        shownWidth: 1600,
         assetWidth: 3000,
         assetHeight: 1000,
       }),

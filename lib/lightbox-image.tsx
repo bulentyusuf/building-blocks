@@ -10,13 +10,21 @@ import ContentfulImage from "@/lib/contentful-image";
 // column opens barely larger, so the click promises more than it gives.
 const MIN_ENLARGE_GAIN = 1.25;
 
+// The widest file the site ever asks Contentful for, the largest entry in
+// images.deviceSizes in next.config.js. An asset stored wider than this still
+// reaches the reader as a file this wide, so the enlarged view stops here too,
+// or on a very large screen it would stretch that file past its own pixels.
+// lib/lightbox-image.test.tsx holds it against the config.
+export const WIDEST_SERVED_FILE = 1920;
+
 // How wide the enlarged picture will be, worked out in script the same way the
 // overlay's width calculation below works it out in the stylesheet. It is
 // computed here because the overlay does not exist until the reader clicks,
 // and the question is whether to offer the click at all. The overlay's padding
 // is 1rem a side, rising to 2rem from 48rem up, the breakpoint its own padding
 // classes use. The 0.75 is the 75vh height limit. Change either there and it
-// has to change here too.
+// has to change here too. The last limit is the width of the file the reader
+// actually receives, not the asset as stored.
 export function worthEnlarging({
   shownWidth,
   assetWidth,
@@ -36,7 +44,7 @@ export function worthEnlarging({
   const enlarged = Math.min(
     viewportWidth - 2 * padding,
     (0.75 * viewportHeight * assetWidth) / assetHeight,
-    assetWidth,
+    Math.min(assetWidth, WIDEST_SERVED_FILE),
   );
   return enlarged >= shownWidth * MIN_ENLARGE_GAIN;
 }
@@ -167,12 +175,13 @@ export default function LightboxImage({
   // a phone some opened smaller than they sit in the post. Three limits, and
   // the smallest wins. The overlay's width. The width at which the picture
   // reaches 75vh tall, which leaves the picture room to breathe rather than
-  // filling the screen edge to edge. The asset's own width, because a picture
-  // blown up past its own pixels looks soft, and that is worse than a smaller
-  // one. On a short screen at a large reader font, a square picture can open
+  // filling the screen edge to edge. The width of the file the reader
+  // receives, which is the asset's own width or the widest file the site
+  // serves, whichever is smaller, because a picture blown up past its own
+  // pixels looks soft, and that is worse than a smaller one. On a short screen at a large reader font, a square picture can open
   // a little smaller than it sits in the post. That is accepted, because the
   // whole picture still shows in one view.
-  const enlargedWidth = `min(100%, calc(75vh * ${w} / ${h}), ${w}px)`;
+  const enlargedWidth = `min(100%, calc(75vh * ${w} / ${h}), ${Math.min(w, WIDEST_SERVED_FILE)}px)`;
 
   // Never wider than the asset itself. The column grows with the reader's font
   // size, and at 20px it is 840px across, so a screenshot narrower than that

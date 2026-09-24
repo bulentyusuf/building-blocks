@@ -61,6 +61,20 @@ describe("lightbox enlarge control after mount", () => {
     expect(container.querySelector("img")).not.toBeNull();
   });
 
+  it("opens no wider than the widest file the site serves", () => {
+    // A 4K screen at 100% scaling leaves room for a 2048 wide photo at its
+    // stored width, but the reader only ever receives a 1920 wide file.
+    screen(3840, 2040);
+    const { container } = mount(2048, 1152);
+    act(() => {
+      container.querySelector("button")?.click();
+    });
+
+    const figure = document.querySelector<HTMLElement>("[role=dialog] figure");
+    expect(figure?.style.width).toContain("1920px");
+    expect(figure?.style.width).not.toContain("2048px");
+  });
+
   it("is withdrawn when the window shrinks to a phone", () => {
     screen(2560, 1330);
     const { container } = mount(1920, 1080);
