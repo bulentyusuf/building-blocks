@@ -97,42 +97,39 @@ describe("the CI gate CLAUDE.md describes", () => {
   });
 });
 
-// CLAUDE.md is read at the start of every session. Raising this number
-// instead of moving prose to docs/decisions.md undoes the split.
-const CLAUDE_MD_LINE_BUDGET = 280;
-
-describe("CLAUDE.md stays inside its line budget", () => {
-  it("is no longer than the budget", () => {
-    // trimEnd() so this agrees with `wc -l`.
-    const lines = read("CLAUDE.md").trimEnd().split("\n").length;
-    expect(lines).toBeLessThanOrEqual(CLAUDE_MD_LINE_BUDGET);
-  });
-});
-
-// Only ever lowered. A new entry is paid for by trimming another.
+// Each limit only ever comes down. Raising one to fit new prose undoes it.
 // [→ `reopening-decisions`]
-const DECISIONS_MD_LINE_CEILING = 1058;
+const LINE_LIMITS = [
+  // Read at the start of every session.
+  {
+    file: "CLAUDE.md",
+    limit: 280,
+    fix: "Move the prose to docs/decisions.md and leave a marker",
+  },
+  {
+    file: "docs/decisions.md",
+    limit: 1058,
+    fix: "Trim an entry to pay for the new one",
+  },
+] as const;
 
 // trimEnd() so this agrees with `wc -l`.
-const overCeiling = (text: string, ceiling: number) =>
-  text.trimEnd().split("\n").length > ceiling;
+const lineCount = (text: string) => text.trimEnd().split("\n").length;
 
-describe("docs/decisions.md stays under its line ceiling", () => {
-  it("is no longer than the ceiling", () => {
-    const text = read("docs/decisions.md");
+describe.each(LINE_LIMITS)("$file stays inside its line limit", (entry) => {
+  it(`is at most ${entry.limit} lines`, () => {
+    const lines = lineCount(read(entry.file));
     expect(
-      overCeiling(text, DECISIONS_MD_LINE_CEILING),
-      `docs/decisions.md is ${text.trimEnd().split("\n").length} lines, over ` +
-        `${DECISIONS_MD_LINE_CEILING}. Trim an entry; do not raise the ceiling.`,
-    ).toBe(false);
+      lines <= entry.limit,
+      `${entry.file} is ${lines} lines, over ${entry.limit}. ${entry.fix}; ` +
+        "do not raise the limit.",
+    ).toBe(true);
   });
 
   it("known-bad control: a file one line over is caught", () => {
-    const atCeiling = "line\n".repeat(DECISIONS_MD_LINE_CEILING);
-    expect(overCeiling(atCeiling, DECISIONS_MD_LINE_CEILING)).toBe(false);
-    expect(overCeiling(atCeiling + "line\n", DECISIONS_MD_LINE_CEILING)).toBe(
-      true,
-    );
+    const atLimit = "line\n".repeat(entry.limit);
+    expect(lineCount(atLimit) <= entry.limit).toBe(true);
+    expect(lineCount(atLimit + "line\n") <= entry.limit).toBe(false);
   });
 });
 
