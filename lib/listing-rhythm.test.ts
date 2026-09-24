@@ -2,71 +2,12 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-// The header-to-list rhythm, which has broken twice and is invisible to every
-// other suite: jsdom applies no stylesheet, so nothing here can be caught by
-// rendering. Both halves are asserted as source text instead.
-//
-// The rule: whatever sits above a list item — a hairline between items, or
-// WidePage's own 3px rule (formerly the masthead band's bottom edge; see
-// docs/decisions.md, "The masthead band was retired in favour of a 3px
-// rule") — belongs the same distance from the cover below it. That distance
-// is the item's own top padding. So exactly one of the two may contribute
-// space, never both and never neither.
+// Source-text guards for layout details a jsdom render cannot see. The
+// header-to-list spacing rhythm is no longer asserted here: it is measured in
+// Chromium by lib/listing-rhythm.layout.test.tsx. [→ `guard-limits`]
 
 const ROOT = path.join(__dirname, "..");
 const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
-
-describe("a listing under WidePage's header keeps its item padding", () => {
-  const moreStories = read("app/more-stories.tsx");
-
-  it("never zeroes the first item's top padding", () => {
-    // The regression: dropping this made the first post hug the band while
-    // every post after it kept a full item's padding under its hairline.
-    expect(moreStories).not.toMatch(/first-child\]:pt-0/);
-  });
-
-  it("still sets a symmetric item padding to be the rhythm", () => {
-    // Non-vacuous: the check above passes trivially if the padding is gone.
-    //
-    // Matched on an article carrying py-10 specifically, not on every classed
-    // article. The grid variant's article carries a class list of its own now
-    // too (flex h-full flex-col, so its tag row can sit on mt-auto), but no
-    // padding, so a bare className match would count two and the assertion
-    // below would need loosening to fit — which is exactly the kind of guard
-    // that stops guarding. The list item is still the only article whose
-    // padding IS the rhythm, and the count assertion keeps that true rather
-    // than assumed.
-    const items = [
-      ...moreStories.matchAll(/<article className="([^"]*py-10[^"]*)"/g),
-    ];
-    expect(items).toHaveLength(1);
-    expect(items[0][1]).toMatch(/py-10[^"]*md:py-12/);
-  });
-
-  it("gives a ruled grid that same inset in place of item padding", () => {
-    // The other half of the rhythm, and nothing else asserts it. A grid cell
-    // has no padding of its own, so the container supplies it, and only when
-    // the run is ruled. Without it the opening rule on home sits flush against
-    // the first row of covers while every list on the site keeps a full item's
-    // padding under its own hairline.
-    const grid = /`grid grid-cols-1[\s\S]*?`;/.exec(moreStories);
-    expect(grid).not.toBeNull();
-    expect(grid![0]).toMatch(/py-10 md:py-12/);
-  });
-
-  it("drops only the rule when openRule is false", () => {
-    // Both branches, not whichever exec happened to find first. The list and
-    // the grid each build this ternary now, so a single exec checked one and
-    // left the other free to drift to border-t with nothing noticing.
-    const ternaries = [
-      ...moreStories.matchAll(/openRule \? "border-y" : "([^"]*)"/g),
-    ];
-    expect(ternaries).toHaveLength(2);
-    for (const ternary of ternaries) {
-      expect(ternary[1].trim()).toBe("border-b");
-    }
-  });
-});
 
 describe("a wide page sits on the same grid as a narrow one", () => {
   // A browse page and a post are one navigation apart, and that navigation is
@@ -100,14 +41,6 @@ describe("a wide page sits on the same grid as a narrow one", () => {
     // the site, banded or not, has always used to sit the same distance below
     // the sticky header.
     expect(read("app/container.tsx")).toMatch(/max-w-5xl mx-auto px-5 pt-8/);
-  });
-
-  it("WidePage keeps the band's two insets on their own sides of the rule", () => {
-    // Why the two insets stay on their own sides of the rule, and why a green
-    // suite is not evidence either way. [→ `band-retirement`]
-    const wide = read("app/wide-page.tsx");
-    expect(wide).toMatch(/<header className="mb-8">/);
-    expect(wide).toMatch(/contentOwnsLeading \? undefined : "pt-6"/);
   });
 
   it("the 3px rule that replaced the band's edge inherits the ink token", () => {
@@ -248,42 +181,6 @@ describe("the hero's byline keeps Avatar whole", () => {
     // back under a different className, not just the exact one it shipped
     // with once.
     expect(hero).not.toMatch(/text-brand-muted mb-3 tabular-nums/);
-  });
-});
-
-describe("a listing under the header contributes no leading of its own", () => {
-  it("ListingPage declares contentOwnsLeading", () => {
-    // The other half. With both a page-level gap and the item's own padding,
-    // rule-to-post would disagree with post-to-post in the other direction.
-    expect(read("app/listing-page.tsx")).toMatch(/contentOwnsLeading/);
-  });
-
-  it("WidePage maps that to no gap below the rule", () => {
-    // Below, not above. A prop meaning "the content below supplies its own
-    // space" cannot be spent on the space above the boundary — doing that
-    // makes the header-to-rule distance depend on what the content does,
-    // which is backwards, and leaves the gap it was meant to suppress at zero
-    // for every route that never set the flag.
-    expect(read("app/wide-page.tsx")).toMatch(
-      /contentOwnsLeading \? undefined : "pt-6"/,
-    );
-  });
-
-  it("only the ruled listing claims it", () => {
-    // Home and the post page set it before the retirement, because their
-    // covers pulled up across the band's edge and supplied their own leading
-    // that way. The pull-ups went with the band and the flag had to follow,
-    // or both open flush against the rule.
-    //
-    // Anchored on the JSX prop form — start of line, then the name, then `=`
-    // or end of line — rather than on the bare word. Both files explain in a
-    // comment why they no longer pass it, and a guard that fails on its own
-    // rationale is a guard nobody keeps. A `//` comment cannot match this.
-    const PASSED = /^\s*contentOwnsLeading(=|\s*$)/m;
-    expect(read("app/page.tsx")).not.toMatch(PASSED);
-    expect(read("app/posts/[slug]/page.tsx")).not.toMatch(PASSED);
-    // Non-vacuous: the one route that DOES claim it still does.
-    expect(read("app/listing-page.tsx")).toMatch(PASSED);
   });
 });
 
