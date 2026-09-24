@@ -4,6 +4,43 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ContentfulImage from "@/lib/contentful-image";
 
+// The enlarge control is only offered when the enlarged view would be at least
+// this much wider than the picture as it sits in the post. On a phone the post
+// column already spans the screen, and a screenshot barely wider than the
+// column opens barely larger, so the click promises more than it gives.
+const MIN_ENLARGE_GAIN = 1.25;
+
+// How wide the enlarged picture will be, worked out in script the same way the
+// overlay's width calculation below works it out in the stylesheet. It is
+// computed here because the overlay does not exist until the reader clicks,
+// and the question is whether to offer the click at all. The overlay's padding
+// is 1rem a side, rising to 2rem from 48rem up, the breakpoint its own padding
+// classes use. The 0.75 is the 75vh height limit. Change either there and it
+// has to change here too.
+export function worthEnlarging({
+  shownWidth,
+  assetWidth,
+  assetHeight,
+  viewportWidth,
+  viewportHeight,
+  rootFontSize,
+}: {
+  shownWidth: number;
+  assetWidth: number;
+  assetHeight: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  rootFontSize: number;
+}): boolean {
+  const padding = (viewportWidth >= 48 * rootFontSize ? 2 : 1) * rootFontSize;
+  const enlarged = Math.min(
+    viewportWidth - 2 * padding,
+    (0.75 * viewportHeight * assetWidth) / assetHeight,
+    assetWidth,
+  );
+  return enlarged >= shownWidth * MIN_ENLARGE_GAIN;
+}
+
 // A single inline body image that opens into a modal lightbox on click.
 // Server-rendered as a plain image — the button appears only after mount, so
 // with scripts off readers get the image rather than a dead control. The
@@ -31,6 +68,11 @@ export default function LightboxImage({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  // Whether this picture gets the enlarge control at all. False until judged,
+  // so the server and the first client render agree on a plain image.
+  const [enlargeable, setEnlargeable] = useState(false);
 
   const titleId = useId();
 
@@ -128,8 +170,33 @@ export default function LightboxImage({
   // was stretched to fill it and blurred. Capped here it sits centred at its
   // own width instead. The trigger below takes the same cap, so the clickable
   // area ends where the picture does.
+  // Judged after mount and again whenever the window changes size, because
+  // the answer depends on the screen as much as on the picture.
+  useEffect(() => {
+    function judge() {
+      const shown = imageRef.current?.getBoundingClientRect().width;
+      if (!shown) return;
+      setEnlargeable(
+        worthEnlarging({
+          shownWidth: shown,
+          assetWidth: w,
+          assetHeight: h,
+          viewportWidth: document.documentElement.clientWidth,
+          viewportHeight: window.innerHeight,
+          rootFontSize: parseFloat(
+            getComputedStyle(document.documentElement).fontSize,
+          ),
+        }),
+      );
+    }
+    judge();
+    window.addEventListener("resize", judge);
+    return () => window.removeEventListener("resize", judge);
+  }, [w, h]);
+
   const image = (
     <ContentfulImage
+      ref={imageRef}
       src={src}
       alt={alt}
       width={w}
@@ -148,8 +215,10 @@ export default function LightboxImage({
           inert on click. The image itself never depended on JS, so degrading
           to a plain image loses nothing — mounted gates the affordance, not
           the content. Same flag the portal already waits on, so this costs no
-          extra state and flips immediately after hydration. */}
-      {mounted ? (
+          extra state and flips immediately after hydration. It also appears
+          only where enlarging is worth a click, judged above, and stays while
+          the overlay is open so focus has somewhere to return to. */}
+      {mounted && (enlargeable || open) ? (
         <button
           ref={triggerRef}
           type="button"

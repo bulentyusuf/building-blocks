@@ -8,11 +8,17 @@
 // server.
 // See docs/decisions.md, "Every image is opaque in the server HTML".
 "use client";
+import type { Ref } from "react";
 import Image, { type ImageProps } from "next/image";
 import { CONTENTFUL_IMAGE_HOST } from "./contentful-host";
 
+// ref is declared because next/image's own props type leaves it out, though
+// the component accepts one. React 19 hands a function component its ref as
+// an ordinary prop, so the spread below carries it through to the img.
+// lib/lightbox-image.tsx measures the picture through it.
 type ContentfulImageProps = Omit<ImageProps, "loader" | "src"> & {
   src: string;
+  ref?: Ref<HTMLImageElement>;
 };
 
 // The transform query params below are only meaningful for assets served from
