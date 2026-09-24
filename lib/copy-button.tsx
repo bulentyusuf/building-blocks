@@ -30,11 +30,13 @@ export default function CopyButton({
 
   const variantStyles =
     variant === "dark"
-      ? // On the crimson prompt header. Dark mode flips to dark ink, because
-        // white fails AA on the lifted crimson. Edges clear 3:1.
+      ? // On the crimson prompt header. Light edge 3.5:1 on the bar. Dark mode
+        // flips to dark ink, since white fails on the lifted crimson: ink 5.8:1
+        // (6.5:1 hovered), edge 3.2:1.
         "border border-white/60 bg-white/10 text-white hover:border-white/80 hover:bg-white/20 dark:border-surface-dark/70 dark:bg-white/10 dark:text-surface-dark dark:hover:border-surface-dark/70 dark:hover:bg-white/20"
-      : // On the filename bar or over code. Edges clear 3:1; the dark hover pins
-        // the ink light so the control brightens rather than recedes.
+      : // On the filename bar or over code. Light edge 4.6:1 on the bar and
+        // 3.4:1 over code; dark edge 3.8:1. The dark hover pins the ink light so
+        // the control brightens rather than recedes.
         "border border-gray-500 bg-white text-gray-600 hover:border-gray-600 hover:text-gray-900 dark:border-white/40 dark:bg-white/10 dark:text-brand-dark dark:hover:border-white/60 dark:hover:bg-white/20 dark:hover:text-brand-dark";
 
   if (!mounted) return null;

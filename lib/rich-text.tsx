@@ -327,8 +327,8 @@ export function RichText({
               className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
             >
               {/* Indexed at a low weight so a prompt match does not anchor the
-                  excerpt. Dark ink in dark mode, because white fails AA on the
-                  lifted crimson. Not mono: thin stems read worse than contrast
+                  excerpt. Dark ink in dark mode: white is 2.53:1 on the lifted
+                  crimson, dark ink 6.64:1. Not mono: thin stems read worse than contrast
                   predicts. */}
               <figcaption className="flex items-center justify-between bg-brand-crimson px-4 py-2 text-[0.78em] font-semibold text-white dark:text-surface-dark">
                 <span className="min-w-0 flex-1">
@@ -338,8 +338,9 @@ export function RichText({
               </figcaption>
               <div className="flow-root whitespace-pre-wrap break-words bg-gray-50 p-4 font-mono text-[0.78em] text-gray-800 dark:bg-white/5 dark:text-brand-dark">
                 {entry.image?.url && (
-                  /* Decorative. Floats beside the prompt from 480px up; below
-                     that the text beside it would be about 17 characters. */
+                  /* Decorative. The text beside the float is the viewport less
+                     164px: about 17 characters at 320px, 35 at 480px (at a
+                     measured 8.9px each), so it floats only from 480px up. */
                   <span
                     aria-hidden="true"
                     className="relative mb-3 block h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 min-[480px]:float-left min-[480px]:mt-2 min-[480px]:mr-3 min-[480px]:mb-1"
