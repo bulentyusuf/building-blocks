@@ -130,67 +130,12 @@ describe("scroll offset lives in exactly one place", () => {
   });
 
   it("excludes prose files from Tailwind's source scanning", () => {
-    // The blind spot that let the check below pass while the utility was
-    // still shipping. Tailwind v4 scans every file .gitignore does not
-    // exclude, markdown included, so CLAUDE.md's (now docs/decisions.md's)
-    // sentence explaining why that utility must not exist was generating it.
-    // The walk below only covers app/ and lib/, and always will — the fix
-    // belongs in the stylesheet.
-    //
-    // This comment says "the utility" rather than naming it for the same
-    // reason: app/ and lib/ ARE scanned, so a literal class name here would
-    // regenerate the rule. The test below enforces that.
+    // Tailwind scans every file .gitignore does not exclude, markdown included,
+    // so a doc explaining a removed utility would regenerate its rule.
+    // [→ `tailwind-scanning`]
     expect(css).toContain('@source not "../CLAUDE.md"');
     expect(css).toContain('@source not "../docs/decisions.md"');
     expect(css).toContain('@source not "../README.md"');
-  });
-
-  it("does not name the removed utility anywhere app/ or lib/ is scanned", () => {
-    // Tailwind scans app/ and lib/ for class-name candidates and cannot tell a
-    // comment from markup, so writing the literal class here regenerates the
-    // rule in production — which is exactly what happened after the prose
-    // files were excluded: CLAUDE.md stopped emitting it and this file and
-    // globals.css carried on. The needle is assembled at runtime so that this
-    // assertion is not itself the thing it forbids.
-    //
-    // Any scale value, not one. scroll-padding on the container and
-    // scroll-margin on the target ADD, so every member of the family is the
-    // same defect, and pinning a single number let the note in globals.css name
-    // a different one for as long as it has.
-    //
-    // .ts and .tsx only. globals.css is NOT scanned — Tailwind excludes the
-    // stylesheet hosting its own @import, established by planting a candidate in
-    // a comment there and finding no rule for it — so the scroll-offset note in
-    // that file may keep naming the utility it supersedes. Nothing else may.
-    // lib/tailwind-comment-scanning.test.ts guards the general case.
-    const needle = new RegExp("scroll" + "-mt-" + "[\\w.[\\]/-]+");
-    const offenders: string[] = [];
-    const walk = (dir: string) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        if (entry.name === "node_modules" || entry.name.startsWith("."))
-          continue;
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) walk(full);
-        else if (/\.tsx?$/.test(entry.name)) {
-          if (needle.test(fs.readFileSync(full, "utf8")))
-            offenders.push(path.relative(root, full));
-        }
-      }
-    };
-    for (const dir of ["app", "lib"]) walk(path.join(root, dir));
-
-    expect(offenders).toEqual([]);
-  });
-
-  it("the widened needle still catches the value it was pinned to", () => {
-    // Known-bad control. Widening a pattern is how a guard quietly stops
-    // matching anything, so this holds it against the original literal, against
-    // the different one globals.css names, and against the property it must not
-    // confuse for a utility.
-    const needle = new RegExp("scroll" + "-mt-" + "[\\w.[\\]/-]+");
-    expect(needle.test("className='prose " + "scroll-mt" + "-24'")).toBe(true);
-    expect(needle.test("supersedes " + "scroll-mt" + "-20 here")).toBe(true);
-    expect(needle.test("scroll-padding-top: 5rem")).toBe(false);
   });
 
   it("no scroll-mt-* utility survives to stack on top of it", () => {
