@@ -231,6 +231,8 @@ standfirst pinned to the container's right edge; below `md` it stacks.
 `justify-between` and the standfirst's 320px cap ship together: without the cap
 a one-line standfirst strands at the far margin, without `justify-between` it
 strands mid-row. `items-baseline-last` closes both blocks on their last line.
+The stack below `md` is required: a 60px heading runs to 330px and a 390px
+phone has 350px of content, so there is no room for a standfirst beside it.
 
 Every standfirst carries `md:max-w-[20rem] text-lg leading-relaxed
 md:text-right text-brand-muted`, and `lib/palette-contrast.test.ts` anchors on
@@ -250,7 +252,8 @@ with a 112px portrait.
 
 `HeroPost` in `app/page.tsx` is `grid gap-y-6 md:grid-cols-2 md:gap-x-16
 lg:gap-x-32 md:gap-y-0`, matching the `MoreStories` grid below so the hero's
-right column lines up with the right-hand card. It is a base-level grid: a
+right column lines up with the right-hand card, a 428px cell inside the 984px
+content cap. It is a base-level grid: a
 grid only from `md` left the byline and excerpt 0px apart on mobile.
 `md:gap-y-0` is defensive (one row has no row gap to act on) and stays so a
 third child inherits the two-column intent. The headline caps at
@@ -285,7 +288,8 @@ as two unrelated surfaces.
 <!-- key: cover-frames -->
 
 `app/cover-image.tsx`. With `wide`, 3:2 on mobile and 16:9 from `md`, which is
-every post cover off its 1920x1080 source. Without it, 3:2 at every width. The
+every post cover off its 1920x1080 source, which a bare 3:2 frame crops by
+15.6%. Without it, 3:2 at every width. The
 mobile 3:2 is the item most often re-raised as a finding. A 4:3 card crop and a
 uniform uncropped 16:9 were both proposed and rejected.
 
@@ -315,7 +319,8 @@ is on. Adding `category` to `CardPost` was rejected, which leaves
 Every other title calls `widont()`. At the post `h1`'s ramp the glued last two
 words can be wider than the column and overflow; four posts did at a 20px root,
 and dropping the glue took all four to zero. A length guard in `widont()` cannot
-work, because character count does not track rendered width, and breaking
+work, because character count does not track rendered width (a 14-character
+glued pair measured 338px, a 15-character one 331px), and breaking
 mid-word is worse than a widow.
 
 `text-balance` covers the widow instead: zero widows from 768px up and one at
@@ -384,7 +389,9 @@ argued in its file: the aubergine header and footer, where crimson fails; the
 code-block scroll regions in `lib/rich-text.tsx`, which draw inward because
 their parent clips; and the controls on their own dark ground,
 `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox close
-button, which take a two-tone white ring. That last group was once
+button, which take a two-tone white ring: a fixed control floats over grounds
+no one colour clears (crimson is 2.19:1 on the light footer), and white at
+18.7:1 on the dark page pairs with a dark offset at 15.5:1 on the light one. That last group was once
 "simplified" and reverted.
 
 ### One scroll offset, `scroll-padding-top` on `html`
@@ -645,7 +652,8 @@ it, with a commented-out declaration as its control.
 
 Whether a page's header sits at `max-w-5xl` or inside `max-w-2xl` decides the
 breadcrumb wrapper, the `h1` ramp and whether the header closes with the 3px
-rule. A route is wide or narrow; none sits half in each. The measure is the
+rule. A route is wide or narrow; none sits half in each. The tell of a wrong
+choice is a 6xl heading in a 42rem measure. The measure is the
 header's, not the prose's: a post is wide with a narrow body, and `/search` is
 narrow. The route lists are in `CLAUDE.md`.
 
@@ -671,7 +679,7 @@ and `Container` in a route, and do not give a narrow route the wide header.
 - A post's `h1` carries its own `data-pagefind-body`, since it sits outside the
   `<article>`; without it every title-only term drops out of search.
 - The bar's wordmark hides on home through a `:has()` rule while the masthead is
-  on screen, and fades back in once it scrolls away (`app/wordmark-fade.tsx`).
+  on screen, so the site is not named twice within 100px, and fades back in once it scrolls away (`app/wordmark-fade.tsx`).
   It is a button that scrolls to top on home and a link elsewhere
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. The exit from this machinery, weighed and declined in
@@ -706,6 +714,13 @@ unconditionally. As a separate block in the standfirst slot it became the row's
 last baseline and shoved the standfirst upward; inline, it cannot split the
 header or land under a portrait. Seven call sites instead of one is deliberate,
 the same trade as the header being children. Author routes take it too.
+
+Copy budget: the counter and its leading space take 42px. Desktop leaves 566px
+of heading text beside it; a phone leaves 298px, where a long tag name pushes
+the counter onto its own line. Accepted: hiding it on mobile was rejected,
+because that is where a reader is least likely to reach the pager.
+"Information Architecture" (691px) overflowed before the counter existed; do
+not shrink or hide the counter to compensate.
 
 ### Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
 
@@ -777,8 +792,10 @@ min-dark's comments are `#6B737C` on `#1F1F1F`, 3.43:1 against the 4.5:1 floor.
 `lib/highlight.ts` swaps them for `#858F9A` (5.02:1) with Shiki's
 `colorReplacements`, because the colours are inline styles and a CSS override
 would need a specificity fight. It stays the dimmest token, so comments still
-read as secondary. Four other theme colours fail but no sample on the site
-renders them; one that does is a new finding. `lib/highlight.contrast.test.ts`
+read as secondary; the next dimmest is `#F97583` at 6.20:1. Four other theme
+colours fail and no sample on the site renders them: `#800080` 1.75:1
+(debug-token), `#CD3131` 3.20:1 (error-token), `#316BCD` 3.23:1 (info-token)
+and `#1976D2` 3.58:1 (markdown link). One that renders is a new finding. `lib/highlight.contrast.test.ts`
 recomputes every rendered colour over one sample per grammar.
 
 ### Shiki grammars are imported one by one, never from the meta-package
