@@ -1,9 +1,7 @@
 import { createHash, timingSafeEqual } from "crypto";
 
-// Hash both sides to a fixed 32-byte digest before comparing. Keeps the
-// comparison constant-time, avoids the RangeError timingSafeEqual throws when
-// two buffers differ in byte length (e.g. a same-character-length secret with a
-// multibyte character), and removes the input-length leak.
+// Hashing both sides keeps the compare constant-time, hides length, and avoids
+// timingSafeEqual's throw on unequal byte lengths.
 const digest = (value: string) => createHash("sha256").update(value).digest();
 
 export function safeCompare(

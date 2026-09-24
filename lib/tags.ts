@@ -1,26 +1,15 @@
 import type { ListPost, Post, Tag } from "./types";
 
-/**
- * A tag needs this many posts before it renders anywhere.
- *
- * Zero-post tags are dead entries. A one-post tag is worse than useless in a
- * glossary: it takes a heading and a gloss to say "this exists once", and the
- * reader has nowhere to go from it. Two is the point at which a tag starts
- * doing the job tags exist for, which is connecting posts to each other.
- */
+/** A one-post tag connects nothing, so two is the floor for rendering it. */
 export const MIN_POSTS_PER_TAG = 2;
 
-/** Tags on a post, flattened out of Contentful's collection wrapper. */
 export function postTags(post: Pick<Post | ListPost, "tagsCollection">): Tag[] {
   return post.tagsCollection?.items ?? [];
 }
 
 /**
- * Tag slugs that clear MIN_POSTS_PER_TAG across the given posts.
- *
- * Every surface must agree. The glossary hides a tag below the threshold, and
- * `/tags/[slug]` 404s for it, and the sitemap omits it — so a pill rendered
- * without this filter would link to a dead URL. One helper, all callers.
+ * Slugs clearing the threshold across the given posts. The glossary, the
+ * sitemap and `/tags/[slug]` all read this, so no pill links to a 404.
  */
 export function visibleTagSlugs(
   posts: Array<Pick<Post | ListPost, "tagsCollection">>,
@@ -39,18 +28,8 @@ export function visibleTagSlugs(
 }
 
 /**
- * Posts carrying a tag, in the order given.
- *
- * A filter rather than a query, and that is not laziness: Contentful's GraphQL
- * cannot filter a collection on an `Array<Link>` field at all, so
- * `where: { tags: { slug } }` does not exist, and the documented `linkedFrom`
- * workaround returns no ordering so it could not reproduce `date_DESC`.
- *
- * It takes the posts rather than fetching them because every caller already
- * holds the `getAllPosts` result — it needs the sitewide list anyway, to decide
- * whether the tag clears `MIN_POSTS_PER_TAG`. Passing the list in is a
- * legibility choice now, not a correctness one, see `getAllPosts` in
- * `lib/api.ts`. Order is the caller's: getAllPosts already sorts `date_DESC`.
+ * A filter, not a query: Contentful cannot filter on an `Array<Link>` field.
+ * Order is the caller's. [→ `tag-pages`]
  */
 export function postsWithTag<T extends Pick<Post | ListPost, "tagsCollection">>(
   posts: T[],
@@ -59,13 +38,7 @@ export function postsWithTag<T extends Pick<Post | ListPost, "tagsCollection">>(
   return posts.filter((post) => postTags(post).some((t) => t.slug === slug));
 }
 
-/**
- * Posts grouped under each visible tag, tags A–Z, posts newest first.
- *
- * Order comes from the caller: getAllPosts already sorts date_DESC, so the
- * grouping preserves it rather than re-sorting. Tags below the threshold are
- * dropped entirely, along with any tag carrying no posts.
- */
+/** Posts under each visible tag, tags A–Z, caller's post order kept. */
 export function groupPostsByTag<
   T extends Pick<Post | ListPost, "tagsCollection">,
 >(posts: T[]): Array<{ tag: Tag; posts: T[] }> {

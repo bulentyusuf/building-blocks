@@ -1,13 +1,8 @@
 import type { Author } from "./types";
 import { SITE_AUTHOR, SITE_URL } from "./constants";
 
-// Serialise a JSON-LD object for safe injection into a <script
-// type="application/ld+json"> via dangerouslySetInnerHTML. Beyond plain
-// JSON.stringify, the three HTML-significant characters that could break out of
-// the script element or be misread by the parser are escaped to their \uXXXX
-// forms. Values come from trusted CMS data today, so this is defence-in-depth —
-// but every JSON-LD block in the app must go through here so the behaviour is
-// consistent rather than per-call-site.
+// Escapes the three HTML-significant characters so a value cannot close the
+// script. Every JSON-LD block goes through here. [→ `json-ld`]
 export function jsonLdHtml(data: unknown): string {
   return JSON.stringify(data)
     .replace(/</g, "\\u003c")
@@ -26,21 +21,8 @@ function person(name: string, slug?: string): PersonNode {
 }
 
 /**
- * The `author` value for a post's BlogPosting node.
- *
- * A bare object for zero or one authors, an array for two or three. Zero and
- * one are kept as a bare object deliberately: every post on the site today has
- * exactly one author, so this is the shape that must stay byte-identical to
- * what shipped before `authors` existed. A one-element array deep-equals
- * nothing useful and would slip a real regression past a loose test, which is
- * why lib/json-ld.test.ts asserts `Array.isArray(...) === false` on that case
- * explicitly rather than trusting a snapshot.
- *
- * Zero authors falls back to SITE_AUTHOR with no url, matching the site's
- * pre-`authors` behaviour for a post whose `author` link was ever absent.
- *
- * Extracted so this is testable at all — it was previously an object literal
- * inside a 300-line server component.
+ * A bare object for zero or one authors, an array for more, so the single-author
+ * shape stays what shipped before `authors`. Zero falls back to SITE_AUTHOR.
  */
 export function postAuthorsNode(
   authors: Pick<Author, "name" | "slug">[],

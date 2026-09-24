@@ -5,20 +5,14 @@ export interface Asset {
     id: string;
   };
   url: string;
-  // The caption, rendered as the figure's figcaption, NOT the alt text — see
-  // `title` below. One field cannot serve both: 21 of the 24 cover assets are
-  // also embedded as figures, so a shared field would have to be empty and
-  // populated at once. [→ `announced-links`]
+  // The caption, never the alt text; many covers are also figures, so one
+  // field cannot serve both. [→ `announced-links`]
   description: string;
-  // Optional and nullable: Contentful returns null when no title is set, and a
-  // payload cached before this field was queried carries neither.
+  // Null when unset in Contentful.
   title?: string | null;
-  // Read only by the build-time placeholder check in lib/placeholder-title.ts,
-  // which compares the title against it. Nothing renders this. [→ `announced-links`]
+  // Only for the placeholder check; never rendered. [→ `announced-links`]
   fileName?: string | null;
-  // Optional and nullable on purpose. Contentful returns null for both on a
-  // non-image asset, and a payload cached before these were queried carries
-  // neither, so every consumer falls back rather than assuming a shape.
+  // Null on a non-image asset, so every consumer falls back.
   width?: number | null;
   height?: number | null;
 }
@@ -50,10 +44,9 @@ export interface Sidenote {
 }
 
 export interface EntryLink {
-  // Block-level embeds (CodeBlock, PromptBlock) sit between paragraphs.
+  // Block embeds sit between paragraphs.
   block: (CodeBlock | PromptBlock)[];
-  // Inline embeds (Sidenote) sit inside a paragraph, referenced by an
-  // INLINES.EMBEDDED_ENTRY node. Optional: only POST_GRAPHQL_FIELDS fetches it.
+  // Inline embeds (Sidenote). Only POST_GRAPHQL_FIELDS fetches them.
   inline?: Sidenote[];
 }
 
@@ -84,13 +77,9 @@ export interface AuthorCollectionResponse {
 
 export interface CoverImage {
   url: string;
-  // Used as the image's alt text. Optional and nullable: Contentful returns
-  // null when no title is set, and a payload cached before this field was
-  // queried carries neither. Every consumer falls back to "" rather than
-  // assuming a string.
+  // The alt text. Null when unset; consumers fall back to "".
   title?: string | null;
-  // Never rendered — exists only so isPlaceholderTitle can compare the title
-  // against the filename stem. [→ `announced-links`]
+  // Only for the placeholder check; never rendered. [→ `announced-links`]
   fileName?: string | null;
 }
 
@@ -101,8 +90,7 @@ export interface Category {
   thumbnail?: CoverImage; // optional 4:3 category tile; absent on categories without one
 }
 
-// A cross-cutting topic, up to three per post. No thumbnail: the /tags glossary
-// is a text index, not a card grid, so `description` is the only decoration.
+// Up to three per post. The glossary is a text index, so no thumbnail.
 export interface Tag {
   name: string;
   slug: string;
@@ -117,10 +105,7 @@ export interface TagCollectionResponse {
   };
 }
 
-// Editable copy at the top of a browse page, one entry per route. Both text
-// fields are optional to READ even though standfirst is required in the CMS: a
-// fork with an empty space has no entry at all, and the pages degrade rather
-// than break. [→ `browse-copy`]
+// Both fields optional to read, so an empty space degrades. [→ `browse-copy`]
 export interface BrowseIntro {
   title: string;
   slug: string;
@@ -146,16 +131,10 @@ export interface Post {
   excerpt: string;
   content: Content;
   category?: Category; // single reference; optional so untagged posts don't break
-  // Nested rather than a flat array because that is what Contentful's GraphQL
-  // returns for a multi-reference field, and this file types responses as they
-  // arrive rather than reshaping them. `category` is flat only because it is a
-  // single link. Read it through postTags() in lib/tags.ts rather than reaching
-  // in, so the empty and absent cases stay in one place.
+  // Nested as Contentful returns it. Read through postTags() in lib/tags.ts.
   tagsCollection?: { items: Tag[] };
-  // The co-authored byline, ordered: the first entry is the lead author. Items
-  // can be null — Contentful returns null in a link array for an unpublished
-  // entry — so read this through postAuthors() in lib/authors.ts, which filters
-  // them out, rather than reaching in directly. [→ `authors-array`]
+  // Ordered, lead first. Items can be null for an unpublished author, so read
+  // through postAuthors() in lib/authors.ts. [→ `authors-array`]
   authorsCollection?: { items: (Author | null)[] };
 }
 
@@ -188,14 +167,8 @@ export interface CardPostCollectionResponse {
   };
 }
 
-// A post as returned by the sitewide listing query (getAllPosts /
-// LIST_GRAPHQL_FIELDS): omits `content` and author `bio`, both absent — don't
-// read them. Use getPostAndMorePosts / getPostsByCategory for a full Post.
-//
-// authorsCollection is typed with bio omitted deliberately: LIST_GRAPHQL_FIELDS
-// doesn't select it, so typing the items as full Authors would let a bio render
-// from a list-sourced post — typechecks fine, renders nothing, no error
-// anywhere.
+// getAllPosts' shape: no `content`, and authors typed without `bio` so a
+// list-sourced post cannot silently render an empty bio.
 export type ListPost = Omit<Post, "content" | "authorsCollection"> & {
   authorsCollection?: { items: (Omit<Author, "bio"> | null)[] };
 };

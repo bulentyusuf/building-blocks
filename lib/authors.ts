@@ -2,41 +2,24 @@ import type { Post, ListPost } from "./types";
 import { SITE_AUTHOR } from "./constants";
 
 /**
- * Authors on a post, in credit order, flattened out of Contentful's collection
- * wrapper. The first entry is the lead author.
- *
- * The null filter is not defensive padding. Contentful returns `null` items in
- * a link array when a referenced entry is unpublished, and an unpublished
- * author entry would otherwise throw the moment a caller reads `.slug`.
+ * Authors in credit order, lead first. The null filter is needed: Contentful
+ * returns null items for an unpublished author.
  */
 export function postAuthors<
   T extends Pick<Post | ListPost, "authorsCollection">,
 >(
   post: T,
 ): NonNullable<NonNullable<T["authorsCollection"]>["items"][number]>[] {
-  // The return type is derived from T rather than fixed to Author[] because
-  // ListPost narrows its items to Omit<Author, "bio">, and a predicate of
-  // `a is Author` widened that straight back. A bio read off a list-sourced
-  // post then typechecked and rendered nothing, which is the exact failure the
-  // Omit on ListPost exists to prevent. bio is optional on Author, so the Omit
-  // never blocked assignment, only property access, and only this signature
-  // preserves that.
+  // Typed from T, so a list-sourced post keeps authors without `bio` and a bio
+  // read off one fails to typecheck rather than rendering nothing.
   return (post.authorsCollection?.items ?? []).filter(
     (a): a is NonNullable<typeof a> => a != null,
   );
 }
 
 /**
- * Posts a person is credited on, in the order given.
- *
- * A filter rather than a query, and that is not laziness: `authors` is an
- * Array<Link>, so `where: { authors: { slug } }` does not exist — the same
- * wall postsWithTag hit in lib/tags.ts. The documented `linkedFrom` workaround
- * also returns no ordering, so it could not reproduce `date_DESC` either way.
- *
- * It takes the posts rather than fetching them because every caller already
- * holds the sitewide list. Passing it in is a legibility choice now, not a
- * correctness one, see `getAllPosts` in `lib/api.ts`.
+ * A filter, not a query: Contentful cannot filter on `Array<Link>`.
+ * [→ `authors-array`]
  */
 export function postsByAuthor<
   T extends Pick<Post | ListPost, "authorsCollection">,
@@ -44,14 +27,7 @@ export function postsByAuthor<
   return posts.filter((post) => postAuthors(post).some((a) => a.slug === slug));
 }
 
-/**
- * Joins author names for plain-text byline surfaces (such as the Open Graph
- * card), formatted with commas and an ampersand:
- *   - 1 author: "Bulent Yusuf"
- *   - 2 authors: "Bulent Yusuf & Genial Yeti"
- *   - 3 authors: "Bulent Yusuf, Genial Yeti & Trippy Robot"
- * Empty list falls back to fallback (defaults to SITE_AUTHOR).
- */
+/** Plain-text byline: "A", "A & B", "A, B & C". Empty falls back. */
 export function formatAuthorsByline(
   authors: { name: string }[],
   fallback = SITE_AUTHOR,
