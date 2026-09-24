@@ -102,7 +102,7 @@ describe("lightbox accessible naming", () => {
     );
 
     // Only the alt is asserted. This component renders its caption solely
-    // inside the portal, which needs `mounted && open`, so the caption is
+    // inside the open dialog, which needs `mounted && open`, so the caption is
     // absent from the server output by design — the figcaption under a body
     // figure is the caller's, and rich-text.test.tsx covers that pairing.
     // What matters here is that passing one no longer blanks the other.
