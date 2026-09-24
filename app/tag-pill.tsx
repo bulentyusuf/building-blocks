@@ -1,24 +1,12 @@
 import Link from "next/link";
 import type { Tag } from "@/lib/types";
 
-// One pill, two sizes. Extracted from the post page so the border, muted text
-// and crimson hover are defined once: cards and the post page drifting apart
-// here would be invisible until you saw both in one session.
+// One pill for cards and the post page. [→ `tag-pills`]
 type Size = "default" | "compact";
 
-// Both sizes are text-sm. `compact` is not smaller type — it is the same type
-// with tighter padding. Cards previously used text-xs, which put the tags below
-// the date in the visual hierarchy while being the more useful of the two: the
-// date is the least informative thing on a card and the tags are what a reader
-// scans for. Matching the date's size makes them siblings rather than a
-// footnote. Do not shrink it back.
-//
-// Horizontal padding is deliberately generous for the height. On a rounded-full
-// pill the corner radius is half the height, so padding that looks right on a
-// rectangle puts the text inside the curve and the label looks wedged in.
-// `default` is 28px tall, so 16px clears its 14px radius. `compact` is 24px
-// tall, so it needs more than 12px — hence 14px, not the 12px that px-3 would
-// give. Do not trim either to match the other.
+// Both sizes use the same type; compact only tightens padding. Horizontal
+// padding clears the corner radius, which is half the height, so the label
+// does not sit in the curve.
 const SIZES: Record<Size, string> = {
   default: "px-4 py-1 text-sm",
   compact: "px-3.5 py-0.5 text-sm",
@@ -34,11 +22,8 @@ export default function TagPill({
   return (
     <Link
       href={`/tags/${tag.slug}`}
-      // border-control-edge, not border-hairline. The pill's edge is the only
-      // thing marking it as interactive — its text is brand-muted, the same as
-      // the dates and meta beside it — so it is a control boundary rather than
-      // a divider, and the divider token's 1.14:1 left it invisible. See the
-      // token's own note in globals.css.
+      // The control edge, not the divider token: the edge is all that marks the
+      // pill as interactive. [→ `border-roles`]
       className={`inline-block rounded-full border border-control-edge font-ui ${SIZES[size]} text-brand-muted transition-colors duration-200 hover:border-brand-crimson hover:text-brand-crimson`}
     >
       {tag.name}

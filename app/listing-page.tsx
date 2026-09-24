@@ -7,17 +7,9 @@ import { jsonLdHtml } from "@/lib/json-ld";
 import type { CardPost } from "@/lib/types";
 
 /**
- * The shell every paginated listing shares — a category, tag or author page in
- * either its paginated or its unpaginated form, and the index listing at
- * /page/[page]. [→ `listing-shell`]
- *
- * The `<header>` is `children` rather than a set of props: reassembling
- * `name`/`description`/`avatar` here per route would need a conditional per
- * difference. `heading` and `standfirst` pass straight through to WidePage,
- * which lays them out side by side; so does `splitHeader`, for the author
- * routes' exception — no local default, so whatever a caller passes or omits
- * reaches WidePage exactly as given, and WidePage's own default resolves it.
- * [→ `page-counter`]
+ * The shell for every paginated listing. The header's content stays the
+ * route's, and props pass straight through to WidePage with no local defaults.
+ * [→ `listing-shell`, `page-counter`]
  */
 export default function ListingPage({
   crumbs,
@@ -32,31 +24,20 @@ export default function ListingPage({
   emptyMessage,
   jsonLd,
 }: {
-  /** Omitted by the index listing, which has nothing above it. */
   crumbs?: Crumb[];
-  /** The heading, passed straight through to WidePage. */
   heading: ReactNode;
-  /** The standfirst, when this listing has one — a category or tag
-   * description, an author bio. Passed straight through to WidePage. */
   standfirst?: ReactNode;
-  /** Passed straight through to WidePage. False only on the author routes. */
+  /** False only on the author routes. */
   splitHeader?: boolean;
-  /** This page's slice, not the whole listing. */
+  /** This page's slice. */
   posts: CardPost[];
   currentPage: number;
   totalPages: number;
-  /** Tag slugs with a live page, so no pill can link to a 404. */
+  /** Tag slugs with a live page. */
   visibleTags: Set<string>;
-  /** Page 1's URL. Pagination appends `/page/N` for the rest. */
   basePath: string;
-  /**
-   * Shown instead of the listing when there is nothing to show. Omitted by the
-   * routes where empty is unreachable — a tag page 404s below its post
-   * threshold, and a paginated page 404s past its last page — so leaving it out
-   * asserts that, rather than quietly rendering an empty list.
-   */
+  /** Omitted where empty is unreachable, which asserts it. */
   emptyMessage?: string;
-  /** Serialised into a ld+json script when present. Only the author page has one. */
   jsonLd?: unknown;
 }) {
   return (
@@ -68,7 +49,6 @@ export default function ListingPage({
       standfirst={standfirst}
       splitHeader={splitHeader}
     >
-      {/* A script tag, so its position in the tree is irrelevant. */}
       {jsonLd !== undefined && (
         <script
           type="application/ld+json"

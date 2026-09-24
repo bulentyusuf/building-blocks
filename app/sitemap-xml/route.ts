@@ -10,13 +10,9 @@ import type { ListPost } from "@/lib/types";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
 
-// Served at /sitemap.xml via a rewrite in next.config.js. This handler lives on
-// an ordinary path (/sitemap-xml) on purpose. Next treats the reserved
-// /sitemap.xml route as a special metadata route handler whose cache entry does
-// not carry our explicit fetch tags, so revalidateTag("posts") never reaches it
-// there. On an ordinary path it behaves like /feed.xml, its cache entry carries
-// the posts tag, and the publish webhook's revalidateTag("posts") busts it on
-// demand. revalidate is the daily self-heal fallback.
+// Served at /sitemap.xml through a rewrite: Next's reserved sitemap route does
+// not carry fetch tags, so revalidateTag would never reach it. The daily
+// revalidate is a fallback.
 export const revalidate = 86400;
 
 type SitemapEntry = {
@@ -26,18 +22,11 @@ type SitemapEntry = {
   priority: number;
 };
 
-// toISOString throws RangeError on an invalid date, and a throw inside this
-// render makes Next serve the last good copy, which silently freezes the
-// sitemap. feed.xml uses toUTCString, which returns a harmless string instead,
-// which is why it never hit this. Clamp an unparseable date to the epoch.
+// An invalid date would throw and freeze the sitemap on its last good copy.
 const safeIso = (d: Date): string =>
   Number.isNaN(d.getTime()) ? new Date(0).toISOString() : d.toISOString();
 
-// The only CMS `Page` slugs that have a matching route (app/about, app/privacy).
-// Every other Page entry would map to a URL with no route — a 404 in the
-// sitemap, which wastes crawl budget and erodes sitemap trust. Filtering here
-// means a newly published Page can never inject a dead URL. Add a slug only
-// when a real route ships for it.
+// Only Page slugs with a real route, so a new Page cannot add a dead URL.
 const ROUTED_PAGE_SLUGS = new Set(["about", "privacy"]);
 
 export async function GET() {
@@ -51,11 +40,9 @@ export async function GET() {
   const postDate = (post: ListPost): Date =>
     new Date(post.updatedDate ?? post.date);
 
-  // getAllPosts orders date_DESC, so posts[0] is the freshest sitewide entry.
   const newestSitewide = posts.length ? postDate(posts[0]) : new Date();
 
-  // Freshest post per category slug, so each category page reports a real
-  // lastModified instead of the render time.
+  // Freshest post per category, tag and author, for real lastmod values.
   const newestByCategory = new Map<string, Date>();
   for (const post of posts) {
     const slug = post.category?.slug;
@@ -65,8 +52,6 @@ export async function GET() {
     if (!current || date > current) newestByCategory.set(slug, date);
   }
 
-  // Same idea per tag slug, except a post carries up to three, so it can be the
-  // freshest entry for several tags at once.
   const newestByTag = new Map<string, Date>();
   for (const post of posts) {
     const date = postDate(post);
@@ -76,9 +61,6 @@ export async function GET() {
     }
   }
 
-  // Same idea per author slug, except a post can carry up to three authors,
-  // so it can be the freshest entry for several at once — the same shape as
-  // newestByTag above, and for the same reason.
   const newestByAuthor = new Map<string, Date>();
   for (const post of posts) {
     const date = postDate(post);
@@ -114,8 +96,7 @@ export async function GET() {
     priority: 0.6,
   }));
 
-  // Only tags the glossary shows. Below MIN_POSTS_PER_TAG a tag has no page —
-  // the route 404s — so listing it here would advertise a dead URL.
+  // Only tags with a page. [→ `tag-pages`]
   const tagEntries: SitemapEntry[] = [...visibleTagSlugs(posts)].map(
     (slug) => ({
       url: `${SITE_URL}/tags/${slug}`,
@@ -148,8 +129,6 @@ export async function GET() {
       priority: 0.7,
     },
     {
-      // The glossary index. Per-tag pages are enumerated separately below —
-      // this was one URL until tags gained their own landing pages.
       url: `${SITE_URL}/tags`,
       lastModified: newestSitewide,
       changeFrequency: "weekly",
@@ -162,8 +141,6 @@ export async function GET() {
       priority: 0.7,
     },
     {
-      // Browse hub, indexable and internally linked from the footer. lastmod
-      // tracks the freshest post since the archive lists every post.
       url: `${SITE_URL}/archive`,
       lastModified: newestSitewide,
       changeFrequency: "weekly",

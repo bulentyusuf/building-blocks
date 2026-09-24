@@ -1,12 +1,8 @@
 import { SITE_URL } from "@/lib/constants";
 import NewWindowHint from "./new-window-hint";
 
-// A small reading-assistance block: hands the current post's URL off to a
-// chat tool with a pre-filled, open-ended prompt. No server call, no key —
-// these are plain outbound links carrying the post URL as a query param.
-//
-// The ?q= handoff params are product affordances, not contractual APIs;
-// if a provider changes theirs, the corresponding href here needs updating.
+// Plain outbound links carrying the post URL. The ?q= params are product
+// affordances, not contracts, so check them if a provider changes.
 export default function ExploreWithAI({ slug }: { slug: string }) {
   const postUrl = `${SITE_URL}/posts/${slug}`;
   const prompt = `Read ${postUrl} and answer my questions about it.`;
@@ -19,10 +15,7 @@ export default function ExploreWithAI({ slug }: { slug: string }) {
 
   return (
     <nav aria-label="Explore this post with AI" className="text-sm">
-      {/* Matches the table-of-contents label exactly — same face, size and
-          tracking. The two sit one above the other in the same sidebar, so any
-          difference between them reads as an accident rather than a
-          distinction. */}
+      {/* Must match the ToC label above it exactly. */}
       <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
         Explore with AI
       </p>

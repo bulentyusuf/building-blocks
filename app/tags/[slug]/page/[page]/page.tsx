@@ -21,8 +21,6 @@ export const dynamicParams = true;
 export async function generateStaticParams() {
   const posts = await getAllPosts(false);
 
-  // No extra fetch per tag, unlike the category equivalent: postsWithTag
-  // filters the same getAllPosts result, so the counts are already here.
   return [...visibleTagSlugs(posts)].flatMap((slug) =>
     pageRangeParams(postsWithTag(posts, slug).length, (page) => ({
       slug,
@@ -38,8 +36,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { isEnabled } = await draftMode();
   const { slug, page } = await params;
-  // Metadata has to make the same judgement the component does, or a title and
-  // a canonical get built out of a segment that is about to 404.
+  // [→ `listing-shell`]
   const currentPage = parsePageParam(page);
   if (currentPage === null) {
     return { title: "Page not found" };
@@ -52,7 +49,7 @@ export async function generateMetadata({
   }
 
   return listingMetadata({
-    // The parsed number, never the raw segment — see parsePageParam.
+    // The parsed number, never the raw segment.
     title: `${tag.name}, Page ${currentPage}`,
     description: tag.description || `Posts tagged ${tag.name} on ${SITE_TITLE}`,
     canonical: `${SITE_URL}/tags/${slug}/page/${currentPage}`,
@@ -71,7 +68,6 @@ export default async function TagPaginatedPage({
   if (pageNumber === null) {
     notFound();
   }
-  // Page 1 has a single canonical home at /tags/<slug>.
   if (pageNumber === 1) {
     redirect(`/tags/${slug}`);
   }
@@ -81,7 +77,6 @@ export default async function TagPaginatedPage({
     notFound();
   }
 
-  // One fetch, read twice — see the note on the unpaginated tag page.
   const allPosts = await getAllPosts(isEnabled);
   const visible = visibleTagSlugs(allPosts);
   if (!visible.has(slug)) {

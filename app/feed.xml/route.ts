@@ -9,25 +9,11 @@ import {
 } from "@/lib/constants";
 import { escapeXml } from "@/lib/xml";
 
-// Daily ISR fallback. The Contentful publish webhook revalidates /feed.xml on
-// demand for instant freshness. This is the catch for when the webhook fails.
+// Fallback; the publish webhook revalidates this path on demand.
 export const revalidate = 86400;
 
-// Two things this file gets from constants rather than spelling out, both fixed
-// in August 2026:
-//
-// <language> is the site locale in RSS 2.0's form, which is the BCP-47 tag
-// lowercased — en-GB becomes en-gb. It was a hardcoded "en", the one piece of
-// feed metadata not following DEFAULT_LOCALE, against docs/decisions.md's
-// "the site's locale is en-GB, everywhere".
-//
-// Authors:
-// <dc:creator> carries every author in credit order via the Dublin Core
-// extension (xmlns:dc), which is standard for RSS 2.0 readers and requires no
-// email address.
-// <author> renders only when AUTHOR_EMAIL is actually set, carrying the single
-// lead author for legacy RSS 2.0 clients that require an email address.
-// See lib/constants.ts for why an omitted element beats a guessed mailbox.
+// <language> is DEFAULT_LOCALE lowercased. Every author gets a <dc:creator>;
+// <author> appears only when AUTHOR_EMAIL is set. [→ `authors-array`]
 
 export async function GET() {
   const posts = await getAllPosts(false);

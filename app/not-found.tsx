@@ -7,14 +7,8 @@ export const metadata: Metadata = {
   title: "Page not found",
 };
 
-// The root layout already supplies the header, footer and back-to-top, so this
-// renders only the inner block.
-//
-// Asset: drop an optimised image at public/404-gremlin.webp (generated in the
-// house Midjourney style, exported to webp). The wobble is disabled for anyone
-// who prefers reduced motion, who then sees the still image.
-//
-// Copy is yours to tweak.
+// The layout supplies the chrome. The image is public/404-gremlin.webp; reduced
+// motion gets it still.
 export default function NotFound() {
   return (
     <Container>
@@ -31,15 +25,8 @@ export default function NotFound() {
 
       <section className="mx-auto max-w-2xl text-center">
         <div className="mb-8 flex justify-center">
-          {/*
-            This repo sets images.loader: "custom" globally, so every
-            next/image needs a loader. ContentfulImage is the house client
-            component that supplies one; its loader returns any non-Contentful
-            src untouched, so a local public/ asset is served directly.
-            img-src 'self' allows it. Using a raw next/image here would either
-            miss the loader or try to serialise an inline loader function from
-            this server component, both of which break the build.
-          */}
+          {/* ContentfulImage because the global custom loader needs one; it
+              passes local assets through untouched. */}
           <ContentfulImage
             unoptimized
             src="/404-gremlin.webp"

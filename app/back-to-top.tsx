@@ -16,27 +16,9 @@ export default function BackToTop() {
   }, []);
 
   return (
-    /* A deliberate exception to the sitewide crimson focus outline, and the
-       first of two: app/exit-preview-button.tsx is the other position:fixed
-       control (draft mode only) and carries the same ring for the same reason.
-       A fixed control's indicator floats over unknown ground — light page,
-       dark page, the footer band, a code block. No single colour clears 3:1 against all of those: crimson is
-       2.19:1 on the light-mode footer (#9E2238 on #241B1D), which is where it
-       was caught. The white ring plus dark offset is a two-tone indicator —
-       whichever tone loses contrast against the background, the other carries
-       (white is 18.7:1 on the dark page, the dark offset is 15.5:1 on the light
-       page). Do not "simplify" this to the base outline. */
-    /* opacity-0 and pointer-events-none hide it visually but leave it in the
-       tab order, so keyboard users landed on an invisible control near the top
-       of every page. inert removes it from both the tab order and the
-       accessibility tree while it is hidden.
-
-       inert is also why the click handler moves focus. The button goes inert
-       the moment scrollY drops under 600, which happens while the smooth
-       scroll it just started is still running — so the element holding focus
-       becomes unfocusable a beat after it was activated, and focus falls to
-       <body>. lib/scroll-to-top.ts moves it to #main first. Removing that call
-       looks harmless and ejects every keyboard reader who uses this button. */
+    /* Two-tone ring: a fixed control floats over grounds no single colour
+       clears. inert while hidden keeps it out of the tab order, which is why
+       the click moves focus to #main. [→ `focus-indicator`] */
     <button
       type="button"
       aria-label="Back to top"

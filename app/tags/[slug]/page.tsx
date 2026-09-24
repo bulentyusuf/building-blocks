@@ -11,14 +11,11 @@ import { listingMetadata } from "@/lib/page-metadata";
 import { pageItems, totalPagesFor } from "@/lib/paginate";
 import { widont } from "@/lib/typography";
 
-// Allow on-demand rendering of tags that clear the threshold after build time,
-// so a tag reaching its second post doesn't 404 until the next deploy.
+// A tag reaching its second post gets a page without a deploy.
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  // Only tags the glossary shows. A tag below MIN_POSTS_PER_TAG has no pill and
-  // no glossary entry, so a page for it would be unreachable from anywhere on
-  // the site — and the page below 404s for exactly the same reason.
+  // Only tags the glossary shows. [→ `tag-pages`]
   const posts = await getAllPosts(false);
   return [...visibleTagSlugs(posts)].map((slug) => ({ slug }));
 }
@@ -56,24 +53,16 @@ export default async function TagPage({
     notFound();
   }
 
-  // One fetch, read twice. The threshold check needs the sitewide list and the
-  // post list is a filter over that same result. Holding the single result is a
-  // legibility choice now, not a correctness one, see getAllPosts in lib/api.ts.
   const allPosts = await getAllPosts(isEnabled);
   const visible = visibleTagSlugs(allPosts);
 
-  // A tag below the threshold is hidden from the glossary and renders no pills,
-  // so serving a page for it would strand a URL nothing links to. One rule, and
-  // it lives in visibleTagSlugs rather than here.
   if (!visible.has(slug)) {
     notFound();
   }
 
   const posts = postsWithTag(allPosts, slug);
 
-  // Every post on this page carries this tag, so a pill repeating it on each
-  // card says nothing. The other tags a post carries are still worth showing —
-  // they are the reason a reader might leave sideways rather than down.
+  // Each card's own tag pill would repeat the page; the others still show.
   const otherTags = new Set([...visible].filter((s) => s !== slug));
 
   const crumbs: Crumb[] = [
@@ -85,8 +74,7 @@ export default async function TagPage({
   const totalPages = totalPagesFor(posts.length);
 
   return (
-    // No emptyMessage: the threshold gate above guarantees at least
-    // MIN_POSTS_PER_TAG posts by the time this renders.
+    // No emptyMessage: the threshold gate guarantees posts.
     <ListingPage
       crumbs={crumbs}
       posts={pageItems(posts, 1)}

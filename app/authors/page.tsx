@@ -10,9 +10,7 @@ import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Same slug the component passes to getBrowseIntro below. getBrowseIntro is
-  // cache()-wrapped, so the two calls collapse into one request per render
-  // — but only while the arguments match.
+  // [→ `single-entry-cache`]
   const { isEnabled } = await draftMode();
   return browsePageMetadata({
     slug: "authors",
@@ -23,12 +21,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AuthorsPage() {
   const { isEnabled } = await draftMode();
-  // Same arguments generateMetadata passes, so cache() collapses the two.
   const intro = await getBrowseIntro("authors", isEnabled);
 
   const list = await getAllAuthors(isEnabled);
-  // Each author's full record (with bio) in parallel, mirroring the categories
-  // index fetching a preview per category.
   const authors = (
     await Promise.all(
       list.map((a) => getAuthorBySlug(a.slug as string, isEnabled)),
@@ -61,8 +56,7 @@ export default async function AuthorsPage() {
           >
             <div className="mb-5 flex items-center gap-4">
               {author.picture?.url && (
-                // Decorative: the heading carries the name, so alt is empty to
-                // avoid screen-reader duplication, same as the category cards.
+                // Decorative: the heading names the author.
                 <ContentfulImage
                   alt=""
                   src={author.picture.url}
