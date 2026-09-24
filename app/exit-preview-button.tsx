@@ -1,5 +1,3 @@
-"use client";
-
 import { exitPreviewAction } from "./exit-preview-action";
 
 export function ExitPreviewButton() {

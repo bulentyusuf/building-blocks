@@ -149,10 +149,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   text inside a `data-pagefind-body` region regardless of either, so chrome
   and boilerplate there needs `data-pagefind-ignore` stated explicitly.
   [→ `pagefind-index-scope`]
-- **Never name a literal Tailwind utility in a source comment** under `app/` or
-  `lib/` — it regenerates the rule, and a variant prefix does not prevent it.
-  `app/globals.css` is exempt, unscanned. A guard exists and is never
-  conclusive; only the deployed bundle settles it. [→ `tailwind-scanning`]
+- **Documentation is kept out of Tailwind's scan** by the `@source not` lines in
+  `app/globals.css`; keep them. Source comments are scanned, so keep them short
+  and point at a decision key rather than quoting markup. [→ `tailwind-scanning`]
 - **`lib/highlight.ts` imports each Shiki grammar and theme by name, never from
   the `shiki` meta-package.** A new language needs its own `@shikijs/langs/*`
   import beside its `LANGS` entry, and the Code Block dropdown must offer

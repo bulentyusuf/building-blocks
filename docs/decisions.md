@@ -2388,79 +2388,60 @@ guarded was broken:
 
 <!-- key: tailwind-scanning -->
 
-`app/globals.css` carries `@source not "../CLAUDE.md"` and the same for
-`docs/decisions.md` and `README.md`, and explains why: a utility merely
-**named** in prose is generated as though a component used it.
+Tailwind generates a rule for every class-name candidate it finds in a scanned
+file, prose included. `app/globals.css` carries `@source not` for
+`CLAUDE.md`, `docs/decisions.md`, `README.md` and `.claude`, so documentation
+never ships CSS. That half stays: it is one line per file, and markdown quotes
+utilities constantly. `app/globals.css` itself is not scanned, because Tailwind
+excludes the stylesheet hosting its own `@import`, so its comments may name
+anything.
 
-The exclusions work and do not solve the whole problem, because `app/` and
-`lib/` are scanned and cannot be excluded. Two categories remain, and only one
-is worth acting on:
+`app/` and `lib/` are scanned and cannot be excluded, so a utility named in a
+source comment there ships a rule no element uses. A variant prefix does not
+prevent it (`md:grid-cols-2` in prose once produced a bare `.grid-cols-2`).
+The remedy is short comments: one line and a `[→ key]` pointer here, rather
+than prose that quotes markup. That is guidance, not a gate.
 
-- **Never name a literal utility in a source comment** — it regenerates the
-  rule. Hence the note in `app/globals.css` saying "the utility" instead of
-  spelling it, and the test in `lib/toc-active.test.ts` asserting the literal
-  appears nowhere under `app/` or `lib/`, assembling its needle at runtime so
-  the assertion is not itself the offence. That file's own comments do spell
-  the utility, in the wildcard and regex forms, neither of which is a valid
-  candidate and neither of which ships — the differential guard in
-  `lib/tailwind-comment-scanning.test.ts` is what proves that rather than
-  inspection.
-- **Leave ordinary English alone.** `.collapse`, `.invisible`, `.static` and
-  `.text-wrap` ship because comments contain those words; `.resize` ships
-  because `app/table-of-contents.tsx` calls `addEventListener("resize", …)`.
-  Contorting code to avoid English is a far worse trade than a few dozen bytes.
+#### Reopened, September 2026: the comment guard is retired
 
-**A caution on verifying this.** Compiling `app/globals.css` locally through
-`@tailwindcss/postcss` and grepping for one class reports every one of these as
-absent, including the two that demonstrably ship — its scan root is narrower
-than `next build`'s. That false negative is how an incomplete fix was once
-reported as complete.
+Until September 2026 this entry also carried a CLAUDE.md rule forbidding a
+literal utility in a source comment, a differential test
+(lib/tailwind-comment-scanning.test.ts, 200 lines, compiling the stylesheet
+against the scanned tree and a comment-stripped mirror of it), a
+`SPELLED_AS_ENGLISH` allowlist, and a runtime-assembled needle in
+`lib/toc-active.test.ts` for one removed utility. All of it is retired.
+**This is a written retirement with numbers, not a guard weakened to let a
+change pass.** The guard was green when it was removed.
 
-The deployed bundle is what settles it. The command that does that:
+Measured with the guard's own machinery against `b1fa4fa`, minified:
+
+- **What the guard found:** zero rules.
+- **What source comments add today:** 1,032 bytes raw and 133 gzipped
+  (61,440 against 60,408, and 11,119 against 10,986). All nine rules are
+  ordinary English words (`.collapse`, `.static`, `.outline` and six more)
+  that the guard exempted on purpose, so the unguarded leak already equals the
+  guard's lifetime win.
+- **Its lifetime win (#515):** fifteen rules, taking the deployed stylesheet
+  from 68,608 to 67,568 bytes, about 1.5%.
+- **Not re-measured:** the deployed bundle. The environment this was written
+  in cannot reach beuseful.net, so the command below was not run for it.
+
+Against about a hundred gzipped bytes stood 200 lines driving the compiler, an
+allowlist whose every change was itself a reopening of this entry, a house rule
+every contributor had to carry, and comments contorted to say "the utility"
+instead of naming it. A rule that ships unused is inert; it costs bytes and
+nothing else.
+
+What stays: the `@source not` exclusions, and the check in
+`lib/toc-active.test.ts` that fails on a `scroll-mt-*` class in markup. That
+one guards behaviour, since the margin would add to `scroll-padding-top`
+[→ `scroll-offset`], not bytes.
+
+If comment leaks ever look worth chasing again, the deployed bundle settles
+it. A local compile under-reports, because its scan root is narrower than
+`next build`'s.
 
 ```
 css=$(curl -s https://beuseful.net | grep -oE '/_next/static/[^"]+\.css' | head -1)
-curl -s "https://beuseful.net$css" | grep -o 'scroll-margin-top[^;}]*'
+curl -s "https://beuseful.net$css" | wc -c
 ```
-
-The path is `/_next/static/immutable/chunks/<hash>.css` and the hash carries
-digits and hyphens, so an earlier version of this command anchored on
-`/_next/static/chunks/[a-z0-9]+\.css` and matched nothing at all for as long as
-it stood here.
-
-#### Reopened, September 2026
-
-Three things were established by experiment rather than reasoning, and one of
-them narrows this entry.
-
-**`app/globals.css` is not scanned.** Tailwind excludes the stylesheet hosting
-its own `@import "tailwindcss"` from its content scan. Candidates planted in a
-comment there generate nothing; the same candidates in a comment in
-`app/layout.tsx` generate real rules. So the utility this file's scroll-offset
-note names is inert, and may stay. The rule against naming a literal applies to
-`.ts` and `.tsx` under `app/` and `lib/`, not to the stylesheet.
-
-**A variant prefix is not a fix.** `app/page.tsx` carried
-`md:grid-cols-2 md:gap-x-16` in prose and still generated bare `.grid-cols-2`
-and `.gap-x-16`. Removing the name is the only reliable answer.
-
-**Fifteen utilities were shipping unused** (#515), each named by a sentence
-describing markup that had been removed or rejected — one of them under a
-comment opening "No ring. This used to carry…". Clearing them took the deployed
-stylesheet from 68,608 to 67,568 bytes. `lib/toc-active.test.ts` saw none of it:
-it pinned its needle to one literal value and its second check matched only
-inside `className=`.
-
-**So a local compile is now used, in one specific shape.**
-`lib/tailwind-comment-scanning.test.ts` compiles the stylesheet twice, once
-against the scanned tree and once against a comment-stripped mirror of it, and
-asserts the two produce the same rules. This is a _differential_ check, which is
-what makes it usable despite the caution above: both passes share the same
-narrow scan root, so it cannot invent a finding, and anything it does surface is
-real. It can still under-report relative to `next build`. **A clean run is
-necessary, not sufficient. The deployed bundle remains the arbiter.**
-
-The guard encodes the "leave ordinary English alone" bullet as
-`SPELLED_AS_ENGLISH`, currently `text-wrap` and `resize`, alongside a filter
-dropping every bare one-word utility. Adding to that set is reopening this
-entry again, and belongs here first.
