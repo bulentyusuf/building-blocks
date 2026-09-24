@@ -199,10 +199,14 @@ export default function LightboxImage({
                 held a 1920 x 1080 asset to 896px wide on a 1920px screen, under
                 half the viewport. The full-width limit left in its place only
                 stops a long caption pushing the figure past the overlay's
-                padding. */}
+                padding. Its children are centred across the figure: the
+                image's native-width cap can leave the figure wider than the
+                picture, and uncentred the image sat against the figure's left
+                edge while the caption centred on the figure, so the two no
+                longer lined up. */}
             <figure
               onClick={(e) => e.stopPropagation()}
-              className="flex max-h-full max-w-full flex-col"
+              className="flex max-h-full max-w-full flex-col items-center"
             >
               <ContentfulImage
                 src={src}
