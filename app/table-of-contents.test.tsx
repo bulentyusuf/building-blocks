@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, act } from "@testing-library/react";
 import TableOfContents from "./table-of-contents";
 import type { Heading } from "@/lib/headings";
 
@@ -95,5 +95,95 @@ describe("a table of contents that does render", () => {
     );
     unmount();
     expect(disconnect).toHaveBeenCalled();
+  });
+});
+
+describe("a targeted heading holds the highlight", () => {
+  // jsdom lays nothing out, so every heading reports top 0 and geometry alone
+  // picks the last one. That is the shape of a short final section in a real
+  // browser, where the clicked heading can never reach the line and geometry
+  // hands the highlight to the section above it. Holding the target against
+  // that is the pin's whole job.
+  // Frames queue and flush on demand, as a browser runs them after the event,
+  // rather than running inside requestAnimationFrame itself.
+  let frames: FrameRequestCallback[] = [];
+  beforeEach(() => {
+    frames = [];
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    vi.stubGlobal("cancelAnimationFrame", () => {});
+  });
+
+  const current = (container: HTMLElement) =>
+    container.querySelector('[aria-current="location"]')?.getAttribute("href");
+
+  const scroll = () =>
+    act(() => {
+      window.dispatchEvent(new Event("scroll"));
+      frames.splice(0).forEach((cb) => cb(0));
+    });
+
+  it("follows geometry when nothing is targeted", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} />,
+    );
+    expect(current(container)).toBe("#h-3");
+  });
+
+  it("holds a clicked entry through scroll until the reader takes over", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} />,
+    );
+    act(() => container.querySelector<HTMLElement>('a[href="#h-1"]')!.click());
+    expect(current(container)).toBe("#h-1");
+
+    // The jump's own scroll event must not hand the highlight back.
+    scroll();
+    expect(current(container)).toBe("#h-1");
+
+    act(() => window.dispatchEvent(new Event("pointerdown")));
+    scroll();
+    expect(current(container)).toBe("#h-3");
+  });
+
+  it("releases on a key or a wheel as well as a pointer", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} />,
+    );
+    for (const intent of ["keydown", "wheel"]) {
+      act(() =>
+        container.querySelector<HTMLElement>('a[href="#h-1"]')!.click(),
+      );
+      scroll();
+      expect(current(container)).toBe("#h-1");
+      act(() => window.dispatchEvent(new Event(intent)));
+      scroll();
+      expect(current(container)).toBe("#h-3");
+    }
+  });
+
+  it("pins a deep-linked heading on load", () => {
+    window.history.replaceState(null, "", "#h-2");
+    try {
+      const { container } = render(
+        <TableOfContents headings={[1, 2, 3].map(heading)} />,
+      );
+      scroll();
+      expect(current(container)).toBe("#h-2");
+    } finally {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  });
+
+  it("adds no window resize listener beside the body ResizeObserver", () => {
+    // A width change resizes the body, which the observer already reports,
+    // and a height change moves no heading's top against the line.
+    render(<TableOfContents headings={[1, 2, 3].map(heading)} />);
+    const resize = vi
+      .mocked(window.addEventListener)
+      .mock.calls.filter(([type]) => type === "resize");
+    expect(resize).toHaveLength(0);
   });
 });

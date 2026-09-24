@@ -17,6 +17,7 @@ import TableOfContents from "../../table-of-contents";
 import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
+import SidenoteEnterKey from "../../sidenote-enter-key";
 import { type Crumb } from "../../breadcrumb";
 import {
   SITE_URL,
@@ -174,6 +175,7 @@ export default async function PostPage({
         </h1>
       }
     >
+      <SidenoteEnterKey />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}

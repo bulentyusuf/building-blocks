@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 // Checkboxes open on Space, not Enter; this adds Enter as a pure enhancement.
 // Delegated from the document so lib/sidenote.tsx stays a server component.
-// [→ `sidenotes`]
+// Mounted by the post page alone, the only route with sidenotes. [→ `sidenotes`]
 export default function SidenoteEnterKey() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
