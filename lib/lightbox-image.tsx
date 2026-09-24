@@ -46,7 +46,7 @@ export function worthEnlarging({
 // with scripts off readers get the image rather than a dead control. The
 // overlay is portaled to document.body only while open. Full a11y:
 // role=dialog/aria-modal, Esc + backdrop close, focus trap, focus return to the
-// trigger, body scroll-lock, reduced-motion.
+// trigger, page scroll-lock, reduced-motion.
 export default function LightboxImage({
   src,
   alt,
@@ -88,10 +88,18 @@ export default function LightboxImage({
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
     // Scroll-lock: preserve the scrollbar gutter so layout doesn't jump.
+    // The lock goes on html as well as body. app/globals.css gives html
+    // overflow-y: scroll, and once html's overflow is anything but visible
+    // the page scrolls on html and body's overflow stops reaching it, so a
+    // lock on body alone left the page scrolling behind the overlay. Locking
+    // html also removes the scrollbar, which is what the padding below makes
+    // up for.
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
     const prevOverflow = document.body.style.overflow;
     const prevPaddingRight = document.body.style.paddingRight;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
@@ -132,6 +140,7 @@ export default function LightboxImage({
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      document.documentElement.style.overflow = prevHtmlOverflow;
       document.body.style.overflow = prevOverflow;
       document.body.style.paddingRight = prevPaddingRight;
       // Return focus to the trigger (fall back to whatever held it before).
