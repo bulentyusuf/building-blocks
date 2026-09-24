@@ -979,8 +979,10 @@ pass. What they cannot do:
   repeated category links and the glossary's repeated titles are allowances that
   assert their own duplication still occurs.
 - **`lib/paginate.test.ts`** covers the arithmetic, not what pages render.
-- **`lib/docs-consistency.test.ts`** checks names, not claims. A sentence can
-  name a real file and describe it wrongly.
+- **`lib/docs-consistency.test.ts`** checks names, not claims: scripts, paths,
+  the CI gate, the line budget, and that every `[→ key]` in `CLAUDE.md` and in
+  source comments resolves. A sentence can name a real file and describe it
+  wrongly.
 
 ### Every pattern-matching guard needs a known-bad control
 
