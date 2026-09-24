@@ -823,6 +823,20 @@ describe("embedded asset alt text and captions", () => {
   );
 
   it.each([true, false])(
+    "never shows the image wider than the asset (lightbox=%s)",
+    (lightbox) => {
+      // The column widens with the reader's font size, so without this cap a
+      // narrow screenshot is stretched past its own pixels. Both branches
+      // carry it.
+      const html = renderToStaticMarkup(
+        <RichText content={portrait()} headings={[]} lightbox={lightbox} />,
+      );
+
+      expect(html).toContain("max-width:800px");
+    },
+  );
+
+  it.each([true, false])(
     "falls back to 3:2 for an asset with no dimensions (lightbox=%s)",
     (lightbox) => {
       // Contentful returns null for both on a non-image asset, and a payload
