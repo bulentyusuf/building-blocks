@@ -1,11 +1,7 @@
 import type { ListPost, Post } from "./types";
 import { postTags } from "./tags";
 
-/**
- * How many related posts to surface. Matches the two-column grid in
- * MoreStories' `grid` variant (app/more-stories.tsx). Raising this needs a
- * layout change first, not just a bigger slice.
- */
+/** Matches MoreStories' two-column grid; raising it is a layout change. */
 export const RELATED_COUNT = 2;
 
 type Candidate = Pick<
@@ -17,13 +13,8 @@ type Candidate = Pick<
 const CATEGORY_WEIGHT = 1;
 // A shared author is a real signal but weaker than genre or topic overlap.
 const AUTHOR_WEIGHT = 0.5;
-// The ceiling on the recency nudge. Must stay below the rarity score of even
-// the LEAST rare tag in the corpus, or a merely-recent post could outrank a
-// genuinely well-matched older one. At today's ~21 posts the most common
-// visible tag scores upward of 0.9; 0.3 has headroom under that and will
-// keep having headroom as the archive grows, since rarity only rises as the
-// denominator (posts sharing the tag) grows slower than the numerator
-// (total posts).
+// Must stay below the rarity score of the least rare tag, or recency could
+// outrank a real match. Rarity only rises as the archive grows.
 const RECENCY_WEIGHT = 0.3;
 const RECENCY_HALF_LIFE_DAYS = 180;
 
@@ -71,19 +62,8 @@ function score(
     ? AUTHOR_WEIGHT
     : 0;
 
-  // Two ways this arithmetic turns hostile, both reachable from the corpus
-  // query, which filters on slug_exists only and has no date ceiling.
-  //
-  // A future date makes ageDays negative, and 0.5 raised to a negative power
-  // GROWS. A post dated a year out scores about 1.22, which clears
-  // CATEGORY_WEIGHT and breaks the invariant RECENCY_WEIGHT's own comment
-  // states. Clamping at zero makes a post-dated entry merely as recent as
-  // possible rather than more recent than possible.
-  //
-  // A missing or unparseable date gives NaN, which reaches the sort comparator
-  // as b.score - a.score and destroys the strict weak ordering sort assumes.
-  // Infinity instead sends 0.5 ** Infinity to exactly 0, so a post with no
-  // usable date gets no recency nudge and still sorts on its real signals.
+  // A future date would make recency grow past CATEGORY_WEIGHT, so clamp at
+  // zero. A missing date becomes Infinity, scoring 0, never NaN in the sort.
   const timestamp = new Date(candidate.date).getTime();
   const ageDays = Number.isNaN(timestamp)
     ? Number.POSITIVE_INFINITY
@@ -95,14 +75,9 @@ function score(
 }
 
 /**
- * The `count` posts most related to `current`, ranked by shared tags
- * (weighted by rarity across `allPosts`), then category, then author
- * overlap, then recency as a tiebreaker only.
- *
- * `allPosts` should be the full published set, current post included — the
- * rarity baseline needs the whole corpus, not the candidate pool with the
- * current post already removed, or every tag's count would be off by one.
- * `now` defaults to the real clock and is a parameter so tests can pin it.
+ * Ranked by rarity-weighted shared tags, then category, then author, with
+ * recency as a tiebreaker. `allPosts` includes `current`, or every tag count is
+ * off by one.
  */
 export function relatedPosts<T extends Candidate>(
   current: T,

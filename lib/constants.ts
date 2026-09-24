@@ -1,24 +1,10 @@
-// Resolution order, most specific first: NEXT_PUBLIC_SITE_URL (the explicit
-// setting, and the only one of the three that survives moving off Vercel),
-// then VERCEL_PROJECT_PRODUCTION_URL (so a fork deployed without the first
-// emits its real domain rather than localhost — set at both build and
-// runtime, always to the production domain even inside a preview deployment),
-// then localhost for `next dev`. VERCEL_URL is deliberately not used: it is
-// per-deployment, so it would change canonicals on every push, and it is
-// unreachable when Standard Deployment Protection is enabled.
-//
-// Both sources go through normaliseOrigin, because a bare domain is the
-// commonest way to set either by hand and Vercel documents its own production
-// URL as scheme-less. Everything downstream feeds `new URL()`: metadataBase in
-// app/layout.tsx throws outright on a scheme-less value, failing the build with
-// an ERR_INVALID_URL that names neither the variable nor the setting, and
-// parseHostname below swallows that same error and silently yields "localhost",
-// which then lands in every rich-text link's internal/external judgement.
+// NEXT_PUBLIC_SITE_URL, then VERCEL_PROJECT_PRODUCTION_URL (the production
+// domain even in a preview), then localhost. Never VERCEL_URL, which changes
+// per deployment. Both go through normaliseOrigin: a bare domain makes
+// `new URL()` fail the build, or silently yield "localhost" in parseHostname.
 
-// Trailing slashes are stripped because every consumer appends its own path, so
-// `https://example.com/` would otherwise emit `https://example.com//posts/x`
-// into the sitemap and the feed. An existing scheme is preserved rather than
-// forced to https, so an explicit `http://localhost:3000` keeps working.
+// Trailing slashes stripped, since consumers append paths. An existing scheme
+// is kept, so http://localhost still works.
 function normaliseOrigin(value: string): string {
   const trimmed = value.replace(/\/+$/, "");
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
@@ -38,9 +24,7 @@ function resolveSiteUrl(): string {
   if (configured) {
     const normalised = normaliseOrigin(configured);
     if (isParsable(normalised)) return normalised;
-    // Not gated on NODE_ENV: an unparsable value is always a mistake, unlike
-    // the localhost fallback below, which is normal in development. Falling
-    // through rather than throwing lets the Vercel domain rescue the build.
+    // Warn and fall through, so the Vercel domain can still rescue the build.
     console.warn(
       `[constants] NEXT_PUBLIC_SITE_URL is set to "${configured}", which is not a valid URL. Ignoring it.`,
     );
@@ -52,8 +36,7 @@ function resolveSiteUrl(): string {
     if (isParsable(normalised)) return normalised;
   }
 
-  // A deployed site emitting localhost canonicals, sitemap entries and feed
-  // links is silently broken for every crawler, so say so in the build log.
+  // localhost canonicals in production break every crawler, so say so.
   if (process.env.NODE_ENV === "production") {
     console.warn(
       "[constants] NEXT_PUBLIC_SITE_URL is not set and no Vercel production URL was found. " +
@@ -76,16 +59,9 @@ function parseHostname(url: string): string {
 
 export const SITE_HOSTNAME = parseHostname(SITE_URL);
 
-// Site identity is a code constant with an environment override, so a fork or
-// a second deployment can name itself without editing this file. All four are
-// NEXT_PUBLIC_ despite every current read being server-side, so a future client
-// component reading one gets the configured value rather than silently falling
-// back to the default in the browser alone.
-//
-// Resolution is `?.trim() || fallback` in all four. Do not tidy it to `??`: an
-// unset variable on Vercel is frequently an empty string rather than undefined,
-// which `??` passes through, and an empty title renders an empty masthead.
-// lib/site-identity.test.ts keeps those cases as its known-bad control.
+// Overridable identity. NEXT_PUBLIC_ so a future client read sees the same
+// value. Keep `?.trim() ||`, never `??`: Vercel often sets an unset variable to
+// "", which `??` passes through. lib/site-identity.test.ts holds this.
 export const SITE_TITLE =
   process.env.NEXT_PUBLIC_SITE_TITLE?.trim() || "Be Useful.";
 
@@ -95,47 +71,36 @@ export const SITE_DESCRIPTION =
 
 export const SITE_AUTHOR = "Bulent Yusuf";
 
-// Shown in the footer's first column. Replace this with your own blurb.
+// Replace with your own blurb.
 export const SITE_FOOTER_BLURB =
   process.env.NEXT_PUBLIC_SITE_FOOTER_BLURB?.trim() ||
   "A blog about content, code, and collaborating with generative AI. Written in Munich and published from a headless CMS.";
 
-// Shown as the footer "GitHub" link. Point this at your own repository. The
-// default here is the canonical repo, and lib/docs-consistency.test.ts holds it
-// against README.md and public/llms.txt — that guard reads the default only,
-// which is right, because those documents describe the repository rather than
-// whatever a given deployment links to.
+// Point at your own repository. lib/docs-consistency.test.ts holds the default
+// against README.md and public/llms.txt.
 export const SITE_REPO_URL =
   process.env.NEXT_PUBLIC_SITE_REPO_URL?.trim() ||
   "https://github.com/bulentyusuf/building-blocks";
 
-// Posts shown per listing page. [→ `posts-per-page`]
+// [→ `posts-per-page`]
 export const POSTS_PER_PAGE = 5;
 
-// Must match lib/api.ts's authorsCollection(limit: MAX_AUTHORS) and the
-// Contentful size validation on the live space — a fourth author would
-// silently vanish from every query if they disagree. [→ `authors-array`]
+// Must match the GraphQL limit and the Contentful validation, or a fourth
+// author silently vanishes. [→ `authors-array`]
 export const MAX_AUTHORS = 3;
 
-// The RSS <author> address, and the one identity value with NO default. It is
-// opt-in: app/feed.xml/route.ts omits the <author> element entirely when unset
-// — <author> is optional in RSS 2.0, and no element is the honest answer to
-// "we were not told". Deliberately not NEXT_PUBLIC_, unlike the four identity
-// overrides above: this one is read on the server only.
+// Opt-in, no default: the feed omits <author> when unset. Server-only.
 export const AUTHOR_EMAIL = process.env.AUTHOR_EMAIL?.trim() || "";
 
-// Chrome colour. CSS twin lives in app/globals.css as --color-brand-header;
-// CSS @theme cannot import from TS, so a change touches both files.
+// Twin of --color-brand-header in app/globals.css; change both.
 // [→ `brand-colour-duplication`, `chrome-aubergine`]
 export const BRAND_HEADER_COLOR = "#2B1C3F";
 
-// Dark-scheme twin, same reason. lib/palette-contrast.test.ts holds each
-// literal against its own scheme's token.
+// Dark-scheme twin.
 export const BRAND_HEADER_COLOR_DARK = "#3B2A52";
 
-// BCP-47 default locale for html lang and hreflang. [→ `locale`] Phase 1
-// localisation makes this per-route.
+// [→ `locale`]
 export const DEFAULT_LOCALE = "en-GB";
 
-// Open Graph locale format uses an underscore, not a hyphen.
+// Open Graph uses an underscore.
 export const DEFAULT_OG_LOCALE = "en_GB";

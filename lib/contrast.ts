@@ -1,9 +1,4 @@
-// WCAG contrast maths, shared by the palette guards.
-//
-// This lives outside any test file because two suites need it and two copies of
-// the same formula drift the moment one is retuned. It is never imported by app
-// code, and vitest.config.ts only collects lib/**/*.test.{ts,tsx}, so a plain
-// module name here is not picked up as a suite.
+// WCAG contrast maths shared by the palette guards, so the formula exists once.
 
 export type Rgba = { r: number; g: number; b: number; a: number };
 
@@ -57,12 +52,8 @@ export function contrast(fg: Rgba, bg: Rgba): number {
 }
 
 /**
- * Reads custom properties out of a stylesheet in each colour scheme.
- *
- * The light value is the last declaration before the dark media block; the dark
- * value is the last declaration anywhere, which is the override when one exists
- * and the light value when it does not. That is what makes a token with no dark
- * override read correctly in both, rather than throwing.
+ * Custom properties per scheme: light is the last declaration before the dark
+ * block, dark is the last anywhere, so a token without an override reads in both.
  */
 export function schemeTokens(css: string): {
   light: (name: string) => Rgba;

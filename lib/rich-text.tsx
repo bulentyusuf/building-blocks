@@ -24,25 +24,16 @@ function headingText(node: Block | Inline): string {
     .join("");
 }
 
-// w-full plus auto table layout spreads surplus width across every column
-// regardless of need — a single digit in a "Posts" column landing in a column
-// wide enough for a sentence. w-[1%] plus whitespace-nowrap fixes it per cell:
-// column width is still the max across every cell, so a column mixing short
-// and long values falls back to ordinary sizing rather than a visible
-// mismatch.
+// A short value takes the narrowest column instead of an equal share of the
+// table's width. A column mixing short and long values falls back to normal.
 function isShortValue(node: Block | Inline): boolean {
   const text = headingText(node).trim();
   return text !== "" && /^\d+(\.\d+)?$/.test(text);
 }
 
-// A column reads as numeric when every body cell is a number or an empty
-// placeholder, and at least one is a number. Such a column is right-aligned in
-// tabular figures, header included, so values compare digit by digit down the
-// column and the header sits over them. The test is per column rather than per
-// cell because alignment is a column property: one right-aligned number in a
-// column of words reads as a mistake. A number may carry a leading # or
-// currency sign, thousands commas, a decimal part and a trailing %. A dash or
-// an empty cell is a placeholder, as for a tied rank.
+// A column is numeric when every body cell is a number or a placeholder dash,
+// and at least one is a number. Numeric columns right-align in tabular figures,
+// header included. Per column, because alignment is a column property.
 const NUMERIC_CELL = /^[#£$€]?\d[\d,]*(\.\d+)?%?$/;
 const PLACEHOLDER_CELL = /^[-–—]?$/;
 
@@ -77,14 +68,8 @@ function RichTextAsset({
 
   if (!asset?.url) return null;
 
-  // `title` is the alt text, so a title that is really a filing label reaches
-  // a screen reader as though it described the picture. Checking only for an
-  // ABSENT title would never fire — Contentful requires the field.
-  // lib/placeholder-title.ts carries the argument and the known-bad control.
-  //
-  // A missing `description` is NOT warned on: it means only that no caption
-  // renders, a legitimate editorial choice. Alt is the accessibility floor; a
-  // caption is an addition.
+  // `title` is the alt text, so a filing label there reaches screen readers.
+  // No warning for a missing description: that only means no caption.
   if (isPlaceholderTitle(asset.title, asset.fileName)) {
     console.warn(
       `[rich-text] Embedded asset ${asset.sys.id} has no usable title (${JSON.stringify(asset.title ?? null)}), so its alt text does not describe the image.`,
@@ -92,10 +77,7 @@ function RichTextAsset({
   }
 
   return (
-    // not-prose so the typography plugin does not inject its own margins into
-    // the image (2em) and caption — those would dominate the image-to-caption
-    // gap and make mt-1.5 invisible. Spacing is owned here: my-8 around the
-    // figure, mt-1.5 under the caption. Matches the code/prompt blocks.
+    // not-prose: the plugin's own figure margins would swamp the caption gap.
     <figure className="not-prose my-8">
       {lightbox ? (
         <LightboxImage
@@ -108,29 +90,21 @@ function RichTextAsset({
       ) : (
         <ContentfulImage
           src={asset.url}
-          // "" when no title is set, never a filename and never a guess. The
-          // build warning above is what surfaces that case.
+          // "" with a build warning above, never a filename or a guess.
           alt={asset.title ?? ""}
-          // 3:2 fallback for an asset with no dimensions — same pair as
-          // lightbox-image.tsx. w-full h-auto means a wrong ratio here is a
-          // layout shift, not a wrong render.
+          // 3:2 fallback, as in lightbox-image.tsx.
           width={asset.width ?? 1200}
           height={asset.height ?? 800}
           priority={priority}
           sizes="(max-width: 768px) 100vw, 672px"
-          // Never wider than the asset, for the reason given beside the same
-          // cap in lightbox-image.tsx.
+          // Never wider than the asset, as in lightbox-image.tsx.
           className="mx-auto w-full h-auto border-2 border-gray-300 dark:border-brand-dark/15"
           style={{ maxWidth: asset.width ?? 1200 }}
         />
       )}
       {asset.description && (
-        // italic: the caption shares its size and muted colour with a sidenote
-        // body, so slant is what tells the two apart when a note sits level
-        // with a figure. Deliberately not applied to the sidenote instead — a
-        // note's own italic emphasis would then have nothing to flip to.
-        // The size is em, matching .sidenote-body in globals.css, so the pair
-        // keeps its ratio to the prose body when that size moves.
+        // Italic tells a caption from a sidenote body, which shares its size
+        // and colour. Sized in em to match .sidenote-body.
         <figcaption className="text-[0.875em] italic text-brand-muted mt-1.5 text-center">
           {asset.description}
         </figcaption>
@@ -152,37 +126,23 @@ export function RichText({
   highlighted?: Map<string, string>;
   lightbox?: boolean;
   prioritizeFirstImage?: boolean;
-  // The prompt block that made the post's cover, from coverPromptId() in
-  // lib/cover-prompt.ts. That block alone gets the id the hero's "Prompt"
-  // pill links to. Absent everywhere but the post page.
+  // The prompt block that made the cover gets the id the hero's pill links to.
   coverPromptId?: string;
 }) {
-  // Single source of truth for heading ids. `headings` comes from
-  // extractHeadings() on the page. documentToReactComponents walks in document
-  // order, so advancing one index per non-empty H2 pairs each heading with its
-  // precomputed slug. The empty-heading skip below mirrors extractHeadings()
-  // exactly. rich-text.test.tsx asserts the two never drift.
+  // One index per non-empty H2, pairing each with extractHeadings()' slug. The
+  // empty-heading skip must mirror extractHeadings(); a test holds them.
   let headingIndex = 0;
-  // Pages prioritise their first embedded image (the lead image is the LCP).
-  // Posts leave this false: the LCP is the cover, body images stay lazy.
+  // Pages prioritise their first image; on posts the cover is the LCP.
   let assetIndex = 0;
-  // Document-order number for inline sidenotes, feeding each note's aria-label
-  // and its in-text marker. The floated note's own "N." prefix comes from a CSS
-  // counter (globals.css); both count once per note in order, so they agree.
-  // [→ `sidenotes`]
+  // Pairs with the CSS counter in globals.css. [→ `sidenotes`]
   let sidenoteIndex = 1;
-  // Document-order number for tables, feeding each scroll region's accessible
-  // name. [→ `scroll-region-names`]
+  // [→ `scroll-region-names`]
   let tableIndex = 0;
-  // The same, for code blocks. A block with a filename is already named by it.
   // [→ `scroll-region-names`]
   let codeBlockIndex = 0;
 
-  // The post title is the page's only h1, so a stray h1 in body content would
-  // duplicate it. Coalesce body h1 to h2. H3 to H6 are intentional sub-structure
-  // in long-form posts and pass through to the renderer defaults (prose styles
-  // them), so they keep their real levels. They carry no id and are not in the
-  // ToC, which stays H2-only by design.
+  // The post title is the only h1, so body h1s become h2s. H3 to H6 keep their
+  // levels and stay out of the ToC.
   const coalesceToH2 = (_node: Block | Inline, children: ReactNode) => (
     <h2>{children}</h2>
   );
@@ -193,67 +153,28 @@ export function RichText({
         const text = headingText(node).trim();
         if (!text) return <h2>{children}</h2>;
         const slug = headings[headingIndex++]?.slug;
-        // Apply widont only when the heading is a single plain-text run, so a
-        // trailing token (e.g. a parenthesised year) can't widow. Headings that
-        // carry inline marks (links, italics) keep their original children so
-        // the formatting survives — widont() takes a plain string and would
-        // otherwise flatten them.
+        // widont only on a single plain run, so inline marks survive.
         const isPlainRun =
           node.content?.length === 1 && node.content[0]?.nodeType === "text";
         return (
-          // No scroll-mt here — scroll-padding-top on <html> replaced it and
-          // the two are additive. [→ `scroll-offset`]
+          // No scroll margin here. [→ `scroll-offset`]
           <h2 id={slug} className="group/heading">
             {isPlainRun ? widont(text) : children}
             {slug ? (
               <a
                 href={`#${slug}`}
-                // Keeps the glyph out of the indexed excerpt. Does not by
-                // itself keep it out of the sub-result title — see the span
-                // below. [→ `pagefind-index-scope`]
+                // Keeps the glyph out of the excerpt. [→ `pagefind-index-scope`]
                 data-pagefind-ignore
-                // The visible glyph is decorative and hidden from the
-                // accessibility tree; the link carries a real name instead, or
-                // every permalink announces as "number sign". Just
-                // "Permalink", not "Permalink to <heading>": the anchor sits
-                // inside the <h2>, so accessible-name-from-content folds this
-                // label into the heading's own name already.
+                // Just "Permalink": inside the h2, a longer name would repeat
+                // the heading's own text.
                 aria-label="Permalink"
-                // The negative right margin cancels most of the anchor's own
-                // advance so it is almost never pushed onto a line of its own.
-                // An opacity-0 wrapped marker still takes its line's height,
-                // leaving an empty band under the heading. Measured in Chromium
-                // across 201 column widths: 15 orphaned the marker at 0, none
-                // at 1em.
-                //
-                // Deliberately not zero-width, which would collapse the focus
-                // ring to a 2px bar instead of tracing the glyph.
-                //
-                // 0.75em rather than 1em, which is the value that shipped
-                // first. At 1em the anchor overhangs by about 26px against a
-                // 20px page gutter, so a heading whose last line ends near the
-                // column edge pushes the glyph past the viewport and the whole
-                // page scrolls sideways. That is WCAG 2.1 SC 1.4.10 Reflow and
-                // it is luck rather than text size which headings hit it:
-                // scripts/audit-a11y.mjs found one, "New Horizons, complete"
-                // in the Wagner keyboard post, scrolling 6px at a 20px root.
-                //
-                // Clipping the overhang was the obvious alternative and is
-                // wrong: the glyph is also the focus indicator for a focusable
-                // link, so clipping it leaves a control a keyboard reaches and
-                // cannot see.
-                //
-                // The cost is measured, not assumed. Across 23 posts and 140
-                // headings at both a 16px and a 20px root, 0.75em orphans the
-                // marker once and 0.5em orphans it twice, against none at 1em.
-                // One empty band is cosmetic and a page that scrolls sideways
-                // is not, which is the same trade lib/typography.ts records for
-                // widont.
+                // The negative right margin stops the marker wrapping onto a
+                // line of its own. 0.75em, not 1em: at 1em it overhung a 20px
+                // gutter and scrolled the page sideways. Not clipped, because
+                // the glyph is also the link's focus indicator.
                 className="ml-2 -mr-[0.75em] inline-block align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
               >
-                {/* CSS generated content, not a text node — load-bearing, not
-                    stylistic. Do not put the character back in the markup.
-                    [→ `pagefind-index-scope`] */}
+                {/* Generated content, never a text node. [→ `pagefind-index-scope`] */}
                 <span aria-hidden="true" className="after:content-['#']" />
               </a>
             ) : null}
@@ -262,12 +183,7 @@ export function RichText({
       },
       [BLOCKS.HEADING_1]: coalesceToH2,
       [BLOCKS.PARAGRAPH]: (node: Block | Inline, children: ReactNode) => {
-        // Apply widont only when the paragraph is a single plain-text run,
-        // matching the heading guard above. Paragraphs carrying inline marks
-        // (links, bold, code) keep their original children so the formatting
-        // survives — widont() takes a plain string and would otherwise flatten
-        // them. This covers author bios, browse standfirsts, and any other
-        // plain-text rich-text field where a widow word is visible.
+        // widont only on a single plain run, as for headings.
         const isPlainRun =
           node.content?.length === 1 && node.content[0]?.nodeType === "text";
         const text = isPlainRun
@@ -276,25 +192,17 @@ export function RichText({
         return <p>{isPlainRun && text ? widont(text) : children}</p>;
       },
       [BLOCKS.QUOTE]: (_node: Block | Inline, children: ReactNode) => (
-        // Pull quote: crimson rule, display face. not-prose so the typography
-        // plugin's blockquote styling doesn't fight ours; inner paragraphs are
-        // de-margined ([&_p]:m-0) with a gap only between multiple paragraphs.
+        // Pull quote. not-prose so the plugin's blockquote styles stay out.
         <blockquote className="not-prose my-9 border-l-4 border-brand-crimson pl-5 font-display text-2xl font-normal leading-snug text-brand-dark md:text-[1.75rem] [&_p]:m-0 [&_p+p]:mt-4">
           {children}
         </blockquote>
       ),
       [BLOCKS.TABLE]: (node: Block | Inline, children: ReactNode) => {
-        // Horizontal scroll rather than reflow: Contentful gives no column
-        // hints to restructure from. tabIndex makes the scroll container
-        // keyboard-reachable (2.1.1); a focusable scroll region needs a role
-        // and an accessible name or it announces unlabelled. Two nested
-        // wrappers because one element can't both clip to the radius
-        // (overflow-hidden) and scroll (overflow-x-auto). Name is a position,
-        // not the header row. [→ `scroll-region-names`]
+        // A focusable, named scroll region: Contentful gives no column hints to
+        // reflow from. Two wrappers because one element cannot both clip to
+        // the radius and scroll. [→ `scroll-region-names`]
         const position = ++tableIndex;
-        // Cells render before their table, so a cell cannot know its column.
-        // The flag is added here instead, as a data attribute the cell's own
-        // classes already respond to.
+        // Cells render before their table, so the column flag is added here.
         const numeric = numericColumns(node);
         const rows = Children.map(children, (row) => {
           if (!isValidElement<{ children?: ReactNode }>(row)) return row;
@@ -327,11 +235,7 @@ export function RichText({
         );
       },
       [BLOCKS.TABLE_ROW]: (_node: Block | Inline, children: ReactNode) => (
-        // last:border-b-0 so the final row's rule does not sit a hair inside
-        // the container's own bottom edge and read as a double line. The
-        // header row's own <tr> picks this rule up too, but border-collapse
-        // resolves a shared edge in favour of the cell-level border, so the
-        // header's stronger border-table-edge wins there, not a doubled line.
+        // The last row drops its rule so it cannot double the container edge.
         <tr className="border-b border-table-rule last:border-b-0">
           {children}
         </tr>
@@ -340,9 +244,7 @@ export function RichText({
         node: Block | Inline,
         children: ReactNode,
       ) => (
-        // scope="col" is not emitted by the default renderer. Contentful's
-        // table model only produces header cells in the first row, so col is
-        // always correct here.
+        // Contentful puts header cells only in the first row, so col is right.
         <th
           scope="col"
           className={`border-b border-table-edge bg-table-header px-3 py-3 text-start font-semibold data-numeric:text-end ${
@@ -378,7 +280,7 @@ export function RichText({
 
         if (entry.__typename === "CodeBlock") {
           const html = highlighted?.get(id);
-          // A filename is a better name than a number whenever there is one.
+          // A filename names the region better than a number.
           const position = ++codeBlockIndex;
           const label = entry.filename || `Code block ${position}`;
 
@@ -419,26 +321,15 @@ export function RichText({
         if (entry.__typename === "PromptBlock") {
           return (
             <figure
-              // A fixed id rather than one derived from the entry: the hero
-              // pill in app/posts/[slug]/page.tsx links to this literal, and
-              // only one block per post can match.
+              // A fixed id: the hero pill links to this literal.
               id={entry.sys.id === coverPromptId ? "cover-prompt" : undefined}
               data-pagefind-weight="0.1"
               className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
             >
-              {/* Prompts stay indexed on purpose — data-pagefind-ignore would
-                  drop them from search entirely. The low weight (covering the
-                  figcaption label too, since it's a caption not prose) keeps a
-                  match from anchoring the excerpt over surrounding body text
-                  without stopping a prompt-only match from surfacing the post.
-                  0.1 is a starting value, not derived from anything. */}
-              {/* figcaption as figure's first child names the whole block
-                  natively. In dark mode brand-crimson lifts for link
-                  legibility; white text on the lifted hue fails AA at 2.53:1,
-                  so the header ink goes dark instead (6.64:1). Not mono — at
-                  this size a fixed-advance face draws stems too thin for
-                  measured contrast to predict legibility, and the label is a
-                  caption, not a verbatim string. */}
+              {/* Indexed at a low weight so a prompt match does not anchor the
+                  excerpt. Dark ink in dark mode, because white fails AA on the
+                  lifted crimson. Not mono: thin stems read worse than contrast
+                  predicts. */}
               <figcaption className="flex items-center justify-between bg-brand-crimson px-4 py-2 text-[0.78em] font-semibold text-white dark:text-surface-dark">
                 <span className="min-w-0 flex-1">
                   {entry.label || "Prompt"}
@@ -447,24 +338,8 @@ export function RichText({
               </figcaption>
               <div className="flow-root whitespace-pre-wrap break-words bg-gray-50 p-4 font-mono text-[0.78em] text-gray-800 dark:bg-white/5 dark:text-brand-dark">
                 {entry.image?.url && (
-                  /* Decorative. Floats left from 480px up so text wraps
-                     around it; below that it stacks above the prompt text
-                     instead, because a fixed 78px column inside this p-4
-                     block leaves too narrow a measure to read comfortably at
-                     phone widths. The text measure beside the float is the
-                     viewport minus 164px (40px of gutters, 2px of borders,
-                     32px of padding, 78px of image, 12px of right margin).
-                     At 320px that is 156px, about 17 characters, which is why
-                     the image stacks there. 480px was chosen because it
-                     leaves about 316px, about 35 characters, roughly the same
-                     measure that reads acceptably stacked. Both character
-                     counts assume about 8.9px per character, measured from a
-                     deployed screenshot, and will shift if the mono stack
-                     resolves to a different font. mt-2 in the floated case is
-                     a nudge tuned by eye, not a computed constant: it
-                     corrects for the text's half-leading against the image
-                     box's none, and the exact gap depends on which font in
-                     the font-mono stack the browser resolves. */
+                  /* Decorative. Floats beside the prompt from 480px up; below
+                     that the text beside it would be about 17 characters. */
                   <span
                     aria-hidden="true"
                     className="relative mb-3 block h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 min-[480px]:float-left min-[480px]:mt-2 min-[480px]:mr-3 min-[480px]:mb-1"
