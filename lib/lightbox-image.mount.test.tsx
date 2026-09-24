@@ -75,3 +75,27 @@ describe("lightbox enlarge control after mount", () => {
     expect(container.querySelector("button")).toBeNull();
   });
 });
+
+describe("lightbox scroll-lock", () => {
+  // The page scrolls on html, not body, because app/globals.css gives html
+  // overflow-y: scroll to reserve the scrollbar's column. Once html's overflow
+  // is anything but visible, body's overflow no longer reaches the viewport,
+  // so a lock set on body alone left the page scrolling freely behind the open
+  // lightbox. Only html's inline style says whether the lock can hold.
+  it("locks html while open and restores it on close", () => {
+    screen(2560, 1330);
+    const { container } = mount(1920, 1080);
+    const html = document.documentElement;
+    expect(html.style.overflow).toBe("");
+
+    act(() => {
+      container.querySelector("button")!.click();
+    });
+    expect(html.style.overflow).toBe("hidden");
+
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    });
+    expect(html.style.overflow).toBe("");
+  });
+});
