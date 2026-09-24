@@ -246,9 +246,8 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   `app/posts/[slug]/opengraph-image.font.test.tsx` is the pattern to copy. Four
   guards here have passed while the thing they guarded was broken.
   [→ `known-bad-controls`]
-- **Spacing rhythm is measured in Chromium** by listing-rhythm.layout.test.tsx,
-  so `npm test` needs a Chromium-family browser (`CHROME_PATH` names one).
-  Assert spacing there, never by matching class strings. [→ `guard-limits`]
+- **Spacing is measured in Chromium, never by matching class strings**, so
+  `npm test` needs a Chromium browser (`CHROME_PATH` names one). [→ `guard-limits`]
 - **Any font check imports from `next/og`, never from `satori`.**
   [→ `og-font-guard`]
 - **Do not weaken a guard to make a change pass.** Each check has already caught
