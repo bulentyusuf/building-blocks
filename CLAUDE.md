@@ -42,7 +42,8 @@ Four tests, in the order they usually bite:
   rather than an oversight. [→ `reviewed-items`]
 
 When an elegant version and a thorough version both work, ship the elegant one
-and write down what it does not cover. Documentation obeys this too.
+and write down what it does not cover. Documentation obeys this too: about 20
+lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`]
 
 ## Page shape
 
@@ -170,10 +171,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 block 2`), never a summary of its contents. [→ `scroll-region-names`]
 - **The skip link's target (`<main id="main">`) carries `tabIndex={-1}`**,
   needed in browsers that don't move focus on a fragment jump. [→ `skip-link`]
-- **The lightbox's enlarge button renders only after `mounted`**, never
-  unconditionally, and the enlarged view is a native `<dialog>` opened with
-  `showModal()`. Do not add a hand-rolled focus trap, Escape handler or JS
-  scroll lock beside it. [→ `lightbox-mounted`, `lightbox-dialog`]
+- **The lightbox's enlarge button renders only after `mounted`**, and the view
+  is a native `<dialog>` via `showModal()`; add no hand-rolled focus trap,
+  Escape handler or JS scroll lock. [→ `lightbox-mounted`, `lightbox-dialog`]
 
 ## Data and Contentful
 
