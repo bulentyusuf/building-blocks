@@ -193,10 +193,16 @@ export default function LightboxImage({
               </svg>
             </button>
 
-            {/* Stop propagation so clicking the image itself doesn't close. */}
+            {/* Stop propagation so clicking the image itself doesn't close.
+                No fixed width cap on the figure. The image's own height limit
+                is what sizes a landscape picture, and the fixed cap it replaces
+                held a 1920 x 1080 asset to 896px wide on a 1920px screen, under
+                half the viewport. The full-width limit left in its place only
+                stops a long caption pushing the figure past the overlay's
+                padding. */}
             <figure
               onClick={(e) => e.stopPropagation()}
-              className="flex max-h-full max-w-4xl flex-col"
+              className="flex max-h-full max-w-full flex-col"
             >
               <ContentfulImage
                 src={src}
