@@ -25,12 +25,16 @@ export default function Pagination({
   const hasPrev = currentPage > 1;
   const hasNext = currentPage < totalPages;
 
-  // Below sm the cells shrink so the worst-case row fits a 390px viewport up to
-  // a 21.7px root; wrapping catches anything beyond.
+  // Below sm the worst-case row (page 3 of 5) is 15.5rem, which fits a 390px
+  // viewport up to a 21.7px root; wrapping catches anything beyond. The widest
+  // content below sm is a 0.922rem ellipsis and a 9.12px arrow, so the minimum
+  // width sets every cell. The gap draws the arrow-to-word space, because
+  // whitespace between flex items is discarded (4px against a 3.2px space).
   const cell =
     "inline-flex h-10 min-w-8 sm:min-w-10 items-center justify-center gap-1 rounded-md px-2 sm:px-3 text-base transition-colors duration-200";
 
-  // Below sm the words go, or the row overflowed the page. Names come from
+  // Below sm the words go: with them the row measured 368px and scrolled the
+  // page sideways. Names come from
   // aria-label, so hiding them changes nothing a screen reader hears.
   const prevLabel = (
     <>

@@ -33,7 +33,8 @@ export default async function SearchPage() {
         {/* Without scripts the input never appears, so say why. Before
             SearchClient, to keep the emblem's adjacency rule intact. */}
         <noscript>
-          {/* Underlined: crimson against the muted text is far below 3:1. */}
+          {/* Underlined: crimson against the muted text is 1.17:1 light and
+              1.05:1 dark, far below 3:1. */}
           <p className="mb-6 text-brand-muted">
             Search needs JavaScript. The index runs entirely in your browser, so
             no query ever leaves this page — which also means there is nothing

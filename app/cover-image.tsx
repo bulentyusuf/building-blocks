@@ -68,8 +68,8 @@ export default async function CoverImage({
     />
   );
   return (
-    // Shadow and keyline split the job: the shadow separates on cream, the
-    // keyline on darker ground.
+    // Shadow and keyline split the job: the shadow gives 1.52:1 on cream but
+    // 1.06:1 on darker ground, where the keyline does the work.
     <div className="shadow-lg sm:mx-0">
       <div
         className={cn(
