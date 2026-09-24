@@ -1,4 +1,5 @@
 // WCAG contrast maths shared by the palette guards, so the formula exists once.
+// Test-only: never import it from app code.
 
 export type Rgba = { r: number; g: number; b: number; a: number };
 

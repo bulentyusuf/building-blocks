@@ -6,6 +6,8 @@ import type { Content } from "./types";
 
 // Paragraphs render as spans, because a <p> would close the open paragraph at
 // parse time. Links use the shared renderer. [→ `rich-text-links`]
+// The content type allows only bold, italic and links, so paragraphs are the
+// only block a note can hold; widen it and new blocks need phrasing overrides.
 const bodyOptions = {
   renderNode: {
     [BLOCKS.PARAGRAPH]: (_node: unknown, children: ReactNode) => (

@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { SITE_HOSTNAME } from "./constants";
 
 // Protocol-relative forms start with a slash but leave the site, so they fall
-// through to URL parsing, which rejects them.
+// through to URL parsing, which rejects them. Root-relative paths must be
+// caught here first, because URL parsing without a base throws on them.
 function isRootRelative(url: string): boolean {
   return url.startsWith("/") && url[1] !== "/" && url[1] !== "\\";
 }
