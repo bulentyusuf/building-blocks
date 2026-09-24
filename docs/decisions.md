@@ -432,32 +432,21 @@ the server HTML carries no `<button>`.
 
 <!-- key: lightbox-dialog -->
 
-Reopened September 2026. The enlarged view in `lib/lightbox-image.tsx` was a
-portaled `<div role="dialog">` carrying its own focus trap, Escape handler,
-focus return, and a scroll lock that set inline `overflow` on `html` and `body`
-and padded `body` by the scrollbar's width. PRs #566 to #569 were four fixes to
-it in a row, the last one making that scroll lock hold. `showModal()` supplies
-the top layer, an inert page behind it, Escape and a `::backdrop`, so the
-component keeps only what the platform does not: the sizing, the
-worth-enlarging judgement, and closing on a click anywhere but the picture.
-
-Focus stays explicit on both ends. The close button is focused after
-`showModal()` and the trigger on `close`, so the result does not depend on how
-an engine picks a dialog's initial focus or restores it afterwards, which has
-varied across engines and spec revisions. Two lines, not a trap.
+`lib/lightbox-image.tsx` opens the enlarged view with `showModal()`, which
+supplies the top layer, the inert page, Escape and the backdrop. The component
+keeps only the sizing, the worth-enlarging judgement and closing on a click
+anywhere but the picture. It replaced a hand-rolled overlay that took four
+fixes in a row (#566 to #569). Focus is still set explicitly, to the close
+button on open and the trigger on close, because engines have differed on both.
 
 The scroll lock is one unlayered rule in `app/globals.css`,
-`html:has(dialog:modal)`, setting `overflow: hidden` and
-`scrollbar-gutter: stable`. It targets `html` because `html` is the scroller
-once `overflow-y: scroll` is set on it, which is what #568 learned the hard
-way. The gutter keeps the page from stepping sideways when the forced
-scrollbar goes. The painted Firefox-on-macOS gutter that rules
-`scrollbar-gutter` out for `html` sitewide shows here only under the backdrop.
-
-Two accepted gaps, neither losing content. `:has()` reached Firefox in 121, so
-Firefox 111 to 120 scroll the page behind an open lightbox. Safari before 18.2
-ignores `scrollbar-gutter`, so with classic scrollbars the page shifts by the
-scrollbar's width while the lightbox is open.
+`html:has(dialog:modal)` with `overflow: hidden` and `scrollbar-gutter:
+stable`. It targets `html` because `html` is the scroller once it carries
+`overflow-y: scroll`; a lock on `body` alone let the page scroll behind the
+dialog (#568). The gutter stops a sideways step as the scrollbar goes.
+Accepted: Firefox 111 to 120 lack `:has()`, so the page scrolls behind the
+dialog there, and Safari before 18.2 ignores `scrollbar-gutter`, so classic
+scrollbars shift the page while it is open.
 
 ### One announced link per card, and one description per figure
 
