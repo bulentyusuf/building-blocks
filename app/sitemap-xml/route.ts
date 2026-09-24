@@ -172,7 +172,6 @@ ${urls}
   return new Response(body, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      "x-content-type-options": "nosniff",
     },
   });
 }
