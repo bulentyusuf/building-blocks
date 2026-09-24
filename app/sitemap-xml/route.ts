@@ -22,8 +22,6 @@ export const revalidate = 86400;
 type SitemapEntry = {
   url: string;
   lastModified: Date;
-  changeFrequency: string;
-  priority: number;
 };
 
 // toISOString throws RangeError on an invalid date, and a throw inside this
@@ -92,8 +90,6 @@ export async function GET() {
   const postEntries: SitemapEntry[] = posts.map((post) => ({
     url: `${SITE_URL}/posts/${post.slug}`,
     lastModified: postDate(post),
-    changeFrequency: "monthly",
-    priority: 0.8,
   }));
 
   const pageEntries: SitemapEntry[] = pages
@@ -103,15 +99,11 @@ export async function GET() {
       lastModified: new Date(
         page.sys.publishedAt ?? page.sys.firstPublishedAt ?? Date.now(),
       ),
-      changeFrequency: "yearly",
-      priority: 0.5,
     }));
 
   const categoryEntries: SitemapEntry[] = categories.map((category) => ({
     url: `${SITE_URL}/categories/${category.slug}`,
     lastModified: newestByCategory.get(category.slug) ?? newestSitewide,
-    changeFrequency: "weekly",
-    priority: 0.6,
   }));
 
   // Only tags the glossary shows. Below MIN_POSTS_PER_TAG a tag has no page —
@@ -120,8 +112,6 @@ export async function GET() {
     (slug) => ({
       url: `${SITE_URL}/tags/${slug}`,
       lastModified: newestByTag.get(slug) ?? newestSitewide,
-      changeFrequency: "weekly",
-      priority: 0.6,
     }),
   );
 
@@ -130,44 +120,32 @@ export async function GET() {
     .map((author) => ({
       url: `${SITE_URL}/authors/${author.slug}`,
       lastModified: newestByAuthor.get(author.slug as string) ?? newestSitewide,
-      changeFrequency: "weekly",
-      priority: 0.6,
     }));
 
   const entries: SitemapEntry[] = [
     {
       url: SITE_URL,
       lastModified: newestSitewide,
-      changeFrequency: "weekly",
-      priority: 1,
     },
     {
       url: `${SITE_URL}/categories`,
       lastModified: newestSitewide,
-      changeFrequency: "weekly",
-      priority: 0.7,
     },
     {
       // The glossary index. Per-tag pages are enumerated separately below —
       // this was one URL until tags gained their own landing pages.
       url: `${SITE_URL}/tags`,
       lastModified: newestSitewide,
-      changeFrequency: "weekly",
-      priority: 0.7,
     },
     {
       url: `${SITE_URL}/authors`,
       lastModified: newestSitewide,
-      changeFrequency: "weekly",
-      priority: 0.7,
     },
     {
       // Browse hub, indexable and internally linked from the footer. lastmod
       // tracks the freshest post since the archive lists every post.
       url: `${SITE_URL}/archive`,
       lastModified: newestSitewide,
-      changeFrequency: "weekly",
-      priority: 0.6,
     },
     ...pageEntries,
     ...categoryEntries,
@@ -181,8 +159,6 @@ export async function GET() {
       (entry) => `  <url>
     <loc>${escapeXml(entry.url)}</loc>
     <lastmod>${safeIso(entry.lastModified)}</lastmod>
-    <changefreq>${entry.changeFrequency}</changefreq>
-    <priority>${entry.priority}</priority>
   </url>`,
     )
     .join("\n");
@@ -196,7 +172,6 @@ ${urls}
   return new Response(body, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
-      "x-content-type-options": "nosniff",
     },
   });
 }
