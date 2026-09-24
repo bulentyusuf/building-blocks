@@ -42,10 +42,8 @@ Four tests, in the order they usually bite:
   rather than an oversight. [→ `reviewed-items`]
 
 When an elegant version and a thorough version both work, ship the elegant one
-and write down what it does not cover. Documentation obeys this too. A decision
-entry is the decision, the reason and what reopens it, about 20 lines, history
-left to git; a source comment is a line or two plus a `[→ key]`.
-[→ `reopening-decisions`]
+and write down what it does not cover. Documentation obeys this too: about 20
+lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`]
 
 ## Page shape
 
@@ -174,9 +172,9 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 block 2`), never a summary of its contents. [→ `scroll-region-names`]
 - **The skip link's target (`<main id="main">`) carries `tabIndex={-1}`**,
   needed in browsers that don't move focus on a fragment jump. [→ `skip-link`]
-- **The lightbox's enlarge button renders only after `mounted`**, never
-  unconditionally — an unmounted trigger would announce an affordance that
-  does nothing with scripts off. [→ `lightbox-mounted`]
+- **The lightbox's enlarge button renders only after `mounted`**, and the view
+  is a native `<dialog>` via `showModal()`; add no hand-rolled focus trap,
+  Escape handler or JS scroll lock. [→ `lightbox-mounted`, `lightbox-dialog`]
 
 ## Data and Contentful
 
