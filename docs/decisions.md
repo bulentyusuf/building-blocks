@@ -159,8 +159,10 @@ sidenote marker and toggle label (`lib/sidenote.tsx`), and the new-window hint
 
 A heading's sub-result title is read separately from the DOM text and ignores
 the attribute, so the permalink glyph is CSS generated content on an empty span,
-never a text node. Do not put the character back. The `Tagged` row stays
-indexed, because tag names are real signal.
+never a text node. Do not put the character back, and keep its
+`data-pagefind-ignore` too, which still keeps it out of the excerpt. The byline
+stays indexed, so an author's name still finds their posts, and so does the
+`Tagged` row, because tag names are real signal.
 
 ### The search emblem's dark-mode ground
 
@@ -370,7 +372,8 @@ screen.
 Defined in `app/globals.css`.
 
 - **`--color-hairline`**: every divider and the edges a listing draws. It
-  inverts on its own, so never add a `dark:` variant. `app/pagination.tsx` has
+  inverts on its own, so never add a `dark:` variant, and never go back to bare
+  grey borders. `app/pagination.tsx` has
   no top border because the listing above closes itself; a listing under a wide
   header drops its opening rule, never the closing one.
 - **`--color-control-edge`**: `app/tag-pill.tsx` only. It carries a WCAG 1.4.11
@@ -385,7 +388,8 @@ Defined in `app/globals.css`.
 
 One `:focus-visible` rule in `app/globals.css`. Components add no
 `focus-visible:ring-*` or `focus-visible:outline-*`. Three exceptions, each
-argued in its file: the aubergine header and footer, where crimson fails; the
+argued in its file: the aubergine header and footer, where crimson fails and
+the outline suppression before the white ring is required; the
 code-block scroll regions in `lib/rich-text.tsx`, which draw inward because
 their parent clips; and the controls on their own dark ground,
 `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox close
@@ -483,7 +487,8 @@ entry renders nothing; do not make it an error.
   utilities, which lose to unlayered styles.
 - **Numbering has two halves**, a document-order index in `lib/rich-text.tsx`
   and a CSS counter; both markers are `aria-hidden` and the label is named by
-  an `sr-only` "Note N".
+  an `sr-only` "Note N". Never name a `sup` (it announces twice) or drop the
+  span (the control announces as a bare "1").
 
 `lib/rich-text.test.tsx` guards the phrasing rule, the absent `<button>` and the
 numbering.
@@ -528,7 +533,9 @@ The standfirst and meta description on `/tags`, `/categories`, `/authors`,
 (`latest-posts` for the last), through `browsePageMetadata` in
 `lib/page-metadata.ts` except on `/page/[page]`, whose canonical is per page.
 `generateMetadata` and the page pass the same slug constant (see
-`single-entry-cache`). A missing entry degrades to a heading.
+`single-entry-cache`). A missing entry degrades to a heading. On
+`/page/[page]` the standfirst has no fallback, so hard-coded copy can never pose
+as the CMS entry, while the meta description falls back to `SITE_DESCRIPTION`.
 
 Home is the deliberate exception: `SITE_DESCRIPTION` is site chrome, like
 `SITE_TITLE`. Do not move either into the CMS; they are read across many routes
@@ -684,7 +691,9 @@ and `Container` in a route, and do not give a narrow route the wide header.
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. The exit from this machinery, weighed and declined in
   August 2026: let home's header name the route rather than the site.
-- `crumbs` is optional, used only by `/`.
+- `crumbs` is optional, used only by `/`. The shell's column is always
+  `max-w-5xl`, matching `Container`, which is what puts every trail and heading
+  at the same coordinates. There is no logo mark to replace the wordmark with.
 - A listing under a header drops its opening rule and nothing else. Items keep
   `py-10 md:py-12`, the page adds no gap of its own, the closing rule stays.
 
@@ -796,7 +805,9 @@ read as secondary; the next dimmest is `#F97583` at 6.20:1. Four other theme
 colours fail and no sample on the site renders them: `#800080` 1.75:1
 (debug-token), `#CD3131` 3.20:1 (error-token), `#316BCD` 3.23:1 (info-token)
 and `#1976D2` 3.58:1 (markdown link). One that renders is a new finding. `lib/highlight.contrast.test.ts`
-recomputes every rendered colour over one sample per grammar.
+recomputes every rendered colour over one sample per grammar; it needs no
+known-bad control, because it recomputes rather than matching a pattern and
+asserts a non-empty colour set first.
 
 ### Shiki grammars are imported one by one, never from the meta-package
 
@@ -877,7 +888,7 @@ import; retry a failed import into a new empty space. A new content type is not
 done until it is in the export, because a `... on X` fragment on a missing type
 fails every post query; `lib/contentful-fixtures.test.ts` guards that. Both
 files are exactly `JSON.stringify(value, null, 2)` plus a newline, so a JSON
-round-trip edit is byte-safe.
+round-trip edit is byte-safe. Do not "tidy" either file.
 
 ### One Node version pin, in `engines.node`
 
@@ -910,7 +921,8 @@ first, then merge, with the fixtures updated in the same pass.
 `public/llms.txt` describes the content model; `.github/workflows/llms-link-check.yml`
 checks only its links, so review its claims by hand. Content type IDs are
 immutable. Treat the Contentful MCP connector as read-only: activating a type,
-publishing, deleting and asset updates are web-UI jobs. A second demo space was
+publishing, deleting and asset updates are web-UI jobs, and a new type must be
+activated before any entry can be created against it. A second demo space was
 retired in September 2026; reinstating one reopens this entry.
 
 ### Vercel previews build on request, and production skips documentation-only changes
