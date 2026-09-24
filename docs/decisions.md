@@ -326,7 +326,7 @@ A source comment is one or two lines and says what the code cannot: a trap, a
 constraint that is not visible, or a pointer. When the argument lives here, the
 comment is a clause and a `[→ key]`, not a copy of the entry. A comment that
 restates the code is deleted. This caps what had grown unchecked: by September
-2026 this file ran to 2,405 lines and 38% of the lines in `lib/` were comments.
+2026 this file ran to 2,405 lines and 32% of the lines in `lib/` were comments.
 
 ### The masthead band was retired in favour of a 3px rule
 
