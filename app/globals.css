@@ -5,17 +5,8 @@
 
   These carry class names in prose and ship no markup of their own, so they're
   excluded from Tailwind's automatic source detection; app/ and lib/ stay
-  scanned normally. This comment deliberately does not spell out the utility it
-  exists to keep out — see CLAUDE.md on why naming one here would defeat the
-  exclusion below it.
-
-  .claude/ joins them for the same reason and needs the whole directory rather
-  than a file list, because a skill added later would otherwise ship its
-  examples as real rules with nothing reporting it. The differential guard in
-  lib/tailwind-comment-scanning.test.ts cannot catch that case: it compares the
-  scanned tree against a comment-stripped mirror of it, and prose in a markdown
-  file is not a comment in a source file, so both passes see it identically and
-  agree.
+  scanned normally. .claude/ is excluded as a whole directory so a skill added
+  later cannot ship its examples as real rules.
 */
 @source not "../CLAUDE.md";
 @source not "../docs/decisions.md";
