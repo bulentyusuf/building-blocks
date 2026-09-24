@@ -109,6 +109,11 @@ export default function LightboxImage({
   const w = width ?? 1200;
   const h = height ?? 800;
 
+  // Never wider than the asset itself. The column grows with the reader's font
+  // size, and at 20px it is 840px across, so a screenshot narrower than that
+  // was stretched to fill it and blurred. Capped here it sits centred at its
+  // own width instead. The trigger below takes the same cap, so the clickable
+  // area ends where the picture does.
   const image = (
     <ContentfulImage
       src={src}
@@ -116,7 +121,8 @@ export default function LightboxImage({
       width={w}
       height={h}
       sizes="(max-width: 768px) 100vw, 672px"
-      className="w-full h-auto border-2 border-gray-300 dark:border-brand-dark/15"
+      className="mx-auto w-full h-auto border-2 border-gray-300 dark:border-brand-dark/15"
+      style={{ maxWidth: w }}
     />
   );
 
@@ -144,7 +150,8 @@ export default function LightboxImage({
           // already clears 3:1 on both page grounds, and the local override it
           // replaced drew a pure white gap between image and indicator, which
           // showed as a pale stripe on the dark page. [→ `focus-indicator`]
-          className="block w-full cursor-zoom-in"
+          className="mx-auto block w-full cursor-zoom-in"
+          style={{ maxWidth: w }}
         >
           {image}
         </button>
