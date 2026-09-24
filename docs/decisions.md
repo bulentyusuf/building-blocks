@@ -205,15 +205,10 @@ comment is a clause and a `[→ key]`, not a copy of the entry. A comment that
 restates the code is deleted. This caps what had grown unchecked: by September
 2026 this file ran to 2,405 lines and 32% of the lines in `lib/` were comments.
 
-**How an entry and a comment are written** (September 2026). An entry states
-the decision, the reason, and what would reopen it, in about 20 lines. How it
-got there — the PR that reversed it, the wording it replaced, the measurements
-along the way — is history and lives in git; name the PR if a reader needs it.
-A source comment is one or two lines and says what the code cannot: a trap, a
-constraint that is not visible, or a pointer. When the argument lives here, the
-comment is a clause and a `[→ key]`, not a copy of the entry. A comment that
-restates the code is deleted. This caps what had grown unchecked: by September
-2026 this file ran to 2,405 lines and 32% of the lines in `lib/` were comments.
+**The file has a ceiling**, held by `lib/docs-consistency.test.ts` beside
+`CLAUDE.md`'s budget. The number only moves down. A new entry is paid for by
+trimming another, never by raising it. The 20-line rule alone did not stop the
+file reaching 2,405 lines, because nothing counted them.
 
 ### The masthead band was retired in favour of a 3px rule
 
