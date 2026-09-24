@@ -221,11 +221,23 @@ export default function LightboxImage({
                 // portrait inside, leaving the caption stranded below the empty
                 // space rather than under the image.
                 className="max-h-[85vh] w-auto h-auto max-w-full object-contain border-2 border-white/15"
+                // Never wider than the file itself. With the figure's fixed cap
+                // gone, a tall enough viewport let the height limit stretch a
+                // 1920px-wide asset past 1920 CSS pixels, which upscales it and
+                // softens the pixels. min() keeps the full-width limit for narrow
+                // screens, and an inline max-width would otherwise override it.
+                style={{ maxWidth: `min(100%, ${w}px)` }}
               />
               {caption && (
                 <figcaption
                   id={titleId}
-                  className="mt-1.5 text-center text-sm italic text-white/80"
+                  // A solid black backing of its own, sized to the text. The
+                  // backdrop is only partly opaque, so page text behind the
+                  // overlay showed through and collided with the caption once
+                  // the larger image pushed it lower. The backdrop's own
+                  // opacity stays as it is, because the close button's contrast
+                  // figures above are worked out against it.
+                  className="mt-1.5 self-center bg-black px-2 py-0.5 text-center text-sm italic text-white/80"
                 >
                   {caption}
                 </figcaption>
