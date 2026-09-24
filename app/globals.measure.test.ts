@@ -66,3 +66,28 @@ describe("prose overflow", () => {
     expect(declarations).not.toMatch(/overflow-wrap:\s*break-word/);
   });
 });
+
+describe("lightbox scroll lock", () => {
+  // showModal() makes the page inert but leaves it scrollable, so the lock is
+  // this rule and nothing in script. It has to sit on html: the rule above makes
+  // html the scroller, and a lock on body alone left the page scrolling behind
+  // the open lightbox (#568). jsdom applies no stylesheet, so the rule is read
+  // as text. [→ `lightbox-dialog`]
+  const lockRule = (source: string) => {
+    const declarations = source.replace(/\/\*[\s\S]*?\*\//g, "");
+    return /(?:^|\n)html:has\(dialog:modal\)\s*\{([^}]*)\}/.exec(
+      declarations,
+    )?.[1];
+  };
+
+  it("locks html while a modal dialog is open", () => {
+    expect(lockRule(css)).toMatch(/overflow:\s*hidden/);
+  });
+
+  it("would catch the lock moving back to body", () => {
+    // Known-bad control: the #568 shape, which must not satisfy the check.
+    expect(
+      lockRule("body:has(dialog:modal) {\n  overflow: hidden;\n}"),
+    ).toBeUndefined();
+  });
+});
