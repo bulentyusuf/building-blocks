@@ -109,6 +109,20 @@ export default function LightboxImage({
   const w = width ?? 1200;
   const h = height ?? 800;
 
+  // The enlarged picture's width, worked out from the asset's own shape and
+  // the screen, never from the file the browser downloads. Left to size
+  // itself, the picture took the file's pixels divided by the screen's
+  // density, so one image opened at a different size on every screen, and on
+  // a phone some opened smaller than they sit in the post. Three limits, and
+  // the smallest wins. The overlay's width. The width at which the picture
+  // reaches 75vh tall, which leaves the picture room to breathe rather than
+  // filling the screen edge to edge. The asset's own width, because a picture
+  // blown up past its own pixels looks soft, and that is worse than a smaller
+  // one. On a short screen at a large reader font, a square picture can open
+  // a little smaller than it sits in the post. That is accepted, because the
+  // whole picture still shows in one view.
+  const enlargedWidth = `min(100%, calc(75vh * ${w} / ${h}), ${w}px)`;
+
   // Never wider than the asset itself. The column grows with the reader's font
   // size, and at 20px it is 840px across, so a screenshot narrower than that
   // was stretched to fill it and blurred. Capped here it sits centred at its
@@ -200,14 +214,18 @@ export default function LightboxImage({
               </svg>
             </button>
 
-            {/* Stop propagation so clicking the image itself doesn't close. */}
+            {/* Sized to the picture exactly, so there is no margin around it
+                where a click lands without closing. Only the picture itself
+                stops the click, so the caption and everything around the
+                picture close the overlay. */}
             <figure
-              onClick={(e) => e.stopPropagation()}
-              className="flex max-h-full max-w-4xl flex-col"
+              className="flex max-h-full flex-col"
+              style={{ width: enlargedWidth }}
             >
               <ContentfulImage
                 src={src}
                 alt={alt}
+                onClick={(e) => e.stopPropagation()}
                 // The asset's own dimensions, not an upscaled 3:2 box. sizes
                 // already tells Next what resolution to request, so these are
                 // here to establish the aspect ratio and nothing else.
@@ -221,12 +239,18 @@ export default function LightboxImage({
                 // hugged a reserved box that object-contain then letterboxed a
                 // portrait inside, leaving the caption stranded below the empty
                 // space rather than under the image.
-                className="max-h-[85vh] w-auto h-auto max-w-full object-contain border-2 border-white/15"
+                className="max-h-[75vh] w-full h-auto object-contain border-2 border-white/15"
               />
               {caption && (
                 <figcaption
                   id={titleId}
-                  className="mt-1.5 text-center text-sm italic text-white/80"
+                  // A solid black backing of its own, sized to the text. The
+                  // backdrop is only partly opaque, so headings and paragraphs
+                  // from the page behind show through it and collided with the
+                  // caption on most posts, in both colour schemes. The
+                  // backdrop's own opacity stays as it is, because the close
+                  // button's contrast figures above are worked out against it.
+                  className="mt-1.5 self-center bg-black px-2 py-0.5 text-center text-sm italic text-white/80"
                 >
                   {caption}
                 </figcaption>
