@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import LightboxImage from "./lightbox-image";
+import LightboxImage, { worthEnlarging } from "./lightbox-image";
 
 // renderToStaticMarkup never runs effects, so `mounted` stays false and this is
 // exactly the HTML a reader with JavaScript disabled is left holding.
@@ -116,5 +116,97 @@ describe("lightbox accessible naming", () => {
     );
 
     expect(html).toContain('alt="A placeholder"');
+  });
+});
+
+describe("whether enlarging is worth offering", () => {
+  // Each case is an image and screen measured in a browser, so the numbers
+  // are the ones a reader actually gets. The enlarge control is offered only
+  // when the enlarged view is at least a quarter wider than the picture in
+  // the post.
+  const at2560 = {
+    viewportWidth: 2560,
+    viewportHeight: 1330,
+    rootFontSize: 16,
+  };
+
+  it("offers it for a large photo on a large screen", () => {
+    // 1920x1080 opens at 1773 wide against 672 in the post.
+    expect(
+      worthEnlarging({
+        ...at2560,
+        shownWidth: 672,
+        assetWidth: 1920,
+        assetHeight: 1080,
+      }),
+    ).toBe(true);
+  });
+
+  it("offers it for a screenshot a third wider than the column", () => {
+    // 891x844 opens at its own 891 against 672, a gain of 1.33.
+    expect(
+      worthEnlarging({
+        ...at2560,
+        shownWidth: 672,
+        assetWidth: 891,
+        assetHeight: 844,
+      }),
+    ).toBe(true);
+  });
+
+  it("withholds it for a screenshot barely wider than the column", () => {
+    // 772x772 can open no wider than its own 772, a gain of 1.15.
+    expect(
+      worthEnlarging({
+        ...at2560,
+        shownWidth: 672,
+        assetWidth: 772,
+        assetHeight: 772,
+      }),
+    ).toBe(false);
+  });
+
+  it("withholds it when the screen's height is what holds it back", () => {
+    // 3000x3000 on a 1920x1080 screen can only reach 810 tall, so it opens
+    // at 810 wide against 672 in the post, a gain of 1.21.
+    expect(
+      worthEnlarging({
+        viewportWidth: 1920,
+        viewportHeight: 1080,
+        rootFontSize: 16,
+        shownWidth: 672,
+        assetWidth: 3000,
+        assetHeight: 3000,
+      }),
+    ).toBe(false);
+  });
+
+  it("withholds it on a phone, where the column already spans the screen", () => {
+    // 390 wide: the overlay leaves 358, the post shows the picture at 350.
+    expect(
+      worthEnlarging({
+        viewportWidth: 390,
+        viewportHeight: 844,
+        rootFontSize: 16,
+        shownWidth: 350,
+        assetWidth: 1920,
+        assetHeight: 1080,
+      }),
+    ).toBe(false);
+  });
+
+  it("uses the wider overlay padding from the 48rem breakpoint", () => {
+    // At 768 wide and a 16px root the padding is 32 a side, leaving 704.
+    // With 16 a side it would be 736 and clear the 1.25 bar against 580.
+    expect(
+      worthEnlarging({
+        viewportWidth: 768,
+        viewportHeight: 2000,
+        rootFontSize: 16,
+        shownWidth: 580,
+        assetWidth: 3000,
+        assetHeight: 1000,
+      }),
+    ).toBe(false);
   });
 });
