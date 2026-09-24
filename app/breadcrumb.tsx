@@ -4,14 +4,7 @@ import { jsonLdHtml } from "@/lib/json-ld";
 
 export type Crumb = { label: string; href?: string };
 
-/**
- * One surface, one style. This used to carry a `tone` prop switching between a
- * cream and a navy treatment, retired with the masthead band along with the
- * separate focus indicator the dark tone needed. [→ `band-retirement`]
- */
 export default function Breadcrumb({ items }: { items: Crumb[] }) {
-  // The structured data describes the trail, not its paint, so it never
-  // depended on the retired tone either.
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

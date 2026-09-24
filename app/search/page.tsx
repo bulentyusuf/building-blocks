@@ -16,11 +16,7 @@ export const metadata = {
 export default async function SearchPage() {
   const { isEnabled } = await draftMode();
 
-  // The empty state offers tags as a second entry point. groupPostsByTag
-  // carries the MIN_POSTS_PER_TAG threshold, so a tag linked here can never be
-  // one /tags/[slug] 404s on. getAllPosts is cached under the same "posts" tag
-  // as every other route, so this revalidates on publish rather than adding a
-  // fetch pattern of its own.
+  // Tags for the empty state, through the same threshold as the glossary.
   const posts = await getAllPosts(isEnabled);
   const tags = groupPostsByTag(posts).map((group) => group.tag);
 
@@ -34,21 +30,11 @@ export default async function SearchPage() {
       </div>
       <section className="mx-auto max-w-2xl">
         <h1 className="mb-6 text-4xl md:text-5xl">Search</h1>
-        {/* Pagefind's UI is mounted in the browser, so with scripts off the
-            input never appears and the page reads as broken rather than
-            unavailable — says why, and points at two routes that don't need
-            JavaScript. Placed BEFORE <SearchClient />, not between it and the
-            emblem, or an element there would break the
-            `.pagefind-scope + .search-empty` adjacency. Plain <a>, not
-            <Link>: client navigation is meaningless in a noscript block. */}
+        {/* Without scripts the input never appears, so say why. Before
+            SearchClient, to keep the emblem's adjacency rule intact. */}
         <noscript>
-          {/* The two links below sit INSIDE a run of body text without being
-              inside .prose, so nothing underlines them by default and the
-              sitewide "crimson reads fine on cream" argument doesn't cover
-              them. Crimson against brand-muted is 1.17:1 in light and 1.05:1
-              in dark, under the 3:1 WCAG 1.4.1 wants when colour alone marks
-              a link, and hover:opacity is no help at rest — hence the
-              explicit underline. */}
+          {/* Underlined: crimson against the muted text is 1.17:1 light and
+              1.05:1 dark, far below 3:1. */}
           <p className="mb-6 text-brand-muted">
             Search needs JavaScript. The index runs entirely in your browser, so
             no query ever leaves this page — which also means there is nothing
@@ -70,11 +56,8 @@ export default async function SearchPage() {
           </p>
         </noscript>
         <SearchClient />
-        {/* Empty state, hidden by CSS as soon as the input has text. The tag
-            list lives INSIDE this wrapper, not beside it: .search-empty must
-            stay the immediate next sibling of .pagefind-scope for the rule to
-            fire, so anything meant to disappear has to be inside the element
-            carrying that class, not a second sibling of its own. */}
+        {/* Everything that hides with the empty state lives inside it: the
+              CSS rule needs it to be the next sibling of .pagefind-scope. */}
         <div className="search-empty">
           {/* Static SVG, not inline. [→ `search-emblem`] */}
           <figure className="mx-auto mt-10 max-w-[16rem] p-8">
@@ -100,9 +83,7 @@ export default async function SearchPage() {
               >
                 {tags.map((tag) => (
                   <li key={tag.slug}>
-                    {/* Links, not pills: the tag is the subject here, not
-                        metadata about something else. [→ `tag-pills`] Sized
-                        to match the glossary's own h2. */}
+                    {/* Links, not pills. [→ `tag-pills`] */}
                     <Link
                       href={`/tags/${tag.slug}`}
                       className="font-display text-xl md:text-2xl font-bold text-brand-crimson transition-opacity duration-200 hover:opacity-80"

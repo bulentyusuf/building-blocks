@@ -22,10 +22,7 @@ import { widont } from "@/lib/typography";
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  // One getAllPosts for every author, rather than one getPostsByAuthor call
-  // per author — getPostsByAuthor no longer exists (see the component below),
-  // and fetching the sitewide list once here is also strictly fewer requests
-  // than the per-author query it replaces.
+  // One sitewide fetch; there is no getPostsByAuthor.
   const [authors, allPosts] = await Promise.all([
     getAllAuthors(false),
     getAllPosts(false),
@@ -46,8 +43,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { isEnabled } = await draftMode();
   const { slug, page } = await params;
-  // Metadata has to make the same judgement the component does, or a title and
-  // a canonical get built out of a segment that is about to 404.
+  // [→ `listing-shell`]
   const currentPage = parsePageParam(page);
   if (currentPage === null) {
     return { title: "Page not found" };
@@ -60,7 +56,7 @@ export async function generateMetadata({
   }
 
   return listingMetadata({
-    // The parsed number, never the raw segment — see parsePageParam.
+    // The parsed number, never the raw segment.
     title: `${author.name}, Page ${currentPage}`,
     description: `Posts by ${author.name} on ${SITE_TITLE}`,
     canonical: `${SITE_URL}/authors/${slug}/page/${currentPage}`,
@@ -80,7 +76,6 @@ export default async function AuthorPaginatedPage({
   if (pageNumber === null) {
     notFound();
   }
-  // Page 1 has a single canonical home at /authors/<slug>.
   if (pageNumber === 1) {
     redirect(`/authors/${slug}`);
   }
@@ -96,7 +91,6 @@ export default async function AuthorPaginatedPage({
     { label: author.name },
   ];
 
-  // One fetch, read twice — see the unpaginated page for why.
   const allPosts = await getAllPosts(isEnabled);
   const posts = postsByAuthor(allPosts, slug);
   const visibleTags = visibleTagSlugs(allPosts);
@@ -114,16 +108,11 @@ export default async function AuthorPaginatedPage({
       totalPages={totalPages}
       visibleTags={visibleTags}
       basePath={`/authors/${slug}`}
-      // The one exception to the split masthead — see app/wide-page.tsx and
-      // the unpaginated author page.
+      // [→ `split-masthead`]
       splitHeader={false}
       heading={
         <div className="flex items-center gap-6">
           {author.picture?.url && (
-            // No ring. This used to carry a faint white ring so a dark-toned
-            // portrait kept an edge against the navy band; on cream, like the
-            // authors index card's own 80px portrait, a plain circle already
-            // separates from the page.
             <ContentfulImage
               alt=""
               className="rounded-full object-cover h-28 w-28 shrink-0"
@@ -140,10 +129,6 @@ export default async function AuthorPaginatedPage({
       }
       standfirst={
         author.bio && (
-          // In the header, like every other browse page's standfirst. Ordinary
-          // RichText on cream needs no link treatment of its own — brand-crimson
-          // reads fine here, which is what every other prose link on the site
-          // already relies on.
           <div className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
             <RichText content={author.bio} headings={[]} />
           </div>

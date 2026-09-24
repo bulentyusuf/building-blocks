@@ -1,11 +1,6 @@
 "use client";
 
-// Route-segment error boundary. Renders inside the root layout, so the header,
-// footer and back-to-top are already present; this supplies only the inner
-// block, the same pattern as not-found.tsx.
-//
-// Error boundaries must be client components, which is why there is no metadata
-// export here. Copy is yours to tweak.
+// Renders inside the root layout. A client component, so no metadata export.
 
 import { useEffect } from "react";
 import Link from "next/link";
@@ -19,7 +14,6 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surfaced in the browser console and your Vercel logs for debugging.
     console.error(error);
   }, [error]);
 

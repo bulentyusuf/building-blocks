@@ -61,9 +61,8 @@ export const metadata = {
   },
 };
 export const viewport = {
-  // Scheme-aware so the mobile address bar matches the sticky bar in both
-  // modes. TS literals, not the CSS token — neither this export nor the PWA
-  // manifest can read a custom property. [→ `chrome-aubergine`, `brand-colour-duplication`]
+  // TS literals because this export cannot read a custom property.
+  // [→ `chrome-aubergine`, `brand-colour-duplication`]
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: BRAND_HEADER_COLOR },
     { media: "(prefers-color-scheme: dark)", color: BRAND_HEADER_COLOR_DARK },
@@ -79,21 +78,9 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
   axes: ["opsz"],
 });
-// Split across two next/font/google calls so the italic can drop out of the
-// preload set: `preload` is per-instance, and `style` is not a subset, so one
-// call covering both styles preloads both or neither — `subsets` is the only
-// per-file preload lever the package exposes (google/loader.js:102 keys
-// preloading on subset membership).
-//
-// Both calls emit font-family: Literata, the real family name, so this is one
-// family to the browser and native style matching resolves <i> to the italic
-// faces — no CSS selector targets italic, or it would need to enumerate every
-// container rich text renders into and fall back to synthetic oblique on
-// anything missed.
-//
-// The italic still loads, on demand, with unchanged unicode-range coverage.
-// What goes away is 113,196 B of High-priority bandwidth in <head> on every
-// route, competing with the LCP hero image, on pages that paint no italic.
+// Italic is its own instance so it can stay out of the preload set; `preload`
+// is per instance. Both emit the real family name, so <i> still resolves to the
+// italic faces, which load on demand.
 const literata = Literata({
   variable: "--font-literata",
   subsets: ["latin"],
@@ -101,11 +88,7 @@ const literata = Literata({
   style: ["normal"],
   axes: ["opsz"],
 });
-// Referenced only for its side effect: the returned object must be assigned
-// to a variable that is actually used (below, in the <html> class list) or
-// next/font never emits this instance's faces at all. Nothing reads
-// --font-literata-italic — the family name is what does the work, since both
-// instances share it — but the variable still has to exist and be wired in.
+// Must be wired into the <html> classes below, or next/font emits nothing.
 const literataItalic = Literata({
   variable: "--font-literata-italic",
   subsets: ["latin"],
@@ -129,49 +112,25 @@ const navLink =
 function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-brand-header shadow-xs">
-      {/* min-h-13 is 52px: py-3's 24px plus the 28px line box the text-lg
-          wordmark establishes. The bar's height must not depend on which
-          children happen to render — nothing else in the row is as tall, so
-          on home, where the wordmark hides, the bar rendered 8px shorter and
-          the chrome changed height as the reader navigated. */}
+      {/* The minimum height keeps the bar the same height on home, where the
+          wordmark hides. */}
       <div className="max-w-5xl mx-auto px-5 py-3 min-h-13 flex items-center justify-between gap-4">
-        {/* The wordmark hides itself on home via a :has() rule.
-            [→ `wide-page-shell`] It is a link on every route except home,
-            where it is a button that returns the reader to the top — in
-            Next 16 a same-URL Link click is a leaf-segment refresh rather
-            than a route change, and only a route change gets a scroll
-            target, so on home a Link would neither navigate nor scroll.
-            See app/site-wordmark.tsx. */}
+        {/* A button on home, a link elsewhere. [→ `wide-page-shell`] */}
         <div className="flex items-baseline gap-3">
           <SiteWordmark title={SITE_TITLE} />
         </div>
-        {/* On mobile the full nav sits inside a <details> disclosure so the
-            bar stays at one row of links; from md up the disclosure is
-            hidden outright and a second, inline copy takes over — mutually
-            exclusive (md:hidden / hidden md:flex) so only one is ever in the
-            accessibility tree. Not the table-of-contents mechanism, which
-            keeps a single copy and forces it open with CSS: the two copies
-            here are laid out differently (stacked panel vs. inline row), so
-            a single copy would need the branch anyway. */}
-        {/* The wider gap below md is room for two 44px hit areas side by
-            side. Menu and Search each reach 12px past their icons, which is
-            24px between them, so the old 16px gap made them overlap. From md
-            up the disclosure is not rendered and the original gap returns. */}
+        {/* Mobile nav in a disclosure, desktop nav inline; exactly one is in
+            the accessibility tree. The wider mobile gap keeps two 44px hit
+            areas from overlapping. */}
         <nav aria-label="Primary" className="flex items-center gap-6 md:gap-4">
           <NavDisclosure>
-            {/* Same 44px touch target as Search, built the same way (see the
-                comment there). It was 28px, so the two icons beside each
-                other took different taps to hit. */}
+            {/* 44px touch target, like Search. */}
             <summary
               aria-label="Menu"
               className="list-none cursor-pointer select-none font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white p-3 -m-3"
             >
-              {/* Two icons, not one morphing path: the X is the only thing
-                  on screen telling a reader how to get out of the menu.
-                  group-open: reads the [open] attribute on the <details> in
-                  nav-disclosure.tsx, the same hook the table of contents
-                  chevron uses — no JS, no state, correct icon in the
-                  server-rendered markup before hydration. */}
+              {/* Two icons, swapped by the [open] attribute with no JS. The X
+                  is what tells a reader how to close the menu. */}
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -195,15 +154,10 @@ function Header() {
                 <path d="M5 5l14 14M5 19L19 5" />
               </svg>
             </summary>
-            {/* Dims the page under the open menu, which otherwise reads as a
-                competing layer rather than a menu over a page.
-                absolute + top-full rather than fixed inset-0: the containing
-                block is the sticky header, so the scrim starts immediately
-                below it, keeping the header, wordmark and close X at full
-                brightness. pointer-events-none is load-bearing: the scrim is
-                a child of the <details>, so if it captured taps the
-                outside-tap handler in nav-disclosure.tsx would see
-                details.contains(target) === true and refuse to close. */}
+            {/* Scrim under the open menu, positioned against the sticky header
+                rather than the viewport so the bar stays undimmed. It must
+                ignore pointer events, or the outside-tap handler sees a tap
+                inside and will not close. */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
@@ -227,13 +181,8 @@ function Header() {
               </Link>
             ))}
           </div>
-          {/* Icon-only link: accessible name from aria-label, SVG hidden
-              from assistive tech so it isn't announced as an unlabelled
-              image. p-3 -m-3 is the WCAG 2.5.5 touch target: padding grows
-              the hit area to 44px while the matching negative margin
-              cancels its footprint, so the bar's height calculation never
-              sees it. The 36px it replaces already cleared 2.5.8's 24px AA
-              floor — this is the AAA-grade figure, not a fix. */}
+          {/* Padding with a matching negative margin gives a 44px target
+              without changing the bar's height. */}
           <Link
             href="/search"
             aria-label="Search"
@@ -258,10 +207,7 @@ function Header() {
     </header>
   );
 }
-// Shared link treatment for the footer: quiet by default, visible focus ring
-// matching the skip-link convention above.
-//
-// The footer's faintest tint is white/72, not white/65. [→ `chrome-aubergine`]
+// The footer's faintest tint is white/72. [→ `chrome-aubergine`]
 const footerLink =
   "font-ui text-white/80 hover:text-white transition-colors duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
 
@@ -270,7 +216,6 @@ function Footer() {
     <footer className="bg-brand-header text-white">
       <div className="max-w-5xl mx-auto px-5 py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
-          {/* Column 1 — masthead + blurb */}
           <div>
             <p className="font-display text-2xl font-[700] text-white">
               {SITE_TITLE}
@@ -280,9 +225,7 @@ function Footer() {
             </p>
           </div>
 
-          {/* Column 2 — browse: top-level section links. */}
-          {/* The column label is a <p>, not a heading. [→ `announced-links`]
-              Same for Colophon below. */}
+          {/* Column labels are <p>, not headings. [→ `announced-links`] */}
           <nav aria-label="Browse">
             <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Browse
@@ -316,7 +259,6 @@ function Footer() {
             </ul>
           </nav>
 
-          {/* Column 3 — colophon */}
           <nav aria-label="Colophon">
             <p className="font-ui text-xs font-bold uppercase tracking-widest text-white/72">
               Colophon
@@ -352,7 +294,6 @@ function Footer() {
           </nav>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-12 border-t border-white/10 pt-8">
           <p className="font-ui text-xs text-white/72">
             © {new Date().getFullYear()} {SITE_AUTHOR} · Built with Next.js &
@@ -379,8 +320,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://images.ctfassets.net" />
       </head>
       <body className="min-h-screen flex flex-col bg-brand-bg text-brand-dark">
-        {/* top-2 centres the 36px link in the 52px header band, a computed
-            value. [→ `scroll-offset`] */}
+        {/* Centred in the 52px bar. [→ `scroll-offset`] */}
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[100] focus:rounded-md focus:bg-brand-header focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
@@ -388,9 +328,7 @@ export default async function RootLayout({
           Skip to content
         </a>
         <Header />
-        {/* tabIndex={-1} makes the skip link's target focusable.
-            [→ `skip-link`] Adds no tab stop: -1 is reachable
-            programmatically, never sequentially. */}
+        {/* [→ `skip-link`] */}
         <main id="main" tabIndex={-1} className="grow">
           {children}
         </main>

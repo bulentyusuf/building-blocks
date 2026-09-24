@@ -13,14 +13,10 @@ import {
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
-// How many recent posts to tease under each category. The full list lives on
-// the individual category page (/categories/[slug]).
 const PREVIEW_COUNT = 3;
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Same slug the component passes to getBrowseIntro below. getBrowseIntro is
-  // cache()-wrapped, so the two calls collapse into one request per render
-  // — but only while the arguments match.
+  // [→ `single-entry-cache`]
   const { isEnabled } = await draftMode();
   return browsePageMetadata({
     slug: "categories",
@@ -31,15 +27,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CategoriesPage() {
   const { isEnabled } = await draftMode();
-  // Same arguments generateMetadata passes, so cache() collapses the two.
   const intro = await getBrowseIntro("categories", isEnabled);
 
-  // Categories come back ordered name_ASC, so "Main Quest" precedes "Side
-  // Quests" (M before S). If a future category needs a different order, add an
-  // explicit order field to the Category type rather than relying on the name.
+  // name_ASC order; add an order field rather than renaming to reorder.
   const categories = await getAllCategories(isEnabled);
 
-  // One capped fetch per category, in parallel.
   const previews = await Promise.all(
     categories.map(
       async (c) =>
@@ -72,7 +64,6 @@ export default async function CategoriesPage() {
         )
       }
     >
-      {/* One card per category, two across on desktop, stacked on mobile. */}
       <div className="grid grid-cols-1 gap-12 md:grid-cols-2 md:gap-10">
         {categories.map((category, index) => {
           const posts = postsBySlug.get(category.slug) ?? [];
@@ -95,23 +86,13 @@ export default async function CategoriesPage() {
               )}
 
               {thumbnail?.url && (
-                // Thumbnails render through the shared CoverImage so they inherit
-                // its frame (border, blur underlay, shadow, aspect) rather than
-                // duplicating it. Deliberately plain: no `hover` zoom, no
-                // `wide`. The alt text is the asset's own title, for crawlers,
-                // and the thumbnail's link is hidden from assistive tech, so
-                // the h2 above it is still the single announced link to this
-                // category.
+                // The shared CoverImage frame, without hover or wide; its link
+                // is hidden, so the h2 stays the one announced link.
                 <div className="mb-5">
                   <CoverImage
                     image={thumbnail}
                     href={`/categories/${category.slug}`}
-                    // Capped in px for the same reason as the listing covers in
-                    // more-stories.tsx. This grid is two columns with a 40px
-                    // gap inside the 984px container, so a thumbnail tops out
-                    // at (984 - 40) / 2 = 472px. Left at 50vw it asked for
-                    // 720px at a 1440px viewport, which at DPR 2 pulled the
-                    // 1920 derivative instead of the 1080 that covers it.
+                    // Capped where the column stops growing. [→ `priority-opaque`]
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 472px"
                     priority={index === 0}
                   />

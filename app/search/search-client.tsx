@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 
-// Pagefind's Component UI ships as web components that are not known to JSX.
-// Declare the three we use so TSX accepts them. React 19 keeps JSX types under
-// the react module, so augment there rather than the deprecated global.
+// Declares the Pagefind web components for TSX, under React 19's module.
 type CustomElement<E = unknown> = DetailedHTMLProps<
   HTMLAttributes<HTMLElement>,
   HTMLElement
@@ -22,12 +20,8 @@ declare module "react" {
   }
 }
 
-// Custom result template in Pagefind's template syntax ({{ }} escaped,
-// {{+ +}} raw, {{#if}}/{{#each … as …}} blocks, `|` filters). [→ `reviewed-items`]
-// House list idiom (matching more-stories and archive). The main link must be
-// an <a> for the components' keyboard navigation. `meta.url` is read first so
-// the clean route from data-pagefind-meta wins over Pagefind's `.html` file
-// path.
+// House result template; the main link must be an <a> for the components'
+// keyboard handling. meta.url wins over the .html path. [→ `reviewed-items`]
 const RESULT_TEMPLATE = `
 <script type="text/pagefind-template">
   <li class="result-item py-6">
@@ -55,22 +49,14 @@ const RESULT_TEMPLATE = `
 
 export default function SearchClient() {
   const [failed, setFailed] = useState(false);
-  // Guard against React strict mode double-invoking the effect in dev.
   const loadedRef = useRef(false);
 
   useEffect(() => {
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // Failure detection only; the loading itself is the hoisted pair below.
-    // The handler cannot go on that <script>: React's isHostHoistableType
-    // refuses to hoist a script carrying onLoad or onError, so an inline
-    // handler would silently put the module back after hydration. Hence a
-    // second element for the listener — it costs no request, since a module
-    // URL is fetched and evaluated once per document and this resolves
-    // against the same module-map entry the hoisted script created. The
-    // index only exists after a production build, so on `next dev` it
-    // errors, which is what the fallback below is for.
+    // Failure detection only. React will not hoist a script carrying onError,
+    // so a second element listens; same module URL, so no extra request.
     const probe = document.createElement("script");
     probe.type = "module";
     probe.src = "/pagefind/pagefind-component-ui.js";
@@ -93,21 +79,9 @@ export default function SearchClient() {
 
   return (
     <div className="pagefind-scope">
-      {/* Hoisted into <head> by React rather than appended after hydration:
-          the browser starts both the module and the CSS during the initial
-          parse instead of after a hydrate-then-fetch chain. Do not move
-          these into the effect below — that reintroduces four sequential
-          round-trips before the input does anything, with the stylesheet
-          landing after first paint and reflowing what's on screen.
-
-          Both files are a build-time static bundle emitted into
-          public/pagefind/ by `postbuild`, not an npm package — loading the
-          build's own copy (rather than @pagefind/component-ui) is what
-          guarantees they match the CLI version that wrote the index.
-
-          precedence is what makes React hoist and dedupe the stylesheet, and
-          it must be present or the element renders in place as ordinary
-          markup. The <script> is deduped by src. */}
+      {/* Hoisted by React so the module and CSS start during the first parse.
+          Loaded from the build's own public/pagefind/, so they match the index.
+          `precedence` is what makes React hoist the stylesheet. */}
       <link
         rel="stylesheet"
         href="/pagefind/pagefind-component-ui.css"
@@ -116,11 +90,9 @@ export default function SearchClient() {
       <script type="module" src="/pagefind/pagefind-component-ui.js" async />
       <pagefind-config excerpt-length="30"></pagefind-config>
       <pagefind-input placeholder="What are you looking for?"></pagefind-input>
-      {/* Result count / no-results line ("N results for X" / "No results for
-          X"). The component fills the text; globals.css styles it and hides it
-          while the input is empty. */}
+      {/* Hidden by globals.css while the input is empty. */}
       <pagefind-summary></pagefind-summary>
-      {/* RESULT_TEMPLATE, static and self-authored. [→ `reviewed-items`] */}
+      {/* [→ `reviewed-items`] */}
       <pagefind-results dangerouslySetInnerHTML={{ __html: RESULT_TEMPLATE }} />
     </div>
   );

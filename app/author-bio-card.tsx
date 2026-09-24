@@ -3,10 +3,7 @@ import ContentfulImage from "@/lib/contentful-image";
 import { RichText } from "@/lib/rich-text";
 import type { Author } from "@/lib/types";
 
-// A compact author card for the foot of a post: avatar, name, bio, and a link
-// to the author's landing page. Renders nothing when the author has no bio —
-// the caller must also gate its border/spacing on the same condition so an
-// author without a bio leaves no empty shell.
+// Renders nothing without a bio; callers gate their spacing the same way.
 export default function AuthorBioCard({ author }: { author: Author }) {
   if (!author.bio) return null;
 
@@ -23,10 +20,7 @@ export default function AuthorBioCard({ author }: { author: Author }) {
       )}
       <div>
         <p className="text-xl font-bold text-brand-dark">{author.name}</p>
-        {/* text-base rather than text-sm. RichText returns bare elements with
-            no prose wrapper of its own and this card sits outside the post's
-            prose container, so the size set here is the size the bio's
-            paragraphs render at. */}
+        {/* Sized here, since the card sits outside any prose container. */}
         <div className="mt-2 text-base text-brand-muted">
           <RichText content={author.bio} headings={[]} />
         </div>
@@ -43,8 +37,6 @@ export default function AuthorBioCard({ author }: { author: Author }) {
   );
 }
 
-// The foot-of-post author bio section. Renders nothing when no author carries a
-// bio, ensuring no empty hairline shell or orphan margin is left behind.
 export function AuthorBioSection({
   authors,
   hasTags = false,
@@ -55,20 +47,10 @@ export function AuthorBioSection({
   const authorsWithBio = authors.filter((a) => a.bio);
   if (authorsWithBio.length === 0) return null;
 
-  // When tags precede the bio, the single hairline divider already opened
-  // the post-footer zone above the tag row, so this block separates from the
-  // tags with a clean mt-8 margin rather than stacking a redundant second
-  // hairline border. When there are no tags, this block opens the zone itself
-  // with a hairline border and matching pt-8.
+  // With tags above, the tag row's hairline already opened this zone.
   return (
-    // Excluded from the search index. The bio comes from the Author entry, so
-    // it is identical on every post that author wrote — indexed as prose it
-    // matches a query a dozen times over and hands back the bio as the excerpt
-    // instead of anything about the post. The author's name still indexes via
-    // the byline above (see Avatar in app/posts/[slug]/page.tsx), so searching
-    // a persona still returns their posts; only the bio prose drops out, and
-    // /authors/[slug] is not in the index at all today. If author pages ever
-    // join the index, this is the text that should carry them.
+    // Out of the index: identical on every post by this author.
+    // [→ `pagefind-index-scope`]
     <div
       data-pagefind-ignore
       className={hasTags ? "mt-8" : "mt-8 border-t border-hairline pt-8"}

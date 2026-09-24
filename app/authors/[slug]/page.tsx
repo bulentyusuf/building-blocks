@@ -14,7 +14,6 @@ import { listingMetadata } from "@/lib/page-metadata";
 import { pageItems, totalPagesFor } from "@/lib/paginate";
 import { widont } from "@/lib/typography";
 
-// Allow on-demand rendering of authors added after build time.
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -65,11 +64,7 @@ export default async function AuthorPage({
     { label: author.name },
   ];
 
-  // One fetch, read twice. There is no getPostsByAuthor — `authors` is an
-  // Array<Link> and Contentful's GraphQL cannot filter a collection on one —
-  // so this page fetches the sitewide list once and filters in memory, the
-  // same pattern app/tags/[slug]/page.tsx uses. Holding the single result is a
-  // legibility choice now, not a correctness one, see getAllPosts in lib/api.ts.
+  // Filtered in memory; there is no getPostsByAuthor. [→ `authors-array`]
   const allPosts = await getAllPosts(isEnabled);
   const posts = postsByAuthor(allPosts, slug);
   const visibleTags = visibleTagSlugs(allPosts);
@@ -97,20 +92,12 @@ export default async function AuthorPage({
       basePath={`/authors/${slug}`}
       emptyMessage="No posts by this author yet."
       jsonLd={jsonLd}
-      // The one exception to the split masthead: this h1 already sits in a
-      // flex row beside a 112px portrait, and a third element across that
-      // line — the standfirst — is one too many. See app/wide-page.tsx. The
-      // page counter still joins the h1 below despite the exception: it is
-      // inline text now, not a third element across the row, and the widest
-      // live author name (362px) leaves plenty of room beside it at 984px.
+      // The split masthead's exception: the h1 already shares a row with the
+      // portrait. [→ `split-masthead`]
       splitHeader={false}
       heading={
         <div className="flex items-center gap-6">
           {author.picture?.url && (
-            // No ring. This used to carry a faint white ring so a dark-toned
-            // portrait kept an edge against the navy band; on cream, like the
-            // authors index card's own 80px portrait, a plain circle already
-            // separates from the page.
             <ContentfulImage
               alt=""
               className="rounded-full object-cover h-28 w-28 shrink-0"
@@ -119,9 +106,7 @@ export default async function AuthorPage({
               src={author.picture.url}
             />
           )}
-          {/* Stays on the current ramp rather than the raised one the section
-              fronts take: this h1 sits beside a 112px portrait, and the raised
-              ramp overflows the row on a long name at md. */}
+          {/* The standard ramp: the raised one overflows beside the portrait. */}
           <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
             {widont(author.name)}{" "}
             <PageCounter currentPage={1} totalPages={totalPages} />
@@ -130,10 +115,6 @@ export default async function AuthorPage({
       }
       standfirst={
         author.bio && (
-          // In the header, like every other browse page's standfirst. Ordinary
-          // RichText on cream needs no link treatment of its own — brand-crimson
-          // reads fine here, which is what every other prose link on the site
-          // already relies on.
           <div className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
             <RichText content={author.bio} headings={[]} />
           </div>

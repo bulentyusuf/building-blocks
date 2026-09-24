@@ -10,9 +10,7 @@ import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Same slug the component passes to getBrowseIntro below. getBrowseIntro is
-  // cache()-wrapped, so the two calls collapse into one request per render
-  // — but only while the arguments match.
+  // Same slug as the component. [→ `single-entry-cache`]
   const { isEnabled } = await draftMode();
   return browsePageMetadata({
     slug: "archive",
@@ -23,14 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ArchivePage() {
   const { isEnabled } = await draftMode();
-  // Same arguments generateMetadata passes, so cache() collapses the two.
   const intro = await getBrowseIntro("archive", isEnabled);
 
-  // getAllPosts returns ListPost[] already ordered date_DESC.
   const posts = await getAllPosts(isEnabled);
 
-  // Group by year, preserving the incoming date_DESC order. Because posts is
-  // already newest-first, each year's array is newest-first too — no re-sort.
+  // Posts arrive newest first, so each year's list does too.
   const byYear = new Map<number, ListPost[]>();
   for (const post of posts) {
     const year = new Date(post.date).getFullYear();
@@ -39,8 +34,6 @@ export default async function ArchivePage() {
   }
   const years = [...byYear.keys()].sort((a, b) => b - a); // newest year first
 
-  // Oldest post anchors the header strapline. posts is date_DESC, so it is
-  // the final item.
   const oldest = posts.length > 0 ? posts[posts.length - 1] : undefined;
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Archive" }];
@@ -53,14 +46,9 @@ export default async function ArchivePage() {
           Archive
         </h1>
       }
-      // Unlike the other browse pages, this standfirst is generated rather
-      // than written: the count and the earliest month come from the posts
-      // themselves and stay current without anyone editing them. A Page
-      // Intro entry can override it, but leaving that field empty is the
-      // better default — typed prose here would be stale by the next post.
-      // Both branches carry the M5 signature, the width cap plus right
-      // alignment, since either one can be the rendered standfirst; see
-      // app/wide-page.tsx for what the two classes are doing.
+      // Generated from the posts, so it never goes stale; a browseIntro entry
+      // can override it. Both branches carry the standfirst classes.
+      // [→ `browse-copy`, `split-masthead`]
       standfirst={
         intro?.standfirst ? (
           <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
@@ -84,13 +72,8 @@ export default async function ArchivePage() {
           const yearPosts = byYear.get(year)!;
           return (
             <section key={year} className="mb-10 last:mb-0">
-              {/* The year is body ink at heading scale, not muted — it is what
-                  gives the page a spine now that the rows carry no other large
-                  type. One step below the h1 at every breakpoint (30/36/48
-                  against 36/48/60), so it reads as a section marker rather
-                  than competing with the page title. Weight, face and tracking
-                  all come from the base layer's h1-h3 rule; do not re-declare
-                  them here. */}
+              {/* Body ink one step below the h1: the page's spine. Face and
+                  weight come from the base layer. */}
               <h2 className="mb-2.5 flex items-baseline gap-4">
                 <span className="text-3xl leading-none tabular-nums md:text-4xl lg:text-5xl">
                   {year}
@@ -99,16 +82,8 @@ export default async function ArchivePage() {
                   {yearPosts.length} {yearPosts.length === 1 ? "post" : "posts"}
                 </span>
               </h2>
-              {/* Date, title and category as three lanes rather than a wrapped
-                  flex row, so the columns line up down the page like a table
-                  rather than drifting with each row's own content width. Every
-                  row applies the same fixed-width template, which is what
-                  makes the lanes align without a single shared grid container
-                  across the whole list.
-
-                  Single column below sm, where there is no width for three
-                  lanes — order re-sequences title first, then date, then
-                  category, which is the reading order the row collapses to. */}
+              {/* Three fixed lanes per row so columns align down the page. One
+                  column below sm, title first. */}
               <ul>
                 {yearPosts.map((post) => (
                   <li
@@ -120,9 +95,8 @@ export default async function ArchivePage() {
                         dateString={post.date}
                         variant="dayMonth"
                       />
-                      {/* The visible date drops the year because the section
-                          heading carries it. Someone moving link to link skips
-                          that heading, so restore it for them only. */}
+                      {/* The heading carries the year; restore it for link
+                          navigation. */}
                       <span className="sr-only"> {year}</span>
                     </span>
                     <Link
@@ -136,9 +110,7 @@ export default async function ArchivePage() {
                         href={`/categories/${post.category.slug}`}
                         className="order-3 font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson sm:justify-self-end sm:text-right"
                       >
-                        {/* Screen readers run adjacent inline elements
-                            together, so the title ran straight into the
-                            category name. A word gives it a boundary. */}
+                        {/* Keeps the title from running into the category. */}
                         <span className="sr-only">in </span>
                         {post.category.name}
                       </Link>

@@ -1,14 +1,8 @@
 "use client";
 
-// Replaces the root layout when the layout itself throws, so it must render its
-// own <html> and <body>. Kept standalone on purpose, with no dependency on the
-// header, footer or app chrome, since the component that renders those is the
-// exact thing that failed. Only runs in production.
-//
-// globals.css is imported so Tailwind utilities and the brand tokens resolve.
-// The font variables live on the root layout, which is bypassed here, so type
-// falls back to the system stack. Fine for a last-resort page.
-// Copy is yours to tweak.
+// Replaces the root layout when it throws, so it renders its own <html> and no
+// chrome. The font variables are bypassed, so type falls back to system. Keep
+// the globals.css import, or the brand tokens stop resolving here.
 
 import "./globals.css";
 import { useEffect } from "react";

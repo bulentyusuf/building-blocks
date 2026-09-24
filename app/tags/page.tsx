@@ -10,7 +10,7 @@ import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Same slug the component passes to getBrowseIntro below. [→ `single-entry-cache`]
+  // [→ `single-entry-cache`]
   const { isEnabled } = await draftMode();
   return browsePageMetadata({
     slug: "tags",
@@ -22,15 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
 
-  // Posts grouped in memory; getAllPosts already sorts date_DESC. [→ `tag-pages`]
-  //
-  // Descriptions come from a second query rather than riding on every post's
-  // tagsCollection, which would weigh down the home page, feed and sitemap for
-  // one page's benefit. Joined by slug below.
+  // Descriptions come from their own query, joined by slug, so they stay out
+  // of every other page's fragment. [→ `tag-pages`]
   const intro = await getBrowseIntro("tags", isEnabled);
-  // Kept to two elements: adding a third with a different return shape made
-  // TypeScript infer a union instead of a tuple, and posts silently lost every
-  // field but tagsCollection.
+  // Two elements only: a third made TypeScript infer a union and drop fields.
   const [posts, allTags] = await Promise.all([
     getAllPosts(isEnabled),
     getAllTags(isEnabled),
@@ -48,9 +43,7 @@ export default async function TagsPage() {
       heading={
         <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">Tags</h1>
       }
-      // Not the metadata description: that one is written for search
-      // results and repeats the site name, which reads oddly next to the
-      // h1 and collides with the full stop in "Be Useful."
+      // Not the meta description, which repeats the site name.
       standfirst={
         intro?.standfirst && (
           <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
@@ -65,43 +58,20 @@ export default async function TagsPage() {
           it.
         </p>
       ) : (
-        // The glossary repeats every post title up to three times, once per tag
-        // it carries. Pagefind indexes whatever it is given, so without this the
-        // same titles would be weighted several times over and outrank the posts
-        // themselves. Same reasoning as the table of contents on a post page.
+        // The glossary repeats titles once per tag. [→ `tag-pages`]
         <div data-pagefind-ignore>
-          {/* No jump list. It was compensating for a page with nothing to read
-              on it: twelve anchors is not much to scroll past, and it repeated
-              the counts each section states anyway. */}
           {groups.map(({ tag, posts: tagged }) => (
             <section
               key={tag.slug}
-              // The id stays, so any /tags#slug link shared before per-tag
-              // pages existed still lands somewhere sensible. Nothing on the
-              // site generates those links any more. [→ `scroll-offset`]
+              // Kept so old /tags#slug links still land.
               id={tag.slug}
               className="mb-10 last:mb-0"
             >
-              {/* Term and gloss on the left, examples on the right — a
-                  glossary rather than twelve identical full-width blocks. At
-                  max-w-5xl a single column stranded each date against the far
-                  edge with a gulf in the middle; splitting the width gives the
-                  description a column narrow enough to read and pulls the dates
-                  back in beside their titles.
-
-                  Single column below lg, where there is no width to divide. */}
+              {/* Term and gloss left, posts right; one column below lg. */}
               <div className="lg:grid lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-x-10">
                 <div className="lg:sticky lg:top-20 lg:self-start">
-                  {/* Smaller than the archive's year headings and in body ink
-                      rather than muted. A year is wayfinding, so it recedes; a
-                      tag name is the subject of its section. */}
-                  {/* Not flex, unlike the archive's year headings. Flex makes
-                      the count a second column, so a name that wraps in this
-                      18rem measure — "Information architecture" — pushed it to
-                      the far right and split it over two lines. Inline, it
-                      simply follows the last word. whitespace-nowrap keeps
-                      "3 posts" together when that word lands near the edge. */}
-                  {/* The name links to the tag's own page. [→ `tag-pages`] */}
+                  {/* Inline, not flex, so the count follows a wrapped name.
+                      Links to the tag's page. [→ `tag-pages`] */}
                   <h2 className="mb-1 text-xl md:text-2xl">
                     <Link
                       href={`/tags/${tag.slug}`}
