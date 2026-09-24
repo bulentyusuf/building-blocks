@@ -109,6 +109,33 @@ describe("CLAUDE.md stays inside its line budget", () => {
   });
 });
 
+// Only ever lowered. A new entry is paid for by trimming another.
+// [→ `reopening-decisions`]
+const DECISIONS_MD_LINE_CEILING = 1058;
+
+// trimEnd() so this agrees with `wc -l`.
+const overCeiling = (text: string, ceiling: number) =>
+  text.trimEnd().split("\n").length > ceiling;
+
+describe("docs/decisions.md stays under its line ceiling", () => {
+  it("is no longer than the ceiling", () => {
+    const text = read("docs/decisions.md");
+    expect(
+      overCeiling(text, DECISIONS_MD_LINE_CEILING),
+      `docs/decisions.md is ${text.trimEnd().split("\n").length} lines, over ` +
+        `${DECISIONS_MD_LINE_CEILING}. Trim an entry; do not raise the ceiling.`,
+    ).toBe(false);
+  });
+
+  it("known-bad control: a file one line over is caught", () => {
+    const atCeiling = "line\n".repeat(DECISIONS_MD_LINE_CEILING);
+    expect(overCeiling(atCeiling, DECISIONS_MD_LINE_CEILING)).toBe(false);
+    expect(overCeiling(atCeiling + "line\n", DECISIONS_MD_LINE_CEILING)).toBe(
+      true,
+    );
+  });
+});
+
 describe("every decision marker in CLAUDE.md resolves", () => {
   // A key renamed or deleted on one side leaves a rule pointing at nothing.
   const keysIn = (doc: string) =>
