@@ -115,6 +115,18 @@ const literataItalic = Literata({
   axes: ["opsz"],
   preload: false,
 });
+
+const NAV_LINKS = [
+  { href: "/categories", label: "Categories" },
+  { href: "/tags", label: "Tags" },
+  { href: "/authors", label: "Authors" },
+  { href: "/archive", label: "Archive" },
+  { href: "/about", label: "About" },
+];
+
+const navLink =
+  "font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white";
+
 function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-brand-header shadow-xs">
@@ -199,80 +211,22 @@ function Header() {
             />
             <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-lg border border-white/10 bg-brand-header px-4 py-3 shadow-lg">
               <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="/categories"
-                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    Categories
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/tags"
-                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    Tags
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/authors"
-                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    Authors
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/archive"
-                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    Archive
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/about"
-                    className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-                  >
-                    About
-                  </Link>
-                </li>
+                {NAV_LINKS.map(({ href, label }) => (
+                  <li key={href}>
+                    <Link href={href} className={navLink}>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </NavDisclosure>
           <div className="hidden md:flex items-center gap-4 md:gap-6">
-            <Link
-              href="/categories"
-              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-            >
-              Categories
-            </Link>
-            <Link
-              href="/tags"
-              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-            >
-              Tags
-            </Link>
-            <Link
-              href="/authors"
-              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-            >
-              Authors
-            </Link>
-            <Link
-              href="/archive"
-              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-            >
-              Archive
-            </Link>
-            <Link
-              href="/about"
-              className="font-ui text-sm font-bold text-white hover:opacity-80 transition-opacity duration-200 rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
-            >
-              About
-            </Link>
+            {NAV_LINKS.map(({ href, label }) => (
+              <Link key={href} href={href} className={navLink}>
+                {label}
+              </Link>
+            ))}
           </div>
           {/* Icon-only link: accessible name from aria-label, SVG hidden
               from assistive tech so it isn't announced as an unlabelled
