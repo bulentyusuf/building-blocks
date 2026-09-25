@@ -258,9 +258,8 @@ Protected main, squash merges only, one concern per PR, conventional commit
 messages, descriptive branch names. Vercel previews build only for a commit
 whose message contains `[preview]`. [→ `preview-on-request`]
 
-A settled call is reopened in writing, in its own commit, before the
-implementing branch opens. A branch that edits the documentation and the code it
-governs in the same push has removed the only check on itself.
+A change that alters a settled call updates its decision entry in the same
+pull request, so the reason and the code are reviewed in one diff.
 [→ `reopening-decisions`]
 
 The CI gate is exactly three steps, in this order: `npm run format:check`,

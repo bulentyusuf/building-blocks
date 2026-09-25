@@ -90,7 +90,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 
 **Workflow constants**
 
-- `reopening-decisions` — A settled design call is reopened in writing, not in a branch
+- `reopening-decisions` — A settled design call changes with its entry, in the same pull request
 - `preview-on-request` — Vercel previews build on request, and production skips documentation-only changes
 
 **Bloat is the default failure mode**
@@ -185,15 +185,15 @@ The header colour is a token in `app/globals.css` and `BRAND_HEADER_COLOR` /
 `themeColor` and the web manifest are built in JS and cannot read custom
 properties. Any change touches both.
 
-### A settled design call is reopened in writing, not in a branch
+### A settled design call changes with its entry, in the same pull request
 
 <!-- key: reopening-decisions -->
 
-Changing a decision here starts with an edit to this file, in its own commit,
-before the implementing branch opens. A branch that edits this file and the code
-it governs in the same push has removed the only check on itself. PR #398 is
-the worked example: six settled calls were re-answered inside it and went
-unrecorded until twenty-two commits had built on them.
+A change that alters a decision updates its entry here in the same pull
+request, and the description says which entry changed. One person reviews and
+merges everything, and seeing the reason beside the code is the check. It is
+written down because of PR #398, where six settled calls were re-answered and
+went unrecorded until twenty-two commits had built on them.
 
 **How an entry and a comment are written** (September 2026). An entry states
 the decision, the reason, and what would reopen it, in about 20 lines. How it
