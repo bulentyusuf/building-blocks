@@ -108,6 +108,7 @@ cp .env.local.example .env.local
 - `CONTENTFUL_REVALIDATE_SECRET`, any random string you choose, it guards the revalidation webhook
 - `NEXT_PUBLIC_SITE_URL`, your public site URL such as `https://example.com`, used for canonical links, Open Graph tags, the sitemap, and the RSS feed. On Vercel this falls back to the project's production domain when unset, and to `http://localhost:3000` everywhere else
 - `AUTHOR_EMAIL` (optional), the address published in every RSS `<author>` element. Leave it unset and the element is omitted, which is the default on purpose: the address used to be inferred from your domain, so setting the site URL alone was enough to start advertising a mailbox you had never decided on
+- `POSTHOG_PROJECT_TOKEN` (optional), a PostHog EU project token. When set, `proxy.ts` logs production requests from named AI agents, such as ChatGPT-User and ClaudeBot, as PostHog events. Readers never reach it, and it sends no reader data. Leave it unset and nothing is sent
 
 ### 3. Import the content model
 
