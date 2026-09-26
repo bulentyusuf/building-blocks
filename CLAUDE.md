@@ -241,7 +241,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 ## Testing
 
 - **Any new route goes in `app/routes.a11y.test.tsx`**, or it has no axe run
-  anywhere and nothing in CI reports the gap. `app/a11y.test.tsx` covers six
+  anywhere and nothing in CI reports the gap. `app/a11y.test.tsx` covers five
   page shapes, not routes. [→ `guard-limits`]
 - **Every pattern-matching guard carries a permanent known-bad control.**
   `app/posts/[slug]/opengraph-image.font.test.tsx` is the pattern to copy. Four
@@ -265,12 +265,11 @@ pull request, so the reason and the code are reviewed in one diff.
 [→ `reopening-decisions`]
 
 The CI gate is exactly three steps, in this order: `npm run format:check`,
-`npm test`, `npm run build` — see `.github/workflows/ci.yml`, which
-`lib/docs-consistency.test.ts` holds this sentence against. Note what that means
-locally: **there is no separate typecheck step in CI**, so typechecking happens
-inside `npm run build`, and a change that satisfies `tsc --noEmit` and the
-vitest suite has still not met the gate. Running `tsc --noEmit` is a fast local
-proxy, not the thing itself.
+`npm test`, `npm run build` — see `.github/workflows/ci.yml`. Note what that
+means locally: **there is no separate typecheck step in CI**, so typechecking
+happens inside `npm run build`, and a change that satisfies `tsc --noEmit` and
+the vitest suite has still not met the gate. Running `tsc --noEmit` is a fast
+local proxy, not the thing itself.
 
 There is no lint script — `next lint` was removed in Next 16 — so do not add or
 invoke one. Prettier is formatting only, not linting: run `npm run format`

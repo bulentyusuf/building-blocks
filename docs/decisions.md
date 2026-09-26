@@ -980,7 +980,7 @@ pass. What they cannot do:
   with the code, never that the space does.
 - **`app/a11y.test.tsx`** cannot check `color-contrast` or `target-size`, since
   jsdom has no layout; `lib/tag-pill.test.ts` recomputes contrast instead. It
-  adds a duplicate-announcement check scoped to `<main>`. It covers six page
+  adds a duplicate-announcement check scoped to `<main>`. It covers five page
   shapes, not routes, so **a new route goes in `app/routes.a11y.test.tsx`** or
   it has no axe run. Both assert the page rendered something. The archive's
   repeated category links and the glossary's repeated titles are allowances that
@@ -1005,9 +1005,8 @@ pass. What they cannot do:
   skipped guard reads as a passing one. It cannot see real fonts (`next/font` is mocked, so only padding, margin and border distances are asserted, never text-driven heights) or real image files, since covers are sized by their aspect-ratio box.
 - **`lib/paginate.test.ts`** covers the arithmetic, not what pages render.
 - **`lib/docs-consistency.test.ts`** checks names, not claims: scripts, paths,
-  the CI gate, the line budget, and that every `[→ key]` in `CLAUDE.md` and in
-  source comments resolves. A sentence can name a real file and describe it
-  wrongly.
+  the line budget, and that every `[→ key]` in `CLAUDE.md` and in source
+  comments resolves. A sentence can name a real file and describe it wrongly.
 
 ### Every pattern-matching guard needs a known-bad control
 

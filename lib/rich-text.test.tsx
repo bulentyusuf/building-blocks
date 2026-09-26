@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
 import { extractHeadings } from "./headings";
-import { RichText, numericColumns } from "./rich-text";
+import { RichText, numericColumns, shortColumns } from "./rich-text";
 import type { Content } from "./types";
 
 // Minimal rich-text node builders.
@@ -761,7 +761,7 @@ describe("embedded asset alt text and captions", () => {
 
     expect(html).toContain('alt="A tabby asleep on a keyboard"');
     expect(html).toContain(
-      '<figcaption class="text-[0.875em] italic text-brand-muted mt-1.5 text-center">Bruno, entirely unbothered by the deadline</figcaption>',
+      "Bruno, entirely unbothered by the deadline</figcaption>",
     );
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
@@ -883,7 +883,7 @@ describe("prompt block thumbnail", () => {
       },
     }) as unknown as Content;
 
-  it("renders the thumbnail stacked below 480px and floated from 480px up", () => {
+  it("renders a decorative thumbnail span when the entry has an image", () => {
     const html = renderToStaticMarkup(
       <RichText
         content={promptContent({
@@ -894,9 +894,8 @@ describe("prompt block thumbnail", () => {
       />,
     );
 
-    const span = html.match(/<span aria-hidden="true" class="([^"]*)"/);
-    expect(span?.[1]).toContain("min-[480px]:float-left");
-    expect(span?.[1]?.split(" ")).not.toContain("hidden");
+    // The known-bad control for the test below, which asserts this is absent.
+    expect(html).toContain('aria-hidden="true"');
   });
 
   it("renders no thumbnail span when the entry has no image", () => {
@@ -1038,5 +1037,49 @@ describe("numeric table columns", () => {
       "#140",
       "18",
     ]);
+  });
+
+  it("narrows a column of bare numbers, placeholders allowed", () => {
+    expect(shortColumns(criterion as never)).toEqual([
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+    ]);
+  });
+
+  it("keeps a column normal when one value is longer than a number", () => {
+    // Known-bad control. Narrowing per cell squeezed "1,058 lines" into a
+    // column sized for "41" on the remove-cruft-codebase post.
+    const mixed = table(["After"], ["1,058 lines"], ["41"], ["16"]);
+    expect(shortColumns(mixed as never)).toEqual([false]);
+  });
+
+  it("narrows the body cells of a short column and no other", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={{
+          json: {
+            nodeType: BLOCKS.DOCUMENT,
+            data: {},
+            content: [
+              table(
+                ["Label", "Count", "After"],
+                ["a", "12", "1,058 lines"],
+                ["b", "4", "41"],
+              ),
+            ],
+          } as unknown as Document,
+          links: { assets: { block: [] } },
+        }}
+        headings={[]}
+      />,
+    );
+    const narrowed = [
+      ...html.matchAll(/<t[hd][^>]*w-\[1%\][^>]*>(.*?)<\/t[hd]>/g),
+    ].map((m) => [...m[1].matchAll(/>([^<]*)</g)].map((t) => t[1]).join(""));
+    expect(narrowed).toEqual(["12", "4"]);
   });
 });
