@@ -72,7 +72,6 @@ const post = (slug: string, title: string, date: string) => ({
   excerpt: `Everything worth knowing about ${title.toLowerCase()}.`,
   coverImage: asset(slug),
   updatedDate: undefined,
-  author: { name: "Bulent Yusuf", slug: "bulent-yusuf", picture: asset("me") },
   category: { name: "Main Quest", slug: "main-quest" },
   tagsCollection: { items: tags },
 });
