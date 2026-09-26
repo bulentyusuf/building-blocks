@@ -8,7 +8,7 @@ import type { AxeResults, Result } from "axe-core";
 import type { ReactElement } from "react";
 
 // Accessibility coverage for the routes app/a11y.test.tsx does not reach.
-// That file covers six page shapes by hand; this one renders the REAL route
+// That file covers five page shapes by hand; this one renders the REAL route
 // components, with only the CMS mocked, inside the real RootLayout. Between
 // them the two files cover all sixteen routes, plus the not-found page, which
 // the sixteen do not include. [→ `guard-limits`]
