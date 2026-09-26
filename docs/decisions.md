@@ -43,7 +43,6 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `focus-indicator` — One focus indicator, set in `@layer base`
 - `scroll-offset` — One scroll offset, `scroll-padding-top` on `html`
 - `sidenotes` — Sidenotes carry several load-bearing constraints
-- `view-transitions` — Cross-document view transitions were removed, and why they never ran
 - `tag-pages` — Tags have their own pages, and `/tags` is the index
 - `type-roles` — Two faces, three roles, and no family named directly
 - `font-subsets` — Font preloading is `subsets: ["latin"]` only
@@ -521,18 +520,6 @@ entry renders nothing; do not make it an error.
 
 `lib/rich-text.test.tsx` guards the phrasing rule, the absent `<button>` and the
 numbering.
-
-### Cross-document view transitions were removed, and why they never ran
-
-<!-- key: view-transitions -->
-
-`@view-transition` fires only when one document replaces another. Every link
-here is a Next `<Link>`, which navigates client-side, so it never ran; it was
-removed. React's same-document `<ViewTransition>` is the working option and was
-declined in August 2026, since nobody missed the effect. If revisited, it needs
-an explicit `share="morph"` on both ends and a prefetched destination. A
-`view-transition-name`, `viewTransitionName` or `transitionName` reappearing
-without this entry rewritten first is dead code.
 
 ### Tags have their own pages, and `/tags` is the index
 
