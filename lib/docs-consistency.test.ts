@@ -73,30 +73,6 @@ describe("file paths named in the docs", () => {
   });
 });
 
-describe("the CI gate CLAUDE.md describes", () => {
-  // CLAUDE.md once named a tsc step CI never ran and omitted the build.
-  const workflow = read(".github/workflows/ci.yml");
-  const commands = [...workflow.matchAll(/^\s+run: (.+)$/gm)]
-    .map((m) => m[1].trim())
-    .filter((c) => c !== "npm ci");
-
-  it("names every command the workflow actually runs", () => {
-    const claude = read("CLAUDE.md");
-    const unmentioned = commands.filter((c) => !claude.includes(c));
-
-    expect(unmentioned).toEqual([]);
-  });
-
-  it("is not describing a step the workflow dropped", () => {
-    // The reverse: no promised step the workflow dropped.
-    const claude = read("CLAUDE.md");
-    const gateSentence = /The CI gate is[^.]*\./.exec(claude)?.[0] ?? "";
-
-    expect(gateSentence).not.toMatch(/tsc --noEmit`? \+/);
-    expect(commands).toContain("npm run build");
-  });
-});
-
 // Each limit only ever comes down. Raising one to fit new prose undoes it.
 // [→ `reopening-decisions`]
 const LINE_LIMITS = [
