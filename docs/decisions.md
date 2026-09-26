@@ -1005,9 +1005,8 @@ pass. What they cannot do:
   skipped guard reads as a passing one. It cannot see real fonts (`next/font` is mocked, so only padding, margin and border distances are asserted, never text-driven heights) or real image files, since covers are sized by their aspect-ratio box.
 - **`lib/paginate.test.ts`** covers the arithmetic, not what pages render.
 - **`lib/docs-consistency.test.ts`** checks names, not claims: scripts, paths,
-  the CI gate, the line budget, and that every `[→ key]` in `CLAUDE.md` and in
-  source comments resolves. A sentence can name a real file and describe it
-  wrongly.
+  the line budget, and that every `[→ key]` in `CLAUDE.md` and in source
+  comments resolves. A sentence can name a real file and describe it wrongly.
 
 ### Every pattern-matching guard needs a known-bad control
 

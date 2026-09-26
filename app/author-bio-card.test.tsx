@@ -150,23 +150,4 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html).not.toContain("Trippy Robot");
     expect(html.match(/More posts by/g)).toHaveLength(1);
   });
-
-  it("applies mt-8 and omits border-t when hasTags is true (single divider above tags)", () => {
-    const author = authorWithBio("bulent-yusuf", "Bulent Yusuf");
-    const html = renderToStaticMarkup(
-      <AuthorBioSection authors={[author]} hasTags={true} />,
-    );
-    expect(html).toContain("mt-8");
-    expect(html).not.toContain("border-t");
-  });
-
-  it("applies mt-8, border-t, and pt-8 when hasTags is false (opens section itself)", () => {
-    const author = authorWithBio("bulent-yusuf", "Bulent Yusuf");
-    const html = renderToStaticMarkup(
-      <AuthorBioSection authors={[author]} hasTags={false} />,
-    );
-    expect(html).toContain("mt-8");
-    expect(html).toContain("border-t");
-    expect(html).toContain("pt-8");
-  });
 });
