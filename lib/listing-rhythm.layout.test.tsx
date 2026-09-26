@@ -132,6 +132,13 @@ type Measurement = {
   hairlineToCover: number[];
   /** Home only: from the card grid's opening hairline to its first cover. */
   gridRuleToCover: number | null;
+  /** The sticky bar above every page. */
+  barHeight: number;
+  /** Home only: the hero title's and the first card title's computed sizes. */
+  heroTitlePx: number | null;
+  cardTitlePx: number | null;
+  /** Home only: from the hero's byline column to its excerpt column. */
+  heroColumnGap: number | null;
 };
 
 // Runs in the page, so it closes over nothing.
@@ -150,6 +157,12 @@ function measureInPage(): Measurement {
   );
   const items = [...main.querySelectorAll("section article")];
   const listing = !grid && items.length > 0;
+  const size = (el: Element | null | undefined) =>
+    el ? parseFloat(getComputedStyle(el).fontSize) : null;
+  // Home's hero title is the first h2 in a section, and its grid is the
+  // title column's parent.
+  const heroTitle = grid ? main.querySelector("section h2") : null;
+  const heroColumns = heroTitle?.parentElement?.parentElement?.children;
 
   return {
     headerToRule: box(rule).top - box(header).bottom,
@@ -167,6 +180,13 @@ function measureInPage(): Measurement {
     gridRuleToCover: grid
       ? box(cover(grid)!).top - (box(grid).top + borderTop(grid))
       : null,
+    barHeight: box(document.querySelector("body > header")!).height,
+    heroTitlePx: size(heroTitle),
+    cardTitlePx: size(grid?.querySelector("h2")),
+    heroColumnGap:
+      heroColumns && heroColumns.length === 2
+        ? box(heroColumns[1]).top - box(heroColumns[0]).bottom
+        : null,
   };
 }
 
@@ -212,6 +232,36 @@ function rhythmProblems(m: Record<Page, Measurement>): string[] {
         `header to rule: home ${home.headerToRule}px, ${page} ${m[page].headerToRule}px`,
       );
     }
+  }
+  return problems;
+}
+
+// The bar and the hero, each broken once in a way only a browser shows.
+// [→ `home-hero`, `guard-limits`]
+function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
+  const problems: string[] = [];
+  const { home } = m;
+  for (const page of ["listing", "archive"] as const) {
+    if (!same(m[page].barHeight, home.barHeight)) {
+      problems.push(
+        `bar height: home ${home.barHeight}px, ${page} ${m[page].barHeight}px`,
+      );
+    }
+  }
+  if (home.heroTitlePx === null || home.cardTitlePx === null) {
+    return [...problems, "home rendered no hero title or card title"];
+  }
+  if (home.heroColumnGap === null) {
+    return [...problems, "home's hero rendered without its two columns"];
+  }
+  // Below md the columns stack. From lg the hero title takes its own step.
+  if (width < 768 && !(home.heroColumnGap > 0)) {
+    problems.push(`the hero's columns sit ${home.heroColumnGap}px apart`);
+  }
+  if (width >= 1024 && !(home.heroTitlePx > home.cardTitlePx)) {
+    problems.push(
+      `hero title ${home.heroTitlePx}px, card title ${home.cardTitlePx}px`,
+    );
   }
   return problems;
 }
@@ -306,3 +356,41 @@ describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
     30_000,
   );
 });
+
+describe.each(WIDTHS)("the bar and the hero at %ipx", (width) => {
+  it("keep the bar's height, the hero's gap and its title step", async () => {
+    expect(chromeProblems(await measure(width), width)).toEqual([]);
+  }, 30_000);
+});
+
+// Known-bad controls, each at a width where its check applies.
+// [→ `known-bad-controls`]
+it.each([
+  [
+    1280,
+    "the bar's minimum height removed",
+    { home: "body > header > div { min-height: 0 !important }" },
+  ],
+  [
+    375,
+    "the hero's columns without a grid below md",
+    {
+      home: "main section:first-of-type div:has(> div > h2) { display: block !important }",
+    },
+  ],
+  [
+    1280,
+    "the hero title at the card title's size",
+    {
+      home: "main section:first-of-type h2 { font-size: 1.875rem !important }",
+    },
+  ],
+] as const)(
+  "at %ipx, reports %s",
+  async (width, _name, breakage) => {
+    expect(chromeProblems(await measure(width, breakage), width)).not.toEqual(
+      [],
+    );
+  },
+  30_000,
+);
