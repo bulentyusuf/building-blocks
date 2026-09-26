@@ -141,9 +141,8 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 - **Tags are pills via `app/tag-pill.tsx`.** A tag as metadata is a pill; a tag
   as destination is a link. There is no third treatment.
   [→ `tag-pills`, `tag-pages`]
-- **Cross-document view transitions are gone.** Do not reintroduce a
-  `view-transition-name`, `viewTransitionName` or `transitionName` prop.
-  [→ `view-transitions`]
+- **No view transitions.** Links navigate client-side, so `@view-transition`
+  never fires, and it shipped dead once. Add no transition-name props either.
 - **Search runs on Pagefind's Component UI**; its keyboard/ARIA behaviour is
   upstream's, deliberately not reimplemented. Keep `pagefind` `^1.5.2`+. [→ `pagefind-ui`]
 - **`aria-hidden` and `opacity-0` are not index controls.** Pagefind reads raw
