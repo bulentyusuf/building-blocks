@@ -39,7 +39,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `brand-colour-duplication` — Brand colour exists in two places on purpose
 - `chrome-aubergine` — Chrome is aubergine, one token for the bar and the footer
 - `tag-pills` — Tags render as pills, in one implementation
-- `border-roles` — Three border roles, and they are not interchangeable
+- `border-roles` — Border roles are not interchangeable
 - `focus-indicator` — One focus indicator, set in `@layer base`
 - `scroll-offset` — One scroll offset, `scroll-padding-top` on `html`
 - `sidenotes` — Sidenotes carry several load-bearing constraints
@@ -372,7 +372,7 @@ A `sizes` value stops growing where its container does: content tops out at
 984px, so a bare `vw` clause past that buys a larger file than anything on
 screen.
 
-### Three border roles, and they are not interchangeable
+### Border roles are not interchangeable
 
 <!-- key: border-roles -->
 
@@ -380,12 +380,16 @@ Defined in `app/globals.css`.
 
 - **`--color-hairline`**: every divider and the edges a listing draws. It
   inverts on its own, so never add a `dark:` variant, and never go back to bare
-  grey borders. `app/pagination.tsx` has
-  no top border because the listing above closes itself; a listing under a wide
-  header drops its opening rule, never the closing one.
+  grey borders. `app/pagination.tsx` has no top border because the listing
+  above closes itself; a listing under a wide header drops its opening rule,
+  never the closing one.
 - **`--color-control-edge`**: `app/tag-pill.tsx` only. It carries a WCAG 1.4.11
   contrast floor as two literal values, and `lib/tag-pill.test.ts` recomputes
   both and asserts the tokens stay distinct.
+- **`--color-cover-keyline`**: `app/cover-image.tsx` only, the part of a
+  cover's edge its shadow cannot supply on the page.
+- **`--color-table-edge`, `-rule` and `-header`**: tables in `lib/rich-text.tsx`,
+  mixed from crimson so they track it into dark mode.
 - **The `border-2` image frames** in `lib/rich-text.tsx` and
   `lib/lightbox-image.tsx`, a heavier role with its own pairing.
 
@@ -393,17 +397,19 @@ Defined in `app/globals.css`.
 
 <!-- key: focus-indicator -->
 
-One `:focus-visible` rule in `app/globals.css`. Components add no
-`focus-visible:ring-*` or `focus-visible:outline-*`. Three exceptions, each
+One `:focus-visible` rule in `app/globals.css`, repeated once for the sidenote
+label because the checkbox that takes focus is hidden. Components add no
+`focus-visible:ring-*` or `focus-visible:outline-*`. Four exceptions, each
 argued in its file: the aubergine header and footer, where crimson fails and
-the outline suppression before the white ring is required; the
-code-block scroll regions in `lib/rich-text.tsx`, which draw inward because
-their parent clips; and the controls on their own dark ground,
-`app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox close
-button, which take a two-tone white ring: a fixed control floats over grounds
-no one colour clears (crimson is 2.19:1 on the light footer), and white at
-18.7:1 on the dark page pairs with a dark offset at 15.5:1 on the light one. That last group was once
-"simplified" and reverted.
+the outline suppression before the white ring is required; the code-block
+scroll regions in `lib/rich-text.tsx`, which draw inward because their parent
+clips; the "Prompt" badge over a post cover, a white outline drawn inward
+because it sits on images of any tone; and the controls on their own dark
+ground, `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox
+close button, which take a two-tone white ring: a fixed control floats over
+grounds no one colour clears (crimson is 2.19:1 on the light footer), and white
+at 18.7:1 on the dark page pairs with a dark offset at 15.5:1 on the light one.
+That last group was once "simplified" and reverted.
 
 ### One scroll offset, `scroll-padding-top` on `html`
 
@@ -751,12 +757,13 @@ not shrink or hide the counter to compensate.
 
 <!-- key: rich-text-links -->
 
-`renderHyperlink` allowlists `http`, `https` and `mailto`, degrading anything
-else (including `javascript:` and protocol-relative forms) to text, and gives
-external links `target="_blank"`, `rel="noopener noreferrer"` and the new-window
-hint. Any rich-text surface passes it as the `INLINES.HYPERLINK` override;
-`documentToReactComponents`' default emits `data.uri` as-is. Sidenotes once used
-the default and let a `javascript:` href through. Do not copy the renderer.
+`renderHyperlink` allowlists root-relative paths, `http`, `https` and `mailto`,
+degrading anything else (including `javascript:` and protocol-relative forms)
+to text, and gives external links `target="_blank"`, `rel="noopener noreferrer"`
+and the new-window hint. Any rich-text surface passes it as the
+`INLINES.HYPERLINK` override; `documentToReactComponents`' default emits
+`data.uri` as-is. Sidenotes once used the default and let a `javascript:` href
+through. Do not copy the renderer.
 
 ### Every structured-data block goes through `jsonLdHtml`
 
