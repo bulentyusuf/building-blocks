@@ -127,10 +127,10 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 - **The search emblem's ground stays cream `#FAF5F1` in both schemes**, so
   anything rendered on it uses literal hex in dark mode, never brand tokens.
   [→ `search-emblem`]
-- **Three border roles, not interchangeable**: `--color-hairline` (dividers,
-  inverts on its own, never add a `dark:` variant), `--color-control-edge`
-  (`app/tag-pill.tsx` only, carries a WCAG 1.4.11 contrast floor), and the
-  `border-2` image frames. Do not deduplicate the first two. [→ `border-roles`]
+- **Border roles are not interchangeable**: `--color-hairline` (dividers,
+  never a `dark:` variant), `--color-control-edge` (tag pills only, a WCAG
+  1.4.11 floor), the cover keyline, the table tokens and the `border-2` image
+  frames. Do not deduplicate the first two. [→ `border-roles`]
 - **One focus indicator, in `@layer base`.** Do not add `focus-visible:ring-*`
   or `focus-visible:outline-*` to components. [→ `focus-indicator`]
 - **One scroll offset, `scroll-padding-top: 5rem` on `html`.** Never

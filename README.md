@@ -85,6 +85,7 @@ This repository works as a template. Fork it, point it at your own Contentful sp
 - Node — the required version is `engines.node` in `package.json`
 - A Contentful account with an empty space
 - Optionally, a Vercel account for hosting
+- Google Chrome, to run the tests
 
 ### 1. Install
 
