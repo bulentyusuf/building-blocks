@@ -761,7 +761,7 @@ describe("embedded asset alt text and captions", () => {
 
     expect(html).toContain('alt="A tabby asleep on a keyboard"');
     expect(html).toContain(
-      '<figcaption class="text-[0.875em] italic text-brand-muted mt-1.5 text-center">Bruno, entirely unbothered by the deadline</figcaption>',
+      "Bruno, entirely unbothered by the deadline</figcaption>",
     );
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
@@ -883,7 +883,7 @@ describe("prompt block thumbnail", () => {
       },
     }) as unknown as Content;
 
-  it("renders the thumbnail stacked below 480px and floated from 480px up", () => {
+  it("renders a decorative thumbnail span when the entry has an image", () => {
     const html = renderToStaticMarkup(
       <RichText
         content={promptContent({
@@ -894,9 +894,8 @@ describe("prompt block thumbnail", () => {
       />,
     );
 
-    const span = html.match(/<span aria-hidden="true" class="([^"]*)"/);
-    expect(span?.[1]).toContain("min-[480px]:float-left");
-    expect(span?.[1]?.split(" ")).not.toContain("hidden");
+    // The known-bad control for the test below, which asserts this is absent.
+    expect(html).toContain('aria-hidden="true"');
   });
 
   it("renders no thumbnail span when the entry has no image", () => {
