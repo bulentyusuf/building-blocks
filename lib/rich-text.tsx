@@ -24,20 +24,28 @@ function headingText(node: Block | Inline): string {
     .join("");
 }
 
-// A short value takes the narrowest column instead of an equal share of the
-// table's width. A column mixing short and long values falls back to normal.
-function isShortValue(node: Block | Inline): boolean {
-  const text = headingText(node).trim();
-  return text !== "" && /^\d+(\.\d+)?$/.test(text);
-}
-
 // A column is numeric when every body cell is a number or a placeholder dash,
 // and at least one is a number. Numeric columns right-align in tabular figures,
 // header included. Per column, because alignment is a column property.
 const NUMERIC_CELL = /^[#£$€]?\d[\d,]*(\.\d+)?%?$/;
 const PLACEHOLDER_CELL = /^[-–—]?$/;
 
+// A column of bare numbers takes the narrowest width instead of an equal share
+// of the table. Per column, so one longer value keeps the column normal.
+const SHORT_CELL = /^\d+(\.\d+)?$/;
+
 export function numericColumns(table: Block | Inline): boolean[] {
+  return matchingColumns(table, NUMERIC_CELL);
+}
+
+export function shortColumns(table: Block | Inline): boolean[] {
+  return matchingColumns(table, SHORT_CELL);
+}
+
+function matchingColumns(
+  table: Block | Inline,
+  cellPattern: RegExp,
+): boolean[] {
   const columns: string[][] = [];
   for (const row of table.content ?? []) {
     const cells = (row as Block).content ?? [];
@@ -48,8 +56,8 @@ export function numericColumns(table: Block | Inline): boolean[] {
   }
   return columns.map(
     (values = []) =>
-      values.some((v) => NUMERIC_CELL.test(v)) &&
-      values.every((v) => NUMERIC_CELL.test(v) || PLACEHOLDER_CELL.test(v)),
+      values.some((v) => cellPattern.test(v)) &&
+      values.every((v) => cellPattern.test(v) || PLACEHOLDER_CELL.test(v)),
   );
 }
 
@@ -202,21 +210,29 @@ export function RichText({
         // reflow from. Two wrappers because one element cannot both clip to
         // the radius and scroll. [→ `scroll-region-names`]
         const position = ++tableIndex;
-        // Cells render before their table, so the column flag is added here.
+        // Cells render before their table, so column flags are added here.
         const numeric = numericColumns(node);
+        const short = shortColumns(node);
         const rows = Children.map(children, (row) => {
           if (!isValidElement<{ children?: ReactNode }>(row)) return row;
           return cloneElement(row, {
-            children: Children.map(row.props.children, (cell, i) =>
-              numeric[i] && isValidElement(cell)
-                ? cloneElement(
-                    cell as ReactElement<{ "data-numeric"?: string }>,
-                    {
-                      "data-numeric": "",
-                    },
-                  )
-                : cell,
-            ),
+            children: Children.map(row.props.children, (cell, i) => {
+              if (!isValidElement(cell) || !(numeric[i] || short[i])) {
+                return cell;
+              }
+              const el = cell as ReactElement<{
+                className?: string;
+                "data-numeric"?: string;
+              }>;
+              return cloneElement(el, {
+                ...(numeric[i] && { "data-numeric": "" }),
+                // Body cells only, so a long header can still wrap.
+                ...(short[i] &&
+                  el.type === "td" && {
+                    className: `${el.props.className} w-[1%] whitespace-nowrap`,
+                  }),
+              });
+            }),
           });
         });
         return (
@@ -241,25 +257,19 @@ export function RichText({
         </tr>
       ),
       [BLOCKS.TABLE_HEADER_CELL]: (
-        node: Block | Inline,
+        _node: Block | Inline,
         children: ReactNode,
       ) => (
         // Contentful puts header cells only in the first row, so col is right.
         <th
           scope="col"
-          className={`border-b border-table-edge bg-table-header px-3 py-3 text-start font-semibold data-numeric:text-end ${
-            isShortValue(node) ? "w-[1%] whitespace-nowrap" : ""
-          }`}
+          className="border-b border-table-edge bg-table-header px-3 py-3 text-start font-semibold data-numeric:text-end"
         >
           {children}
         </th>
       ),
-      [BLOCKS.TABLE_CELL]: (node: Block | Inline, children: ReactNode) => (
-        <td
-          className={`px-3 py-3 text-start align-top data-numeric:text-end data-numeric:tabular-nums ${
-            isShortValue(node) ? "w-[1%] whitespace-nowrap" : ""
-          }`}
-        >
+      [BLOCKS.TABLE_CELL]: (_node: Block | Inline, children: ReactNode) => (
+        <td className="px-3 py-3 text-start align-top data-numeric:text-end data-numeric:tabular-nums">
           {children}
         </td>
       ),
