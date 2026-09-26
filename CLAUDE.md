@@ -241,7 +241,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 ## Testing
 
 - **Any new route goes in `app/routes.a11y.test.tsx`**, or it has no axe run
-  anywhere and nothing in CI reports the gap. `app/a11y.test.tsx` covers six
+  anywhere and nothing in CI reports the gap. `app/a11y.test.tsx` covers five
   page shapes, not routes. [→ `guard-limits`]
 - **Every pattern-matching guard carries a permanent known-bad control.**
   `app/posts/[slug]/opengraph-image.font.test.tsx` is the pattern to copy. Four

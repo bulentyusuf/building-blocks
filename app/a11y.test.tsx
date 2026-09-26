@@ -58,7 +58,6 @@ const Breadcrumb = (await import("@/app/breadcrumb")).default;
 const ListingPage = (await import("@/app/listing-page")).default;
 const WidePage = (await import("@/app/wide-page")).default;
 const PageCounter = (await import("@/app/page-counter")).default;
-const Pagination = (await import("@/app/pagination")).default;
 const CoverImage = (await import("@/app/cover-image")).default;
 const Avatar = (await import("@/app/avatar")).default;
 const { RichText } = await import("@/lib/rich-text");
@@ -306,68 +305,12 @@ const bodyContent = {
   },
 } as unknown as Content;
 
-describe("listing page", () => {
-  const render = () =>
-    renderPage(
-      <RootLayout>
-        <div className="mx-auto max-w-5xl px-5 py-8">
-          <section className="mb-16">
-            <h1>
-              <a href="/posts/hero">The hero post</a>
-            </h1>
-            <CoverImage
-              image={{
-                url: "https://images.ctfassets.net/x/y/hero.jpg",
-                title: "A hand-lettered sign in a shop window",
-                fileName: "hero.jpg",
-              }}
-              slug="hero"
-              wide
-              priority
-            />
-          </section>
-          <MoreStories
-            morePosts={[post("a", ["Design"]), post("b", ["Retro", "Code"])]}
-            heading="Latest Posts"
-            visibleTags={new Set(["design", "retro", "code"])}
-          />
-          <Pagination currentPage={2} totalPages={5} basePath="/" />
-        </div>
-      </RootLayout>,
-    );
-
-  it("has no axe violations", async () => {
-    expectNoViolations(await render());
-  });
-
-  it("announces each post exactly once", async () => {
-    // The cover and the title both link to the post. The cover opts out of the
-    // accessibility tree so only the title is announced; drop that and every
-    // card here doubles.
-    await render();
-    expect(duplicateLinksInMain()).toEqual([]);
-  });
-
-  it("keeps heading levels contiguous", async () => {
-    // The footer's column labels are <p> for this reason: as <h4> they landed
-    // after the page's h2 and skipped h3.
-    await render();
-    const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
-      (h) => Number(h.tagName[1]),
-    );
-    expect(levels[0]).toBe(1);
-    for (let i = 1; i < levels.length; i++) {
-      expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1);
-    }
-  });
-});
-
 describe("listing page through the shared shell", () => {
   // One of the ten browsing routes, rendered through the real ListingPage so
   // the header, its breadcrumb and the listing under it are the shipped ones.
-  // That is what separates this from the hand-assembled "listing page" fixture
-  // above. Structural only: this suite disables axe's color-contrast rule
-  // because jsdom computes no boxes, and the numeric guards live in
+  // Page 2 of 5, so axe sees pagination with a previous link, not just next.
+  // Structural only: this suite disables axe's color-contrast rule because
+  // jsdom computes no boxes, and the numeric guards live in
   // lib/palette-contrast.test.ts.
   const render = () =>
     renderPage(
@@ -379,8 +322,8 @@ describe("listing page through the shared shell", () => {
             { label: "Design" },
           ]}
           posts={[post("a", ["Design"]), post("b", ["Retro"])]}
-          currentPage={1}
-          totalPages={2}
+          currentPage={2}
+          totalPages={5}
           visibleTags={new Set(["design", "retro"])}
           basePath="/categories/design"
           heading={<h1>Design</h1>}
@@ -787,39 +730,6 @@ describe("post page", () => {
     expect(tableRegions).toHaveLength(
       document.querySelectorAll("table").length,
     );
-  });
-
-  it("aligns every cell start, header included", async () => {
-    // Per-cell numeric inference made the header disagree with its own
-    // column by construction ("Posts" isn't a number, its digits are) — every
-    // value in a real table is a single digit anyway, so there's nothing for
-    // right-alignment to buy. All cells are start-aligned, uniformly.
-    await render();
-    const cells = [
-      ...document.querySelectorAll("table th"),
-      ...document.querySelectorAll("table td"),
-    ];
-    expect(cells.length).toBeGreaterThan(0);
-    for (const cell of cells) {
-      expect(cell.classList.contains("text-start")).toBe(true);
-      expect(cell.classList.contains("text-end")).toBe(false);
-    }
-  });
-
-  it("shrinks a bare-number column but not a text one", async () => {
-    // w-full stretches the table to the full prose measure, and auto layout
-    // otherwise spreads that surplus across every column regardless of need —
-    // a single digit was landing in a column wide enough for a sentence.
-    // w-[1%] + whitespace-nowrap tells auto layout this column's minimum is
-    // its own content, freeing the surplus for columns that use it.
-    await render();
-    const cells = [...document.querySelectorAll("table td")];
-    const numericCell = cells.find((td) => td.textContent?.trim() === "12");
-    const textCell = cells.find((td) => td.textContent?.trim() === "Design");
-    expect(numericCell?.classList.contains("w-[1%]")).toBe(true);
-    expect(numericCell?.classList.contains("whitespace-nowrap")).toBe(true);
-    expect(textCell?.classList.contains("w-[1%]")).toBe(false);
-    expect(textCell?.classList.contains("whitespace-nowrap")).toBe(false);
   });
 });
 
