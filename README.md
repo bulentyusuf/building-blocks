@@ -74,6 +74,7 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - Content Security Policy, HSTS, Permissions-Policy, and other security headers set in `next.config.js`
 - Branch protection, CodeQL scanning, and dependency monitoring
 - CI runs the test suite and a full build on every pull request
+- An accessibility audit in a real browser, `npm run audit:a11y`, which catches poor colour contrast and pages that scroll sideways, neither of which the test suite can see. It audits the original site unless you set `SITE_URL` to your own, and it needs Google Chrome or a browser named in `CHROME_PATH`
 
 ## 🚀 Getting started
 
