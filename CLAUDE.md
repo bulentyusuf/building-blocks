@@ -142,7 +142,8 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
   as destination is a link. There is no third treatment.
   [→ `tag-pills`, `tag-pages`]
 - **No view transitions.** Links navigate client-side, so `@view-transition`
-  never fires, and it shipped dead once. Add no transition-name props either.
+  never fires, and it shipped dead once. Add no `view-transition-name`,
+  `viewTransitionName` or `transitionName` prop either.
 - **Search runs on Pagefind's Component UI**; its keyboard/ARIA behaviour is
   upstream's, deliberately not reimplemented. Keep `pagefind` `^1.5.2`+. [→ `pagefind-ui`]
 - **`aria-hidden` and `opacity-0` are not index controls.** Pagefind reads raw
