@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
 import { extractHeadings } from "./headings";
-import { RichText, numericColumns } from "./rich-text";
+import { RichText, numericColumns, shortColumns } from "./rich-text";
 import type { Content } from "./types";
 
 // Minimal rich-text node builders.
@@ -1037,5 +1037,49 @@ describe("numeric table columns", () => {
       "#140",
       "18",
     ]);
+  });
+
+  it("narrows a column of bare numbers, placeholders allowed", () => {
+    expect(shortColumns(criterion as never)).toEqual([
+      true,
+      false,
+      false,
+      true,
+      false,
+      true,
+    ]);
+  });
+
+  it("keeps a column normal when one value is longer than a number", () => {
+    // Known-bad control. Narrowing per cell squeezed "1,058 lines" into a
+    // column sized for "41" on the remove-cruft-codebase post.
+    const mixed = table(["After"], ["1,058 lines"], ["41"], ["16"]);
+    expect(shortColumns(mixed as never)).toEqual([false]);
+  });
+
+  it("narrows the body cells of a short column and no other", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={{
+          json: {
+            nodeType: BLOCKS.DOCUMENT,
+            data: {},
+            content: [
+              table(
+                ["Label", "Count", "After"],
+                ["a", "12", "1,058 lines"],
+                ["b", "4", "41"],
+              ),
+            ],
+          } as unknown as Document,
+          links: { assets: { block: [] } },
+        }}
+        headings={[]}
+      />,
+    );
+    const narrowed = [
+      ...html.matchAll(/<t[hd][^>]*w-\[1%\][^>]*>(.*?)<\/t[hd]>/g),
+    ].map((m) => [...m[1].matchAll(/>([^<]*)</g)].map((t) => t[1]).join(""));
+    expect(narrowed).toEqual(["12", "4"]);
   });
 });
