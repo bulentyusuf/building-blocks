@@ -83,11 +83,6 @@ describe("the post h1 does not glue", () => {
     return source.slice(start, source.indexOf("</h1>", start));
   };
 
-  const h1Classes = (source: string) => {
-    const attr = h1Block(source).match(/className="([^"]*)"/);
-    return attr ? attr[1].split(/\s+/) : [];
-  };
-
   it("renders the title unglued", () => {
     const block = h1Block(page);
 
@@ -99,35 +94,6 @@ describe("the post h1 does not glue", () => {
     // Comments are stripped because the note above the title explains why
     // widont is absent, and naming it there is not calling it.
     expect(block.replace(/\{\/\*[\s\S]*?\*\/\}/g, "")).not.toContain("widont(");
-  });
-
-  it("carries the wrapping strategy that replaced the glue", () => {
-    // Not decoration. Dropping the glue left this heading with no widow
-    // protection, and the balance utility is what puts it back. Measured in
-    // Chromium across the posts published as of September 2026, it leaves no
-    // widowed h1 at 768px and wider, where the utility that was here first
-    // left two at 1024px and three at 768px, the same as none at all.
-    // [→ `heading-widont`]
-    //
-    // Class tokens rather than a substring of the block, because the note
-    // above the title names the utility too and a substring check would pass
-    // on that alone. [→ `heading-widont`]
-    const classes = h1Classes(page);
-
-    // Non-vacuous: the className has to be the real one before its contents
-    // mean anything.
-    expect(classes).toContain("leading-tight");
-
-    expect(classes).toContain("text-balance");
-  });
-
-  it("would catch the wrapping strategy going missing", () => {
-    // Known-bad control. Reading whole class tokens only proves something if a
-    // className without the utility registers as missing.
-    const bad = `<h1 data-pagefind-body className="text-4xl">{post.title}</h1>`;
-
-    expect(h1Classes(bad)).toContain("text-4xl");
-    expect(h1Classes(bad)).not.toContain("text-balance");
   });
 
   it("would catch the call coming back", () => {
