@@ -2,9 +2,9 @@
 const NBSP = String.fromCharCode(0x00a0);
 
 /**
- * Glues the last two words with a non-breaking space so a wrapped title never
- * ends on one word, in every browser. Titles only, never body prose, and never
- * the post h1, where the glued pair can outgrow the column. [→ `heading-widont`]
+ * Glues the last two words with a non-breaking space so wrapped text never ends
+ * on one word, in every browser. Titles and prose both use it. Never the post
+ * h1, where the glued pair can outgrow the column. [→ `heading-widont`]
  */
 export function widont(text: string): string {
   // Below three words the glue makes the whole string unbreakable, and a
