@@ -265,12 +265,11 @@ pull request, so the reason and the code are reviewed in one diff.
 [→ `reopening-decisions`]
 
 The CI gate is exactly three steps, in this order: `npm run format:check`,
-`npm test`, `npm run build` — see `.github/workflows/ci.yml`, which
-`lib/docs-consistency.test.ts` holds this sentence against. Note what that means
-locally: **there is no separate typecheck step in CI**, so typechecking happens
-inside `npm run build`, and a change that satisfies `tsc --noEmit` and the
-vitest suite has still not met the gate. Running `tsc --noEmit` is a fast local
-proxy, not the thing itself.
+`npm test`, `npm run build` — see `.github/workflows/ci.yml`. Note what that
+means locally: **there is no separate typecheck step in CI**, so typechecking
+happens inside `npm run build`, and a change that satisfies `tsc --noEmit` and
+the vitest suite has still not met the gate. Running `tsc --noEmit` is a fast
+local proxy, not the thing itself.
 
 There is no lint script — `next lint` was removed in Next 16 — so do not add or
 invoke one. Prettier is formatting only, not linting: run `npm run format`
