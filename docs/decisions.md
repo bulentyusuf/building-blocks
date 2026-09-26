@@ -271,8 +271,8 @@ third child inherits the two-column intent. The headline caps at
 
 `Avatar` stays whole, with the date in its `meta`. Pulling the date into a
 standalone line to mirror a card was shipped and reverted: no card has a byline,
-so there was nothing to mirror. `lib/listing-rhythm.test.ts` asserts the grid
-classes and `meta={dateline}`.
+so there was nothing to mirror. The layout test in lib
+(listing-rhythm.layout.test.tsx) measures the mobile gap and the title step.
 
 ### Chrome is aubergine, one token for the bar and the footer
 
@@ -992,17 +992,17 @@ pass. What they cannot do:
   Chromium via `playwright-core` at 375px and 1280px. It asserts relations, not
   values: rule-to-first-cover equals hairline-to-next-cover, home's grid opens
   with that inset, home and `/archive` open the same non-zero gap below the
-  rule, and the header sits the same distance above it on all three. It
-  replaced eight class-string tests in `lib/listing-rhythm.test.ts`, **a
+  rule, the header sits the same distance above it and the bar is one height on
+  all three, and the hero's stacked columns sit apart and its title is larger
+  than a card's from `lg`. It replaced every class-string test for these, **a
   stronger guard replacing weaker ones, not a weakening**: those failed on
   refactors that kept the pixels and passed on breaks they did not name. Its
-  known-bad controls break the listing the two ways it has broken (first item's
-  top padding zeroed, a gap added below the rule) and require both reported. It
-  runs inside `npm test`, so the gate stays three steps with no `next start` or
+  known-bad controls require every deliberate break to be reported. It runs
+  inside `npm test`, so the gate stays three steps with no `next start` or
   Contentful credentials, but `npm test` needs a Chromium-family browser:
   `CHROME_PATH`, then `CHROME_BIN` (set on GitHub's Ubuntu runners), then the
   usual install paths. It fails rather than skips when none is found, because a
-  skipped guard reads as a passing one. It cannot see real fonts (`next/font` is mocked, so only padding, margin and border distances are asserted, never text-driven heights) or real image files, since covers are sized by their aspect-ratio box.
+  skipped guard reads as a passing one. It cannot see real fonts (`next/font` is mocked, so it reads box distances and computed sizes, never a height set by font metrics) or real image files, since covers are sized by their aspect-ratio box.
 - **`lib/paginate.test.ts`** covers the arithmetic, not what pages render.
 - **`lib/docs-consistency.test.ts`** checks names, not claims: scripts, paths,
   the line budget, and that every `[→ key]` in `CLAUDE.md` and in source
