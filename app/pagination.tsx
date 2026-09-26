@@ -86,8 +86,10 @@ export default function Pagination({
       {/* Wrapping is the guarantee: at a large font scale a centred row would
           overflow past the left edge where no scroll reaches. */}
       <ul className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-        <li>
-          {hasPrev ? (
+        {/* No page to go to, no arrow. A dead arrow in link colour read as
+            clickable, and the bold current page already says where you are. */}
+        {hasPrev && (
+          <li>
             <Link
               href={hrefFor(currentPage - 1)}
               rel="prev"
@@ -96,12 +98,8 @@ export default function Pagination({
             >
               {prevLabel}
             </Link>
-          ) : (
-            <span aria-hidden="true" className={`${cell} text-brand-muted`}>
-              {prevLabel}
-            </span>
-          )}
-        </li>
+          </li>
+        )}
 
         {items.map((item) => {
           if (item.kind === "ellipsis") {
@@ -136,8 +134,8 @@ export default function Pagination({
           );
         })}
 
-        <li>
-          {hasNext ? (
+        {hasNext && (
+          <li>
             <Link
               href={hrefFor(currentPage + 1)}
               rel="next"
@@ -146,12 +144,8 @@ export default function Pagination({
             >
               {nextLabel}
             </Link>
-          ) : (
-            <span aria-hidden="true" className={`${cell} text-brand-muted`}>
-              {nextLabel}
-            </span>
-          )}
-        </li>
+          </li>
+        )}
       </ul>
     </nav>
   );
