@@ -69,6 +69,12 @@ export const SITE_DESCRIPTION =
   process.env.NEXT_PUBLIC_SITE_DESCRIPTION?.trim() ||
   "Content & Code, with a little help from Generative AI.";
 
+// Home's own title and description, fuller than elsewhere because search
+// results show them for the site's name. [→ `browse-copy`]
+export const HOME_TITLE = `${SITE_TITLE} ${SITE_DESCRIPTION.replace(/\.$/, "")}`;
+export const HOME_DESCRIPTION =
+  "Bulent Yusuf builds a blog in public on a headless CMS, with AI as collaborator, writing up every decision. Plus side quests into films, games and Raspberry Pi.";
+
 export const SITE_AUTHOR = "Bulent Yusuf";
 
 // Replace with your own blurb.

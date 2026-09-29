@@ -116,6 +116,20 @@ describe("site identity overrides", () => {
     );
   });
 
+  // Bing flags a title or description that search results would truncate.
+  it("gives home a full title and a snippet-length description", async () => {
+    const { HOME_TITLE, HOME_DESCRIPTION } = await loadConstants({
+      NEXT_PUBLIC_SITE_TITLE: undefined,
+      NEXT_PUBLIC_SITE_DESCRIPTION: undefined,
+    });
+
+    expect(HOME_TITLE).toBe(
+      "Be Useful. Content & Code, with a little help from Generative AI",
+    );
+    expect(HOME_DESCRIPTION.length).toBeGreaterThanOrEqual(150);
+    expect(HOME_DESCRIPTION.length).toBeLessThanOrEqual(160);
+  });
+
   it("trims a configured value rather than passing padding through", async () => {
     const { SITE_TITLE } = await loadConstants({
       NEXT_PUBLIC_SITE_TITLE: "  Padded Name  ",

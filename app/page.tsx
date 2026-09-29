@@ -17,10 +17,15 @@ import {
   SITE_URL,
   SITE_TITLE,
   SITE_DESCRIPTION,
+  HOME_TITLE,
+  HOME_DESCRIPTION,
 } from "@/lib/constants";
 import { totalPagesFor } from "@/lib/paginate";
 
 export const metadata: Metadata = {
+  // Absolute, or the layout's "%s | Be Useful." template repeats the name.
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
   alternates: { canonical: SITE_URL },
 };
 import type { Author, CoverImage as CoverImageType, Tag } from "@/lib/types";
