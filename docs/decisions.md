@@ -962,6 +962,12 @@ The reason is storage: previews for every push had pushed Functions Storage past
 Hobby's 10 GB. For an empty preview commit, use
 `git commit --allow-empty -m "chore: request a preview [preview]"`.
 
+Related fixes also batch into one pull request, since every merge is a
+production deployment and one September 2026 day had 26 of them. A concern is
+what would be reverted together. Build config, fonts, the Contentful schema and
+`lib/api.ts` stay in pull requests of their own, because a squash merge means a
+batch is undone whole.
+
 ### What the guards catch, and what they cannot
 
 <!-- key: guard-limits -->
