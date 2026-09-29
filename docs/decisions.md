@@ -559,10 +559,10 @@ The standfirst and meta description on `/tags`, `/categories`, `/authors`,
 `/page/[page]` the standfirst has no fallback, so hard-coded copy can never pose
 as the CMS entry, while the meta description falls back to `SITE_DESCRIPTION`.
 
-Home is the deliberate exception: `SITE_DESCRIPTION` is site chrome, like
-`SITE_TITLE`. Do not move either into the CMS; they are read across many routes
-that never touch Contentful. `/archive`'s standfirst is generated from the data,
-and its `browseIntro` field is an all-or-nothing override.
+`SITE_DESCRIPTION` is site chrome, like `SITE_TITLE`, read on routes that never
+touch Contentful; home's fuller `HOME_TITLE` and `HOME_DESCRIPTION` sit beside
+them. None of them moves into the CMS. `/archive`'s standfirst is generated from
+the data, and its `browseIntro` field is an all-or-nothing override.
 
 ### The OG card's font is guarded by a real render, not a hash
 
