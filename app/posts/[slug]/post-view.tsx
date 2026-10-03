@@ -199,7 +199,7 @@ export default async function PostView({
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
               <TableOfContents headings={headings} />
               <div className="hidden xl:block">
-                <ExploreWithAI slug={slug} />
+                <ExploreWithAI slug={slug} german={german} />
               </div>
             </div>
           </aside>
