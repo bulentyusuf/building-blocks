@@ -785,7 +785,7 @@ Dates, html `lang`, OG locale and feed say `en-GB`; American formats regress.
 `de-DE` is per-post opt-in, English chrome, no fallback. Title, excerpt, body
 and sidenote notes are read in German, never an asset (the locale cascades, and
 assets have none). The rest is the English post's; English in German is `en-GB`.
-No Pagefind or feed; hreflang and sitemap pairs cross-link. Export: en-US.
+No Pagefind or feed; head-only hreflang (Firefox), archive DE link. Export: en-US.
 
 ### Single-entry fetchers are `cache()`-wrapped on purpose
 

@@ -68,7 +68,7 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 - Opt-in per post. A post gets a German page at `/de/posts/<slug>` once its title, excerpt and body all have German text, and no page otherwise. There is no fallback to English
 - The German page translates the article and keeps the site around it in English: navigation, footer, tags, author bios and related posts. Anything still English inside a German article is marked as English for screen readers
-- Each version links to the other under the byline, and both are paired with `hreflang` alternates in the page metadata and the sitemap
+- Each version links to the other under the byline, and both are paired with `hreflang` alternates in the page metadata. The sitemap lists both URLs
 - German pages stay out of site search and the RSS feed, which are English only
 
 **Metadata and machines**
