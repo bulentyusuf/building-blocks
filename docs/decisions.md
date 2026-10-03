@@ -782,10 +782,10 @@ three call sites are cheap to read. A fourth makes the guard worth writing.
 <!-- key: locale -->
 
 Dates, html `lang`, OG locale and feed say `en-GB`; American formats regress.
-`de-DE` is per-post opt-in under English chrome, with no fallback. Only title,
-excerpt and body are read in German, as the locale cascades to assets, which
-have none; the rest is the English post's. Kept out of Pagefind and the feed,
-cross-linked with hreflang and a sitemap pair. Export ships en-US.
+`de-DE` is per-post opt-in, English chrome, no fallback. Only title, excerpt and
+body are read in German (the locale cascades to assets, which have none); the
+rest is the English post's. Only German text and dateline carry `lang="de-DE"`.
+No Pagefind or feed; hreflang and sitemap pairs cross-link. Export: en-US.
 
 ### Single-entry fetchers are `cache()`-wrapped on purpose
 

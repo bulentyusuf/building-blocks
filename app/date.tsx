@@ -7,6 +7,14 @@ const LONG = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
+// German posts only; everything else on the site stays en-GB. [→ `locale`]
+const LONG_DE = new Intl.DateTimeFormat("de-DE", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
 const DAY_MONTH = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",
@@ -27,12 +35,15 @@ export function formatMonthYear(dateString: string): string {
 export default function DateComponent({
   dateString,
   variant = "long",
+  german = false,
 }: {
   dateString: string;
   // "dayMonth" for archive rows, where the section heading has the year.
   variant?: "long" | "dayMonth";
+  german?: boolean;
 }) {
-  const formatter = variant === "dayMonth" ? DAY_MONTH : LONG;
+  const formatter =
+    variant === "dayMonth" ? DAY_MONTH : german ? LONG_DE : LONG;
   return (
     <time dateTime={dateString}>{formatter.format(new Date(dateString))}</time>
   );

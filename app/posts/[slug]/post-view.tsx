@@ -22,8 +22,8 @@ import { jsonLdHtml, postAuthorsNode } from "@/lib/json-ld";
 import { widont } from "@/lib/typography";
 import type { CardPost, ListPost, Post } from "@/lib/types";
 
-// The post body for both routes. German posts are kept out of the search index
-// and carry their own lang under English chrome. [→ `locale`]
+// The post body for both routes. German posts are kept out of the search index.
+// Only the German parts carry de-DE; bio, tags and asides stay en-GB. [→ `locale`]
 export default async function PostView({
   post,
   morePosts,
@@ -73,19 +73,24 @@ export default async function PostView({
   const minutes = readingTimeMinutes(post.content.json);
 
   // Published date, the revision flag (short on mobile), then reading time.
+  // In German with the post: it sits between German excerpt and body.
   const dateline = (
-    <span className="tabular-nums">
-      <Date dateString={post.date} />
+    <span className="tabular-nums" lang={lang}>
+      <Date dateString={post.date} german={german} />
       {showUpdated && (
         <>
-          <span className="md:hidden"> (updated)</span>
+          <span className="md:hidden">
+            {german ? " (aktualisiert)" : " (updated)"}
+          </span>
           <span className="hidden md:inline">
-            {" · "}Updated <Date dateString={post.updatedDate!} />
+            {" · "}
+            {german ? "Aktualisiert am " : "Updated "}
+            <Date dateString={post.updatedDate!} german={german} />
           </span>
         </>
       )}
       {" · "}
-      {minutes} min read
+      {german ? `${minutes} Min. Lesezeit` : `${minutes} min read`}
     </span>
   );
 
@@ -136,7 +141,6 @@ export default async function PostView({
           "data-pagefind-meta": "url[data-url]",
           "data-url": path,
         })}
-        lang={lang}
         className="mx-auto max-w-5xl"
       >
         {post.coverImage && (
@@ -181,7 +185,10 @@ export default async function PostView({
             spans both rows of the left track. */}
         <div className="flex flex-col xl:grid xl:grid-cols-[1fr_3fr] xl:gap-x-10">
           <div className="order-1 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-1 xl:mx-0">
-            <p className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty">
+            <p
+              lang={lang}
+              className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty"
+            >
               {widont(post.excerpt)}
             </p>
             <div className="mb-10">
@@ -207,7 +214,10 @@ export default async function PostView({
           <div className="order-3 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-2 xl:mx-0">
             {/* Heading sizes are em, tracking the prose base; the plugin keys
                 heading margins to the heading's own size. */}
-            <div className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h3:font-[600] prose-h4:text-[1.15em]">
+            <div
+              lang={lang}
+              className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h3:font-[600] prose-h4:text-[1.15em]"
+            >
               <RichText
                 content={post.content}
                 headings={headings}
