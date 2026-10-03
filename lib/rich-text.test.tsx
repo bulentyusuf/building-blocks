@@ -1106,3 +1106,51 @@ describe("numeric table columns", () => {
     expect(narrowed).toEqual(["12", "4"]);
   });
 });
+
+describe("a single marked run keeps its mark", () => {
+  // widont() returns a string, so a paragraph or heading made of one marked
+  // run used to render as plain text. Seen live: whole-line commands in a
+  // tutorial lost their code styling.
+  const marked = (value: string, type: string) => ({
+    nodeType: "text",
+    value,
+    marks: [{ type }],
+    data: {},
+  });
+  const render = (...blocks: unknown[]) =>
+    renderToStaticMarkup(
+      <RichText
+        content={{
+          json: {
+            nodeType: BLOCKS.DOCUMENT,
+            data: {},
+            content: blocks,
+          } as unknown as Document,
+          links: { assets: { block: [] } },
+        }}
+        headings={[]}
+      />,
+    );
+
+  it("renders a code-only paragraph as code", () => {
+    const html = render({
+      nodeType: BLOCKS.PARAGRAPH,
+      data: {},
+      content: [marked("sudo apt update && sudo apt full-upgrade -y", "code")],
+    });
+    expect(html).toContain(
+      "<p><code>sudo apt update &amp;&amp; sudo apt full-upgrade -y</code></p>",
+    );
+  });
+
+  it("keeps an italic-only heading italic", () => {
+    const html = render(heading2(marked("The Wages of Fear", "italic")));
+    expect(html).toContain("<i>The Wages of Fear</i>");
+  });
+
+  it("still glues the last two words of an unmarked paragraph", () => {
+    // Control: the fix narrows widont, it does not switch it off.
+    const html = render(paragraph("A plain paragraph of body copy."));
+    expect(html).toContain("of body\u00a0copy.");
+  });
+});
