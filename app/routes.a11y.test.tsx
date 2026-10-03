@@ -10,8 +10,8 @@ import type { ReactElement } from "react";
 // Accessibility coverage for the routes app/a11y.test.tsx does not reach.
 // That file covers five page shapes by hand; this one renders the REAL route
 // components, with only the CMS mocked, inside the real RootLayout. Between
-// them the two files cover all sixteen routes, plus the not-found page, which
-// the sixteen do not include. [→ `guard-limits`]
+// them the two files cover all seventeen routes, plus the not-found page, which
+// the seventeen do not include. [→ `guard-limits`]
 //
 // The same two rules are disabled here as there, and for the same reason:
 // both need a layout engine that jsdom does not provide, so axe would report
@@ -92,6 +92,26 @@ const author = {
   bio: richText("Writes about content, code and generative AI."),
 };
 
+// A full post for the two post routes. The German one carries German title,
+// excerpt and body over the English post's covers, links and authors, which
+// is what getGermanPostAndMorePosts returns. [→ `locale`]
+const fullPost = (title: string, excerpt: string, body: string) => ({
+  ...post("first-post", title, "2026-03-02T00:00:00Z"),
+  excerpt,
+  content: richText(body),
+  authorsCollection: { items: [author] },
+});
+const englishPost = fullPost(
+  "The first post",
+  "Everything worth knowing about the first post.",
+  "A paragraph of body copy, long enough to read as an article rather than a stub, and to give axe a real page.",
+);
+const germanPost = fullPost(
+  "Der erste Beitrag",
+  "Alles Wissenswerte über den ersten Beitrag.",
+  "Ein Absatz Fließtext, lang genug, um als Artikel und nicht als Stummel durchzugehen, damit axe eine echte Seite prüft.",
+);
+
 vi.mock("@/lib/api", () => ({
   getAllPosts: async () => posts,
   getAllTags: async () => tags,
@@ -106,6 +126,15 @@ vi.mock("@/lib/api", () => ({
     },
   ],
   getRecentPostsByCategory: async () => posts.slice(0, 2),
+  getPostAndMorePosts: async () => ({
+    post: englishPost,
+    morePosts: posts.slice(1),
+  }),
+  getGermanPostAndMorePosts: async () => ({
+    post: germanPost,
+    morePosts: posts.slice(1),
+  }),
+  getGermanPostSlugs: async () => ["first-post"],
   getBrowseIntro: async (slug: string) => ({
     title: slug,
     slug,
@@ -173,10 +202,25 @@ const describeViolations = (violations: Result[]) =>
     )
     .join("\n\n");
 
+// A dynamic route's page takes its params, so it is wrapped to look like the
+// argument-free pages around it.
+const withSlug =
+  (load: () => Promise<{ default: unknown }>) =>
+  async (): Promise<{ default: unknown }> => {
+    const page = (await load()).default as (props: {
+      params: Promise<{ slug: string }>;
+    }) => Promise<ReactElement>;
+    return {
+      default: () => page({ params: Promise.resolve({ slug: "first-post" }) }),
+    };
+  };
+
 // Every route this file is responsible for, with the module it lives in. The
 // list is the point: a route added to the site and not added here has no axe
 // run anywhere, and nothing else in CI reports that.
 const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
+  ["/posts/[slug]", withSlug(() => import("@/app/posts/[slug]/page"))],
+  ["/de/posts/[slug]", withSlug(() => import("@/app/de/posts/[slug]/page"))],
   ["/archive", () => import("@/app/archive/page")],
   ["/categories", () => import("@/app/categories/page")],
   ["/tags", () => import("@/app/tags/page")],
