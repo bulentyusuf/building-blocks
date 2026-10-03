@@ -4,7 +4,8 @@ import { draftMode } from "next/headers";
 import DateComponent, { formatMonthYear } from "../date";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getBrowseIntro } from "@/lib/api";
+import { getAllPosts, getBrowseIntro, getGermanPostSlugs } from "@/lib/api";
+import { GERMAN_LOCALE } from "@/lib/constants";
 import type { ListPost } from "@/lib/types";
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
@@ -23,7 +24,11 @@ export default async function ArchivePage() {
   const { isEnabled } = await draftMode();
   const intro = await getBrowseIntro("archive", isEnabled);
 
-  const posts = await getAllPosts(isEnabled);
+  const [posts, germanSlugs] = await Promise.all([
+    getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
+  ]);
+  const german = new Set(germanSlugs);
 
   // Posts arrive newest first, so each year's list does too.
   const byYear = new Map<number, ListPost[]>();
@@ -99,12 +104,28 @@ export default async function ArchivePage() {
                           navigation. */}
                       <span className="sr-only"> {year}</span>
                     </span>
-                    <Link
-                      href={`/posts/${post.slug}`}
-                      className="order-1 text-xl hover:text-brand-crimson transition-colors duration-200 sm:order-2"
-                    >
-                      {widont(post.title)}
-                    </Link>
+                    <span className="order-1 sm:order-2">
+                      <Link
+                        href={`/posts/${post.slug}`}
+                        className="text-xl hover:text-brand-crimson transition-colors duration-200"
+                      >
+                        {widont(post.title)}
+                      </Link>
+                      {/* The one place a browsing reader learns a German
+                          version exists. Visible "DE" stays in the name.
+                          [→ `locale`] */}
+                      {german.has(post.slug) && (
+                        <Link
+                          href={`/de/posts/${post.slug}`}
+                          hrefLang={GERMAN_LOCALE}
+                          lang={GERMAN_LOCALE}
+                          className="ml-2.5 whitespace-nowrap font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+                        >
+                          <span className="sr-only">Auf Deutsch lesen, </span>
+                          DE
+                        </Link>
+                      )}
+                    </span>
                     {post.category && (
                       <Link
                         href={`/categories/${post.category.slug}`}

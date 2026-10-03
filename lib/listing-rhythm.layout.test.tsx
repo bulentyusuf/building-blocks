@@ -66,6 +66,8 @@ const posts = [1, 2, 3, 4, 5].map((n) => ({
 
 vi.mock("@/lib/api", () => ({
   getAllPosts: async () => posts,
+  // No German versions, so the archive rows measured here stay as they were.
+  getGermanPostSlugs: async () => [],
   getTagBySlug: async () => tag,
   getBrowseIntro: async (slug: string) => ({
     title: slug,
