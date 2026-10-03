@@ -916,6 +916,17 @@ describe("prompt block thumbnail", () => {
 
     expect(html).not.toContain('id="cover-prompt"');
   });
+
+  it("marks the prompt as English, since the field is never localised", () => {
+    const html = renderToStaticMarkup(
+      <RichText
+        content={promptContent({ prompt: "Draw a cat" })}
+        headings={[]}
+      />,
+    );
+
+    expect(html).toMatch(/<figure[^>]*lang="en-GB"/);
+  });
 });
 
 describe("numeric table columns", () => {

@@ -12,6 +12,7 @@ import type { ReactElement, ReactNode } from "react";
 import type { Asset, Content } from "./types";
 import type { Heading } from "./headings";
 import { widont } from "./typography";
+import { DEFAULT_LOCALE } from "./constants";
 
 function headingText(node: Block | Inline): string {
   if (!node?.content) return "";
@@ -333,6 +334,9 @@ export function RichText({
             <figure
               // A fixed id: the hero pill links to this literal.
               id={entry.sys.id === coverPromptId ? "cover-prompt" : undefined}
+              // Never localised, so always English, even in a German article.
+              // [→ `locale`]
+              lang={DEFAULT_LOCALE}
               data-pagefind-weight="0.1"
               className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
             >
