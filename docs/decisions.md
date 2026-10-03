@@ -784,8 +784,8 @@ three call sites are cheap to read. A fourth makes the guard worth writing.
 The Contentful default locale, `Intl.DateTimeFormat("en-GB")`, the html `lang`,
 the OG locale and the feed all say `en-GB`; American formats are a regression.
 `de-DE` is per-post opt-in under English chrome: no fallback, `/de/posts/[slug]`
-only where title and excerpt are German, `lang` on the h1 and article, kept out
-of Pagefind. `contentful/export.json` ships `en-US` as the fork template.
+only where title and excerpt are German, kept out of Pagefind and the feed; both
+versions cross-link, carry hreflang and share a sitemap pair. Export ships en-US.
 
 ### Single-entry fetchers are `cache()`-wrapped on purpose
 

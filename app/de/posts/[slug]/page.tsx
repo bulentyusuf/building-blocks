@@ -7,7 +7,13 @@ import {
 } from "@/lib/api";
 import { postAuthors } from "@/lib/authors";
 import PostView from "../../../posts/[slug]/post-view";
-import { SITE_URL, SITE_TITLE, GERMAN_OG_LOCALE } from "@/lib/constants";
+import {
+  SITE_URL,
+  SITE_TITLE,
+  GERMAN_OG_LOCALE,
+  DEFAULT_LOCALE,
+} from "@/lib/constants";
+import { postLanguageAlternates } from "@/lib/translations";
 
 // Only translated posts. Any other slug renders on demand and 404s.
 // [→ `locale`]
@@ -38,7 +44,7 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.excerpt,
-    alternates: { canonical },
+    alternates: { canonical, languages: postLanguageAlternates(slug) },
     // No card route here, so borrow the English one. [→ `og-card-on-demand`]
     openGraph: {
       title: post.title,
@@ -84,6 +90,11 @@ export default async function GermanPostPage({
       allPosts={allPosts}
       slug={slug}
       german
+      languageLink={{
+        href: `/posts/${slug}`,
+        lang: DEFAULT_LOCALE,
+        label: "Read in English",
+      }}
     />
   );
 }
