@@ -10,6 +10,8 @@ A small, statically generated blog. Posts are written and managed in a headless 
 
 The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, and a Sidenote type for asides set in the margin. There's also a Page type for standalone pages like the privacy notice, and a Browse Intro type holding the editable copy at the top of each browse page.
 
+The site is written in British English. Some posts also have a German translation, published post by post rather than site-wide: a translated post gets a second page under `/de/posts/`, and everything else stays English.
+
 A recurring subject of the blog is the process of building and maintaining it. Much of the codebase has been developed in collaboration with [Claude](https://claude.ai), and several posts document what that's actually like in practice. The visual identity uses editorial-style cover images generated with [Midjourney](https://www.midjourney.com).
 
 ## 🧱 Stack
@@ -24,13 +26,13 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 ## 🧩 Content model
 
-- **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a link to one category, and links to up to three authors
+- **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a link to one category, and links to up to three authors. Title, excerpt and body can carry a German translation; everything else is shared between the two versions
 - **Author**, name, picture, slug, and a short bio, with its own landing page. A post can carry more than one, and every author it names lists that post
 - **Category**, name, slug, description, and thumbnail, with its own landing page. Posts are filed under Main Quest or Side Quests
 - **Tag**, name, slug, and a one-line description, with its own landing page. Cross-cutting topics, up to three per post: where Category says where a post lives, a Tag says what it is about
 - **Code Block**, embedded into post bodies for syntax-highlighted snippets. Optional filename and a fixed list of languages
 - **Prompt Block**, embedded into post bodies to publish the generative-image prompt behind a cover, with an optional label and image
-- **Sidenote**, embedded inline in post bodies for asides set in the margin. A title for finding the entry in the CMS, and a rich-text note deliberately limited to bold, italic, and links
+- **Sidenote**, embedded inline in post bodies for asides set in the margin. A title for finding the entry in the CMS, and a rich-text note deliberately limited to bold, italic, and links. The note can carry a German translation; the title is for editors and stays English
 - **Page**, standalone rich-text pages such as About and Privacy
 - **Browse Intro**, the editable standfirst and meta description for a browse page, keyed by route. Lets the copy on Tags, Categories, Authors and Archive be reworded in the CMS rather than deployed
 
@@ -61,6 +63,13 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - Shared bylines, with overlapping author portraits and a bio for each author at the foot of the post
 - Sidenotes that float into the right margin on wide screens and collapse behind their reference number on narrow ones, opening without JavaScript
 - Skip link, a single visible focus indicator across the site, and reduced-motion support
+
+**German translations**
+
+- Opt-in per post. A post gets a German page at `/de/posts/<slug>` once its title, excerpt and body all have German text, and no page otherwise. There is no fallback to English
+- The German page translates the article and keeps the site around it in English: navigation, footer, tags, author bios and related posts. Anything still English inside a German article is marked as English for screen readers
+- Each version links to the other under the byline, and both are paired with `hreflang` alternates in the page metadata and the sitemap
+- German pages stay out of site search and the RSS feed, which are English only
 
 **Metadata and machines**
 
@@ -179,6 +188,7 @@ Forking this template carries over the original author's specifics. Change these
 - **llms.txt.** `public/llms.txt` is a hand-written file describing the original site. Replace it with your own, or delete it. If you delete it, drop the `llms-link-check` workflow too.
 - **Brand assets.** Replace the Open Graph image `public/be_useful.jpg`, swap the favicon and app icon, and retune the palette tokens and `themeColor` in `app/globals.css` and `app/layout.tsx` if you want a different look. The header colour lives in both `globals.css` and `lib/constants.ts`, and both need changing, because the web manifest and viewport `themeColor` are generated in JavaScript and cannot read CSS custom properties.
 - **Search illustration.** The empty-state emblem, `public/search-emblem.svg`, is bespoke artwork for this site, loaded via `<img>` in `app/search/page.tsx`. Replace or remove it.
+- **German posts (optional).** The content model template ships one locale, `en-US`, so a fresh fork has no German pages and needs no setup. Contentful answers the German queries in a space without that locale with an empty result, so the build carries on and logs a partial-response warning. To translate posts, add a `de-DE` locale in your space with no fallback, then fill in a post's German title, excerpt and body. The German route lives in `app/de/posts/[slug]/page.tsx`. Swapping German for another language is more than a constant change, because the German dateline, link labels and AI prompt are written in German in the code.
 - **Security headers (careful).** The Content Security Policy in `next.config.js` relaxes two directives per route, and both are load-bearing. `'wasm-unsafe-eval'` is allowed in `script-src` on the `/search` document and `/pagefind/*` assets only, because Pagefind's matching runs as WebAssembly inside a SharedWorker; removing it breaks search with no visible error. `frame-ancestors` allows `https://app.contentful.com` on `/posts/*` only, which is what lets Contentful frame a draft for live preview; every other route is framable by its own origin alone. If you point a preview URL at a content type outside `/posts`, add its route there too.
 - **Seed images (optional).** If you re-run the seed, repoint `PLACEHOLDER_ASSET_URL` in `contentful/build-seed.mjs` to your own copy, then replace the placeholder cover, avatar, and thumbnail with real assets afterwards.
 - **CLAUDE.md and docs/decisions.md (optional).** Useful as-is for working with Claude Code on the repo. `CLAUDE.md` carries the conventions; `docs/decisions.md` carries the reasoning behind them. Review both for any notes specific to the original author.

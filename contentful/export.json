@@ -95,7 +95,7 @@
           "id": "title",
           "name": "Title",
           "type": "Symbol",
-          "localized": false,
+          "localized": true,
           "required": true,
           "validations": [],
           "disabled": false,
@@ -157,7 +157,7 @@
           "id": "excerpt",
           "name": "Excerpt",
           "type": "Symbol",
-          "localized": false,
+          "localized": true,
           "required": true,
           "validations": [],
           "disabled": false,
@@ -167,7 +167,7 @@
           "id": "content",
           "name": "Content",
           "type": "RichText",
-          "localized": false,
+          "localized": true,
           "required": true,
           "validations": [
             {
@@ -770,7 +770,7 @@
           "id": "note",
           "name": "Note",
           "type": "RichText",
-          "localized": false,
+          "localized": true,
           "required": true,
           "validations": [
             {

@@ -11,6 +11,7 @@
 - [Authors](https://beuseful.net/authors): Author directory. Bulent Yusuf is a real person and writes most posts. Genial Yeti and Trippy Robot are AI-generated mascot personas, and the site is explicit that they are not real people.
 - [Archive](https://beuseful.net/archive): Every post on the site in a single page, grouped by year, with dates and categories.
 - [Privacy](https://beuseful.net/privacy): Privacy notice, contact address, analytics, hosting, how site search works, and what data is not collected.
+- German translations: some posts also have a German version at /de/posts/<slug>, alongside the English original at /posts/<slug>. Only translated posts have one. Each version links to the other, and the sitemap pairs them with hreflang alternates.
 
 ## Start here
 
@@ -41,6 +42,7 @@ This file does not enumerate every post on purpose, so it cannot fall out of dat
 - Preserve the distinction the site makes between AI-assisted production and human editorial ownership.
 - When summarising posts, emphasise practical lessons, process, and caveats rather than presenting experiments as universal best practice.
 - Some posts carry sidenotes, short authorial asides shown in the margin beside the paragraph that references them. They appear inline in the page source at their reference point, so read each one as an aside belonging to that sentence rather than as body copy, a caption, or navigation.
+- The site is written in British English. A German page at /de/posts/<slug> is a translation of the English post at the same slug, not a separate article: treat the English as the original, and attribute and date them as one post. On a German page only the article is translated; the navigation, tags, author bios and related posts around it stay in English.
 - Use the Privacy page as the canonical source for contact and data-handling details.
 - The site has a search page, but it is interactive only. Matching runs in the reader's browser against a prebuilt index, and there is no query endpoint to call. Use the Archive, sitemap, or category and author indexes above to find posts.
 
