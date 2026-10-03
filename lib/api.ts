@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { visibleTagSlugs } from "./tags";
 import { relatedPosts } from "./related";
-import { MAX_AUTHORS } from "./constants";
+import { MAX_AUTHORS, GERMAN_LOCALE } from "./constants";
 import type {
   Post,
   PostCollectionResponse,
@@ -464,6 +464,65 @@ export const getPostAndMorePosts = cache(
     ]);
 
     const post = extractPost(entry);
+    const morePosts = post ? relatedPosts(post, allPosts) : [];
+
+    return { post, morePosts };
+  },
+);
+
+// de-DE has no fallback, so an untranslated field is null, never English. A post
+// counts as German once title and excerpt are filled. [→ `locale`]
+export const getGermanPostSlugs = cache(
+  async (isDraftMode: boolean): Promise<string[]> => {
+    const items = await fetchAllCollectionItems<{
+      slug: string;
+      title: string | null;
+      excerpt: string | null;
+    }>(
+      "postCollection",
+      `query GetGermanPostSlugs($preview: Boolean, $limit: Int!, $skip: Int!) {
+      postCollection(where: { slug_exists: true }, locale: "${GERMAN_LOCALE}", order: date_DESC, preview: $preview, limit: $limit, skip: $skip) {
+        total
+        items {
+          slug
+          title
+          excerpt
+        }
+      }
+    }`,
+      isDraftMode,
+      { preview: isDraftMode },
+    );
+
+    return items.filter((p) => p.title && p.excerpt).map((p) => p.slug);
+  },
+);
+
+// Undefined unless title, excerpt and content are all German. Related posts
+// stay English. [→ `single-entry-cache`, `locale`]
+export const getGermanPostAndMorePosts = cache(
+  async (
+    slug: string,
+    preview: boolean,
+  ): Promise<{ post: Post | undefined; morePosts: CardPost[] }> => {
+    const [entry, allPosts] = await Promise.all([
+      fetchGraphQL<PostCollectionResponse>(
+        `query GetGermanPost($slug: String!, $preview: Boolean) {
+        postCollection(where: { slug: $slug }, locale: "${GERMAN_LOCALE}", preview: $preview, limit: 1) {
+          items {
+            ${POST_GRAPHQL_FIELDS}
+          }
+        }
+      }`,
+        preview,
+        { slug, preview },
+      ),
+      getAllPosts(preview),
+    ]);
+
+    const found = extractPost(entry);
+    const post =
+      found?.title && found.excerpt && found.content ? found : undefined;
     const morePosts = post ? relatedPosts(post, allPosts) : [];
 
     return { post, morePosts };

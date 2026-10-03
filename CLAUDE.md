@@ -201,9 +201,9 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 - **Every rich-text hyperlink goes through `lib/rich-text-link.tsx`** as the
   `INLINES.HYPERLINK` override. Do not copy the renderer to a second location.
   [→ `rich-text-links`]
-- **The locale is `en-GB` everywhere.** Any `en-US`, `en_US` or American date
-  formatting is a regression. `contentful/export.json` is the one deliberate
-  exception. [→ `locale`]
+- **The locale is `en-GB`, bar opt-in `de-DE` posts.** American formats are a
+  regression. `contentful/export.json` ships `en-US` deliberately. German has no
+  fallback; never give it one. [→ `locale`]
 - **Posts carry `authors`, an ordered array capped at three**, first entry is
   the lead. The Contentful size validation and the GraphQL `limit` are both 3
   and move together. There is no singular `author` field; the `author` content

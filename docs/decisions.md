@@ -69,7 +69,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `authors-array` — Posts carry `authors`, an ordered array capped at three
 - `rich-text-links` — Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
 - `json-ld` — Every structured-data block goes through `jsonLdHtml`
-- `locale` — The site's locale is en-GB, everywhere
+- `locale` — The site's locale is en-GB, with opt-in German posts
 - `single-entry-cache` — Single-entry fetchers are `cache()`-wrapped on purpose
 - `og-card-on-demand` — The post OG card renders on demand, not at build
 - `fetcher-cache` — Every fetcher in `lib/api.ts` is `cache()`-wrapped
@@ -147,7 +147,7 @@ the webhook is the fix, and it is Bulent's call. `/search` is `noindex`.
 <!-- key: pagefind-index-scope -->
 
 Two regions carry `data-pagefind-body`: a post's `h1` and its `<article>` in
-`app/posts/[slug]/page.tsx`. No other route is indexed.
+`app/posts/[slug]/post-view.tsx`, English only. No other route is indexed.
 
 Pagefind reads raw text and honours neither `aria-hidden` nor `opacity-0`, so
 anything inside a body region that is not the post's own words needs
@@ -772,20 +772,20 @@ through. Do not copy the renderer.
 `jsonLdHtml` in `lib/json-ld.ts` escapes `<`, `>` and `&` before the string
 reaches `dangerouslySetInnerHTML`, so a value cannot close the script early.
 Three call sites: `app/breadcrumb.tsx`, `app/listing-page.tsx` and
-`app/posts/[slug]/page.tsx`. It is defence in depth over trusted CMS data, and
+`app/posts/[slug]/post-view.tsx`. It is defence in depth over trusted CMS data, and
 the one raw-HTML sink that escapes rather than relying on trust.
 `lib/json-ld.test.ts` covers the escaping. No guard scans for an inline block;
 three call sites are cheap to read. A fourth makes the guard worth writing.
 
-### The site's locale is en-GB, everywhere
+### The site's locale is en-GB, with opt-in German posts
 
 <!-- key: locale -->
 
 The Contentful default locale, `Intl.DateTimeFormat("en-GB")`, the html `lang`,
-the OG locale and the feed all say `en-GB`. Any `en-US`, `en_US` or American
-date format is a regression. `de-DE` is in progress; add no locale plumbing
-ahead of it. `contentful/export.json` ships `en-US` because it is the template
-forks import, not a mirror of the live space. Do not "correct" it.
+the OG locale and the feed all say `en-GB`; American formats are a regression.
+`de-DE` is per-post opt-in under English chrome: no fallback, `/de/posts/[slug]`
+only where title and excerpt are German, `lang` on the h1 and article, kept out
+of Pagefind. `contentful/export.json` ships `en-US` as the fork template.
 
 ### Single-entry fetchers are `cache()`-wrapped on purpose
 

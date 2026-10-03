@@ -74,7 +74,7 @@ describe("the post h1 does not glue", () => {
   // posts scrolling sideways at a 20px root, up to 45px, and swapping the glued
   // space back to an ordinary one took every one of them to zero.
   const page = readFileSync(
-    join(__dirname, "..", "app", "posts", "[slug]", "page.tsx"),
+    join(__dirname, "..", "app", "posts", "[slug]", "post-view.tsx"),
     "utf8",
   );
 

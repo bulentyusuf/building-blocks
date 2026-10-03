@@ -1,15 +1,19 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
+import {
+  getAllPosts,
+  getGermanPostAndMorePosts,
+  getGermanPostSlugs,
+} from "@/lib/api";
 import { postAuthors } from "@/lib/authors";
-import PostView from "./post-view";
-import { SITE_URL, SITE_TITLE, DEFAULT_OG_LOCALE } from "@/lib/constants";
+import PostView from "../../../posts/[slug]/post-view";
+import { SITE_URL, SITE_TITLE, GERMAN_OG_LOCALE } from "@/lib/constants";
 
+// Only translated posts. Any other slug renders on demand and 404s.
+// [→ `locale`]
 export async function generateStaticParams() {
-  const allPosts = await getAllPosts(false);
-  return allPosts.map((post) => ({
-    slug: post.slug,
-  }));
+  const slugs = await getGermanPostSlugs(false);
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -19,14 +23,14 @@ export async function generateMetadata({
 }) {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  // The same call as the page, never getPost. [→ `single-entry-cache`]
-  const { post } = await getPostAndMorePosts(slug, isEnabled);
+  // The same call as the page. [→ `single-entry-cache`]
+  const { post } = await getGermanPostAndMorePosts(slug, isEnabled);
 
   if (!post) {
     return { title: "Post not found" };
   }
 
-  const canonical = `${SITE_URL}/posts/${slug}`;
+  const canonical = `${SITE_URL}/de/posts/${slug}`;
   const authorUrls = postAuthors(post)
     .filter((a) => a.slug)
     .map((a) => `${SITE_URL}/authors/${a.slug}`);
@@ -35,7 +39,7 @@ export async function generateMetadata({
     title: post.title,
     description: post.excerpt,
     alternates: { canonical },
-    // No images: the colocated opengraph-image route supplies the card.
+    // No card route here, so borrow the English one. [→ `og-card-on-demand`]
     openGraph: {
       title: post.title,
       description: post.excerpt,
@@ -44,28 +48,28 @@ export async function generateMetadata({
       modifiedTime: post.updatedDate ?? post.date,
       url: canonical,
       siteName: SITE_TITLE,
-      locale: DEFAULT_OG_LOCALE,
+      locale: GERMAN_OG_LOCALE,
       authors: authorUrls.length > 0 ? authorUrls : undefined,
+      images: [`${SITE_URL}/posts/${slug}/opengraph-image`],
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.excerpt,
+      images: [`${SITE_URL}/posts/${slug}/opengraph-image`],
     },
   };
 }
 
-export default async function PostPage({
+export default async function GermanPostPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  // All posts too: a pill shows only if its tag clears the sitewide threshold.
-  // [→ `post-scheduling`, `fetcher-cache`]
   const [{ post, morePosts }, allPosts] = await Promise.all([
-    getPostAndMorePosts(slug, isEnabled),
+    getGermanPostAndMorePosts(slug, isEnabled),
     getAllPosts(isEnabled),
   ]);
 
@@ -79,7 +83,7 @@ export default async function PostPage({
       morePosts={morePosts}
       allPosts={allPosts}
       slug={slug}
-      german={false}
+      german
     />
   );
 }
