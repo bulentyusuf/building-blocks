@@ -41,6 +41,8 @@ export interface Sidenote {
   __typename: "Sidenote";
   sys: { id: string };
   note: Content; // rich text — reuses the Content shape (json + links)
+  // Set only when an English note stands in on a German page. [→ `locale`]
+  lang?: string;
 }
 
 export interface EntryLink {

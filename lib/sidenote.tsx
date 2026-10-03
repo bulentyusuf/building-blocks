@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE } from "./constants";
 import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { ReactNode } from "react";
@@ -23,9 +24,12 @@ const bodyOptions = {
 export default function Sidenote({
   content,
   number,
+  lang,
 }: {
   content: Content;
   number: number;
+  // An English note standing in on a German page. [→ `locale`]
+  lang?: string;
 }) {
   const body = documentToReactComponents(content.json, bodyOptions);
   // Unique per page without useId, which would force a client component.
@@ -53,11 +57,13 @@ export default function Sidenote({
         className="sidenote-toggle"
         data-pagefind-ignore
       >
-        <span className="sr-only">Note {number}</span>
+        <span className="sr-only" lang={DEFAULT_LOCALE}>
+          Note {number}
+        </span>
         <sup aria-hidden="true">{number}</sup>
       </label>
       {/* not-prose: .sidenote-body owns the note's type and links. */}
-      <span id={bodyId} className="sidenote-body not-prose">
+      <span id={bodyId} lang={lang} className="sidenote-body not-prose">
         {body}
       </span>
     </span>

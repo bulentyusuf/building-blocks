@@ -465,6 +465,26 @@ describe("inline sidenote embed", () => {
     expect(html).toContain("sidenote-body");
   });
 
+  it("tags an English note standing in on a German page", () => {
+    const html = render("sn1", [
+      {
+        __typename: "Sidenote",
+        sys: { id: "sn1" },
+        note: noteContent("An English aside."),
+        lang: "en-GB",
+      },
+    ]);
+    expect(html).toMatch(/<span[^>]*lang="en-GB"[^>]*class="sidenote-body/);
+  });
+
+  it("leaves a note untagged when it has no lang", () => {
+    // Known-bad control for the test above.
+    const html = render("sn1", [
+      { __typename: "Sidenote", sys: { id: "sn1" }, note: noteContent("x") },
+    ]);
+    expect(html).not.toMatch(/<span[^>]*lang="[^"]*"[^>]*class="sidenote-body/);
+  });
+
   it("numbers multiple notes in document order", () => {
     const json = {
       nodeType: BLOCKS.DOCUMENT,
@@ -592,7 +612,10 @@ describe("inline sidenote embed", () => {
 
     // The <sup> is decorative, so the label's accessible name comes from the
     // visually hidden text. Without it the control announces as bare "1".
-    expect(html).toMatch(/<label[^>]*>\s*<span class="sr-only">Note 1<\/span>/);
+    // Its own lang: "Note" is English chrome inside a possibly German body.
+    expect(html).toMatch(
+      /<label[^>]*>\s*<span class="sr-only" lang="en-GB">Note 1<\/span>/,
+    );
   });
 
   // A note body renders through the same hyperlink renderer as the post body,
@@ -676,6 +699,13 @@ describe("embedded asset alt text and captions", () => {
         },
       },
     }) as unknown as Content;
+
+  it("marks the figure English, since asset fields have no German", () => {
+    const html = renderToStaticMarkup(
+      <RichText content={withAsset({ title: "A cat" })} headings={[]} />,
+    );
+    expect(html).toMatch(/<figure[^>]*lang="en-GB"/);
+  });
 
   it("warns and renders empty alt when the title is missing", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});

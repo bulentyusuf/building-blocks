@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { visibleTagSlugs } from "./tags";
 import { relatedPosts } from "./related";
-import { MAX_AUTHORS, GERMAN_LOCALE } from "./constants";
+import { MAX_AUTHORS, GERMAN_LOCALE, DEFAULT_LOCALE } from "./constants";
 import type {
   Post,
   PostCollectionResponse,
@@ -514,7 +514,18 @@ export const getGermanPostAndMorePosts = cache(
             items?: {
               title: string | null;
               excerpt: string | null;
-              content: { json: Post["content"]["json"] } | null;
+              content: {
+                json: Post["content"]["json"];
+                links?: {
+                  entries?: {
+                    inline?: ({
+                      __typename?: string;
+                      sys: { id: string };
+                      note?: { json: Post["content"]["json"] } | null;
+                    } | null)[];
+                  };
+                };
+              } | null;
             }[];
           };
         };
@@ -526,6 +537,22 @@ export const getGermanPostAndMorePosts = cache(
             excerpt
             content {
               json
+              # Sidenote text only; never select an asset here.
+              links {
+                entries {
+                  inline {
+                    sys {
+                      id
+                    }
+                    __typename
+                    ... on Sidenote {
+                      note {
+                        json
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -547,12 +574,32 @@ export const getGermanPostAndMorePosts = cache(
     }
 
     // German body, English links: an embed the English body lacks renders as
-    // nothing, which the renderer already handles.
+    // nothing, which the renderer already handles. A sidenote takes its German
+    // note where one exists, else stays English and says so.
+    const germanNotes = new Map(
+      (german.content.links?.entries?.inline ?? []).flatMap((e) =>
+        e?.__typename === "Sidenote" && e.note?.json
+          ? [[e.sys.id, e.note.json] as const]
+          : [],
+      ),
+    );
+    const links = english.post.content.links;
+    const inline = links.entries?.inline?.map((note) => {
+      const json = germanNotes.get(note.sys.id);
+      return json
+        ? { ...note, note: { ...note.note, json } }
+        : { ...note, lang: DEFAULT_LOCALE };
+    });
     const post: Post = {
       ...english.post,
       title: german.title,
       excerpt: german.excerpt,
-      content: { ...english.post.content, json: german.content.json },
+      content: {
+        json: german.content.json,
+        links: links.entries
+          ? { ...links, entries: { ...links.entries, inline } }
+          : links,
+      },
     };
 
     return { post, morePosts: english.morePosts };
