@@ -20,17 +20,21 @@ function TocNav({
   headings,
   activeId,
   onLinkClick,
+  lang,
 }: {
   headings: Heading[];
   activeId: string | null;
   onLinkClick: (slug: string) => void;
+  lang?: string;
 }) {
   return (
     <nav aria-label="Table of contents" className="text-sm">
       <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block">
         On this page
       </p>
-      <ul className="space-y-2 border-l border-brand-dark/10">
+      {/* The entries are the post's headings, so they take its language; the
+          label above is chrome. [→ `locale`] */}
+      <ul lang={lang} className="space-y-2 border-l border-brand-dark/10">
         {headings.map((h) => (
           <li key={h.slug}>
             <a
@@ -58,7 +62,13 @@ function TocNav({
   );
 }
 
-export default function TableOfContents({ headings }: { headings: Heading[] }) {
+export default function TableOfContents({
+  headings,
+  lang,
+}: {
+  headings: Heading[];
+  lang?: string;
+}) {
   const [activeId, setActiveId] = useState<string>("");
 
   // A targeted heading (a ToC click, or a deep link at load) holds the
@@ -189,11 +199,21 @@ export default function TableOfContents({ headings }: { headings: Heading[] }) {
           </svg>
         </summary>
         <div className="border-t border-brand-dark/10 px-4 pt-3 pb-4">
-          <TocNav headings={headings} activeId={activeId} onLinkClick={pin} />
+          <TocNav
+            headings={headings}
+            activeId={activeId}
+            onLinkClick={pin}
+            lang={lang}
+          />
         </div>
       </details>
       <div className="hidden xl:block">
-        <TocNav headings={headings} activeId={activeId} onLinkClick={pin} />
+        <TocNav
+          headings={headings}
+          activeId={activeId}
+          onLinkClick={pin}
+          lang={lang}
+        />
       </div>
     </>
   );

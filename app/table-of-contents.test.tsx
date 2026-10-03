@@ -187,3 +187,25 @@ describe("a targeted heading holds the highlight", () => {
     expect(resize).toHaveLength(0);
   });
 });
+
+describe("the entries' language", () => {
+  // The entries are the post's own headings, so a German post's are German.
+  it("marks both lists with the post's language", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} lang="de-DE" />,
+    );
+    const lists = container.querySelectorAll("ul");
+    // Non-vacuous: the mobile and desktop copies must both be found.
+    expect(lists).toHaveLength(2);
+    lists.forEach((ul) => expect(ul.getAttribute("lang")).toBe("de-DE"));
+  });
+
+  it("adds no lang on an English post", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} />,
+    );
+    container
+      .querySelectorAll("ul")
+      .forEach((ul) => expect(ul.hasAttribute("lang")).toBe(false));
+  });
+});
