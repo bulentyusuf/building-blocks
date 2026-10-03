@@ -51,8 +51,8 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
   follows.** No route sits half in each. [→ `page-axis`]
 - **Wide**: header at `max-w-5xl`, `<Breadcrumb>` unwrapped, `h1` at `text-4xl
 leading-tight md:text-5xl lg:text-6xl`, closed by a 3px `border-brand-dark`
-  rule. Thirteen routes: `/`, `/page/[page]`, `/posts/[slug]`, `/archive`,
-  `/categories`, `/tags`, `/authors`, and the six taxonomy listings.
+  rule. Fourteen routes: `/`, `/page/[page]`, `/posts/[slug]`, `/de/posts/[slug]`,
+  `/archive`, `/categories`, `/tags`, `/authors`, and the six taxonomy listings.
 - **Narrow**: header wrapped in `mx-auto max-w-2xl`, `h1` at `mb-6 text-4xl
 md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
   `/privacy`, `/search`.
