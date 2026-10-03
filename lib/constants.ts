@@ -110,3 +110,8 @@ export const DEFAULT_LOCALE = "en-GB";
 
 // Open Graph uses an underscore.
 export const DEFAULT_OG_LOCALE = "en_GB";
+
+// Per-post opt-in under English chrome; no fallback, so empty means untranslated.
+// [→ `locale`]
+export const GERMAN_LOCALE = "de-DE";
+export const GERMAN_OG_LOCALE = "de_DE";
