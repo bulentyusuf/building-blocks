@@ -3,9 +3,21 @@ import NewWindowHint from "./new-window-hint";
 
 // Plain outbound links carrying the post URL. The ?q= params are product
 // affordances, not contracts, so check them if a provider changes.
-export default function ExploreWithAI({ slug }: { slug: string }) {
-  const postUrl = `${SITE_URL}/posts/${slug}`;
-  const prompt = `Read ${postUrl} and answer my questions about it.`;
+// German pages send the German URL and prompt; labels stay English chrome.
+// [→ `locale`]
+export default function ExploreWithAI({
+  slug,
+  german,
+}: {
+  slug: string;
+  german: boolean;
+}) {
+  const postUrl = german
+    ? `${SITE_URL}/de/posts/${slug}`
+    : `${SITE_URL}/posts/${slug}`;
+  const prompt = german
+    ? `Lies ${postUrl} und beantworte meine Fragen dazu.`
+    : `Read ${postUrl} and answer my questions about it.`;
   const q = encodeURIComponent(prompt);
 
   const targets = [
