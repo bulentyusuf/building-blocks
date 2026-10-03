@@ -18,6 +18,10 @@ describe("LanguageLink", () => {
     expect(html).toContain("Auch auf Deutsch lesen");
   });
 
+  it("hides the icon from assistive tech, so the label is the whole name", () => {
+    expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
+  });
+
   it("keeps the link out of the search index", () => {
     expect(html).toContain("data-pagefind-ignore");
   });
