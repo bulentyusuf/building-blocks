@@ -73,7 +73,8 @@ export default async function PostView({
   const minutes = readingTimeMinutes(post.content.json);
 
   // Published date, the revision flag (short on mobile), then reading time.
-  // In German with the post: it sits between German excerpt and body.
+  // In German with the post: it sits between German excerpt and body. The
+  // reading time never breaks across lines.
   const dateline = (
     <span className="tabular-nums" lang={lang}>
       <Date dateString={post.date} german={german} />
@@ -90,7 +91,9 @@ export default async function PostView({
         </>
       )}
       {" · "}
-      {german ? `${minutes} Min. Lesezeit` : `${minutes} min read`}
+      {german
+        ? `${minutes}\u00a0Min.\u00a0Lesezeit`
+        : `${minutes}\u00a0min\u00a0read`}
     </span>
   );
 
@@ -195,8 +198,17 @@ export default async function PostView({
               {widont(post.excerpt)}
             </p>
             <div className="mb-10">
-              <Avatar authors={authors} meta={dateline} />
-              {languageLink && <LanguageLink {...languageLink} />}
+              {/* In the meta column, so it aligns with the dateline however
+                  many portraits stack. */}
+              <Avatar
+                authors={authors}
+                meta={
+                  <>
+                    {dateline}
+                    {languageLink && <LanguageLink {...languageLink} />}
+                  </>
+                }
+              />
             </div>
           </div>
 
