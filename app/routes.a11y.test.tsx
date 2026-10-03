@@ -364,3 +364,22 @@ describe.each(routes)("%s", (name, load) => {
     },
   );
 });
+
+describe("/archive German marker", () => {
+  it("links a translated post's German page, and only that post's", async () => {
+    // Fixture: getGermanPostSlugs returns first-post alone.
+    const mod = await import("@/app/archive/page");
+    await auditRoute(mod.default as () => Promise<ReactElement>);
+    const markers = [
+      ...document.querySelectorAll('main a[href^="/de/posts/"]'),
+    ];
+    expect(markers.map((a) => a.getAttribute("href"))).toEqual([
+      "/de/posts/first-post",
+    ]);
+    const [marker] = markers;
+    expect(marker.getAttribute("hreflang")).toBe("de-DE");
+    expect(marker.getAttribute("lang")).toBe("de-DE");
+    // The visible label must sit inside the accessible name (WCAG 2.5.3).
+    expect(marker.textContent).toMatch(/Auf Deutsch lesen,\s*DE/);
+  });
+});
