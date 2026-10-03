@@ -11,7 +11,7 @@
 - [Authors](https://beuseful.net/authors): Author directory. Bulent Yusuf is a real person and writes most posts. Genial Yeti and Trippy Robot are AI-generated mascot personas, and the site is explicit that they are not real people.
 - [Archive](https://beuseful.net/archive): Every post on the site in a single page, grouped by year, with dates and categories.
 - [Privacy](https://beuseful.net/privacy): Privacy notice, contact address, analytics, hosting, how site search works, and what data is not collected.
-- German translations: some posts also have a German version at /de/posts/<slug>, alongside the English original at /posts/<slug>. Only translated posts have one. Each version links to the other, and the sitemap pairs them with hreflang alternates.
+- German translations: some posts also have a German version at /de/posts/<slug>, alongside the English original at /posts/<slug>. Only translated posts have one. Each version links to the other and declares the pair with hreflang alternates in its page head. The sitemap lists both URLs.
 
 ## Start here
 

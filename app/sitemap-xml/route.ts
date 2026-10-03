@@ -10,18 +10,19 @@ import { escapeXml } from "@/lib/xml";
 import type { ListPost } from "@/lib/types";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
-import { postLanguageAlternates } from "@/lib/translations";
 
 // Served at /sitemap.xml through a rewrite: Next's reserved sitemap route does
 // not carry fetch tags, so revalidateTag would never reach it. The daily
 // revalidate is a fallback.
+//
+// German pages are listed, but their hreflang pairs live in each page's head,
+// not here: one XHTML-namespaced element stops Firefox pretty-printing the
+// file. Google treats the two declarations as equivalent. [→ `locale`]
 export const revalidate = 86400;
 
 type SitemapEntry = {
   url: string;
   lastModified: Date;
-  // hreflang code to URL, on both versions of a translated post. [→ `locale`]
-  alternates?: Record<string, string>;
 };
 
 // An invalid date would throw and freeze the sitemap on its last good copy.
@@ -78,9 +79,6 @@ export async function GET() {
   const postEntries: SitemapEntry[] = posts.map((post) => ({
     url: `${SITE_URL}/posts/${post.slug}`,
     lastModified: postDate(post),
-    alternates: german.has(post.slug)
-      ? postLanguageAlternates(post.slug)
-      : undefined,
   }));
 
   // Shares the English lastmod: dates are not localised.
@@ -89,7 +87,6 @@ export async function GET() {
     .map((post) => ({
       url: `${SITE_URL}/de/posts/${post.slug}`,
       lastModified: postDate(post),
-      alternates: postLanguageAlternates(post.slug),
     }));
 
   const pageEntries: SitemapEntry[] = pages
@@ -154,20 +151,13 @@ export async function GET() {
     .map(
       (entry) => `  <url>
     <loc>${escapeXml(entry.url)}</loc>
-    <lastmod>${safeIso(entry.lastModified)}</lastmod>${Object.entries(
-      entry.alternates ?? {},
-    )
-      .map(
-        ([lang, href]) => `
-    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(href)}"/>`,
-      )
-      .join("")}
+    <lastmod>${safeIso(entry.lastModified)}</lastmod>
   </url>`,
     )
     .join("\n");
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
 </urlset>
 `;
