@@ -498,34 +498,64 @@ export const getGermanPostSlugs = cache(
   },
 );
 
-// Undefined unless title, excerpt and content are all German. Related posts
-// stay English. [→ `single-entry-cache`, `locale`]
+// Undefined unless title, excerpt and content are all German. Only those three
+// come from de-DE; the locale cascades to links, and assets have no German
+// version, so covers, portraits and embeds come from the English post.
+// [→ `single-entry-cache`, `locale`]
 export const getGermanPostAndMorePosts = cache(
   async (
     slug: string,
     preview: boolean,
   ): Promise<{ post: Post | undefined; morePosts: CardPost[] }> => {
-    const [entry, allPosts] = await Promise.all([
-      fetchGraphQL<PostCollectionResponse>(
+    const [entry, english] = await Promise.all([
+      fetchGraphQL<{
+        data?: {
+          postCollection?: {
+            items?: {
+              title: string | null;
+              excerpt: string | null;
+              content: { json: Post["content"]["json"] } | null;
+            }[];
+          };
+        };
+      }>(
         `query GetGermanPost($slug: String!, $preview: Boolean) {
         postCollection(where: { slug: $slug }, locale: "${GERMAN_LOCALE}", preview: $preview, limit: 1) {
           items {
-            ${POST_GRAPHQL_FIELDS}
+            title
+            excerpt
+            content {
+              json
+            }
           }
         }
       }`,
         preview,
         { slug, preview },
       ),
-      getAllPosts(preview),
+      getPostAndMorePosts(slug, preview),
     ]);
 
-    const found = extractPost(entry);
-    const post =
-      found?.title && found.excerpt && found.content ? found : undefined;
-    const morePosts = post ? relatedPosts(post, allPosts) : [];
+    const german = entry?.data?.postCollection?.items?.[0];
+    if (
+      !english.post ||
+      !german?.title ||
+      !german.excerpt ||
+      !german.content?.json
+    ) {
+      return { post: undefined, morePosts: [] };
+    }
 
-    return { post, morePosts };
+    // German body, English links: an embed the English body lacks renders as
+    // nothing, which the renderer already handles.
+    const post: Post = {
+      ...english.post,
+      title: german.title,
+      excerpt: german.excerpt,
+      content: { ...english.post.content, json: german.content.json },
+    };
+
+    return { post, morePosts: english.morePosts };
   },
 );
 
