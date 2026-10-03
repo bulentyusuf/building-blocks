@@ -3,12 +3,14 @@ import {
   getAllPages,
   getAllCategories,
   getAllAuthors,
+  getGermanPostSlugs,
 } from "@/lib/api";
 import { SITE_URL } from "@/lib/constants";
 import { escapeXml } from "@/lib/xml";
 import type { ListPost } from "@/lib/types";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
 import { postAuthors } from "@/lib/authors";
+import { postLanguageAlternates } from "@/lib/translations";
 
 // Served at /sitemap.xml through a rewrite: Next's reserved sitemap route does
 // not carry fetch tags, so revalidateTag would never reach it. The daily
@@ -18,6 +20,8 @@ export const revalidate = 86400;
 type SitemapEntry = {
   url: string;
   lastModified: Date;
+  // hreflang code to URL, on both versions of a translated post. [→ `locale`]
+  alternates?: Record<string, string>;
 };
 
 // An invalid date would throw and freeze the sitemap on its last good copy.
@@ -28,12 +32,14 @@ const safeIso = (d: Date): string =>
 const ROUTED_PAGE_SLUGS = new Set(["about", "privacy"]);
 
 export async function GET() {
-  const [posts, pages, categories, authors] = await Promise.all([
+  const [posts, pages, categories, authors, germanSlugs] = await Promise.all([
     getAllPosts(false),
     getAllPages(false),
     getAllCategories(false),
     getAllAuthors(false),
+    getGermanPostSlugs(false),
   ]);
+  const german = new Set(germanSlugs);
 
   const postDate = (post: ListPost): Date =>
     new Date(post.updatedDate ?? post.date);
@@ -72,7 +78,19 @@ export async function GET() {
   const postEntries: SitemapEntry[] = posts.map((post) => ({
     url: `${SITE_URL}/posts/${post.slug}`,
     lastModified: postDate(post),
+    alternates: german.has(post.slug)
+      ? postLanguageAlternates(post.slug)
+      : undefined,
   }));
+
+  // Shares the English lastmod: dates are not localised.
+  const germanEntries: SitemapEntry[] = posts
+    .filter((post) => german.has(post.slug))
+    .map((post) => ({
+      url: `${SITE_URL}/de/posts/${post.slug}`,
+      lastModified: postDate(post),
+      alternates: postLanguageAlternates(post.slug),
+    }));
 
   const pageEntries: SitemapEntry[] = pages
     .filter((page) => ROUTED_PAGE_SLUGS.has(page.slug))
@@ -129,19 +147,27 @@ export async function GET() {
     ...tagEntries,
     ...authorEntries,
     ...postEntries,
+    ...germanEntries,
   ];
 
   const urls = entries
     .map(
       (entry) => `  <url>
     <loc>${escapeXml(entry.url)}</loc>
-    <lastmod>${safeIso(entry.lastModified)}</lastmod>
+    <lastmod>${safeIso(entry.lastModified)}</lastmod>${Object.entries(
+      entry.alternates ?? {},
+    )
+      .map(
+        ([lang, href]) => `
+    <xhtml:link rel="alternate" hreflang="${lang}" href="${escapeXml(href)}"/>`,
+      )
+      .join("")}
   </url>`,
     )
     .join("\n");
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls}
 </urlset>
 `;

@@ -16,6 +16,7 @@ import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
 import SidenoteEnterKey from "../../sidenote-enter-key";
 import { type Crumb } from "../../breadcrumb";
+import LanguageLink from "../../language-link";
 import { SITE_URL, SITE_AUTHOR, GERMAN_LOCALE } from "@/lib/constants";
 import { jsonLdHtml, postAuthorsNode } from "@/lib/json-ld";
 import { widont } from "@/lib/typography";
@@ -29,12 +30,15 @@ export default async function PostView({
   allPosts,
   slug,
   german,
+  languageLink,
 }: {
   post: Post;
   morePosts: CardPost[];
   allPosts: ListPost[];
   slug: string;
   german: boolean;
+  /** The other language version, when there is one. */
+  languageLink?: { href: string; lang: string; label: string };
 }) {
   const path = german ? `/de/posts/${slug}` : `/posts/${slug}`;
   const lang = german ? GERMAN_LOCALE : undefined;
@@ -182,6 +186,7 @@ export default async function PostView({
             </p>
             <div className="mb-10">
               <Avatar authors={authors} meta={dateline} />
+              {languageLink && <LanguageLink {...languageLink} />}
             </div>
           </div>
 

@@ -1,9 +1,19 @@
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import { getAllPosts, getPostAndMorePosts } from "@/lib/api";
+import {
+  getAllPosts,
+  getGermanPostSlugs,
+  getPostAndMorePosts,
+} from "@/lib/api";
 import { postAuthors } from "@/lib/authors";
 import PostView from "./post-view";
-import { SITE_URL, SITE_TITLE, DEFAULT_OG_LOCALE } from "@/lib/constants";
+import {
+  SITE_URL,
+  SITE_TITLE,
+  DEFAULT_OG_LOCALE,
+  GERMAN_LOCALE,
+} from "@/lib/constants";
+import { postLanguageAlternates } from "@/lib/translations";
 
 export async function generateStaticParams() {
   const allPosts = await getAllPosts(false);
@@ -19,8 +29,11 @@ export async function generateMetadata({
 }) {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  // The same call as the page, never getPost. [→ `single-entry-cache`]
-  const { post } = await getPostAndMorePosts(slug, isEnabled);
+  // The same calls as the page, never getPost. [→ `single-entry-cache`]
+  const [{ post }, germanSlugs] = await Promise.all([
+    getPostAndMorePosts(slug, isEnabled),
+    getGermanPostSlugs(isEnabled),
+  ]);
 
   if (!post) {
     return { title: "Post not found" };
@@ -34,7 +47,12 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.excerpt,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      ...(germanSlugs.includes(slug) && {
+        languages: postLanguageAlternates(slug),
+      }),
+    },
     // No images: the colocated opengraph-image route supplies the card.
     openGraph: {
       title: post.title,
@@ -64,9 +82,10 @@ export default async function PostPage({
   const { slug } = await params;
   // All posts too: a pill shows only if its tag clears the sitewide threshold.
   // [→ `post-scheduling`, `fetcher-cache`]
-  const [{ post, morePosts }, allPosts] = await Promise.all([
+  const [{ post, morePosts }, allPosts, germanSlugs] = await Promise.all([
     getPostAndMorePosts(slug, isEnabled),
     getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
   ]);
 
   if (!post) {
@@ -80,6 +99,15 @@ export default async function PostPage({
       allPosts={allPosts}
       slug={slug}
       german={false}
+      languageLink={
+        germanSlugs.includes(slug)
+          ? {
+              href: `/de/posts/${slug}`,
+              lang: GERMAN_LOCALE,
+              label: "Auch auf Deutsch lesen",
+            }
+          : undefined
+      }
     />
   );
 }
