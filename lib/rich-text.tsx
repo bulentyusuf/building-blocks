@@ -152,6 +152,16 @@ export function RichText({
   // [→ `scroll-region-names`]
   let codeBlockIndex = 0;
 
+  // widont() rewrites a run as a string, so only an unmarked one qualifies.
+  // A lone code, bold or italic run would otherwise lose its mark.
+  const plainRun = (node: Block | Inline) => {
+    const only = node.content?.length === 1 ? node.content[0] : undefined;
+    return (
+      only?.nodeType === "text" &&
+      ((only as { marks?: unknown[] }).marks?.length ?? 0) === 0
+    );
+  };
+
   // The post title is the only h1, so body h1s become h2s. H3 to H6 keep their
   // levels and stay out of the ToC.
   const coalesceToH2 = (_node: Block | Inline, children: ReactNode) => (
@@ -164,9 +174,7 @@ export function RichText({
         const text = headingText(node).trim();
         if (!text) return <h2>{children}</h2>;
         const slug = headings[headingIndex++]?.slug;
-        // widont only on a single plain run, so inline marks survive.
-        const isPlainRun =
-          node.content?.length === 1 && node.content[0]?.nodeType === "text";
+        const isPlainRun = plainRun(node);
         return (
           // No scroll margin here. [→ `scroll-offset`]
           <h2 id={slug} className="group/heading">
@@ -194,9 +202,7 @@ export function RichText({
       },
       [BLOCKS.HEADING_1]: coalesceToH2,
       [BLOCKS.PARAGRAPH]: (node: Block | Inline, children: ReactNode) => {
-        // widont only on a single plain run, as for headings.
-        const isPlainRun =
-          node.content?.length === 1 && node.content[0]?.nodeType === "text";
+        const isPlainRun = plainRun(node);
         const text = isPlainRun
           ? (node.content[0] as { value?: string })?.value?.trim()
           : undefined;
