@@ -69,7 +69,24 @@ describe("getGermanPostAndMorePosts", () => {
             coverImage: { url: "https://images.ctfassets.net/cover.jpg" },
             content: {
               json: { nodeType: "document", content: [] },
-              links: { assets: { block: [{ sys: { id: "img" } }] } },
+              links: {
+                assets: { block: [{ sys: { id: "img" } }] },
+                entries: {
+                  block: [],
+                  inline: [
+                    {
+                      __typename: "Sidenote",
+                      sys: { id: "n1" },
+                      note: { json: "en-1", links: {} },
+                    },
+                    {
+                      __typename: "Sidenote",
+                      sys: { id: "n2" },
+                      note: { json: "en-2", links: {} },
+                    },
+                  ],
+                },
+              },
             },
           },
         ]);
@@ -110,7 +127,8 @@ describe("getGermanPostAndMorePosts", () => {
       .map((c) => (JSON.parse(c[1].body) as { query: string }).query)
       .find((q) => q.includes("GetGermanPost"));
     expect(germanQuery).toContain('locale: "de-DE"');
-    expect(germanQuery).not.toMatch(/coverImage|picture|url|links/);
+    // Sidenote text may come through links; an asset never may.
+    expect(germanQuery).not.toMatch(/coverImage|picture|url|assets/);
   });
 
   it("returns no post when the German body is missing", async () => {
@@ -121,5 +139,38 @@ describe("getGermanPostAndMorePosts", () => {
 
     const { post } = await getGermanPostAndMorePosts("c-post", false);
     expect(post).toBeUndefined();
+  });
+
+  it("uses a German sidenote where one exists and tags the rest English", async () => {
+    vi.stubGlobal(
+      "fetch",
+      respond({
+        title: "Titel",
+        excerpt: "Auszug",
+        content: {
+          json: { nodeType: "document", content: [] },
+          links: {
+            entries: {
+              inline: [
+                {
+                  __typename: "Sidenote",
+                  sys: { id: "n1" },
+                  note: { json: "de-1" },
+                },
+                { __typename: "Sidenote", sys: { id: "n2" }, note: null },
+              ],
+            },
+          },
+        },
+      }),
+    );
+
+    const { post } = await getGermanPostAndMorePosts("d-post", false);
+    const [n1, n2] = post!.content.links.entries!.inline!;
+    expect(n1.note.json).toBe("de-1");
+    expect(n1.lang).toBeUndefined();
+    // Known-bad control: the untranslated note keeps its English text.
+    expect(n2.note.json).toBe("en-2");
+    expect(n2.lang).toBe("en-GB");
   });
 });

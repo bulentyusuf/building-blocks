@@ -87,7 +87,9 @@ function RichTextAsset({
 
   return (
     // not-prose: the plugin's own figure margins would swamp the caption gap.
-    <figure className="not-prose my-8">
+    // Alt text and caption are asset fields, which have no German version.
+    // [→ `locale`]
+    <figure lang={DEFAULT_LOCALE} className="not-prose my-8">
       {lightbox ? (
         <LightboxImage
           src={asset.url}
@@ -384,7 +386,13 @@ export function RichText({
         // Same defensive shape as the block case. [→ `sidenotes`]
         if (!entry || entry.__typename !== "Sidenote") return null;
 
-        return <Sidenote content={entry.note} number={sidenoteIndex++} />;
+        return (
+          <Sidenote
+            content={entry.note}
+            number={sidenoteIndex++}
+            lang={entry.lang}
+          />
+        );
       },
       [INLINES.HYPERLINK]: renderHyperlink,
     },
