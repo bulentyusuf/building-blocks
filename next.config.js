@@ -152,6 +152,17 @@ module.exports = {
       },
     ];
   },
+  async redirects() {
+    // Renamed post slugs that still get visits. Archived posts stay 404 unless
+    // a published post genuinely replaces them.
+    return [
+      {
+        source: "/posts/static-site-search",
+        destination: "/posts/static-site-search-pagefind",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     // /sitemap.xml is a Next-reserved metadata path whose special route does
     // not honour on-demand tag invalidation. Serve our ordinary /sitemap-xml
