@@ -106,9 +106,12 @@ export default async function PostView({
           label: post.category.name,
           href: `/categories/${post.category.slug}`,
         },
-        { label: post.title },
+        { label: post.title, lang },
       ]
-    : [{ label: "Home", href: "/" }, { label: post.title }];
+    : [
+        { label: "Home", href: "/" },
+        { label: post.title, lang },
+      ];
 
   return (
     // The excerpt stays in the body column. No contentOwnsLeading.
@@ -204,7 +207,7 @@ export default async function PostView({
             className={`order-2 mx-auto w-full max-w-2xl xl:order-none xl:col-start-1 xl:row-start-1 xl:row-span-2 xl:mx-0 xl:max-w-none xl:mb-0${hasTableOfContents(headings) ? " mb-9" : ""}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
-              <TableOfContents headings={headings} />
+              <TableOfContents headings={headings} lang={lang} />
               <div className="hidden xl:block">
                 <ExploreWithAI slug={slug} german={german} />
               </div>

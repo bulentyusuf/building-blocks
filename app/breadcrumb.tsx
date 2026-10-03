@@ -2,7 +2,8 @@ import Link from "next/link";
 import { SITE_URL } from "@/lib/constants";
 import { jsonLdHtml } from "@/lib/json-ld";
 
-export type Crumb = { label: string; href?: string };
+// lang only where a label is content in another language. [→ `locale`]
+export type Crumb = { label: string; href?: string; lang?: string };
 
 export default function Breadcrumb({ items }: { items: Crumb[] }) {
   const jsonLd = {
@@ -31,6 +32,7 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
                 {item.href && !isLast ? (
                   <Link
                     href={item.href}
+                    lang={item.lang}
                     className="hover:text-brand-crimson transition-colors duration-200"
                   >
                     {item.label}
@@ -41,6 +43,7 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
                       isLast ? "font-medium text-brand-dark" : undefined
                     }
                     aria-current={isLast ? "page" : undefined}
+                    lang={item.lang}
                   >
                     {item.label}
                   </span>
