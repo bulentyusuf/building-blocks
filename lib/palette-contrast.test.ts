@@ -135,103 +135,21 @@ describe("nav text on chrome clears AAA in both schemes", () => {
   });
 });
 
-// Five describe blocks retired here, by Phase 1 of the band retirement
-// (docs/decisions.md, "The masthead band was retired in favour of a 3px
-// rule"):
-//
-//   - "the browse band carries solid white text" and "the browse band stays a
-//     visible block in both schemes" checked --color-brand-band against white
-//     text and against the page. Nothing rendered bg-brand-band any more, so a
-//     passing or failing pairing for it said nothing about the shipped site.
-//     Phase 2 deleted the token itself. The block-visibility check did NOT
-//     lapse with it — it moved to --color-brand-header, which inherited the
-//     job and had no guard of its own. See "the chrome stays a visible block
-//     in both schemes" below.
-//   - "the cover keyline stays visible on the band in both schemes" checked
-//     --color-cover-keyline against --color-brand-band specifically, because
-//     the post cover used to cross the band's bottom edge. Every cover is
-//     contained now (see "Covers take one of two frames" in
-//     docs/decisions.md), so
-//     there is no seam left for the keyline to cross — the token stays,
-//     serving the shadow's other half against the page as it always did, but
-//     the band-specific pairing this asserted no longer describes anything
-//     that renders.
-//   - "the browse band's markup" read app/page-band.tsx directly for its root
-//     text colour and its absence of translucent white. The file is deleted;
-//     the white-text-on-root mechanism it guarded went with it, because
-//     ordinary body ink reads fine on the cream WidePage now renders on.
-//   - "no route paints body ink inside the band" was the same guard from the
-//     per-route end: an explicit text-brand-muted on a standfirst used to
-//     beat white inheritance and land dark ink on navy.
-//
-// Four of those five lapse. The fifth INVERTS, and it is the one that matters,
-// because the rule it encoded did not go away — it reversed. Under the band a
-// standfirst naming NO colour was correct, because it took solid white from
-// the band's root. On cream, naming no colour means body ink, which is not the
-// Standfirst role (audit role 4: text-lg, muted, roman) and leaves the
-// standfirst competing with the h1 above it instead of sitting under it. That
-// is a thirteen-route defect that looks merely slightly heavy rather than
-// broken, which is exactly the class of thing a guard is for. Retiring this
-// one without reversing it is how it shipped.
+// On cream, a standfirst that names no colour renders as body ink and competes
+// with the h1, so the role is asserted, not assumed. [→ `band-retirement`]
 
 describe("every wide route's standfirst takes the Standfirst role", () => {
-  // Anchored on the standfirst signature rather than on a route's structure.
-  // The retired guard recorded why: slicing on <PageBand> broke the moment
-  // routes started passing their header through WidePage, and a guard that
-  // silently stops covering anything when markup is recomposed is worse than
-  // none.
-  //
-  // Re-anchored three times since. First for the split masthead's
-  // left-flowing version, which dropped max-w-3xl because a standfirst
-  // filling the remaining width needed no max-width of its own. That version
-  // shipped and was rejected on sight for a different reason
-  // (docs/decisions.md, "The masthead splits into heading and standfirst")
-  // — the row is right-anchored now, via M5 — and M5 brought a max-width
-  // BACK, a 20rem cap, this time to force a two-line wrap rather than to
-  // cap a stray one. It also added right alignment. Both are required in the
-  // pattern below, not just checked
-  // afterwards, for the same reason text-brand-muted already was: a
-  // standfirst that loses either one stops MATCHING rather than failing a
-  // later assertion, and the guard exists to catch exactly that regression.
-  //
-  // Second, for the mobile masthead fix: both classes now carry `md:`, since
-  // unprefixed they described a row that only exists at md and up, and below
-  // it they shrank the standfirst to a 320px box and right-aligned its text
-  // inside that box rather than the page. The pattern requires both prefixes
-  // for the same reason it required the classes themselves — an unprefixed
-  // right alignment shipping again is exactly this regression, and it must stop
-  // matching rather than pass silently.
-  //
-  // The author routes are the one exception and are checked separately below,
-  // against the OLD signature — max-w-3xl, no right alignment — because they
-  // render through splitHeader={false} and were never touched by M5. A single
-  // pattern loose enough to match both signatures would not distinguish a
-  // route that correctly kept the old style from one that regressed out of
-  // the new one.
+  // Anchored on the standfirst's classes, not the route's markup, so recomposed
+  // markup cannot quietly drop coverage. The width cap, right alignment and
+  // their md: prefixes are inside the pattern on purpose: a standfirst that
+  // loses one stops matching instead of passing. [→ `split-masthead`]
+  // Author routes keep the old signature and are checked separately below.
   const STANDFIRST_M5 =
     /className="[^"]*md:max-w-\[20rem\] text-lg leading-relaxed md:text-right text-brand-muted[^"]*"/g;
 
-  // Because text-brand-muted is inside the pattern, a standfirst that loses it
-  // stops MATCHING rather than failing the per-match check. That is fine while a
-  // file has one standfirst — the count drops to zero and the assertion below
-  // fails. It is not fine where a file has two, because the surviving sibling
-  // keeps the count above zero and the regression ships green. Demonstrated by
-  // removing text-brand-muted from one of Archive's two standfirsts: the whole
-  // file stayed green.
-  //
-  // So the count is asserted exactly, not just as non-zero. Requiring
-  // the width cap and right alignment in the pattern itself, rather than checking
-  // them per match the way text-brand-muted is, is what keeps this map short:
-  // Categories' and Authors' per-item card blurbs (a category description, an
-  // author bio, both ordinary left-aligned body prose) share the OLD
-  // `text-lg leading-relaxed text-brand-muted` prefix with their page's real
-  // standfirst, which is why those two files carried a count of 2 under the
-  // left-flowing pattern. Neither blurb is part of the masthead and neither
-  // takes M5's own classes, so the tighter pattern stops matching them and
-  // both files are back to a plain, un-mapped 1. Archive is the one file
-  // still mapped, because both its standfirsts — the CMS entry and the
-  // generated oldest-post fallback — are real header content and both do
-  // carry the M5 classes.
+  // Counted exactly, not as non-zero: where a file has two standfirsts, one
+  // regressing leaves the other to keep a non-zero count green. Archive has two,
+  // the CMS entry and the generated oldest-post fallback.
   const EXPECTED_STANDFIRSTS: Record<string, number> = {
     "app/archive/page.tsx": 2,
   };
@@ -301,11 +219,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
 });
 
 describe("the chrome stays a visible block in both schemes", () => {
-  // The guard the masthead band used to carry, moved to the surface that
-  // inherited its job. --color-brand-header has never had one of its own: the
-  // band's version was retired with the band in Phase 1, and grepping this file
-  // before Phase 2 found no assertion on the bar token at all.
-  //
   // Not a text pairing, so this sits far below any WCAG threshold. It asserts
   // only that the chrome is still a block rather than bare page. It is the
   // check the band's first cut would have failed — it shipped with no dark
