@@ -15,10 +15,11 @@ const isDev = process.env.NODE_ENV !== "production";
 // other route serves the stricter form.
 //
 // cmsFraming adds Contentful to frame-ancestors, and is likewise passed in by
-// one rule rather than sitting in the base policy. The preview surface is a
-// single route family: the README configures the Post type's preview URL as
-// /api/draft?…&slug={entry.fields.slug}, which redirects to /posts/<slug>, so
-// that is the only document Contentful ever frames. It sat on the catch-all
+// two rules rather than sitting in the base policy. The preview surface is the
+// post pages: the README configures the Post type's preview URL as
+// /api/draft?…&slug={entry.fields.slug}&locale={locale}, which redirects to
+// /posts/<slug>, or /de/posts/<slug> for de-DE, so those are the only
+// documents Contentful ever frames. It sat on the catch-all
 // for a long time, which made every published page on the site framable by the
 // CMS to buy preview on one of them.
 //
@@ -140,6 +141,10 @@ module.exports = {
       },
       {
         source: "/posts/:path*",
+        headers: previewCspHeaders,
+      },
+      {
+        source: "/de/posts/:path*",
         headers: previewCspHeaders,
       },
       {

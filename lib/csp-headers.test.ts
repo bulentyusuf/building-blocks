@@ -159,21 +159,31 @@ describe("resolved CSP headers", () => {
     // Non-vacuous: both relaxations must actually be present to be ordered.
     expect(relaxing.some((r) => r.source.startsWith("/search"))).toBe(true);
     expect(relaxing.some((r) => r.source.startsWith("/posts"))).toBe(true);
+    expect(relaxing.some((r) => r.source.startsWith("/de/posts"))).toBe(true);
     for (const rule of relaxing) {
       expect(rules.indexOf(rule), rule.source).toBeGreaterThan(catchAllIndex);
     }
   });
 
-  it("lets Contentful frame /posts and nothing else", async () => {
+  it("lets Contentful frame English and German posts and nothing else", async () => {
     // frame-ancestors carried the CMS origin on the catch-all for a long time,
     // so every published page on the site was framable by Contentful to buy
     // live preview on one route family. Both halves are asserted: preview must
     // still work, and the rest of the site must have stopped offering it.
-    expect(frameAncestorSources(await cspFor("/posts/some-post"))).toEqual([
-      "'self'",
-      CMS_ORIGIN,
-    ]);
-    for (const path of ["/", "/about", "/search", "/categories", "/archive"]) {
+    for (const path of ["/posts/some-post", "/de/posts/some-post"]) {
+      expect(frameAncestorSources(await cspFor(path)), path).toEqual([
+        "'self'",
+        CMS_ORIGIN,
+      ]);
+    }
+    for (const path of [
+      "/",
+      "/about",
+      "/search",
+      "/categories",
+      "/archive",
+      "/de",
+    ]) {
       expect(frameAncestorSources(await cspFor(path)), path).toEqual([
         "'self'",
       ]);
