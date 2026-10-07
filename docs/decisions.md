@@ -980,29 +980,21 @@ pass. What they cannot do:
   with the code, never that the space does.
 - **`app/a11y.test.tsx`** cannot check `color-contrast` or `target-size`, since
   jsdom has no layout; `lib/tag-pill.test.ts` recomputes contrast instead. It
-  adds a duplicate-announcement check scoped to `<main>`. It covers five page
-  shapes, not routes, so **a new route goes in `app/routes.a11y.test.tsx`** or
-  it has no axe run. Both assert the page rendered something. The archive's
-  repeated category links and the glossary's repeated titles are allowances that
-  assert their own duplication still occurs.
-- **The spacing rhythm is measured, not matched** (reopened September 2026).
-  The layout test in lib (listing-rhythm.layout.test.tsx) renders home, a tag
-  listing and `/archive` through the real routes with only the CMS mocked,
-  compiles `app/globals.css` with the real Tailwind plugin, and measures in
-  Chromium via `playwright-core` at 375px and 1280px. It asserts relations, not
-  values: rule-to-first-cover equals hairline-to-next-cover, home's grid opens
-  with that inset, home and `/archive` open the same non-zero gap below the
-  rule, the header sits the same distance above it and the bar is one height on
-  all three, and the hero's stacked columns sit apart and its title is larger
-  than a card's from `lg`. It replaced every class-string test for these, **a
-  stronger guard replacing weaker ones, not a weakening**: those failed on
-  refactors that kept the pixels and passed on breaks they did not name. Its
-  known-bad controls require every deliberate break to be reported. It runs
-  inside `npm test`, so the gate stays three steps with no `next start` or
-  Contentful credentials, but `npm test` needs a Chromium-family browser:
-  `CHROME_PATH`, then `CHROME_BIN` (set on GitHub's Ubuntu runners), then the
-  usual install paths. It fails rather than skips when none is found, because a
-  skipped guard reads as a passing one. It cannot see real fonts (`next/font` is mocked, so it reads box distances and computed sizes, never a height set by font metrics) or real image files, since covers are sized by their aspect-ratio box.
+  covers five page shapes, not routes, so **a new route goes in
+  `app/routes.a11y.test.tsx`** or it has no axe run. Both assert the page
+  rendered something. The first also checks `<main>` for duplicate
+  announcements; each allowance asserts its own duplication still occurs.
+- **The spacing rhythm is measured, not matched.** The layout test in lib
+  (listing-rhythm.layout.test.tsx) renders home, a tag listing and `/archive`
+  through the real routes with only the CMS mocked, and measures them in
+  Chromium at 375px and 1280px. It asserts relations between distances, never
+  values; the file lists them. It replaced the class-string tests, **a stronger
+  guard, not a weakening**: those failed on refactors that kept the pixels and
+  passed on breaks they did not name. `npm test` therefore needs a
+  Chromium-family browser (`CHROME_PATH`, then `CHROME_BIN`, then the usual
+  install paths) and fails rather than skips without one, because a skipped
+  guard reads as a passing one. It cannot see real fonts, since `next/font` is
+  mocked, or real image files, since covers are sized by their aspect box.
 - **`lib/paginate.test.ts`** covers the arithmetic, not what pages render.
 - **`lib/docs-consistency.test.ts`** checks names, not claims: scripts, paths,
   the line budget, and that every `[→ key]` in `CLAUDE.md` and in source
