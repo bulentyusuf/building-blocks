@@ -982,8 +982,8 @@ pass. What they cannot do:
   jsdom has no layout; `lib/tag-pill.test.ts` recomputes contrast instead. It
   covers five page shapes, not routes, so **a new route goes in
   `app/routes.a11y.test.tsx`** or it has no axe run. Both assert the page
-  rendered something, and each duplicate-text allowance asserts its own
-  duplication still occurs.
+  rendered something. The first also checks `<main>` for duplicate
+  announcements; each allowance asserts its own duplication still occurs.
 - **The spacing rhythm is measured, not matched.** The layout test in lib
   (listing-rhythm.layout.test.tsx) renders home, a tag listing and `/archive`
   through the real routes with only the CMS mocked, and measures them in
