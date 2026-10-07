@@ -2,11 +2,15 @@ import { draftMode } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeCompare } from "@/lib/secret";
 import { getPost } from "@/lib/api";
+import { GERMAN_LOCALE } from "@/lib/constants";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get("secret");
   const slug = searchParams.get("slug");
+  // Contentful fills {locale} from the live preview switcher. Anything but
+  // German, or no value at all, keeps the English route. [→ `locale`]
+  const german = searchParams.get("locale") === GERMAN_LOCALE;
 
   const expected = process.env.CONTENTFUL_PREVIEW_SECRET;
   const valid = safeCompare(secret, expected);
@@ -35,5 +39,5 @@ export async function GET(request: Request) {
   }
 
   (await draftMode()).enable();
-  redirect(`/posts/${slug}`);
+  redirect(german ? `/de/posts/${slug}` : `/posts/${slug}`);
 }
