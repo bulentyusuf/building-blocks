@@ -87,9 +87,9 @@ function RichTextAsset({
 
   return (
     // not-prose: the plugin's own figure margins would swamp the caption gap.
-    // Alt text and caption are asset fields, which have no German version.
+    // Alt and caption are English unless a German page translated both.
     // [→ `locale`]
-    <figure lang={DEFAULT_LOCALE} className="not-prose my-8">
+    <figure lang={asset.lang ?? DEFAULT_LOCALE} className="not-prose my-8">
       {lightbox ? (
         <LightboxImage
           src={asset.url}

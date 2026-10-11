@@ -117,8 +117,8 @@ describe("getGermanPostAndMorePosts", () => {
     expect(post?.content.links.assets.block).toEqual([{ sys: { id: "img" } }]);
   });
 
-  it("asks de-DE for text only, so no asset resolves in German", async () => {
-    // Non-vacuous: an asset field in this query would come back null.
+  it("asks de-DE for text only, so no image resolves in German", async () => {
+    // Non-vacuous: a file or image field in this query would come back null.
     const fetchMock = respond(null);
     vi.stubGlobal("fetch", fetchMock);
 
@@ -127,8 +127,107 @@ describe("getGermanPostAndMorePosts", () => {
       .map((c) => (JSON.parse(c[1].body) as { query: string }).query)
       .find((q) => q.includes("GetGermanPost"));
     expect(germanQuery).toContain('locale: "de-DE"');
-    // Sidenote text may come through links; an asset never may.
-    expect(germanQuery).not.toMatch(/coverImage|picture|url|assets/);
+    // An embed's title and caption may come through; its file never may.
+    expect(germanQuery).not.toMatch(
+      /coverImage|picture|url|fileName|width|height/,
+    );
+    const assetSelection = germanQuery!.match(/assets\s*{([\s\S]*?)}\s*}/)?.[1];
+    expect(assetSelection).toMatch(/title/);
+    expect(assetSelection).toMatch(/description/);
+  });
+
+  describe("an embed's alt and caption", () => {
+    const withAsset = (
+      english: { title: string; description: string },
+      german: { title: string | null; description: string | null } | null,
+    ) =>
+      vi.fn(async (_url: string, init: { body: string }) => {
+        const { query } = JSON.parse(init.body) as { query: string };
+        const doc = { nodeType: "document", content: [] };
+        if (query.includes("GetGermanPost")) {
+          return page([
+            {
+              title: "Titel",
+              excerpt: "Auszug",
+              content: {
+                json: doc,
+                links: {
+                  assets: {
+                    block: german ? [{ sys: { id: "img" }, ...german }] : [],
+                  },
+                },
+              },
+            },
+          ]);
+        }
+        if (query.includes("GetPost(")) {
+          return page([
+            {
+              slug: "e-post",
+              title: "English title",
+              excerpt: "English excerpt",
+              content: {
+                json: doc,
+                links: {
+                  assets: {
+                    block: [
+                      {
+                        sys: { id: "img" },
+                        url: "https://images.ctfassets.net/img.jpg",
+                        ...english,
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ]);
+        }
+        return page([]);
+      });
+
+    const english = { title: "Two dogs", description: "Woof." };
+
+    it("turn German together when both are translated", async () => {
+      vi.stubGlobal(
+        "fetch",
+        withAsset(english, { title: "Zwei Hunde", description: "Wuff." }),
+      );
+      const { post } = await getGermanPostAndMorePosts("e-post", false);
+      const [img] = post!.content.links.assets.block;
+      expect(img).toMatchObject({
+        title: "Zwei Hunde",
+        description: "Wuff.",
+        lang: "de-DE",
+        // The file stays the English asset's.
+        url: "https://images.ctfassets.net/img.jpg",
+      });
+    });
+
+    it("stay English, untagged, when only the alt is translated", async () => {
+      // Known-bad control: a German alt over an English caption would mix
+      // languages inside one figure.
+      vi.stubGlobal(
+        "fetch",
+        withAsset(english, { title: "Zwei Hunde", description: null }),
+      );
+      const { post } = await getGermanPostAndMorePosts("e-post", false);
+      const [img] = post!.content.links.assets.block;
+      expect(img.title).toBe("Two dogs");
+      expect(img.description).toBe("Woof.");
+      expect(img.lang).toBeUndefined();
+    });
+
+    it("stay English when nothing is translated", async () => {
+      vi.stubGlobal(
+        "fetch",
+        withAsset(english, { title: null, description: null }),
+      );
+      const { post } = await getGermanPostAndMorePosts("e-post", false);
+      const [img] = post!.content.links.assets.block;
+      expect(img.title).toBe("Two dogs");
+      expect(img.lang).toBeUndefined();
+    });
   });
 
   it("returns no post when the German body is missing", async () => {

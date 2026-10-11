@@ -782,9 +782,11 @@ three call sites are cheap to read. A fourth makes the guard worth writing.
 <!-- key: locale -->
 
 Dates, html `lang`, OG locale and feed say `en-GB`; American formats regress.
-`de-DE` is per-post opt-in, English chrome, no fallback. Title, excerpt, body
-and sidenote notes are read in German, never an asset (the locale cascades, and
-assets have none). The rest is the English post's; English in German is `en-GB`.
+`de-DE` is per-post opt-in, English chrome, no fallback. Title, excerpt, body,
+sidenote notes and a body embed's alt and caption are read in German, never a
+file (the locale cascades, and files have none). Alt and caption go German as a
+pair or stay English, so a figure never mixes languages. The rest is the
+English post's; English in German is `en-GB`.
 No Pagefind or feed; head-only hreflang (Firefox), archive DE link. Export: en-US.
 
 ### Single-entry fetchers are `cache()`-wrapped on purpose

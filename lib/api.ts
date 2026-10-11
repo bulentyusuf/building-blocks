@@ -499,9 +499,9 @@ export const getGermanPostSlugs = cache(
 );
 
 // Undefined unless title, excerpt and content are all German. Only those three
-// come from de-DE; the locale cascades to links, and assets have no German
-// version, so covers, portraits and embeds come from the English post.
-// [→ `single-entry-cache`, `locale`]
+// come from de-DE, plus an embed's alt and caption: the locale cascades to
+// links, and an asset's file has no German version, so covers, portraits and
+// images come from the English post. [→ `single-entry-cache`, `locale`]
 export const getGermanPostAndMorePosts = cache(
   async (
     slug: string,
@@ -517,6 +517,13 @@ export const getGermanPostAndMorePosts = cache(
               content: {
                 json: Post["content"]["json"];
                 links?: {
+                  assets?: {
+                    block?: ({
+                      sys: { id: string };
+                      title: string | null;
+                      description: string | null;
+                    } | null)[];
+                  };
                   entries?: {
                     inline?: ({
                       __typename?: string;
@@ -537,8 +544,18 @@ export const getGermanPostAndMorePosts = cache(
             excerpt
             content {
               json
-              # Sidenote text only; never select an asset here.
+              # Text only: sidenotes, and an embed's alt and caption. Never a
+              # file or image field, which has no German and comes back null.
               links {
+                assets {
+                  block {
+                    sys {
+                      id
+                    }
+                    title
+                    description
+                  }
+                }
                 entries {
                   inline {
                     sys {
@@ -590,15 +607,35 @@ export const getGermanPostAndMorePosts = cache(
         ? { ...note, note: { ...note.note, json } }
         : { ...note, lang: DEFAULT_LOCALE };
     });
+    // An embed's alt and caption turn German together or not at all, so one
+    // figure never mixes languages: German once the title is, and the caption
+    // too wherever the English has one. Otherwise both stay English.
+    const germanAssets = new Map(
+      (german.content.links?.assets?.block ?? []).flatMap((a) =>
+        a?.title ? [[a.sys.id, a] as const] : [],
+      ),
+    );
+    const block = links.assets.block.map((asset) => {
+      const de = germanAssets.get(asset.sys.id);
+      if (!de?.title || (asset.description && !de.description)) return asset;
+      return {
+        ...asset,
+        title: de.title,
+        description: de.description ?? asset.description,
+        lang: GERMAN_LOCALE,
+      };
+    });
     const post: Post = {
       ...english.post,
       title: german.title,
       excerpt: german.excerpt,
       content: {
         json: german.content.json,
-        links: links.entries
-          ? { ...links, entries: { ...links.entries, inline } }
-          : links,
+        links: {
+          ...links,
+          assets: { ...links.assets, block },
+          ...(links.entries && { entries: { ...links.entries, inline } }),
+        },
       },
     };
 
