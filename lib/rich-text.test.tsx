@@ -700,11 +700,21 @@ describe("embedded asset alt text and captions", () => {
       },
     }) as unknown as Content;
 
-  it("marks the figure English, since asset fields have no German", () => {
+  it("marks the figure English unless its fields are German", () => {
     const html = renderToStaticMarkup(
       <RichText content={withAsset({ title: "A cat" })} headings={[]} />,
     );
     expect(html).toMatch(/<figure[^>]*lang="en-GB"/);
+  });
+
+  it("marks the figure German when a German page translated it", () => {
+    const content = withAsset({ title: "Eine Katze", description: "Miau." });
+    content.links.assets.block[0].lang = "de-DE";
+    const html = renderToStaticMarkup(
+      <RichText content={content} headings={[]} />,
+    );
+    expect(html).toMatch(/<figure[^>]*lang="de-DE"/);
+    expect(html).not.toMatch(/<figure[^>]*lang="en-GB"/);
   });
 
   it("warns and renders empty alt when the title is missing", () => {

@@ -15,6 +15,8 @@ export interface Asset {
   // Null on a non-image asset, so every consumer falls back.
   width?: number | null;
   height?: number | null;
+  // Set only when a body embed's alt and caption are German. [→ `locale`]
+  lang?: string;
 }
 
 export interface AssetLink {
