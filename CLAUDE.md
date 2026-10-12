@@ -215,9 +215,9 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   Update `contentful/export.json`, `contentful/seed.json` and `public/llms.txt`
   in the same pass. Content type IDs are immutable.
   [→ `schema-changes`, `fixtures`]
-- **Treat the Contentful MCP connector as read-only.** Activating a type,
-  publishing, unpublishing, deleting and asset updates are web-UI jobs.
-  [→ `schema-changes`]
+- **Treat the Contentful MCP connector as read-only**, bar an image's de-DE title
+  and description (en-GB resent as is). Activating, (un)publishing, deleting and
+  asset files are web-UI jobs. [→ `schema-changes`]
 - **The Node major is written once, in `engines.node`**, as an exact major.
   Do not add `.nvmrc`, `volta.node`, `devEngines.runtime` or a hardcoded
   `node-version:`. `@types/node` follows the runtime major, not latest.

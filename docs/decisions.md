@@ -946,8 +946,10 @@ first, then merge, with the fixtures updated in the same pass.
 `public/llms.txt` describes the content model; `.github/workflows/llms-link-check.yml`
 checks only its links, so review its claims by hand. Content type IDs are
 immutable. Treat the Contentful MCP connector as read-only: activating a type,
-publishing, deleting and asset updates are web-UI jobs, and a new type must be
-activated before any entry can be created against it. A second demo space was
+publishing, deleting and asset files are web-UI jobs, and a new type must be
+activated before any entry can be created against it. Since German alt and
+caption (`locale`), it may write an image asset's de-DE title and description,
+resending en-GB unchanged and leaving the asset unpublished; never the file. A second demo space was
 retired in September 2026; reinstating one reopens this entry.
 
 ### Vercel previews build on request, and production skips documentation-only changes
