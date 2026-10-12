@@ -127,9 +127,9 @@ export default async function PostView({
         <h1
           data-pagefind-body={german ? undefined : true}
           lang={lang}
-          // German compounds outrun a phone line; hyphenate where the browser
-          // can, break where it cannot. [→ `prose-overflow`]
-          className={`text-4xl leading-tight md:text-5xl lg:text-6xl text-balance wrap-break-word${german ? " hyphens-auto" : ""}`}
+          // German compounds outrun a phone line, so hyphenate below md only.
+          // Wider, text-balance narrows the box and hyphens split words that fit.
+          className={`text-4xl leading-tight md:text-5xl lg:text-6xl text-balance wrap-break-word${german ? " hyphens-auto md:hyphens-manual" : ""}`}
         >
           {/* Never widont(). [→ `heading-widont`] */}
           {post.title}
