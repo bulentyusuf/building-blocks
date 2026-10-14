@@ -89,7 +89,7 @@ export default async function CoverImage({
             href={linkHref}
             aria-hidden="true"
             tabIndex={-1}
-            className="block h-full"
+            className="relative block h-full"
           >
             {picture}
           </Link>
