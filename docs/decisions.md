@@ -588,8 +588,8 @@ standalone package parses, which is what sank an earlier face.
   instead (`json-ld`).
 - The sitemap filters Page entries through `ROUTED_PAGE_SLUGS` in
   `app/sitemap-xml/route.ts`; add any new routed slug there.
-- Dependabot ignores majors; security updates still cover them. CI actions are
-  pinned to major tags, accepted as first-party.
+- Dependabot ignores npm majors; security updates still cover them. CI actions
+  are pinned to full commit SHAs (GitHub's guidance), which Dependabot bumps.
 - `package.json` overrides pin **postcss**, **postcss-selector-parser** (a major
   past typography's pin; CSS output byte-identical), **sharp**, **source-map-js**
   and **uuid** for advisories their parents leave. They keep `npm audit` clean;
