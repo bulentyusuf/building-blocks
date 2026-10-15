@@ -27,6 +27,8 @@ export function renderHyperlink(node: Block | Inline, children: ReactNode) {
   const uri: unknown = (node as Inline).data.uri;
   if (typeof uri !== "string") return <>{children}</>;
 
+  // A same-page fragment, which URL parsing without a base would also reject.
+  if (uri.startsWith("#")) return <a href={uri}>{children}</a>;
   if (isRootRelative(uri)) return <a href={uri}>{children}</a>;
 
   let parsed: URL;

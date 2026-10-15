@@ -177,6 +177,19 @@ describe("a targeted heading holds the highlight", () => {
     }
   });
 
+  it("survives a malformed fragment and falls back to geometry", () => {
+    window.history.replaceState(null, "", "#%");
+    try {
+      const { container } = render(
+        <TableOfContents headings={[1, 2, 3].map(heading)} />,
+      );
+      scroll();
+      expect(current(container)).toBe("#h-3");
+    } finally {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  });
+
   it("adds no window resize listener beside the body ResizeObserver", () => {
     // A width change resizes the body, which the observer already reports,
     // and a height change moves no heading's top against the line.
