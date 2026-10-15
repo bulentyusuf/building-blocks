@@ -71,6 +71,17 @@ describe("extractHeadings slugging", () => {
     expect(slugsOf(heading2(text("Café Culture")))).toEqual(["cafe-culture"]);
   });
 
+  it("spells out German letters rather than dropping them", () => {
+    // The third is decomposed, as pasted text can be, to exercise the NFC pass.
+    expect(
+      slugsOf(
+        heading2(text("Was mit hinüberkam")),
+        heading2(text("Großartig")),
+        heading2(text("Über Äpfel".normalize("NFD"))),
+      ),
+    ).toEqual(["was-mit-hinueberkam", "grossartig", "ueber-aepfel"]);
+  });
+
   it("skips an empty heading node rather than emitting a section slug", () => {
     expect(slugsOf(heading2(text("")), heading2(text("Real heading")))).toEqual(
       ["real-heading"],
