@@ -10,8 +10,22 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # Majors stay out of the group, so each arrives as its own PR.
     ignore:
-      - dependency-name: "*"
+      # Tracks the runtime in engines.node, not latest. [→ `node-pin`]
+      - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+    commit-message:
+      prefix: "chore(deps)"
+  # Actions are pinned to commit SHAs, which Dependabot bumps along with the
+  # version comment. Majors are included: a stale action pin is not safer.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"
     commit-message:
       prefix: "chore(deps)"
