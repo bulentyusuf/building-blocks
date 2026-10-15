@@ -588,8 +588,8 @@ standalone package parses, which is what sank an earlier face.
   instead (`json-ld`).
 - The sitemap filters Page entries through `ROUTED_PAGE_SLUGS` in
   `app/sitemap-xml/route.ts`; add any new routed slug there.
-- Dependabot ignores majors; security updates still cover them. CI actions are
-  pinned to major tags, accepted as first-party.
+- Dependabot opens each npm major as its own PR, bar `@types/node`. CI actions
+  are pinned to full commit SHAs (GitHub's guidance), which Dependabot bumps.
 - `package.json` overrides pin **postcss**, **postcss-selector-parser** (a major
   past typography's pin; CSS output byte-identical), **sharp**, **source-map-js**
   and **uuid** for advisories their parents leave. They keep `npm audit` clean;
@@ -757,13 +757,13 @@ not shrink or hide the counter to compensate.
 
 <!-- key: rich-text-links -->
 
-`renderHyperlink` allowlists root-relative paths, `http`, `https` and `mailto`,
-degrading anything else (including `javascript:` and protocol-relative forms)
-to text, and gives external links `target="_blank"`, `rel="noopener noreferrer"`
-and the new-window hint. Any rich-text surface passes it as the
-`INLINES.HYPERLINK` override; `documentToReactComponents`' default emits
-`data.uri` as-is. Sidenotes once used the default and let a `javascript:` href
-through. Do not copy the renderer.
+`renderHyperlink` allowlists same-page fragments, root-relative paths, `http`,
+`https` and `mailto`, degrading anything else (including `javascript:` and
+protocol-relative forms) to text, and gives external links `target="_blank"`,
+`rel="noopener noreferrer"` and the new-window hint. Any rich-text surface
+passes it as the `INLINES.HYPERLINK` override; `documentToReactComponents`'
+default emits `data.uri` as-is. Sidenotes once used the default and let a
+`javascript:` href through. Do not copy the renderer.
 
 ### Every structured-data block goes through `jsonLdHtml`
 
