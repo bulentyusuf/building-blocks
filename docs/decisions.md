@@ -590,11 +590,11 @@ standalone package parses, which is what sank an earlier face.
   `app/sitemap-xml/route.ts`; add any new routed slug there.
 - Dependabot opens each npm major as its own PR, bar `@types/node`. CI actions
   are pinned to full commit SHAs (GitHub's guidance), which Dependabot bumps.
-- `package.json` overrides pin **postcss**, **postcss-selector-parser** (a major
-  past typography's pin; CSS output byte-identical), **sharp**, **source-map-js**
-  and **uuid** for advisories their parents leave. They keep `npm audit` clean;
-  re-check on every `next` bump. Sharp is safe to force: the custom image loader
-  means Next never calls it. Do not swap in `contentful-cli` (same uuid chain).
+- `package.json` overrides pin **postcss-selector-parser** (a major past
+  typography's pin; CSS output byte-identical) and **uuid** for advisories their
+  parents leave. An override stays only while an advisory needs it: on every
+  `next` bump, drop each in turn and keep it only if `npm audit` then fails. Do
+  not swap in `contentful-cli` (same uuid chain).
 
 ### Posts carry `authors`, an ordered array capped at three
 
