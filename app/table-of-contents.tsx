@@ -144,7 +144,12 @@ export default function TableOfContents({
     const reflowObserver = new ResizeObserver(schedule);
     reflowObserver.observe(document.body);
 
-    const hashSlug = decodeURIComponent(window.location.hash.slice(1));
+    // A hand-typed "#%" makes decodeURIComponent throw, which would take the
+    // whole post down to the error page. It matches no heading either way.
+    let hashSlug = "";
+    try {
+      hashSlug = decodeURIComponent(window.location.hash.slice(1));
+    } catch {}
     if (elements.some((el) => el.id === hashSlug)) pin(hashSlug);
     else recompute();
 
