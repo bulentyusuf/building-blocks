@@ -24,9 +24,23 @@ function stripLeadingOrdinal(text: string): string {
   return stripped.trim() ? stripped : text;
 }
 
+// Spelled out before the diacritic strip, which would drop ß and leave ü as u.
+const GERMAN_LETTERS: Record<string, string> = {
+  ä: "ae",
+  ö: "oe",
+  ü: "ue",
+  Ä: "Ae",
+  Ö: "Oe",
+  Ü: "Ue",
+  ß: "ss",
+  ẞ: "SS",
+};
+
 // Punctuation is stripped: an apostrophe in an id makes a fragile fragment.
 function slugify(text: string): string {
   return stripLeadingOrdinal(text)
+    .normalize("NFC")
+    .replace(/[äöüÄÖÜßẞ]/g, (letter) => GERMAN_LETTERS[letter])
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
