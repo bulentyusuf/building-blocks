@@ -12,6 +12,7 @@ import type { ReactElement, ReactNode } from "react";
 import type { Asset, Content } from "./types";
 import type { Heading } from "./headings";
 import { widont } from "./typography";
+import { present } from "./links";
 import { DEFAULT_LOCALE } from "./constants";
 
 function headingText(node: Block | Inline): string {
@@ -73,8 +74,7 @@ function RichTextAsset({
   lightbox: boolean;
   priority?: boolean;
 }) {
-  // A null item is an unpublished link; skip it like a missing one.
-  const asset = assets?.find((asset) => asset?.sys.id === id);
+  const asset = assets?.filter(present).find((asset) => asset.sys.id === id);
 
   if (!asset?.url) return null;
 
@@ -293,9 +293,9 @@ export function RichText({
       ),
       [BLOCKS.EMBEDDED_ENTRY]: (node: Block | Inline) => {
         const id = (node as Block).data.target.sys.id;
-        const entry = content.links.entries?.block?.find(
-          (e) => e?.sys.id === id,
-        );
+        const entry = content.links.entries?.block
+          ?.filter(present)
+          .find((e) => e.sys.id === id);
         if (!entry) return null;
 
         if (entry.__typename === "CodeBlock") {
@@ -387,9 +387,9 @@ export function RichText({
       },
       [INLINES.EMBEDDED_ENTRY]: (node: Block | Inline) => {
         const id = (node as Inline).data.target.sys.id;
-        const entry = content.links.entries?.inline?.find(
-          (e) => e?.sys.id === id,
-        );
+        const entry = content.links.entries?.inline
+          ?.filter(present)
+          .find((e) => e.sys.id === id);
         // Same defensive shape as the block case. [→ `sidenotes`]
         if (!entry || entry.__typename !== "Sidenote") return null;
 

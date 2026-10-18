@@ -1,5 +1,6 @@
 import type { ListPost, Post } from "./types";
 import { postTags } from "./tags";
+import { postAuthors } from "./authors";
 
 /** Matches MoreStories' two-column grid; raising it is a layout change. */
 export const RELATED_COUNT = 2;
@@ -32,11 +33,7 @@ function tagRarity(posts: Candidate[]): Map<string, number> {
 }
 
 function authorSlugs(post: Candidate): Set<string> {
-  return new Set(
-    (post.authorsCollection?.items ?? [])
-      .filter((a): a is NonNullable<typeof a> => a != null && !!a.slug)
-      .map((a) => a.slug as string),
-  );
+  return new Set(postAuthors(post).flatMap((a) => (a.slug ? [a.slug] : [])));
 }
 
 function score(

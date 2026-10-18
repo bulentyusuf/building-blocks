@@ -1,5 +1,7 @@
 import type { Document } from "@contentful/rich-text-types";
 
+// Link fields are nullable because Contentful returns an unpublished target as null.
+
 export interface Asset {
   sys: {
     id: string;
@@ -19,7 +21,6 @@ export interface Asset {
   lang?: string;
 }
 
-// Items are null for an unpublished link, as on `authorsCollection`.
 export interface AssetLink {
   block: (Asset | null)[];
 }
@@ -37,7 +38,7 @@ export interface PromptBlock {
   sys: { id: string };
   prompt: string;
   label?: string; // optional header text; falls back to "Prompt" when absent
-  image?: { url: string; description?: string }; // linked asset; absent on text-only prompts
+  image?: { url: string; description?: string } | null; // linked asset; absent on text-only prompts
 }
 
 export interface Sidenote {
@@ -69,7 +70,7 @@ export interface Author {
   bio?: Content; // optional: not every author has a bio, and draft-safe
   picture: {
     url: string;
-  };
+  } | null;
 }
 
 export interface AuthorCollectionResponse {
@@ -92,7 +93,7 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  thumbnail?: CoverImage; // optional 4:3 category tile; absent on categories without one
+  thumbnail?: CoverImage | null; // optional 4:3 category tile; absent on categories without one
 }
 
 // Up to three per post. The glossary is a text index, so no thumbnail.
@@ -129,18 +130,17 @@ export interface BrowseIntroCollectionResponse {
 export interface Post {
   slug: string;
   title: string;
-  coverImage?: CoverImage;
+  coverImage?: CoverImage | null;
   date: string;
   updatedDate?: string; // optional, only set when post has been updated
 
   excerpt: string;
   content: Content;
-  category?: Category; // single reference; optional so untagged posts don't break
-  // Items can be null for an unpublished tag, so read through postTags() in
-  // lib/tags.ts.
+  category?: Category | null; // single reference; optional so untagged posts don't break
+  // Read through postTags() in lib/tags.ts.
   tagsCollection?: { items: (Tag | null)[] };
-  // Ordered, lead first. Items can be null for an unpublished author, so read
-  // through postAuthors() in lib/authors.ts. [→ `authors-array`]
+  // Ordered, lead first. Read through postAuthors() in lib/authors.ts.
+  // [→ `authors-array`]
   authorsCollection?: { items: (Author | null)[] };
 }
 

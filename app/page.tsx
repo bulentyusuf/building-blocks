@@ -42,7 +42,7 @@ function HeroPost({
   tags,
 }: {
   title: string;
-  coverImage?: CoverImageType;
+  coverImage?: CoverImageType | null;
   date: string;
   updatedDate?: string;
   excerpt: string;
