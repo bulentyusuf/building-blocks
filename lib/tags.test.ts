@@ -29,6 +29,21 @@ describe("postTags", () => {
   });
 });
 
+describe("null tag items", () => {
+  // Contentful returns null in tagsCollection for an unpublished tag.
+  const withNull = { slug: "n", tagsCollection: { items: [null, tag("x")] } };
+
+  it("postTags drops a null item", () => {
+    expect(postTags(withNull)).toEqual([tag("x")]);
+  });
+
+  it("visibleTagSlugs counts past a null item rather than throwing", () => {
+    expect(visibleTagSlugs([withNull, post("b", tag("x"))])).toEqual(
+      new Set(["x"]),
+    );
+  });
+});
+
 describe("visibleTagSlugs", () => {
   it("hides a tag carried by a single post", () => {
     const visible = visibleTagSlugs([post("a", tag("lonely"))]);

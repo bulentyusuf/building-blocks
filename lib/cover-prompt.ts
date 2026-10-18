@@ -1,3 +1,4 @@
+import { present } from "./links";
 import type { Post } from "./types";
 
 // The prompt block that made this post's cover, matched on the asset URL, which
@@ -7,10 +8,10 @@ export function coverPromptId(
 ): string | undefined {
   const coverUrl = post.coverImage?.url;
   if (!coverUrl) return undefined;
-  const blocks = post.content?.links?.entries?.block ?? [];
+  const blocks = (post.content?.links?.entries?.block ?? []).filter(present);
   const match = blocks.find(
     (entry) =>
-      entry?.__typename === "PromptBlock" && entry.image?.url === coverUrl,
+      entry.__typename === "PromptBlock" && entry.image?.url === coverUrl,
   );
   return match?.sys.id;
 }

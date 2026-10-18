@@ -1,10 +1,8 @@
 import type { Post, ListPost } from "./types";
 import { SITE_AUTHOR } from "./constants";
+import { present } from "./links";
 
-/**
- * Authors in credit order, lead first. The null filter is needed: Contentful
- * returns null items for an unpublished author.
- */
+/** Authors in credit order, lead first, unpublished ones dropped. */
 export function postAuthors<
   T extends Pick<Post | ListPost, "authorsCollection">,
 >(
@@ -12,9 +10,7 @@ export function postAuthors<
 ): NonNullable<NonNullable<T["authorsCollection"]>["items"][number]>[] {
   // Typed from T, so a list-sourced post keeps authors without `bio` and a bio
   // read off one fails to typecheck rather than rendering nothing.
-  return (post.authorsCollection?.items ?? []).filter(
-    (a): a is NonNullable<typeof a> => a != null,
-  );
+  return (post.authorsCollection?.items ?? []).filter(present);
 }
 
 /**

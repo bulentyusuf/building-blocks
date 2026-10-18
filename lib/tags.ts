@@ -1,10 +1,11 @@
+import { present } from "./links";
 import type { ListPost, Post, Tag } from "./types";
 
 /** A one-post tag connects nothing, so two is the floor for rendering it. */
 export const MIN_POSTS_PER_TAG = 2;
 
 export function postTags(post: Pick<Post | ListPost, "tagsCollection">): Tag[] {
-  return post.tagsCollection?.items ?? [];
+  return (post.tagsCollection?.items ?? []).filter(present);
 }
 
 /**
