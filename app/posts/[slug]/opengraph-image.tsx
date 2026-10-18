@@ -62,7 +62,10 @@ export default async function OpengraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPost(slug, false).catch(() => undefined);
+  // A failed fetch still gets the site card. A slug with no post 404s, so the
+  // CDN never stores a card for it.
+  const post = await getPost(slug, false).catch(() => null);
+  if (post === undefined) return new Response(null, { status: 404 });
 
   const title = post ? cardTitle(post.title) : SITE_TITLE;
   // [→ `authors-array`]

@@ -70,6 +70,10 @@ export default async function IndexPage({
   if (pageNumber === 1) {
     redirect("/");
   }
+  // "2.0", "02" and friends resolve to one URL. [→ `listing-shell`]
+  if (String(pageNumber) !== page) {
+    redirect(`/page/${pageNumber}`);
+  }
 
   const { isEnabled } = await draftMode();
   const intro = await getBrowseIntro(INTRO_SLUG, isEnabled);

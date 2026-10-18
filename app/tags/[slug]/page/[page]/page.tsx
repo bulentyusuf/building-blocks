@@ -71,6 +71,10 @@ export default async function TagPaginatedPage({
   if (pageNumber === 1) {
     redirect(`/tags/${slug}`);
   }
+  // "2.0", "02" and friends resolve to one URL. [→ `listing-shell`]
+  if (String(pageNumber) !== page) {
+    redirect(`/tags/${slug}/page/${pageNumber}`);
+  }
 
   const tag = await getTagBySlug(slug, isEnabled);
   if (!tag) {
