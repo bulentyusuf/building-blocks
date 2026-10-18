@@ -709,12 +709,23 @@ describe("embedded asset alt text and captions", () => {
 
   it("marks the figure German when a German page translated it", () => {
     const content = withAsset({ title: "Eine Katze", description: "Miau." });
-    content.links.assets.block[0].lang = "de-DE";
+    content.links.assets.block[0]!.lang = "de-DE";
     const html = renderToStaticMarkup(
       <RichText content={content} headings={[]} />,
     );
     expect(html).toMatch(/<figure[^>]*lang="de-DE"/);
     expect(html).not.toMatch(/<figure[^>]*lang="en-GB"/);
+  });
+
+  it("skips a null item, which is what an unpublished asset returns", () => {
+    // The null sits first, so a lookup that reads `.sys` on every item throws
+    // before it reaches the real asset.
+    const content = withAsset({ title: "A cat" });
+    content.links.assets.block.unshift(null);
+    const html = renderToStaticMarkup(
+      <RichText content={content} headings={[]} />,
+    );
+    expect(html).toContain('alt="A cat"');
   });
 
   it("warns and renders empty alt when the title is missing", () => {

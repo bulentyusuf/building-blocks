@@ -43,7 +43,7 @@ function PostPreview({
   tags = [],
 }: {
   title: string;
-  coverImage?: CoverImageType;
+  coverImage?: CoverImageType | null;
   date: string;
   excerpt: string;
   slug: string;

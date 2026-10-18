@@ -3,6 +3,7 @@ import { cache } from "react";
 import { visibleTagSlugs } from "./tags";
 import { relatedPosts } from "./related";
 import { MAX_AUTHORS, GERMAN_LOCALE, DEFAULT_LOCALE } from "./constants";
+import { present } from "./links";
 import type {
   Post,
   PostCollectionResponse,
@@ -594,14 +595,16 @@ export const getGermanPostAndMorePosts = cache(
     // nothing, which the renderer already handles. A sidenote takes its German
     // note where one exists, else stays English and says so.
     const germanNotes = new Map(
-      (german.content.links?.entries?.inline ?? []).flatMap((e) =>
-        e?.__typename === "Sidenote" && e.note?.json
-          ? [[e.sys.id, e.note.json] as const]
-          : [],
-      ),
+      (german.content.links?.entries?.inline ?? [])
+        .filter(present)
+        .flatMap((e) =>
+          e.__typename === "Sidenote" && e.note?.json
+            ? [[e.sys.id, e.note.json] as const]
+            : [],
+        ),
     );
     const links = english.post.content.links;
-    const inline = links.entries?.inline?.map((note) => {
+    const inline = links.entries?.inline?.filter(present).map((note) => {
       const json = germanNotes.get(note.sys.id);
       return json
         ? { ...note, note: { ...note.note, json } }
@@ -611,11 +614,11 @@ export const getGermanPostAndMorePosts = cache(
     // figure never mixes languages: German once the title is, and the caption
     // too wherever the English has one. Otherwise both stay English.
     const germanAssets = new Map(
-      (german.content.links?.assets?.block ?? []).flatMap((a) =>
-        a?.title ? [[a.sys.id, a] as const] : [],
-      ),
+      (german.content.links?.assets?.block ?? [])
+        .filter(present)
+        .flatMap((a) => (a.title ? [[a.sys.id, a] as const] : [])),
     );
-    const block = links.assets.block.map((asset) => {
+    const block = links.assets.block.filter(present).map((asset) => {
       const de = germanAssets.get(asset.sys.id);
       if (!de?.title || (asset.description && !de.description)) return asset;
       return {

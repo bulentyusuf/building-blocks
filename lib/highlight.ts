@@ -15,6 +15,7 @@ import markdown from "@shikijs/langs/markdown";
 import tsx from "@shikijs/langs/tsx";
 import typescript from "@shikijs/langs/typescript";
 import yml from "@shikijs/langs/yml";
+import { present } from "./links";
 import type { CodeBlock, Content } from "./types";
 
 const THEME = "min-dark"; // themes
@@ -73,9 +74,9 @@ function escapeHtml(s: string) {
 export async function highlightCodeBlocks(
   content: Content,
 ): Promise<Map<string, string>> {
-  const blocks = (content.links.entries?.block ?? []).filter(
-    (b): b is CodeBlock => b.__typename === "CodeBlock",
-  );
+  const blocks = (content.links.entries?.block ?? [])
+    .filter(present)
+    .filter((b): b is CodeBlock => b.__typename === "CodeBlock");
   if (blocks.length === 0) return new Map();
 
   const hl = await getHighlighter();

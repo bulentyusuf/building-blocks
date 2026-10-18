@@ -14,7 +14,7 @@ function initials(name: string): string {
 
 // picture is optional: a stale cached payload may lack it.
 type AvatarAuthor = Pick<Author, "name" | "slug"> & {
-  picture?: { url?: string };
+  picture?: { url?: string } | null;
 };
 
 function Portrait({ author }: { author: AvatarAuthor }) {

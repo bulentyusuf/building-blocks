@@ -194,7 +194,7 @@ describe("getGermanPostAndMorePosts", () => {
         withAsset(english, { title: "Zwei Hunde", description: "Wuff." }),
       );
       const { post } = await getGermanPostAndMorePosts("e-post", false);
-      const [img] = post!.content.links.assets.block;
+      const img = post!.content.links.assets.block[0]!;
       expect(img).toMatchObject({
         title: "Zwei Hunde",
         description: "Wuff.",
@@ -212,7 +212,7 @@ describe("getGermanPostAndMorePosts", () => {
         withAsset(english, { title: "Zwei Hunde", description: null }),
       );
       const { post } = await getGermanPostAndMorePosts("e-post", false);
-      const [img] = post!.content.links.assets.block;
+      const img = post!.content.links.assets.block[0]!;
       expect(img.title).toBe("Two dogs");
       expect(img.description).toBe("Woof.");
       expect(img.lang).toBeUndefined();
@@ -224,7 +224,7 @@ describe("getGermanPostAndMorePosts", () => {
         withAsset(english, { title: null, description: null }),
       );
       const { post } = await getGermanPostAndMorePosts("e-post", false);
-      const [img] = post!.content.links.assets.block;
+      const img = post!.content.links.assets.block[0]!;
       expect(img.title).toBe("Two dogs");
       expect(img.lang).toBeUndefined();
     });
@@ -265,7 +265,7 @@ describe("getGermanPostAndMorePosts", () => {
     );
 
     const { post } = await getGermanPostAndMorePosts("d-post", false);
-    const [n1, n2] = post!.content.links.entries!.inline!;
+    const [n1, n2] = post!.content.links.entries!.inline!.map((n) => n!);
     expect(n1.note.json).toBe("de-1");
     expect(n1.lang).toBeUndefined();
     // Known-bad control: the untranslated note keeps its English text.
