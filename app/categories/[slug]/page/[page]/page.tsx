@@ -81,6 +81,10 @@ export default async function CategoryPaginatedPage({
   if (pageNumber === 1) {
     redirect(`/categories/${slug}`);
   }
+  // "2.0", "02" and friends resolve to one URL. [→ `listing-shell`]
+  if (String(pageNumber) !== page) {
+    redirect(`/categories/${slug}/page/${pageNumber}`);
+  }
 
   const category = await getCategoryBySlug(slug, isEnabled);
   if (!category) {

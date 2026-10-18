@@ -79,6 +79,10 @@ export default async function AuthorPaginatedPage({
   if (pageNumber === 1) {
     redirect(`/authors/${slug}`);
   }
+  // "2.0", "02" and friends resolve to one URL. [→ `listing-shell`]
+  if (String(pageNumber) !== page) {
+    redirect(`/authors/${slug}/page/${pageNumber}`);
+  }
 
   const author = await getAuthorBySlug(slug, isEnabled);
   if (!author) {

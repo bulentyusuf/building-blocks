@@ -45,7 +45,12 @@ export async function GET() {
   const postDate = (post: ListPost): Date =>
     new Date(post.updatedDate ?? post.date);
 
-  const newestSitewide = posts.length ? postDate(posts[0]) : new Date();
+  // Not posts[0], which is newest by `date`: an older post can carry a later
+  // updatedDate. An invalid date compares false, so it never wins.
+  const newestSitewide = posts.reduce(
+    (newest, post) => (postDate(post) > newest ? postDate(post) : newest),
+    posts.length ? new Date(0) : new Date(),
+  );
 
   // Freshest post per category, tag and author, for real lastmod values.
   const newestByCategory = new Map<string, Date>();
