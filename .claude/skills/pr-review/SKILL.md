@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: pr-review
 description: Review an open pull request against CLAUDE.md, docs/decisions.md and the comments in the files it touches, keep only high-confidence findings, and post them as one PR comment. Use on "review this PR", "code review", or after opening a PR and before stopping.
 disable-model-invocation: true
 argument-hint: "[PR number]"
