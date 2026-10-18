@@ -601,7 +601,9 @@ export const getGermanPostAndMorePosts = cache(
       ),
     );
     const links = english.post.content.links;
+    // A null link stays null for the renderer to skip, as on the English page.
     const inline = links.entries?.inline?.map((note) => {
+      if (!note) return note;
       const json = germanNotes.get(note.sys.id);
       return json
         ? { ...note, note: { ...note.note, json } }
@@ -616,6 +618,7 @@ export const getGermanPostAndMorePosts = cache(
       ),
     );
     const block = links.assets.block.map((asset) => {
+      if (!asset) return asset;
       const de = germanAssets.get(asset.sys.id);
       if (!de?.title || (asset.description && !de.description)) return asset;
       return {

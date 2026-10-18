@@ -3,8 +3,9 @@ import type { ListPost, Post, Tag } from "./types";
 /** A one-post tag connects nothing, so two is the floor for rendering it. */
 export const MIN_POSTS_PER_TAG = 2;
 
+/** The null filter is needed: Contentful returns null for an unpublished tag. */
 export function postTags(post: Pick<Post | ListPost, "tagsCollection">): Tag[] {
-  return post.tagsCollection?.items ?? [];
+  return (post.tagsCollection?.items ?? []).filter((t): t is Tag => t != null);
 }
 
 /**

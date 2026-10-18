@@ -74,7 +74,7 @@ export async function highlightCodeBlocks(
   content: Content,
 ): Promise<Map<string, string>> {
   const blocks = (content.links.entries?.block ?? []).filter(
-    (b): b is CodeBlock => b.__typename === "CodeBlock",
+    (b): b is CodeBlock => b?.__typename === "CodeBlock",
   );
   if (blocks.length === 0) return new Map();
 

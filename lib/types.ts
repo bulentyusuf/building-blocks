@@ -19,8 +19,9 @@ export interface Asset {
   lang?: string;
 }
 
+// Items are null for an unpublished link, as on `authorsCollection`.
 export interface AssetLink {
-  block: Asset[];
+  block: (Asset | null)[];
 }
 
 export interface CodeBlock {
@@ -49,9 +50,9 @@ export interface Sidenote {
 
 export interface EntryLink {
   // Block embeds sit between paragraphs.
-  block: (CodeBlock | PromptBlock)[];
+  block: (CodeBlock | PromptBlock | null)[];
   // Inline embeds (Sidenote). Only POST_GRAPHQL_FIELDS fetches them.
-  inline?: Sidenote[];
+  inline?: (Sidenote | null)[];
 }
 
 export interface Content {
@@ -135,8 +136,9 @@ export interface Post {
   excerpt: string;
   content: Content;
   category?: Category; // single reference; optional so untagged posts don't break
-  // Nested as Contentful returns it. Read through postTags() in lib/tags.ts.
-  tagsCollection?: { items: Tag[] };
+  // Items can be null for an unpublished tag, so read through postTags() in
+  // lib/tags.ts.
+  tagsCollection?: { items: (Tag | null)[] };
   // Ordered, lead first. Items can be null for an unpublished author, so read
   // through postAuthors() in lib/authors.ts. [→ `authors-array`]
   authorsCollection?: { items: (Author | null)[] };

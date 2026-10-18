@@ -69,11 +69,12 @@ function RichTextAsset({
   priority,
 }: {
   id: string;
-  assets: Asset[] | undefined;
+  assets: (Asset | null)[] | undefined;
   lightbox: boolean;
   priority?: boolean;
 }) {
-  const asset = assets?.find((asset) => asset.sys.id === id);
+  // A null item is an unpublished link; skip it like a missing one.
+  const asset = assets?.find((asset) => asset?.sys.id === id);
 
   if (!asset?.url) return null;
 
@@ -293,7 +294,7 @@ export function RichText({
       [BLOCKS.EMBEDDED_ENTRY]: (node: Block | Inline) => {
         const id = (node as Block).data.target.sys.id;
         const entry = content.links.entries?.block?.find(
-          (e) => e.sys.id === id,
+          (e) => e?.sys.id === id,
         );
         if (!entry) return null;
 
@@ -387,7 +388,7 @@ export function RichText({
       [INLINES.EMBEDDED_ENTRY]: (node: Block | Inline) => {
         const id = (node as Inline).data.target.sys.id;
         const entry = content.links.entries?.inline?.find(
-          (e) => e.sys.id === id,
+          (e) => e?.sys.id === id,
         );
         // Same defensive shape as the block case. [→ `sidenotes`]
         if (!entry || entry.__typename !== "Sidenote") return null;
