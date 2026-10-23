@@ -21,6 +21,7 @@ import type { ReactElement } from "react";
 vi.mock("server-only", () => ({}));
 vi.mock("next/font/google", () => ({
   Bricolage_Grotesque: () => ({ variable: "--font-bricolage" }),
+  IBM_Plex_Mono: () => ({ variable: "--font-plex-mono" }),
   Literata: () => ({ variable: "--font-literata" }),
 }));
 vi.mock("next/headers", () => ({

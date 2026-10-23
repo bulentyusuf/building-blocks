@@ -44,7 +44,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `scroll-offset` — One scroll offset, `scroll-padding-top` on `html`
 - `sidenotes` — Sidenotes carry several load-bearing constraints
 - `tag-pages` — Tags have their own pages, and `/tags` is the index
-- `type-roles` — Two faces, three roles, and no family named directly
+- `type-roles` — Three faces, four roles, and no family named directly
 - `font-subsets` — Font preloading is `subsets: ["latin"]` only
 - `prose-measure` — The prose column is never measured in `ch`
 - `prose-overflow` — Prose breaks an unbreakable string rather than scrolling the page
@@ -619,12 +619,13 @@ invisible to CI (`guard-limits`).
 
 ## House conventions
 
-### Two faces, three roles, and no family named directly
+### Three faces, four roles, and no family named directly
 
 <!-- key: type-roles -->
 
 `app/globals.css` defines `--font-display` (Bricolage Grotesque), `--font-body`
-(Literata) and `--font-ui`, and points `--default-font-family` at the body face.
+(Literata), `--font-ui` and `--font-mono` (IBM Plex Mono), and points
+`--default-font-family` at the body face.
 Nothing in a component names a family, which is what kept the last three face
 swaps to a few lines. `--font-ui` resolves to the display family but keeps its
 own token; do not merge them. There is no `font-sans` utility.
@@ -637,6 +638,9 @@ own token; do not merge them. There is no `font-sans` utility.
   tag pill, the archive and tag count spans, and every small uppercase
   letterspaced label. Uppercase plus letterspacing is the tell. A new surface
   that seems to want UI stays on the body face until raised.
+- **Mono**: code, inline and block, and the copy button, via `font-mono`. Plex
+  Mono's x-height and cap height sit closest to the other two faces. Its
+  fallback is a monospace stack, never next/font's Arial-adjusted one.
 
 `app/global-error.tsx` is excluded; it renders its own `<html>` without the font
 variables. A replacement display face must contrast with the serif, carry an

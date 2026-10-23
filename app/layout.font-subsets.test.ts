@@ -41,12 +41,12 @@ function declaredPreloadFalse(source: string): string[] {
 describe("preloaded font subsets", () => {
   const found = declaredSubsets(readFileSync(LAYOUT, "utf8"));
 
-  it("finds all three font declarations in app/layout.tsx", () => {
-    // Bricolage, Literata roman and Literata italic. Adding a fourth face
+  it("finds all four font declarations in app/layout.tsx", () => {
+    // Bricolage, Literata roman, Literata italic and Plex Mono. Adding a face
     // moves this number and fails, which is intended: a new family has to
     // make the same decision rather than inherit whatever was pasted
     // alongside it.
-    expect(found).toHaveLength(3);
+    expect(found).toHaveLength(4);
   });
 
   it("preloads latin only", () => {
@@ -56,13 +56,13 @@ describe("preloaded font subsets", () => {
   });
 });
 
-describe("the Literata italic opts out of preload", () => {
-  it("sets preload: false on exactly one instance", () => {
-    // Not zero: the whole point of the split is that the italic instance
-    // stops preloading. Not two: the roman instance has to keep preloading,
-    // or the LCP hero image loses its head start on every route again.
+describe("the Literata italic and Plex Mono opt out of preload", () => {
+  it("sets preload: false on exactly two instances", () => {
+    // The italic, and Plex Mono while it sets only code. Not three: the roman
+    // instance has to keep preloading, or the LCP hero image loses its head
+    // start on every route again.
     const found = declaredPreloadFalse(readFileSync(LAYOUT, "utf8"));
-    expect(found).toHaveLength(1);
+    expect(found).toHaveLength(2);
   });
 
   it("finds nothing on a declaration with no preload key", () => {
