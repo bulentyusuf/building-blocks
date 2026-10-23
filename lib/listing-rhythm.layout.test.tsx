@@ -69,6 +69,8 @@ vi.mock("@/lib/api", () => ({
   getAllPosts: async () => posts,
   // No German versions, so the archive rows measured here stay as they were.
   getGermanPostSlugs: async () => [],
+  // No writers, so the footer renders no mascots.
+  getAllAuthors: async () => [],
   getTagBySlug: async () => tag,
   getBrowseIntro: async (slug: string) => ({
     title: slug,

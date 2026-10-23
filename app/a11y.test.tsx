@@ -45,7 +45,19 @@ vi.mock("@vercel/speed-insights/next", () => ({ SpeedInsights: () => null }));
 // The blur fetch would hit Contentful. undefined is the component's real
 // "no LQIP underlay" branch, so this exercises a shipped path.
 vi.mock("@/lib/blur", () => ({ getBlurDataURL: async () => undefined }));
-// Both app/wordmark-fade.tsx and app/site-wordmark.tsx read the pathname.
+// The footer's writers come from the CMS. One is enough for axe to see the
+// linked mascot.
+vi.mock("@/lib/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api")>()),
+  getAllAuthors: async () => [
+    {
+      name: "Genial Yeti",
+      slug: "genial-yeti",
+      picture: { url: "https://images.ctfassets.net/x/y/yeti.webp" },
+    },
+  ],
+}));
+// app/site-wordmark.tsx reads the pathname.
 // These fixtures compose pages by hand rather than routing to them, so there
 // is no router to read. "/" matches the home fixture, which is the only one
 // whose assertions depend on it.
@@ -574,49 +586,19 @@ describe("home, whose header carries the masthead as its h1", () => {
 
     const css = fs.readFileSync(path.join(__dirname, "globals.css"), "utf8");
 
-    // The wordmark half is the fallback the fade degrades to: display: none,
-    // so the bar does not name the site twice before the observer mounts.
+    // The logo hides on home: display: none, so the header does not name
+    // the site twice above the masthead.
     const wordmark =
       /body:has\(\.site-masthead\)\s+\.site-wordmark\s*\{([^}]*)\}/.exec(css);
     expect(wordmark).not.toBeNull();
     expect(wordmark![1]).toMatch(/display:\s*none/);
-    // Not visibility: hidden. That still reserves the wordmark's box in the
-    // bar for a no-JS reader, leaving a gap before the nav where display:
-    // none lets the nav sit properly. Stripped of comments first, or this
-    // assertion would match its own explanation instead of a real
-    // declaration.
+    // Not visibility: hidden. That still reserves the logo's box, leaving a
+    // gap before the nav where display: none lets the nav sit properly.
+    // Stripped of comments first, or this assertion would match its own
+    // explanation instead of a real declaration.
     expect(wordmark![1].replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(
       /visibility/,
     );
-
-    // The fade itself, and its reduced-motion escape. Asserted so the
-    // component and the stylesheet cannot drift apart: app/wordmark-fade.tsx
-    // sets both class names and neither does anything without a rule here.
-    expect(css).toMatch(/\.js-wordmark-observed\s+\.site-wordmark/);
-    expect(css).toMatch(/\.wordmark-visible\s+\.site-wordmark/);
-    expect(css).toMatch(
-      /prefers-reduced-motion:\s*reduce[\s\S]{0,200}js-wordmark-observed/,
-    );
-
-    // The faded-out state must not be operable. opacity alone leaves a box
-    // that takes a tab stop and a click, which is what shipped first: an
-    // invisible link over the blank space in the bar. Asserted on the rule
-    // rather than the DOM because jsdom applies no stylesheet.
-    const faded =
-      /body:has\(\.site-masthead\)\.js-wordmark-observed\s+\.site-wordmark\s*\{([^}]*)\}/.exec(
-        css,
-      );
-    expect(faded).not.toBeNull();
-    expect(faded![1]).toMatch(/visibility:\s*hidden/);
-
-    // And the faded-in state must restore it, or the wordmark would be
-    // permanently unreachable rather than permanently reachable.
-    const shown =
-      /\.js-wordmark-observed\.wordmark-visible\s+\.site-wordmark\s*\{([^}]*)\}/.exec(
-        css,
-      );
-    expect(shown).not.toBeNull();
-    expect(shown![1]).toMatch(/visibility:\s*visible/);
   });
 });
 

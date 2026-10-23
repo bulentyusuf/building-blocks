@@ -98,12 +98,12 @@ export const MAX_AUTHORS = 3;
 // Opt-in, no default: the feed omits <author> when unset. Server-only.
 export const AUTHOR_EMAIL = process.env.AUTHOR_EMAIL?.trim() || "";
 
-// Twin of --color-brand-header in app/globals.css; change both.
-// [→ `brand-colour-duplication`, `chrome-aubergine`]
-export const BRAND_HEADER_COLOR = "#2B1C3F";
+// Twin of --color-brand-bg in app/globals.css; change both.
+// [→ `brand-colour-duplication`]
+export const THEME_COLOR = "#FAF5F1";
 
 // Dark-scheme twin.
-export const BRAND_HEADER_COLOR_DARK = "#3B2A52";
+export const THEME_COLOR_DARK = "#17110F";
 
 // [→ `locale`]
 export const DEFAULT_LOCALE = "en-GB";

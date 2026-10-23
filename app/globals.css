@@ -15,57 +15,10 @@
 
 @plugin '@tailwindcss/typography';
 
-/* Home names itself in the masthead, about 60px above the bar, so the
-   wordmark hides here until the reader scrolls the masthead out of view.
-   [→ `wide-page-shell`] The fade (app/wordmark-fade.tsx) is the one
-   enhancement that needs a script, and it degrades to exactly this rule, so
-   scripts-off and pre-hydration readers get the steady hidden state rather
-   than a broken half of the animated one. */
+/* Home names itself in the masthead a few lines below, so the logo hides
+   there rather than name the site twice. [→ `wide-page-shell`] */
 body:has(.site-masthead) .site-wordmark {
-  /* No-JS and pre-hydration fallback: hidden outright, so the bar does not
-     name the site twice before the observer mounts. */
   display: none;
-}
-
-/* app/wordmark-fade.tsx marks <body> .js-wordmark-observed as soon as its
-   IntersectionObserver mounts, which swaps the fallback above for an opacity
-   fade, then toggles .wordmark-visible as the masthead crosses the sticky
-   bar's bottom edge. Both are unlayered, like the fallback, so neither loses
-   to the wordmark's own utility classes.
-
-   visibility travels with opacity, and it is not decoration. An element at
-   opacity: 0 still generates a box, so it keeps hit testing, a tab stop and
-   its place in the accessibility tree — which put an invisible link over the
-   blank space in the bar and a focus ring around nothing. visibility: hidden
-   removes all three. It is animatable only discretely, so the transition
-   delays it by the fade's own duration on the way out and applies it
-   immediately on the way in: the element stays operable while it is still
-   partly visible, and stops being operable the moment it is not. */
-body:has(.site-masthead).js-wordmark-observed .site-wordmark {
-  display: inline;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.3s ease,
-    visibility 0s linear 0.3s;
-}
-body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
-  opacity: 1;
-  visibility: visible;
-  transition:
-    opacity 0.3s ease,
-    visibility 0s linear 0s;
-}
-
-/* Both states, not just the hidden one. With only the first selector listed
-   here the visible state kept its own transition and the fade still ran for
-   readers who asked for no motion. */
-@media (prefers-reduced-motion: reduce) {
-  body:has(.site-masthead).js-wordmark-observed .site-wordmark,
-  body:has(.site-masthead).js-wordmark-observed.wordmark-visible
-    .site-wordmark {
-    transition: none;
-  }
 }
 
 @theme {
@@ -81,13 +34,6 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
   --default-font-family: var(--font-body);
 
   --color-brand-crimson: #9e2238;
-  /* Chrome colour, carried by the sticky bar AND the footer — one token for
-     both. White on this is 15.66:1. [→ `chrome-aubergine`] Literal twins live
-     in lib/constants.ts as BRAND_HEADER_COLOR and BRAND_HEADER_COLOR_DARK,
-     because the viewport themeColor and the PWA manifest cannot read a custom
-     property; lib/palette-contrast.test.ts holds them to these values. */
-  --color-brand-header: #2b1c3f;
-
   --color-brand-dark: #241b1d;
   --color-brand-bg: #faf5f1;
   --color-brand-muted: #6b5a52;
@@ -143,11 +89,10 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
      out on --color-control-edge above. */
   --color-cover-keyline: rgb(250 245 241 / 0.75);
 
-  /* Always-dark surface, in BOTH schemes. brand-dark doubles as body ink and,
-     historically, as dark chrome; because ink must invert in dark mode (below),
-     chrome that must STAY dark — the back-to-top button, and the dark ink used
-     on the lifted-crimson prompt header — points here instead so it never flips
-     to light. Deliberately excluded from the dark override. */
+  /* Always-dark surface, in BOTH schemes. brand-dark is body ink and must
+     invert in dark mode (below), so anything that must STAY dark — the dark
+     ink used on the lifted-crimson prompt header — points here instead so it
+     never flips to light. Deliberately excluded from the dark override. */
   --color-surface-dark: #241b1d;
 
   /* Table treatment. Derived from the crimson token rather than the divider
@@ -191,12 +136,6 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
     --color-brand-dark: #f2eae4; /* warm off-white ink */
     --color-brand-muted: #b3a49c; /* lifted so meta text keeps AA on dark */
     --color-brand-crimson: #ec8494; /* lifted so links stay vivid + AAA on dark */
-    /* #2B1C3F would sit at 1.02:1 on this page, no block at all; #3B2A52
-       gives 1.46:1, clearing the 1.4 floor by 0.06 — the narrowest margin in
-       this palette, why lib/palette-contrast.test.ts asserts it. White on it
-       is 12.81:1. [→ `chrome-aubergine`] */
-    --color-brand-header: #3b2a52;
-
     /* Warm off-white at low alpha, matching the ink. The light #e5e7eb reads
        at ~15:1 on the #17110F page and glares. */
     --color-hairline: rgb(242 234 228 / 0.15);
@@ -246,11 +185,10 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
 /*
   One scroll offset for the whole site, on the scroll container.
 
-  The header is `sticky top-0` and 52px tall, so anything the browser scrolls to
-  the top of the viewport lands underneath it. Headings used to solve this for
-  themselves with `scroll-mt-*` utilities, which covered fragment links and
-  nothing else — Tab to a link just below the fold and the band still covered
-  it, which is WCAG 2.2's 2.4.11 Focus Not Obscured. scroll-padding-top is on
+  The header used to be a 52px sticky bar, and headings cleared it with
+  `scroll-mt-*` utilities, which covered fragment links and nothing else. The
+  header now scrolls away, but the offset stays as breathing room and as the
+  value the table of contents reads. scroll-padding-top is on
   the scroll container, so it applies to every scroll-into-view the browser
   performs: fragment navigation, `scrollIntoView()`, and sequential focus.
 
@@ -263,9 +201,7 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
   and one place to read it. That place is here.
 
   5rem, matching the `prose-headings:scroll-mt-20` this supersedes, so fragment
-  navigation lands exactly where it did before. It leaves 28px of clearance
-  under the 52px band. Recompute it if the header's `py-3` or the masthead's
-  `text-lg` changes — the same dependency the skip link's `focus:top-2` has.
+  navigation lands exactly where it did before.
 */
 html {
   scroll-padding-top: 5rem;
@@ -305,8 +241,7 @@ html:has(dialog:modal) {
 /*
   One focus indicator for the whole site. Crimson clears 3:1 against both page
   backgrounds (#9E2238 light, #EC8494 dark) and inverts with the scheme
-  automatically. Chrome overrides this locally with a white ring, since
-  crimson on the aubergine chrome is only 2.04:1. [→ `focus-indicator`]
+  automatically. [→ `focus-indicator`]
 */
 @layer base {
   :focus-visible {
