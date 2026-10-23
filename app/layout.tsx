@@ -138,7 +138,7 @@ function Header() {
         <SiteWordmark title={SITE_TITLE} />
         {/* Mobile nav in a disclosure, desktop nav inline; exactly one is in
             the accessibility tree. */}
-        <nav aria-label="Primary" className="flex items-center">
+        <nav aria-label="Primary" className="ml-auto flex items-center">
           <NavDisclosure>
             <summary
               aria-label="Menu"
