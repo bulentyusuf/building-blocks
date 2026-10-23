@@ -56,13 +56,14 @@ describe("preloaded font subsets", () => {
   });
 });
 
-describe("the Literata italic and Plex Mono opt out of preload", () => {
-  it("sets preload: false on exactly two instances", () => {
-    // The italic, and Plex Mono while it sets only code. Not three: the roman
-    // instance has to keep preloading, or the LCP hero image loses its head
-    // start on every route again.
+describe("the Literata italic opts out of preload", () => {
+  it("sets preload: false on exactly one instance", () => {
+    // Not zero: the whole point of the split is that the italic instance
+    // stops preloading. Not two: the roman instance has to keep preloading,
+    // or the LCP hero image loses its head start on every route again. Plex
+    // Mono preloads too, now the header's nav is set in it.
     const found = declaredPreloadFalse(readFileSync(LAYOUT, "utf8"));
-    expect(found).toHaveLength(2);
+    expect(found).toHaveLength(1);
   });
 
   it("finds nothing on a declaration with no preload key", () => {

@@ -37,7 +37,6 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `pagefind-index-scope` — What the Pagefind index deliberately excludes
 - `search-emblem` — The search emblem's dark-mode ground
 - `brand-colour-duplication` — Brand colour exists in two places on purpose
-- `chrome-aubergine` — Chrome is aubergine, one token for the bar and the footer
 - `tag-pills` — Tags render as pills, in one implementation
 - `border-roles` — Border roles are not interchangeable
 - `focus-indicator` — One focus indicator, set in `@layer base`
@@ -179,10 +178,12 @@ tuning knob.
 
 <!-- key: brand-colour-duplication -->
 
-The header colour is a token in `app/globals.css` and `BRAND_HEADER_COLOR` /
-`BRAND_HEADER_COLOR_DARK` in `lib/constants.ts`, because the viewport
-`themeColor` and the web manifest are built in JS and cannot read custom
-properties. Any change touches both.
+The page colour is `--color-brand-bg` in `app/globals.css` and `THEME_COLOR` /
+`THEME_COLOR_DARK` in `lib/constants.ts`, because the viewport `themeColor` and
+the web manifest are built in JS and cannot read custom properties. The header
+and footer have no surface of their own, so the page colour is what the browser
+paints around them. Any change touches both, and `lib/palette-contrast.test.ts`
+holds each twin to its token.
 
 ### A settled design call changes with its entry, in the same pull request
 
@@ -272,25 +273,6 @@ third child inherits the two-column intent. The headline caps at
 standalone line to mirror a card was shipped and reverted: no card has a byline,
 so there was nothing to mirror. The layout test in lib
 (listing-rhythm.layout.test.tsx) measures the mobile gap and the title step.
-
-### Chrome is aubergine, one token for the bar and the footer
-
-<!-- key: chrome-aubergine -->
-
-`#2B1C3F` light, `#3B2A52` dark, carried by `--color-brand-header` and its
-literal twins in `lib/constants.ts`, which also feed the manifest's
-`theme_color`. `lib/palette-contrast.test.ts` holds each twin to its token. One
-colour for bar and footer replaced a navy bar over a near-black footer that read
-as two unrelated surfaces.
-
-- The band could not survive it: no band value fits under `#2B1C3F` at the
-  repo's 1.6:1 chrome step, and in dark it would sit below the page.
-- The footer's faintest tint is `white/72`. `white/65` falls to 6.37:1 on the
-  dark footer, under the 7:1 floor the test enforces on footer small print;
-  the light scheme alone hides that.
-- `brand-crimson` on the aubergine is 2.04:1, so chrome links identify by
-  weight and underline and chrome carries a white focus ring. Lighten the
-  chrome and that override becomes the bug.
 
 ### Covers take one of two frames, chosen by `wide`
 
@@ -399,17 +381,14 @@ Defined in `app/globals.css`.
 
 One `:focus-visible` rule in `app/globals.css`, repeated once for the sidenote
 label because the checkbox that takes focus is hidden. Components add no
-`focus-visible:ring-*` or `focus-visible:outline-*`. Four exceptions, each
-argued in its file: the aubergine header and footer, where crimson fails and
-the outline suppression before the white ring is required; the code-block
-scroll regions in `lib/rich-text.tsx`, which draw inward because their parent
-clips; the "Prompt" badge over a post cover, a white outline drawn inward
-because it sits on images of any tone; and the controls on their own dark
-ground, `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox
-close button, which take a two-tone white ring: a fixed control floats over
-grounds no one colour clears (crimson is 2.19:1 on the light footer), and white
-at 18.7:1 on the dark page pairs with a dark offset at 15.5:1 on the light one.
-That last group was once "simplified" and reverted.
+`focus-visible:ring-*` or `focus-visible:outline-*`. Three exceptions, each
+argued in its file: the code-block scroll regions in `lib/rich-text.tsx`, which
+draw inward because their parent clips; the "Prompt" badge over a post cover, a
+white outline drawn inward because it sits on images of any tone; and the fixed
+controls, `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox
+close button, which take a two-tone ring because a fixed control floats over
+grounds no one colour clears. That last group was once "simplified" and
+reverted. The header and footer need no exception: they sit on the page.
 
 ### One scroll offset, `scroll-padding-top` on `html`
 
@@ -420,8 +399,8 @@ replaced per-heading `scroll-mt-*`. The two add, so they cannot coexist, and the
 container form also covers the browser scrolling a focused element into view
 (WCAG 2.4.11). `app/table-of-contents.tsx` reads this value to place its
 activation line via `lib/toc-active.ts`; `lib/toc-active.test.ts` fails on any
-class carrying the old utility. Recompute the 5rem, and the skip link's
-`focus:top-2`, if the header's padding or the wordmark's size changes.
+class carrying the old utility. The header no longer sticks, so the 5rem is
+breathing room and the value the table of contents reads, not a header height.
 
 ### The skip link's target is focusable
 
@@ -634,11 +613,12 @@ own token; do not merge them. There is no `font-sans` utility.
   add `font-display` to a heading.
 - **Body**: prose and the meta around it, dates, bylines, breadcrumbs, captions.
   A stray `font-ui` on a date is a regression.
-- **UI**: nav, footer, the table-of-contents and "Explore with AI" labels, the
-  tag pill, the archive and tag count spans, and every small uppercase
+- **UI**: the table-of-contents and "Explore with AI" labels, the tag pill, the
+  archive and tag count spans, and every small uppercase
   letterspaced label. Uppercase plus letterspacing is the tell. A new surface
   that seems to want UI stays on the body face until raised.
-- **Mono**: code, inline and block, and the copy button, via `font-mono`. Plex
+- **Mono**: code, inline and block, the copy button, and the header and
+  footer's paths and `//` labels, via `font-mono`. Plex
   Mono's x-height and cap height sit closest to the other two faces. Its
   fallback is a monospace stack, never next/font's Arial-adjusted one.
 
@@ -711,8 +691,8 @@ and `Container` in a route, and do not give a narrow route the wide header.
 
 - A post's `h1` carries its own `data-pagefind-body`, since it sits outside the
   `<article>`; without it every title-only term drops out of search.
-- The bar's wordmark hides on home through a `:has()` rule while the masthead is
-  on screen, so the site is not named twice within 100px, and fades back in once it scrolls away (`app/wordmark-fade.tsx`).
+- The header's logo hides on home through a `:has()` rule, so the site is not
+  named twice above the masthead. The header keeps its height without it.
   It is a button that scrolls to top on home and a link elsewhere
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. The exit from this machinery, weighed and declined in
