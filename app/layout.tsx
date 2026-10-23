@@ -1,5 +1,5 @@
 import "./globals.css";
-import { Bricolage_Grotesque, Literata } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Mono, Literata } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import {
@@ -96,6 +96,16 @@ const literataItalic = Literata({
   style: ["italic"],
   axes: ["opsz"],
   preload: false,
+});
+// Code only for now, so it waits to be asked for like the italic does. No
+// adjusted fallback: next/font sizes it against Arial, which is proportional.
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
 });
 
 const NAV_LINKS = [
@@ -313,7 +323,7 @@ export default async function RootLayout({
   return (
     <html
       lang={DEFAULT_LOCALE}
-      className={`${bricolage.variable} ${literata.variable} ${literataItalic.variable}`}
+      className={`${bricolage.variable} ${literata.variable} ${literataItalic.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
       <head>

@@ -69,12 +69,15 @@ body:has(.site-masthead).js-wordmark-observed.wordmark-visible .site-wordmark {
 }
 
 @theme {
-  /* Three roles, generated from these tokens by Tailwind; --default-font-family
+  /* Four roles, generated from these tokens by Tailwind; --default-font-family
      is what Preflight puts on <body>. Nothing names a family directly.
      [→ `type-roles`] */
   --font-display: var(--font-bricolage);
   --font-body: var(--font-literata);
   --font-ui: var(--font-bricolage);
+  --font-mono:
+    var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", monospace;
   --default-font-family: var(--font-body);
 
   --color-brand-crimson: #9e2238;
@@ -558,9 +561,7 @@ html:has(dialog:modal) {
     font-weight: 700;
   }
   & :where(code):not(:where([class~="not-prose"] *)) {
-    font-family:
-      ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-      "Liberation Mono", monospace;
+    font-family: var(--font-mono);
     font-weight: 400;
     font-style: normal;
     /* No border. A 1px edge plus 0.4em padding made the inline box taller than

@@ -106,10 +106,10 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 
 ## Type and styling
 
-- **Three roles, two faces, and nothing in a component names a family.**
-  `--font-display` (Bricolage Grotesque), `--font-body` (Literata), `--font-ui`.
-  There is no `font-sans` utility; that class silently does nothing.
-  [→ `type-roles`]
+- **Four roles, three faces, and nothing in a component names a family.**
+  `--font-display` (Bricolage Grotesque), `--font-body` (Literata), `--font-ui`,
+  `--font-mono` (IBM Plex Mono). There is no `font-sans` utility; that class
+  silently does nothing. [→ `type-roles`]
 - **`subsets: ["latin"]` only in `app/layout.tsx`.** Do not re-add `latin-ext`,
   including for `de-DE` work. [→ `font-subsets`]
 - **Never measure a prose column in `ch`.** The measure lives on `max-w-2xl`

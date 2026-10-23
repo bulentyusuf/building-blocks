@@ -34,6 +34,7 @@ vi.mock("server-only", () => ({}));
 // the returned `variable`, so a stub is faithful enough for structure.
 vi.mock("next/font/google", () => ({
   Bricolage_Grotesque: () => ({ variable: "--font-bricolage" }),
+  IBM_Plex_Mono: () => ({ variable: "--font-plex-mono" }),
   Literata: () => ({ variable: "--font-literata" }),
 }));
 vi.mock("next/headers", () => ({
