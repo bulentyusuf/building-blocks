@@ -51,12 +51,14 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
   follows.** No route sits half in each. [→ `page-axis`]
 - **Wide**: header at `max-w-5xl`, `<Breadcrumb>` unwrapped, `h1` at `text-4xl
 leading-tight md:text-5xl lg:text-6xl`, closed by a 3px `border-brand-dark`
-  rule. Fourteen routes: `/`, `/page/[page]`, `/posts/[slug]`, `/de/posts/[slug]`,
-  `/archive`, `/categories`, `/tags`, `/authors`, and the six taxonomy listings.
+  rule. Twelve routes: `/posts/[slug]`, `/de/posts/[slug]`, `/archive`,
+  `/categories`, `/tags`, `/authors`, and the six taxonomy listings.
+- **Home is neither**: strand chips, a feature card, ten cards and a link to
+  `/archive`, no header rule, no pager. [→ `strands`]
 - **Narrow**: header wrapped in `mx-auto max-w-2xl`, `h1` at `mb-6 text-4xl
 md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
   `/privacy`, `/search`.
-- **Every wide route renders through `app/wide-page.tsx`**, the middle seven via
+- **Every wide route renders through `app/wide-page.tsx`**, the middle six via
   `app/listing-page.tsx`. Do not assemble a bespoke wide header or `Container`,
   and do not give a narrow route the wide header. [→ `wide-page-shell`]
 - **`contentOwnsLeading` suppresses the gap below the 3px rule, never the
@@ -78,28 +80,23 @@ md:text-right text-brand-muted`. Both `md:` prefixes are mandatory or mobile
   aligns to a boundary nothing else draws. [→ `split-masthead`]
 - **Standfirst copy budget is roughly 37 characters a line, 74 for two.**
 - **Author routes are the one exception**, via `splitHeader={false}`.
-- **Home's masthead is its `h1`** — `SITE_TITLE` plus `SITE_DESCRIPTION`,
-  unlinked — and the hero below is an `h2`. The two move together.
-  [→ `page-axis`]
+- **Home's `h1` is an `sr-only` `SITE_TITLE`.** Its mono labels are the `h2`s,
+  post titles `h3`. A card has one link, its stretched title. [→ `strands`]
 - **`MoreStories` sets card titles to `h3` when it renders a section heading and
   `h2` when it does not.** Adding or removing a heading re-levels every card on
   the route. [→ `page-axis`]
-- **The home hero is `grid gap-y-6 md:grid-cols-2 md:gap-x-16 lg:gap-x-32
-md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
-  `Avatar` stays whole with `meta={dateline}`; do not pull the date out into a
-  standalone line. [→ `home-hero`]
 - **The page counter is inline text inside each route's own `<h1>`**
-  (`app/page-counter.tsx`), rendered by all seven paginated routes, returning
+  (`app/page-counter.tsx`), rendered by all six paginated routes, returning
   `null` on page 1. [→ `page-counter`]
 - **A paginated listing's header is identical on page 1 and later pages** apart
   from that counter. [→ `listing-shell`]
-- **A card's meta line is the date alone, above the excerpt, and carries no
-  category.** [→ `card-meta`]
+- **A listing card's meta line is the date alone, above the excerpt.** Home's
+  cards carry a strand pill and byline instead. [→ `card-meta`]
 - **Covers take one of two frames, chosen by `wide`**: 3:2 mobile and 16:9 from
   `md` with it, fixed 3:2 without. The mobile 3:2 is the single item most often
   re-raised as a finding. [→ `cover-frames`]
-- **`POSTS_PER_PAGE` is five** and changing it is a four-route design pass, not
-  a constant bump. [→ `posts-per-page`]
+- **`POSTS_PER_PAGE` is five** and changing it is a design pass over the
+  taxonomy listings, not a constant bump. [→ `posts-per-page`]
 - **The post `h1` renders `post.title` directly, never through `widont()`.**
   The glued last two words can outgrow that column, so `text-balance` on the
   heading covers the widow instead. [→ `heading-widont`]

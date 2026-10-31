@@ -49,6 +49,23 @@ describe("brand accent clears AAA in both schemes", () => {
   });
 });
 
+// The strand pills are 12px cream text on a fill that does not invert, and the
+// cards carry body ink on their own surface. [→ `strands`]
+describe("strand pills and card text clear AA in both schemes", () => {
+  it.each(["light", "dark"] as const)("%s", (scheme) => {
+    const token = scheme === "light" ? light : dark;
+    for (const strand of ["blogging", "films", "games"]) {
+      expect(
+        contrast(token("--color-on-strand"), token(`--color-strand-${strand}`)),
+        strand,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(
+      contrast(token("--color-brand-dark"), token("--color-card")),
+    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  });
+});
+
 describe("muted small-caps labels clear AA in both schemes", () => {
   // Every uppercase micro-label site-wide (tag pills, archive counts and
   // categories, the TOC eyebrow, "read more" links, error eyebrows) renders in
@@ -86,8 +103,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   };
 
   it.each([
-    "app/page.tsx",
-    "app/page/[page]/page.tsx",
     "app/categories/page.tsx",
     "app/tags/page.tsx",
     "app/authors/page.tsx",
@@ -132,20 +147,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     // "The page counter moves inline, into the heading"), it is still a meta
     // string rather than heading text, and text-brand-muted is what says so.
     expect(read("app/page-counter.tsx")).toMatch(/text-brand-muted/);
-  });
-
-  it("home's masthead accents the stop with the TOKEN, never a literal", () => {
-    // The light crimson on the dark page is 2.44:1. brand-crimson lifts to the
-    // dark scheme's own value on its own, so the class is the only safe way to
-    // write this.
-    //
-    // The negative half looks for an arbitrary-value colour utility rather
-    // than for a hex anywhere in the file, because hexes appear in comments
-    // explaining exactly this, and a guard that fails on its own rationale is
-    // a guard nobody keeps.
-    const home = read("app/page.tsx");
-    expect(home).toMatch(/<span className="text-brand-crimson">/);
-    expect(home).not.toMatch(/text-\[#[0-9a-fA-F]{3,8}\]/);
   });
 });
 

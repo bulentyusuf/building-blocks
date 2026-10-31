@@ -23,7 +23,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 **Headers and home**
 
 - `split-masthead` — The masthead splits into heading and standfirst, right-anchored
-- `home-hero` — The home hero splits 50/50, synced with the card grid beneath it, with Avatar kept whole
+- `strands` — Home is strand chips, a feature card and ten cards, and a card presses as one link
 - `cover-frames` — Covers take one of two frames, chosen by `wide`
 - `posts-per-page` — `POSTS_PER_PAGE` is five, and changing it is a design pass
 - `card-meta` — A card's meta line is the date alone, above the excerpt
@@ -256,23 +256,28 @@ The cap sets a copy budget of about 37 characters a line, 74 for two. The
 exception, via `splitHeader={false}`, because their `h1` already shares a row
 with a 112px portrait.
 
-### The home hero splits 50/50, synced with the card grid beneath it, with Avatar kept whole
+### Home is strand chips, a feature card and ten cards
 
-<!-- key: home-hero -->
+<!-- key: strands -->
 
-`HeroPost` in `app/page.tsx` is `grid gap-y-6 md:grid-cols-2 md:gap-x-16
-lg:gap-x-32 md:gap-y-0`, matching the `MoreStories` grid below so the hero's
-right column lines up with the right-hand card, a 428px cell inside the 984px
-content cap. It is a base-level grid: a
-grid only from `md` left the byline and excerpt 0px apart on mobile.
-`md:gap-y-0` is defensive (one row has no row gap to act on) and stays so a
-third child inherits the two-column intent. The headline caps at
-`lg:text-[2.5rem]`, off-scale on purpose.
+The F2 refresh. Posts sit in three strands, the Contentful categories
+`blogging`, `films` and `games-and-gadgets`; `lib/strands.ts` maps each to a
+label and literal Tailwind classes, and any other category falls back to
+Blogging's colours under its own name. Home is the chips, the latest post as a
+feature card, ten more cards and a link to `/archive`. No pager: `/page/:n`
+redirects to the archive, which already lists everything.
 
-`Avatar` stays whole, with the date in its `meta`. Pulling the date into a
-standalone line to mirror a card was shipped and reverted: no card has a byline,
-so there was nothing to mirror. The layout test in lib
-(listing-rhythm.layout.test.tsx) measures the mobile gap and the title step.
+- **Chips are links, not filters.** Each strand is a page, so the pressed chip
+  is `aria-current="page"` and nothing is hidden client-side.
+- **A card presses as a whole but has one link**, its title, stretched by
+  `::after`. Tags on the feature card sit above it with `relative z-10`
+  [→ `announced-links`].
+- **Ink means pressable.** Cards keep the 3px ink edge; the cover inside takes
+  `--color-edge-quiet`. Shadows are the strand colour, lifted in dark mode.
+- **Strand fills never invert**, so the pills keep cream text in both schemes;
+  `lib/palette-contrast.test.ts` holds them at 4.5:1.
+- Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
+  the `// latest post` and `// previous posts` labels are the `h2`s.
 
 ### Covers take one of two frames, chosen by `wide`
 
@@ -288,17 +293,17 @@ uniform uncropped 16:9 were both proposed and rejected.
 
 <!-- key: posts-per-page -->
 
-`lib/constants.ts`. Home's hero counts, so page 1 is a hero plus four cards and
-later pages hold five. Eight and ten were both tried and reverted. Home, the
-`/page/[page]` slice and every taxonomy listing read it, so a new number needs
-all four looked at together.
+`lib/constants.ts`. Every taxonomy listing reads it, so a new number needs
+them looked at together. Eight and ten were both tried and reverted. Home no
+longer reads it; it shows ten cards and links to the archive [→ `strands`].
 
 ### A card's meta line is the date alone, above the excerpt
 
 <!-- key: card-meta -->
 
-`PostPreview` in `app/more-stories.tsx`, both variants. No category on cards:
-with two categories the label carries about one bit, and it would need a
+`PostPreview` in `app/more-stories.tsx`, both variants; home's cards carry a
+strand pill instead [→ `strands`]. No category here: with two categories the
+label carried about one bit, and it would need a
 per-route exception on the category pages, where it names the page the reader
 is on. Adding `category` to `CardPost` was rejected, which leaves
 `CARD_GRAPHQL_FIELDS` unchanged.
@@ -476,8 +481,7 @@ tell a working name from a broken one.
   wide pages render it unwrapped.
 - On `/search` the wrapper sits before the `<section>`, so `.search-empty`
   stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
-- `/page/[page]` carries Home / Latest Posts. The last crumb is never a link, so
-  there is no double link to `/`. Home is the one route with no trail.
+- Home is the one route with no trail.
 - Page position rides inline in the `h1` (`app/page-counter.tsx`), never in the
   trail.
 - Accepted: on `/categories/[slug]/page/[page]` `aria-current="page"` sits on
@@ -529,14 +533,11 @@ that says where they are. Old anchors still land.
 
 <!-- key: browse-copy -->
 
-The standfirst and meta description on `/tags`, `/categories`, `/authors`,
-`/archive` and `/page/[page]` come from a `browseIntro` entry keyed by slug
-(`latest-posts` for the last), through `browsePageMetadata` in
-`lib/page-metadata.ts` except on `/page/[page]`, whose canonical is per page.
-`generateMetadata` and the page pass the same slug constant (see
-`single-entry-cache`). A missing entry degrades to a heading. On
-`/page/[page]` the standfirst has no fallback, so hard-coded copy can never pose
-as the CMS entry, while the meta description falls back to `SITE_DESCRIPTION`.
+The standfirst and meta description on `/tags`, `/categories`, `/authors` and
+`/archive` come from a `browseIntro` entry keyed by slug, through
+`browsePageMetadata` in `lib/page-metadata.ts`. `generateMetadata` and the page
+pass the same slug constant (see `single-entry-cache`). A missing entry
+degrades to a heading.
 
 `SITE_DESCRIPTION` is site chrome, like `SITE_TITLE`, read on routes that never
 touch Contentful; home's fuller `HOME_TITLE` and `HOME_DESCRIPTION` sit beside
@@ -670,33 +671,26 @@ choice is a 6xl heading in a 42rem measure. The measure is the
 header's, not the prose's: a post is wide with a narrow body, and `/search` is
 narrow. The route lists are in `CLAUDE.md`.
 
-**Home's masthead is its `h1`**: `SITE_TITLE` at a raised ramp, unlinked, with
-`SITE_DESCRIPTION` as standfirst. As a `<p>` it rendered at weight 400 against
-700 headlines; the element being a heading is the fix, not a weight class. The
-hero below is an `h2`, and the two move together.
+Home sits outside this axis: it has no header or rule [→ `strands`].
 
 **`MoreStories` sets card titles to `h3` when it renders a section heading and
 `h2` when it does not**, so adding or removing a heading re-levels every card.
-`app/a11y.test.tsx` asserts home's headings by text as well as level.
 
 ### How the wide-page header is built
 
 <!-- key: wide-page-shell -->
 
 `app/wide-page.tsx` is the one shell every wide route renders through, the
-middle seven via `app/listing-page.tsx`. It owns the header, the container and
+middle six via `app/listing-page.tsx`. It owns the header, the container and
 the vertical rhythm. It exists because ten pages were two implementations of one
 design and every tuning pass landed on one half only. Do not assemble a header
 and `Container` in a route, and do not give a narrow route the wide header.
 
 - A post's `h1` carries its own `data-pagefind-body`, since it sits outside the
   `<article>`; without it every title-only term drops out of search.
-- The header's logo hides on home through a `:has()` rule, so the site is not
-  named twice above the masthead. The header keeps its height without it.
-  It is a button that scrolls to top on home and a link elsewhere
+- The logo is a button that scrolls to top on home and a link elsewhere
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
-  navigates nor scrolls. The exit from this machinery, weighed and declined in
-  August 2026: let home's header name the route rather than the site.
+  navigates nor scrolls. It no longer hides on home, which has no masthead.
 - `crumbs` is optional, used only by `/`. The shell's column is always
   `max-w-5xl`, matching `Container`, which is what puts every trail and heading
   at the same coordinates. There is no logo mark to replace the wordmark with.
@@ -707,7 +701,7 @@ and `Container` in a route, and do not give a narrow route the wide header.
 
 <!-- key: listing-shell -->
 
-Category, tag and author pages, paginated or not, and `/page/[page]` render
+Category, tag and author pages, paginated or not, render
 through `app/listing-page.tsx`. `lib/paginate.ts` owns the page arithmetic and
 `parsePageParam`, which both the component and `generateMetadata` read, so they
 cannot disagree about a segment like `/page/abc`. `listingMetadata` in
@@ -727,7 +721,7 @@ so 404s and redirects are visible in the route.
 `<h1>` and returns `null` on page 1, so every paginated route renders it
 unconditionally. As a separate block in the standfirst slot it became the row's
 last baseline and shoved the standfirst upward; inline, it cannot split the
-header or land under a portrait. Seven call sites instead of one is deliberate,
+header or land under a portrait. Six call sites instead of one is deliberate,
 the same trade as the header being children. Author routes take it too.
 
 Copy budget: the counter and its leading space take 42px. Desktop leaves 566px

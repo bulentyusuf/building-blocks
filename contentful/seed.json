@@ -26,7 +26,7 @@
   "entries": [
     {
       "sys": {
-        "id": "cat-main-quest",
+        "id": "cat-blogging",
         "type": "Entry",
         "contentType": {
           "sys": {
@@ -39,28 +39,19 @@
       },
       "fields": {
         "name": {
-          "en-US": "Main Quest"
+          "en-US": "Blogging"
         },
         "slug": {
-          "en-US": "main-quest"
+          "en-US": "blogging"
         },
         "description": {
-          "en-US": "The headline projects and the long builds."
-        },
-        "thumbnail": {
-          "en-US": {
-            "sys": {
-              "type": "Link",
-              "linkType": "Asset",
-              "id": "placeholder-image"
-            }
-          }
+          "en-US": "Building and maintaining the site."
         }
       }
     },
     {
       "sys": {
-        "id": "cat-side-quests",
+        "id": "cat-films",
         "type": "Entry",
         "contentType": {
           "sys": {
@@ -73,22 +64,38 @@
       },
       "fields": {
         "name": {
-          "en-US": "Side Quests"
+          "en-US": "Films"
         },
         "slug": {
-          "en-US": "side-quests"
+          "en-US": "films"
         },
         "description": {
-          "en-US": "Smaller experiments and detours."
-        },
-        "thumbnail": {
-          "en-US": {
-            "sys": {
-              "type": "Link",
-              "linkType": "Asset",
-              "id": "placeholder-image"
-            }
+          "en-US": "Movies and the people who make them."
+        }
+      }
+    },
+    {
+      "sys": {
+        "id": "cat-games-and-gadgets",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "category"
           }
+        },
+        "publishedVersion": 1
+      },
+      "fields": {
+        "name": {
+          "en-US": "Games & Gadgets"
+        },
+        "slug": {
+          "en-US": "games-and-gadgets"
+        },
+        "description": {
+          "en-US": "Video games and the hardware they run on."
         }
       }
     },
@@ -962,7 +969,7 @@
             "sys": {
               "type": "Link",
               "linkType": "Entry",
-              "id": "cat-main-quest"
+              "id": "cat-blogging"
             }
           }
         },
@@ -1290,7 +1297,7 @@
             "sys": {
               "type": "Link",
               "linkType": "Entry",
-              "id": "cat-side-quests"
+              "id": "cat-films"
             }
           }
         },
@@ -1397,7 +1404,7 @@
             "sys": {
               "type": "Link",
               "linkType": "Entry",
-              "id": "cat-main-quest"
+              "id": "cat-blogging"
             }
           }
         },

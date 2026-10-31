@@ -10,11 +10,10 @@ import { scrollToTop } from "@/lib/scroll-to-top";
 export default function SiteWordmark({ title }: { title: string }) {
   const isHome = usePathname() === "/";
 
-  // .site-wordmark on both branches, or the home rule in globals.css misses
-  // one. Rotation and the press translate are separate properties, so they
-  // compose without either undoing the other.
+  // Rotation and the press translate are separate properties, so they compose
+  // without either undoing the other.
   const shared =
-    "site-wordmark inline-block -rotate-2 rounded-xl bg-brand-dark px-4 py-1.5 font-display text-2xl font-[800] text-brand-bg shadow-[4px_4px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[4px] hover:shadow-none motion-reduce:transition-none";
+    "inline-block -rotate-2 rounded-xl bg-brand-dark px-4 py-1.5 font-display text-2xl font-[800] text-brand-bg shadow-[4px_4px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[4px] hover:shadow-none motion-reduce:transition-none";
 
   if (isHome) {
     return (

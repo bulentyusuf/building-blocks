@@ -166,6 +166,20 @@ module.exports = {
         destination: "/posts/static-site-search-pagefind",
         permanent: true,
       },
+      // Home has no pager since the strand redesign. [→ `strands`]
+      { source: "/page/:n", destination: "/archive", permanent: true },
+      // Main Quest became Blogging. Side Quests split into Films and Games &
+      // Gadgets, so it lands on the category index.
+      {
+        source: "/categories/main-quest/:path*",
+        destination: "/categories/blogging/:path*",
+        permanent: true,
+      },
+      {
+        source: "/categories/side-quests/:path*",
+        destination: "/categories",
+        permanent: true,
+      },
     ];
   },
   async rewrites() {
