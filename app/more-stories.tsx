@@ -65,9 +65,9 @@ function PostPreview({
               image={coverImage}
               priority={priority}
               hover
-              // Capped where the cover track stops growing (381px).
+              // Capped where the cover track stops growing (435px).
               // [→ `priority-opaque`]
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 40vw, 381px"
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 40vw, 435px"
             />
           </div>
         )}
@@ -105,7 +105,7 @@ function PostPreview({
             wide
             priority={priority}
             hover
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 450px"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
           />
         </div>
       )}
@@ -169,7 +169,7 @@ export default function MoreStories({
   const titleAs = heading ? "h3" : "h2";
 
   return (
-    <section className="mx-auto max-w-5xl">
+    <section className="mx-auto max-w-frame">
       {heading && (
         <h2 className="mb-8 text-4xl md:text-5xl leading-tight text-pretty">
           {widont(heading)}

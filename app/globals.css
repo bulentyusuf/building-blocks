@@ -27,6 +27,10 @@
     "Liberation Mono", monospace;
   --default-font-family: var(--font-body);
 
+  /* The site frame, max-w-frame: 1200px at a 16px root, inside 40px gutters
+     (16px on phones). Every page edge lines up on it. [→ `page-axis`] */
+  --container-frame: 75rem;
+
   --color-brand-crimson: #9e2238;
   --color-brand-dark: #241b1d;
   --color-brand-bg: #faf5f1;

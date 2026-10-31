@@ -362,8 +362,8 @@ Client Component can pass to `next/image`; removing it fails the build even
 though the file has no hooks.
 
 A `sizes` value stops growing where its container does: content tops out at
-984px, so a bare `vw` clause past that buys a larger file than anything on
-screen.
+1,120px (`max-w-frame` less its gutters), so a bare `vw` clause past that buys
+a larger file than anything on screen.
 
 ### Border roles are not interchangeable
 
@@ -670,7 +670,7 @@ it, with a commented-out declaration as its control.
 
 <!-- key: page-axis -->
 
-Whether a page's header sits at `max-w-5xl` or inside `max-w-2xl` decides the
+Whether a page's header sits at `max-w-frame` or inside `max-w-2xl` decides the
 breadcrumb wrapper, the `h1` ramp and whether the header closes with the 3px
 rule. A route is wide or narrow; none sits half in each. The tell of a wrong
 choice is a 6xl heading in a 42rem measure. The measure is the
@@ -698,8 +698,8 @@ and `Container` in a route, and do not give a narrow route the wide header.
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. It no longer hides on home, which has no masthead.
 - `crumbs` is optional, used only by `/`. The shell's column is always
-  `max-w-5xl`, matching `Container`, which is what puts every trail and heading
-  at the same coordinates. There is no logo mark to replace the wordmark with.
+  `max-w-frame`, matching `Container`, which is what puts every trail and
+  heading at the same coordinates. There is no logo mark to replace the wordmark with.
 - A listing under a header drops its opening rule and nothing else. Items keep
   `py-10 md:py-12`, the page adds no gap of its own, the closing rule stays.
 

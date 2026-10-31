@@ -90,7 +90,7 @@ export async function FeatureCard({
       <Cover
         post={post}
         priority
-        sizes="(max-width: 768px) calc(100vw - 4.5rem), 560px"
+        sizes="(max-width: 768px) calc(100vw - 4.5rem), 620px"
         className="aspect-video rounded-xl md:col-span-7 md:aspect-auto md:min-h-72"
       />
       <div className="flex flex-col gap-4 md:col-span-5 md:self-center">
@@ -118,7 +118,7 @@ export default async function PostCard({ post }: { post: ListPost }) {
       <Cover
         post={post}
         priority={false}
-        sizes="(max-width: 768px) calc(100vw - 4.5rem), 460px"
+        sizes="(max-width: 768px) calc(100vw - 4.5rem), 500px"
         className="aspect-3/2 rounded-xl"
       />
       <Meta post={post} className="text-sm" />

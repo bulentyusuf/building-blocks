@@ -82,7 +82,7 @@ export default function Pagination({
 
   return (
     // No top border: the listing above closes itself. [→ `border-roles`]
-    <nav aria-label="Pagination" className="mx-auto max-w-5xl pt-10 md:pt-12">
+    <nav aria-label="Pagination" className="mx-auto max-w-frame pt-10 md:pt-12">
       {/* Wrapping is the guarantee: at a large font scale a centred row would
           overflow past the left edge where no scroll reaches. */}
       <ul className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">

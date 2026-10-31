@@ -93,7 +93,7 @@ export default async function CategoriesPage() {
                     image={thumbnail}
                     href={`/categories/${category.slug}`}
                     // Capped where the column stops growing. [→ `priority-opaque`]
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 472px"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 540px"
                     priority={index === 0}
                   />
                 </div>

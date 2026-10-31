@@ -65,7 +65,7 @@ export default async function CategoryPage({
   const posts = allPosts.filter((post) => post.category?.slug === slug);
 
   return (
-    <div className="mx-auto max-w-5xl px-5 pt-6 pb-16">
+    <div className="mx-auto max-w-frame px-4 md:px-10 pt-6 pb-16">
       <StrandChips current={slug} />
 
       <header className="mt-8 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">

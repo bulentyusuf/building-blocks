@@ -56,7 +56,7 @@ export default function ListingPage({
         />
       )}
       {emptyMessage !== undefined && posts.length === 0 ? (
-        <p className="mx-auto max-w-5xl pt-6 text-lg text-brand-muted">
+        <p className="mx-auto max-w-frame pt-6 text-lg text-brand-muted">
           {emptyMessage}
         </p>
       ) : (

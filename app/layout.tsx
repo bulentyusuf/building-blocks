@@ -133,7 +133,7 @@ function Header() {
     <header className="relative z-50 w-full">
       {/* The minimum height is the menu button plus padding, so the header
           keeps one height on home, where the logo hides. */}
-      <div className="max-w-5xl mx-auto px-5 pt-6 pb-2 min-h-20 flex items-center justify-between gap-4">
+      <div className="max-w-frame mx-auto px-4 md:px-10 pt-6 pb-2 min-h-20 flex items-center justify-between gap-4">
         {/* A button on home, a link elsewhere. [→ `wide-page-shell`] */}
         <SiteWordmark title={SITE_TITLE} />
         {/* Mobile nav in a disclosure, desktop nav inline; exactly one is in
@@ -222,7 +222,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
   const authors = await getAllAuthors(isDraftMode);
   return (
     <footer>
-      <div className="max-w-5xl mx-auto px-5">
+      <div className="max-w-frame mx-auto px-4 md:px-10">
         <PeekingMascots authors={authors} />
         <div className="border-t-[3px] border-brand-dark pt-10 pb-12">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
