@@ -117,13 +117,10 @@ md:gap-y-0`,** a base-level grid, headline capped at `lg:text-[2.5rem]`.
 - **`@utility prose` carries `overflow-wrap: break-word`.** An unbreakable URL
   or command widens the document and scrolls the whole page sideways on a
   phone. Do not narrow it to a child selector. [→ `prose-overflow`]
-- **Chrome is aubergine**, `#2B1C3F` light and `#3B2A52` dark, declared in both
-  `app/globals.css` and `lib/constants.ts` because the manifest and viewport
-  `themeColor` cannot read CSS custom properties. Any change touches both.
-  [→ `chrome-aubergine`, `brand-colour-duplication`]
-- **`brand-crimson` cannot be used on chrome** (2.04:1). Chrome links identify
-  by weight and underline, and chrome overrides the sitewide focus ring with a
-  white one. The footer's faintest tint is `white/72`. [→ `chrome-aubergine`]
+- **The header and footer sit on the page, with no surface of their own.**
+  `THEME_COLOR` and `THEME_COLOR_DARK` in `lib/constants.ts` twin
+  `--color-brand-bg` for the manifest and viewport `themeColor`, which cannot
+  read custom properties. Change both. [→ `brand-colour-duplication`]
 - **The search emblem's ground stays cream `#FAF5F1` in both schemes**, so
   anything rendered on it uses literal hex in dark mode, never brand tokens.
   [→ `search-emblem`]

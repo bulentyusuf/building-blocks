@@ -50,7 +50,7 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
                 )}
                 {!isLast && (
                   <span aria-hidden="true" className="text-brand-muted">
-                    /
+                    ›
                   </span>
                 )}
               </li>

@@ -18,7 +18,7 @@ function render(at: string): string {
   return renderToStaticMarkup(<SiteWordmark title="Be Useful." />);
 }
 
-describe("the sticky bar's wordmark", () => {
+describe("the header's logo", () => {
   beforeEach(() => {
     pathname.current = "/";
   });
@@ -59,16 +59,17 @@ describe("the sticky bar's wordmark", () => {
   });
 
   it("carries .site-wordmark on both branches", () => {
-    // globals.css targets this class for the home hide-and-fade. Losing it on
-    // either branch breaks the fade, and it fails silently at runtime.
+    // globals.css targets this class to hide the logo on home. Losing it on
+    // either branch fails silently at runtime.
     expect(render("/")).toContain("site-wordmark");
     expect(render("/about")).toContain("site-wordmark");
   });
 
-  it("carries a focus ring on both branches", () => {
-    // Both are focusable now. The button replaced a span, which was not, and
-    // the ring was dropped with it at the time for that reason.
-    expect(render("/")).toContain("focus-visible:ring-white");
-    expect(render("/about")).toContain("focus-visible:ring-white");
+  it("leaves its focus ring to the sitewide rule on both branches", () => {
+    // It sits on the page now, where the crimson ring in globals.css clears
+    // 3:1. A local override would be the old aubergine exception surviving.
+    // [→ `focus-indicator`]
+    expect(render("/")).not.toContain("focus-visible:");
+    expect(render("/about")).not.toContain("focus-visible:");
   });
 });

@@ -1,9 +1,5 @@
 import { MetadataRoute } from "next";
-import {
-  SITE_TITLE,
-  SITE_DESCRIPTION,
-  BRAND_HEADER_COLOR,
-} from "@/lib/constants";
+import { SITE_TITLE, SITE_DESCRIPTION, THEME_COLOR } from "@/lib/constants";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -12,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: SITE_DESCRIPTION,
     start_url: "/",
     display: "minimal-ui",
-    background_color: "#FAF5F1",
-    theme_color: BRAND_HEADER_COLOR,
+    background_color: THEME_COLOR,
+    theme_color: THEME_COLOR,
     icons: [
       {
         src: "/favicon.ico",

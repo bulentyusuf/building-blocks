@@ -66,75 +66,6 @@ describe("muted small-caps labels clear AA in both schemes", () => {
   });
 });
 
-describe("footer small print clears AAA in both schemes", () => {
-  // Reads --color-brand-header, not the retired --color-footer-bg. The footer
-  // shared surface-dark's value in light and lifted away from it in dark, which
-  // is why it had a token of its own; it now shares the bar's aubergine in both
-  // schemes and the separate token is gone.
-  //
-  // white/65 on #2B1C3F is 7.35, so the existing tint ladder clears AAA
-  // unchanged. #398 raised these to white/72 and that was never required.
-  // Derived from the source rather than hardcoded, so this covers any footer
-  // text added later without being edited. Scoped to `text-white/` on purpose:
-  // the bottom bar's border-white/10 is a divider, decorative and exempt.
-  const layout = read("app/layout.tsx");
-  const alphas = [...layout.matchAll(/text-white\/(\d+)/g)].map((m) =>
-    Number(m[1]),
-  );
-
-  it("finds the utilities it is asserting against", () => {
-    // A rename or a refactor that drops the class would otherwise make the two
-    // tests below pass vacuously over an empty list.
-    expect(alphas.length).toBeGreaterThan(0);
-  });
-
-  const faintest = (): Rgba => ({
-    r: 255,
-    g: 255,
-    b: 255,
-    a: Math.min(...alphas) / 100,
-  });
-
-  it("light", () => {
-    expect(
-      contrast(faintest(), light("--color-brand-header")),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
-
-  it("dark", () => {
-    expect(
-      contrast(faintest(), dark("--color-brand-header")),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
-});
-
-describe("nav text on chrome clears AAA in both schemes", () => {
-  // The nav links render at text-white/80 on the aubergine bar. text-white/80
-  // on #2B1C3F is 10.44 light and on #3B2A52 is 8.79 dark, both well above
-  // the 7:1 floor. Asserted so the nav tint cannot drift below AAA if the
-  // chrome is ever lightened — at which point the existing footer guard would
-  // also catch it, but this records the nav's own intent separately.
-  const navAlpha = 0.8;
-
-  it("light", () => {
-    expect(
-      contrast(
-        { r: 255, g: 255, b: 255, a: navAlpha },
-        light("--color-brand-header"),
-      ),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
-
-  it("dark", () => {
-    expect(
-      contrast(
-        { r: 255, g: 255, b: 255, a: navAlpha },
-        dark("--color-brand-header"),
-      ),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
-});
-
 // On cream, a standfirst that names no colour renders as body ink and competes
 // with the h1, so the role is asserted, not assumed. [→ `band-retirement`]
 
@@ -218,52 +149,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   });
 });
 
-describe("the chrome stays a visible block in both schemes", () => {
-  // Not a text pairing, so this sits far below any WCAG threshold. It asserts
-  // only that the chrome is still a block rather than bare page. It is the
-  // check the band's first cut would have failed — it shipped with no dark
-  // override, leaving the light value at 1.13:1 on the dark page, invisible,
-  // while every text-contrast assertion here stayed green because white on it
-  // was never the problem.
-  //
-  // 14.47:1 light and 1.46:1 dark today. The chrome is darker than the page in
-  // light and lighter than it in dark; only the separation is asserted, because
-  // which side it sits on is the page's doing. The dark margin is 0.06 over the
-  // floor, the narrowest anywhere in this palette, which is what makes this the
-  // assertion most worth having and the one a retune is most likely to break.
-  const MIN_BLOCK_SEPARATION = 1.4;
-
-  it.each(["light", "dark"] as const)("%s", (scheme) => {
-    const token = scheme === "light" ? light : dark;
-    expect(
-      contrast(token("--color-brand-header"), token("--color-brand-bg")),
-    ).toBeGreaterThanOrEqual(MIN_BLOCK_SEPARATION);
-  });
-
-  it("white on the chrome clears AAA in both schemes", () => {
-    // One surface for the bar and the footer now, so this covers both. 15.66:1
-    // light and 12.81:1 dark.
-    for (const token of [light, dark])
-      expect(
-        contrast(
-          { r: 255, g: 255, b: 255, a: 1 },
-          token("--color-brand-header"),
-        ),
-      ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
-
-  it("the accent still cannot be used on the chrome", () => {
-    // 2.04:1 light. The reason the trail, the nav and the footer identify
-    // links by weight and underline rather than colour, and the reason
-    // elements on chrome override the sitewide crimson focus ring with a white
-    // one. Asserted so the exception is not quietly dropped if the chrome is
-    // ever lightened — at which point the override becomes the bug.
-    expect(
-      contrast(light("--color-brand-crimson"), light("--color-brand-header")),
-    ).toBeLessThan(3);
-  });
-});
-
 describe("literal hexes track the tokens they duplicate", () => {
   // Channel comparison, not string: globals.css writes tokens lowercase and the
   // TSX literals are uppercase, so === on the text fails for the wrong reason.
@@ -286,19 +171,18 @@ describe("literal hexes track the tokens they duplicate", () => {
   });
 
   it.each([
-    ["BRAND_HEADER_COLOR", "light"],
-    ["BRAND_HEADER_COLOR_DARK", "dark"],
-  ] as const)("%s equals the %s --color-brand-header", (constant, scheme) => {
+    ["THEME_COLOR", "light"],
+    ["THEME_COLOR_DARK", "dark"],
+  ] as const)("%s equals the %s --color-brand-bg", (constant, scheme) => {
     // The viewport themeColor and the PWA manifest cannot read a custom
-    // property, so the chrome colour exists twice outside globals.css. A drift
+    // property, so the page colour exists twice outside globals.css. A drift
     // here paints the mobile address bar and the installed app's chrome in the
-    // OLD colour, which no desktop review would ever surface. Both were navy
-    // until the aubergine change and neither was guarded before it.
+    // OLD colour, which no desktop review would ever surface.
     const token = scheme === "light" ? light : dark;
     expect(
       sameColour(
         named(read("lib/constants.ts"), constant),
-        token("--color-brand-header"),
+        token("--color-brand-bg"),
       ),
     ).toBe(true);
   });
