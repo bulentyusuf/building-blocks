@@ -107,8 +107,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     "app/tags/page.tsx",
     "app/authors/page.tsx",
     "app/archive/page.tsx",
-    "app/categories/[slug]/page.tsx",
-    "app/categories/[slug]/page/[page]/page.tsx",
     "app/tags/[slug]/page.tsx",
     "app/tags/[slug]/page/[page]/page.tsx",
   ])("%s", (file) => {

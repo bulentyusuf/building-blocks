@@ -112,8 +112,6 @@ describe("only the author routes opt out of the split masthead", () => {
     "app/posts/[slug]/post-view.tsx",
     "app/archive/page.tsx",
     "app/categories/page.tsx",
-    "app/categories/[slug]/page.tsx",
-    "app/categories/[slug]/page/[page]/page.tsx",
     "app/tags/page.tsx",
     "app/tags/[slug]/page.tsx",
     "app/tags/[slug]/page/[page]/page.tsx",
@@ -126,7 +124,7 @@ describe("only the author routes opt out of the split masthead", () => {
 describe("every paginated route renders PageCounter inside its heading", () => {
   // docs/decisions.md, "The page counter moves inline, into the heading".
   // The single call site inside ListingPage/PageContext is gone; each of
-  // these six routes now renders <PageCounter> itself, inline in its own
+  // these four routes now renders <PageCounter> itself, inline in its own
   // <h1>. Without this guard a route can silently lose its counter — a typo,
   // a refactor that drops the fragment — and nothing would notice, which is
   // exactly the failure mode the one call site used to make impossible.
@@ -140,8 +138,6 @@ describe("every paginated route renders PageCounter inside its heading", () => {
   const RENDERED = /^\s*<PageCounter\b/m;
 
   it.each([
-    "app/categories/[slug]/page.tsx",
-    "app/categories/[slug]/page/[page]/page.tsx",
     "app/tags/[slug]/page.tsx",
     "app/tags/[slug]/page/[page]/page.tsx",
     "app/authors/[slug]/page.tsx",

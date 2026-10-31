@@ -32,7 +32,6 @@ vi.mock("@/lib/api", () => {
     getBrowseIntro: fetched,
     getTagBySlug: fetched,
     getCategoryBySlug: fetched,
-    getPostsByCategory: fetched,
     getVisibleTagSlugs: fetched,
     getAuthorBySlug: fetched,
   };
@@ -43,11 +42,6 @@ type Route = (props: {
 }) => Promise<unknown>;
 
 const routes: [string, () => Promise<{ default: Route }>, string][] = [
-  [
-    "/categories/x/page",
-    () => import("@/app/categories/[slug]/page/[page]/page"),
-    "/categories/x/page/2",
-  ],
   [
     "/authors/x/page",
     () => import("@/app/authors/[slug]/page/[page]/page"),

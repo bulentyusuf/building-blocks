@@ -85,15 +85,15 @@ export async function FeatureCard({
   const strand = strandFor(post.category);
   return (
     <article
-      className={`${press} grid gap-6 rounded-3xl p-4 hover:translate-[3px] md:grid-cols-12 md:items-center md:gap-8 md:p-6 md:hover:translate-[6px] ${(strand ?? STRANDS[0]).featureShadow}`}
+      className={`${press} grid gap-6 rounded-3xl p-4 hover:translate-[3px] md:grid-cols-12 md:gap-8 md:p-6 md:hover:translate-[6px] ${(strand ?? STRANDS[0]).featureShadow}`}
     >
       <Cover
         post={post}
         priority
         sizes="(max-width: 768px) calc(100vw - 4.5rem), 560px"
-        className="aspect-video rounded-xl md:col-span-7"
+        className="aspect-video rounded-xl md:col-span-7 md:aspect-auto md:min-h-72"
       />
-      <div className="flex flex-col gap-4 md:col-span-5">
+      <div className="flex flex-col gap-4 md:col-span-5 md:self-center">
         <Meta post={post} className="text-base" />
         <h3 className="text-3xl font-[800] leading-none tracking-[-0.02em] text-pretty md:text-4xl lg:text-[2.875rem]">
           <Link href={`/posts/${post.slug}`} className={stretched}>

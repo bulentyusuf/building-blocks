@@ -27,7 +27,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `cover-frames` — Covers take one of two frames, chosen by `wide`
 - `posts-per-page` — `POSTS_PER_PAGE` is five, and changing it is a design pass
 - `card-meta` — A card's meta line is the date alone, above the excerpt
-- `listing-shell` — The taxonomy listings and the index listing share one shell
+- `listing-shell` — The tag and author listings share one shell
 - `page-counter` — The page counter moves inline, into the heading
 - `heading-widont` — The post `h1` renders its title directly, without `widont()`
 
@@ -278,6 +278,9 @@ redirects to the archive, which already lists everything.
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
   the `// latest post` and `// previous posts` labels are the `h2`s.
+- **A strand page is home with its chip pressed**, `/categories/[slug]`: a
+  visible `h1`, every post in the strand, no pager and no trail. Its posts are
+  filtered from `getAllPosts` in memory, because cards need category and authors.
 
 ### Covers take one of two frames, chosen by `wide`
 
@@ -481,11 +484,11 @@ tell a working name from a broken one.
   wide pages render it unwrapped.
 - On `/search` the wrapper sits before the `<section>`, so `.search-empty`
   stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
-- Home is the one route with no trail.
+- Home and the strand pages carry no trail; the chip row says where you are.
 - Page position rides inline in the `h1` (`app/page-counter.tsx`), never in the
   trail.
-- Accepted: on `/categories/[slug]/page/[page]` `aria-current="page"` sits on
-  the section crumb, and archive rows carry two tab stops each.
+- Accepted: on `/tags/[slug]/page/[page]` `aria-current="page"` sits on the
+  section crumb, and archive rows carry two tab stops each.
 
 ### Sidenotes carry several load-bearing constraints
 
@@ -524,7 +527,7 @@ that says where they are. Old anchors still land.
 - Every surface reads the threshold through `visibleTagSlugs`: the glossary,
   the sitemap and `/tags/[slug]`, which 404s below it. A test asserts they agree.
 - `MoreStories` takes `visibleTags?: Set<string>`, computed from all posts, so a
-  pill never links to a 404. Category and author pages get it from
+  pill never links to a 404. Author pages get it from
   `getVisibleTagSlugs`; a tag page passes the set minus its own slug.
 - The glossary is `data-pagefind-ignore`. Pills sit below the body, never in the
   xl-only sidebar, and not on "Read Next".
@@ -681,7 +684,7 @@ Home sits outside this axis: it has no header or rule [→ `strands`].
 <!-- key: wide-page-shell -->
 
 `app/wide-page.tsx` is the one shell every wide route renders through, the
-middle six via `app/listing-page.tsx`. It owns the header, the container and
+middle four via `app/listing-page.tsx`. It owns the header, the container and
 the vertical rhythm. It exists because ten pages were two implementations of one
 design and every tuning pass landed on one half only. Do not assemble a header
 and `Container` in a route, and do not give a narrow route the wide header.
@@ -697,14 +700,14 @@ and `Container` in a route, and do not give a narrow route the wide header.
 - A listing under a header drops its opening rule and nothing else. Items keep
   `py-10 md:py-12`, the page adds no gap of its own, the closing rule stays.
 
-### The taxonomy listings and the index listing share one shell
+### The tag and author listings share one shell
 
 <!-- key: listing-shell -->
 
-Category, tag and author pages, paginated or not, render
-through `app/listing-page.tsx`. `lib/paginate.ts` owns the page arithmetic and
-`parsePageParam`, which both the component and `generateMetadata` read, so they
-cannot disagree about a segment like `/page/abc`. `listingMetadata` in
+Tag and author pages, paginated or not, render through `app/listing-page.tsx`.
+`lib/paginate.ts` owns the page arithmetic and `parsePageParam`, which both
+the component and `generateMetadata` read, so they cannot disagree about a
+segment like `/page/abc`. `listingMetadata` in
 `lib/page-metadata.ts` owns the social blocks.
 
 Two things stay out of the shell on purpose: the `<header>` content, where the
@@ -721,7 +724,7 @@ so 404s and redirects are visible in the route.
 `<h1>` and returns `null` on page 1, so every paginated route renders it
 unconditionally. As a separate block in the standfirst slot it became the row's
 last baseline and shoved the standfirst upward; inline, it cannot split the
-header or land under a portrait. Six call sites instead of one is deliberate,
+header or land under a portrait. Four call sites instead of one is deliberate,
 the same trade as the header being children. Author routes take it too.
 
 Copy budget: the counter and its leading space take 42px. Desktop leaves 566px
@@ -874,7 +877,7 @@ publishing reopens `expire: 0` and needs this entry rewritten first.
 
 `fetchAllCollectionItems` in `lib/api.ts` pages through Contentful's 100-item
 ceiling for `getAllPosts`, `getAllPages`, `getAllTags`, `getAllCategories`,
-`getAllAuthors` and `getPostsByCategory`. A query handed to it accepts
+and `getAllAuthors`. A query handed to it accepts
 `$limit: Int!` and `$skip: Int!` and selects `total` beside `items`; without
 `total` the first page silently becomes the whole result. Raise the page size
 only against a measurement. `getRecentPostsByCategory` and the `limit: 1`
