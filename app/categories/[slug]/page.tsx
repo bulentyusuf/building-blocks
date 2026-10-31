@@ -2,13 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import StrandChips from "../../strand-chips";
 import PostStream from "../../post-stream";
 import { getAllCategories, getAllPosts, getCategoryBySlug } from "@/lib/api";
 import { visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
-import { widont } from "@/lib/typography";
 
 // Allow on-demand rendering of categories added after build time, so a new
 // category in Contentful doesn't 404 until the next deploy.
@@ -40,9 +38,8 @@ export async function generateMetadata({
   });
 }
 
-// A strand page is home with its chip pressed: every post in the strand, no
-// pager and no breadcrumb. The chip names the strand, so the h1 is sr-only.
-// [→ `strands`]
+// A strand page is home with its header chip pressed: every post in the
+// strand, no pager, trail or description. The chip names it. [→ `strands`]
 export default async function CategoryPage({
   params,
 }: {
@@ -66,29 +63,15 @@ export default async function CategoryPage({
 
   return (
     <div className="mx-auto max-w-frame px-4 md:px-10 pt-6 pb-16">
-      <StrandChips current={slug} />
-
-      <header className="mt-8 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-        <div className="max-w-3xl">
-          <h1 className="sr-only">{category.name}</h1>
-          {category.description && (
-            <p className="text-lg leading-relaxed text-pretty md:text-[1.375rem]">
-              {widont(category.description)}
-            </p>
-          )}
-        </div>
-        <p className="font-mono text-sm font-medium text-brand-muted">
-          <span aria-hidden="true">{"// "}</span>
-          {posts.length === 1 ? "1 post" : `${posts.length} posts`}
-        </p>
-      </header>
-
+      <h1 className="sr-only">{category.name}</h1>
       <PostStream posts={posts} visibleTags={visibleTagSlugs(allPosts)} />
 
       <p className="mt-12 text-center font-ui font-semibold text-brand-muted">
-        {posts.length > 0
-          ? `That’s every ${category.name} post. `
-          : "Nothing here yet. "}
+        {posts.length === 0
+          ? "Nothing here yet. "
+          : posts.length === 1
+            ? `That’s the only ${category.name} post. `
+            : `That’s all ${posts.length} ${category.name} posts. `}
         <Link
           href="/archive"
           className="text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"

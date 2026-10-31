@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderToReadableStream } from "react-dom/server";
 import axe from "axe-core";
 import type { AxeResults, Result } from "axe-core";
@@ -71,12 +71,12 @@ vi.mock("@/lib/api", async (importOriginal) => ({
     },
   ],
 }));
-// app/site-wordmark.tsx reads the pathname.
-// These fixtures compose pages by hand rather than routing to them, so there
-// is no router to read. "/" matches the home fixture, which is the only one
-// whose assertions depend on it.
+// The wordmark and the header chips read the pathname. These fixtures compose
+// pages by hand rather than routing to them, so each sets the path it stands
+// for; "/" is the default.
+const pathname = vi.hoisted(() => ({ current: "/" }));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: () => pathname.current,
 }));
 
 const RootLayout = (await import("@/app/layout")).default;
@@ -567,6 +567,12 @@ describe("home", () => {
 
 describe("a strand page", () => {
   // Home with the strand's chip pressed and only its posts. [→ `strands`]
+  beforeEach(() => {
+    pathname.current = "/categories/films";
+  });
+  afterEach(() => {
+    pathname.current = "/";
+  });
   const render = async () =>
     renderPage(
       <RootLayout>

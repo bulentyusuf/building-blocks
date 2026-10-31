@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 
-import StrandChips from "./strand-chips";
 import PostStream from "./post-stream";
 
 import { getAllPosts } from "@/lib/api";
@@ -32,7 +31,6 @@ export default async function Page() {
     <div className="mx-auto max-w-frame px-4 md:px-10 pt-6 pb-16">
       {/* The logo names the site visually; this names the page. */}
       <h1 className="sr-only">{SITE_TITLE}</h1>
-      <StrandChips current="all" />
 
       <PostStream
         posts={allPosts.slice(0, HOME_CARDS + 1)}

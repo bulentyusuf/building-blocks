@@ -357,8 +357,8 @@ describe.each(WIDTHS)("the bar and the feature card at %ipx", (width) => {
 it.each([
   [
     1280,
-    "the bar's minimum height removed",
-    { home: "body > header > div { min-height: 0 !important }" },
+    "the bar's padding dropped on home",
+    { home: "body > header > div { padding-top: 0 !important }" },
   ],
   [
     375,

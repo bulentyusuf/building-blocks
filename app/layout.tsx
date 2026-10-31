@@ -19,10 +19,11 @@ import SiteWordmark from "./site-wordmark";
 import PeekingMascots from "./peeking-mascots";
 import NewWindowHint from "./new-window-hint";
 import NavDisclosure from "./nav-disclosure";
+import StrandChips from "./strand-chips";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 import { ExitPreviewButton } from "./exit-preview-button";
-import { getAllAuthors } from "@/lib/api";
+import { getAllAuthors, getAllPosts } from "@/lib/api";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -108,13 +109,17 @@ const plexMono = IBM_Plex_Mono({
   adjustFontFallback: false,
 });
 
-// Written as paths; the slash is decoration and stays out of the name.
+// The phone menu only; on wider screens these live in the footer. Written as
+// paths; the slash is decoration and stays out of the name. [→ `strands`]
 const NAV_LINKS = [
   { href: "/tags", label: "tags" },
   { href: "/archive", label: "archive" },
   { href: "/about", label: "about" },
-  { href: "/search", label: "search" },
 ];
+
+// The square buttons in the header row: search and the phone menu.
+const squareButton =
+  "flex size-12 items-center justify-center rounded-xl border-[3px] border-brand-dark bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]";
 
 const navLink =
   "font-mono text-sm font-medium text-brand-dark hover:text-brand-crimson transition-colors duration-200";
@@ -128,78 +133,90 @@ function Path({ label }: { label: string }) {
   );
 }
 
-function Header() {
+// One row: logo, strand chips, search. On phones the chips wrap below and a
+// menu joins search. [→ `strands`]
+async function Header({ isDraftMode }: { isDraftMode: boolean }) {
+  const posts = await getAllPosts(isDraftMode);
+  const postStrands = Object.fromEntries(
+    posts.flatMap((p) => (p.category ? [[p.slug, p.category.slug]] : [])),
+  );
   return (
     <header className="relative z-50 w-full">
-      {/* The minimum height is the menu button plus padding, so the header
-          keeps one height on home, where the logo hides. */}
-      <div className="max-w-frame mx-auto px-4 md:px-10 pt-6 pb-2 min-h-20 flex items-center justify-between gap-4">
+      <div className="max-w-frame mx-auto px-4 md:px-10 pt-6 pb-2 flex flex-wrap items-center gap-x-7 gap-y-4">
         {/* A button on home, a link elsewhere. [→ `wide-page-shell`] */}
         <SiteWordmark title={SITE_TITLE} />
-        {/* Mobile nav in a disclosure, desktop nav inline; exactly one is in
-            the accessibility tree. */}
-        <nav aria-label="Primary" className="ml-auto flex items-center">
-          <NavDisclosure>
-            <summary
-              aria-label="Menu"
-              className="list-none cursor-pointer select-none flex size-12 items-center justify-center rounded-xl border-[3px] border-brand-dark bg-brand-bg text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none"
+        <StrandChips postStrands={postStrands} />
+        <div className="ml-auto flex items-center gap-3">
+          <Link href="/search" aria-label="Search" className={squareButton}>
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={3}
+              strokeLinecap="round"
+              className="h-5 w-5"
             >
-              {/* Two icons, swapped by the [open] attribute with no JS. The X
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4.3-4.3" />
+            </svg>
+          </Link>
+          <nav aria-label="Primary" className="flex items-center md:hidden">
+            <NavDisclosure>
+              <summary
+                aria-label="Menu"
+                className={`list-none cursor-pointer select-none ${squareButton}`}
+              >
+                {/* Two icons, swapped by the [open] attribute with no JS. The X
                   is what tells a reader how to close the menu. */}
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                className="h-5 w-5 group-open:hidden"
-              >
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-                className="hidden h-5 w-5 group-open:block"
-              >
-                <path d="M5 5l14 14M5 19L19 5" />
-              </svg>
-            </summary>
-            {/* Scrim under the open menu, below the header. It must ignore
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  className="h-5 w-5 group-open:hidden"
+                >
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  className="hidden h-5 w-5 group-open:block"
+                >
+                  <path d="M5 5l14 14M5 19L19 5" />
+                </svg>
+              </summary>
+              {/* Scrim under the open menu, below the header. It must ignore
                 pointer events, or the outside-tap handler sees a tap inside
                 and will not close. */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
-            />
-            <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-xl border-[3px] border-brand-dark bg-brand-bg px-4 py-3 shadow-[4px_4px_0_var(--color-brand-crimson)]">
-              <ul>
-                {NAV_LINKS.map(({ href, label }) => (
-                  <li key={href}>
-                    {/* 44px rows on touch screens. */}
-                    <Link
-                      href={href}
-                      className={`${navLink} flex min-h-11 items-center`}
-                    >
-                      <Path label={label} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </NavDisclosure>
-          <div className="hidden md:flex items-center gap-5">
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link key={href} href={href} className={navLink}>
-                <Path label={label} />
-              </Link>
-            ))}
-          </div>
-        </nav>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
+              />
+              <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-xl border-[3px] border-brand-dark bg-brand-bg px-4 py-3 shadow-[4px_4px_0_var(--color-brand-crimson)]">
+                <ul>
+                  {NAV_LINKS.map(({ href, label }) => (
+                    <li key={href}>
+                      {/* 44px rows on touch screens. */}
+                      <Link
+                        href={href}
+                        className={`${navLink} flex min-h-11 items-center`}
+                      >
+                        <Path label={label} />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </NavDisclosure>
+          </nav>
+        </div>
       </div>
     </header>
   );
@@ -329,7 +346,7 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
-        <Header />
+        <Header isDraftMode={isEnabled} />
         {/* [→ `skip-link`] */}
         <main id="main" tabIndex={-1} className="grow">
           {children}
