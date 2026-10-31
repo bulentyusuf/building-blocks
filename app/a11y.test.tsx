@@ -586,7 +586,9 @@ describe("a strand page", () => {
     const current = strands.querySelectorAll('[aria-current="page"]');
     expect(current).toHaveLength(1);
     expect(current[0].getAttribute("href")).toBe("/categories/films");
-    expect(document.querySelector("h1")?.textContent).toBe("Films");
+    const h1 = document.querySelector("h1")!;
+    expect(h1.textContent).toBe("Films");
+    expect(h1.classList.contains("sr-only")).toBe(true);
     const main = document.querySelector("main")!;
     expect(main.querySelectorAll('a[href^="/posts/"]')).toHaveLength(1);
     expect(duplicateLinksInMain()).toEqual([]);

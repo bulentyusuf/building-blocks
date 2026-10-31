@@ -41,7 +41,8 @@ export async function generateMetadata({
 }
 
 // A strand page is home with its chip pressed: every post in the strand, no
-// pager and no breadcrumb. [→ `strands`]
+// pager and no breadcrumb. The chip names the strand, so the h1 is sr-only.
+// [→ `strands`]
 export default async function CategoryPage({
   params,
 }: {
@@ -67,13 +68,11 @@ export default async function CategoryPage({
     <div className="mx-auto max-w-5xl px-5 pt-6 pb-16">
       <StrandChips current={slug} />
 
-      <header className="mt-12 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+      <header className="mt-8 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
         <div className="max-w-3xl">
-          <h1 className="text-5xl font-[800] leading-[0.98] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
-            {widont(category.name)}
-          </h1>
+          <h1 className="sr-only">{category.name}</h1>
           {category.description && (
-            <p className="mt-4 text-lg leading-relaxed text-pretty md:text-[1.375rem]">
+            <p className="text-lg leading-relaxed text-pretty md:text-[1.375rem]">
               {widont(category.description)}
             </p>
           )}
