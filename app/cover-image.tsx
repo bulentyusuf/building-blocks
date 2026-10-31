@@ -26,6 +26,7 @@ export default async function CoverImage({
   href,
   sizes,
   wide,
+  bare = false,
   priority = false,
   hover = false,
 }: {
@@ -38,6 +39,8 @@ export default async function CoverImage({
   sizes?: string;
   // [→ `cover-frames`]
   wide?: boolean;
+  // No shadow or keyline: the caller draws the frame (the post cover).
+  bare?: boolean;
   // The above-the-fold hero only.
   priority?: boolean;
   // Gentle hover zoom for listing cards; hover only, and no motion when
@@ -70,10 +73,11 @@ export default async function CoverImage({
   return (
     // Shadow and keyline split the job: the shadow gives 1.52:1 on cream but
     // 1.06:1 on darker ground, where the keyline does the work.
-    <div className="shadow-lg sm:mx-0">
+    <div className={bare ? undefined : "shadow-lg sm:mx-0"}>
       <div
         className={cn(
-          "relative overflow-hidden bg-brand-dark/5 border border-cover-keyline",
+          "relative overflow-hidden bg-brand-dark/5",
+          bare ? undefined : "border border-cover-keyline",
           wide ? "aspect-3/2 md:aspect-video" : "aspect-3/2",
           {
             "cursor-pointer": linkHref,

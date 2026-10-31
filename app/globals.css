@@ -48,8 +48,10 @@
   /* The raised surface of a card or chip. */
   --color-card: #ffffff;
   /* The quiet edge on things you read rather than press: images inside a
-     card, and later the reading panel. Ink edges mean pressable. [→ `strands`] */
+     card, the reading panel, the author card. Ink means pressable. [→ `strands`] */
   --color-edge-quiet: #c9b5a7;
+  /* The sidebar tape: the prompt label's yellow at 62%. [→ `post-page`] */
+  --color-tape: rgb(242 193 78 / 0.62);
 
   /* Divider hairline, inverting with the scheme. [→ `border-roles`] Frame
      borders and the control edge are separate roles and do not use this. */

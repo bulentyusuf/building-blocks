@@ -51,10 +51,12 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
   follows.** No route sits half in each. [→ `page-axis`]
 - **Wide**: header at `max-w-frame`, `<Breadcrumb>` unwrapped, `h1` at `text-4xl
 leading-tight md:text-5xl lg:text-6xl`, closed by a 3px `border-brand-dark`
-  rule. Ten routes: `/posts/[slug]`, `/de/posts/[slug]`, `/archive`,
-  `/categories`, `/tags`, `/authors`, and the four tag and author listings.
+  rule. Eight routes: `/archive`, `/categories`, `/tags`, `/authors`, and the
+  four tag and author listings.
 - **Home and the strand pages are neither**: a feature card and cards under
   the header's chips, no rule, no pager, no trail. [→ `strands`]
+- **Posts are neither either**: header group, an ink-framed cover, then the
+  sidebar beside a quiet reading panel, no rule and no trail. [→ `post-page`]
 - **Narrow**: header wrapped in `mx-auto max-w-2xl`, `h1` at `mb-6 text-4xl
 md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
   `/privacy`, `/search`.

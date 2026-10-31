@@ -4,65 +4,64 @@ import { RichText } from "@/lib/rich-text";
 import type { Author } from "@/lib/types";
 
 // Renders nothing without a bio; callers gate their spacing the same way.
+// Read, not pressed, so the quiet edge. [→ `post-page`]
 export default function AuthorBioCard({ author }: { author: Author }) {
   if (!author.bio) return null;
 
   return (
-    <aside className="flex gap-5">
+    <div className="flex flex-col gap-5 rounded-[20px] border-2 border-edge-quiet bg-card px-5 py-6 sm:flex-row sm:px-7">
       {author.picture?.url && (
         <ContentfulImage
           alt=""
-          className="rounded-full object-cover h-18 w-18 shrink-0"
-          width={72}
-          height={72}
+          className="h-22 w-22 shrink-0 rounded-full border-[3px] border-brand-dark object-cover"
+          width={88}
+          height={88}
           src={author.picture.url}
         />
       )}
-      <div>
-        <p className="text-xl font-bold text-brand-dark">{author.name}</p>
+      <div className="flex flex-col gap-2.5">
+        <p className="font-mono text-sm font-medium text-brand-muted">
+          <span aria-hidden="true">{"// "}</span>
+          written by
+        </p>
+        <p className="font-ui text-[1.625rem] leading-none font-[800]">
+          {author.name}
+        </p>
         {/* Sized here, since the card sits outside any prose container. */}
-        <div className="mt-2 text-base text-brand-muted">
+        <div className="text-[1.0625rem] leading-relaxed">
           <RichText content={author.bio} headings={[]} />
         </div>
         {author.slug && (
           <Link
             href={`/authors/${author.slug}`}
-            className="mt-3 inline-block text-sm text-brand-crimson hover:underline"
+            className="self-start font-ui font-semibold text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
           >
-            More posts by {author.name} →
+            More from {author.name} →
           </Link>
         )}
       </div>
-    </aside>
+    </div>
   );
 }
 
-export function AuthorBioSection({
-  authors,
-  hasTags = false,
-}: {
-  authors: Author[];
-  hasTags?: boolean;
-}) {
+export function AuthorBioSection({ authors }: { authors: Author[] }) {
   const authorsWithBio = authors.filter((a) => a.bio);
   if (authorsWithBio.length === 0) return null;
 
-  // With tags above, the tag row's hairline already opened this zone.
   return (
     // Out of the index: identical on every post by this author.
     // [→ `pagefind-index-scope`]
     <div
       data-pagefind-ignore
-      className={hasTags ? "mt-8" : "mt-8 border-t border-hairline pt-8"}
+      role="region"
+      aria-label={
+        authorsWithBio.length > 1 ? "About the authors" : "About the author"
+      }
+      className="space-y-7"
     >
-      <p className="mb-6 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
-        {authorsWithBio.length > 1 ? "About the authors" : "About the author"}
-      </p>
-      <div className="space-y-10">
-        {authorsWithBio.map((author) => (
-          <AuthorBioCard key={author.slug ?? author.name} author={author} />
-        ))}
-      </div>
+      {authorsWithBio.map((author) => (
+        <AuthorBioCard key={author.slug ?? author.name} author={author} />
+      ))}
     </div>
   );
 }

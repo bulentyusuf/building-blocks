@@ -109,7 +109,6 @@ describe("only the author routes opt out of the split masthead", () => {
   });
 
   it.each([
-    "app/posts/[slug]/post-view.tsx",
     "app/archive/page.tsx",
     "app/categories/page.tsx",
     "app/tags/page.tsx",

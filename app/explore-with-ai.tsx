@@ -26,19 +26,23 @@ export default function ExploreWithAI({
   ];
 
   return (
-    <nav aria-label="Explore this post with AI" className="text-sm">
-      {/* Must match the ToC label above it exactly. */}
-      <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted">
-        Explore with AI
+    // A sidebar box like the ToC above it, without the tape. [→ `post-page`]
+    <nav
+      aria-label="Explore this post with AI"
+      className="rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-5 pb-6"
+    >
+      <p className="mb-3 font-mono text-sm font-medium text-brand-muted">
+        <span aria-hidden="true">{"// "}</span>
+        explore with AI
       </p>
-      <ul className="space-y-2">
+      <ul className="space-y-2.5 font-mono text-[0.8125rem]">
         {targets.map((t) => (
           <li key={t.href}>
             <a
               href={t.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="block leading-snug text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+              className="block leading-snug transition-colors duration-200 hover:text-brand-crimson"
             >
               {t.label}
               <NewWindowHint />

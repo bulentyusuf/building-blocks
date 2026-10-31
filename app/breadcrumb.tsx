@@ -23,25 +23,27 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
+      {/* Muted root, crimson steps, an unlinked current page in ink.
+          [→ `breadcrumbs`] */}
       <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-brand-muted">
+        <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-ui text-[0.9375rem] font-semibold text-brand-muted">
           {items.map((item, i) => {
             const isLast = i === items.length - 1;
             return (
-              <li key={i} className="flex items-center gap-x-2">
+              <li key={i} className="flex items-center gap-x-1.5">
                 {item.href && !isLast ? (
                   <Link
                     href={item.href}
                     lang={item.lang}
-                    className="hover:text-brand-crimson transition-colors duration-200"
+                    className={`transition-colors duration-200 hover:text-brand-crimson ${
+                      i === 0 ? "" : "text-brand-crimson"
+                    }`}
                   >
                     {item.label}
                   </Link>
                 ) : (
                   <span
-                    className={
-                      isLast ? "font-medium text-brand-dark" : undefined
-                    }
+                    className={isLast ? "text-brand-dark" : undefined}
                     aria-current={isLast ? "page" : undefined}
                     lang={item.lang}
                   >

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 // Points at the other language version of a post. Its own lang, as it sits
 // beside text of the opposite language, and kept out of the search index.
-// A third byline line, not a pill: the icon and crimson carry it. [→ `locale`]
+// The last item in the byline row, underlined like an article link. [→ `locale`]
 export default function LanguageLink({
   href,
   lang,
@@ -13,12 +13,12 @@ export default function LanguageLink({
   label: string;
 }) {
   return (
-    <p data-pagefind-ignore className="mt-2">
+    <p data-pagefind-ignore>
       <Link
         href={href}
         hrefLang={lang}
         lang={lang}
-        className="inline-flex min-h-6 items-center gap-1.5 font-ui text-sm font-semibold text-brand-crimson no-underline underline-offset-2 hover:underline"
+        className="inline-flex min-h-6 items-center gap-1.5 font-ui font-semibold text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
       >
         {/* Lucide 'languages' icon, ISC licence. */}
         <svg
