@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { STRANDS } from "@/lib/strands";
+import { usePathname } from "next/navigation";
+import { STRANDS, currentStrand } from "@/lib/strands";
 
 const chip =
   "flex h-12 items-center gap-2.5 rounded-xl border-[3px] border-brand-dark px-4 font-display text-lg font-[800] transition-[translate,box-shadow] duration-150 motion-reduce:transition-none";
@@ -9,22 +12,27 @@ const pressed = "translate-[4px]";
 const dot = "size-[18px] shrink-0 rounded-full border-2 border-brand-dark";
 
 /**
- * Links, not filters: each strand is its own page, so the pressed chip is
- * `aria-current="page"`. `current` is "all" on home. [→ `strands`]
+ * The header's chips on every page. Links, not filters: home and a strand page
+ * press their own chip as `aria-current="page"`; a post presses its strand as
+ * `"true"`, since the chip links away. `postStrands` maps slug to strand.
+ * [→ `strands`]
  */
-export default function StrandChips({ current }: { current: string }) {
+export default function StrandChips({
+  postStrands,
+}: {
+  postStrands: Record<string, string>;
+}) {
+  const found = currentStrand(usePathname(), postStrands);
+  const current = found?.slug;
+  const mark = found?.onPost ? "true" : "page";
   return (
-    <nav aria-label="Strands" className="flex flex-wrap items-center gap-3">
-      {/* Says what the nav's name already says, so hidden from the tree. */}
-      <p
-        aria-hidden="true"
-        className="mr-1 w-full font-mono text-sm font-medium text-brand-muted sm:w-auto"
-      >
-        {"// pick a strand"}
-      </p>
+    <nav
+      aria-label="Strands"
+      className="order-last flex w-full flex-wrap items-center gap-3 md:order-none md:w-auto md:gap-5"
+    >
       <Link
         href="/"
-        aria-current={current === "all" ? "page" : undefined}
+        aria-current={current === "all" ? mark : undefined}
         className={`${chip} ${
           current === "all"
             ? `${pressed} bg-brand-dark/5`
@@ -39,7 +47,7 @@ export default function StrandChips({ current }: { current: string }) {
           <Link
             key={strand.slug}
             href={`/categories/${strand.slug}`}
-            aria-current={on ? "page" : undefined}
+            aria-current={on ? mark : undefined}
             className={`${chip} pl-3 ${
               on
                 ? `${pressed} ${strand.fill} text-on-strand`

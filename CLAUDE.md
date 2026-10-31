@@ -53,8 +53,8 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
 leading-tight md:text-5xl lg:text-6xl`, closed by a 3px `border-brand-dark`
   rule. Ten routes: `/posts/[slug]`, `/de/posts/[slug]`, `/archive`,
   `/categories`, `/tags`, `/authors`, and the four tag and author listings.
-- **Home and the strand pages are neither**: strand chips, a feature card and
-  cards, no header rule, no pager, no trail. [→ `strands`]
+- **Home and the strand pages are neither**: a feature card and cards under
+  the header's chips, no rule, no pager, no trail. [→ `strands`]
 - **Narrow**: header wrapped in `mx-auto max-w-2xl`, `h1` at `mb-6 text-4xl
 md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
   `/privacy`, `/search`.

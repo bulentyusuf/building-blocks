@@ -263,12 +263,15 @@ with a 112px portrait.
 The F2 refresh. Posts sit in three strands, the Contentful categories
 `blogging`, `films` and `games-and-gadgets`; `lib/strands.ts` maps each to a
 label and literal Tailwind classes, and any other category falls back to
-Blogging's colours under its own name. Home is the chips, the latest post as a
-feature card, ten more cards and a link to `/archive`. No pager: `/page/:n`
+Blogging's colours under its own name. Home is the latest post as a feature
+card, ten more cards and a link to `/archive`. No pager: `/page/:n`
 redirects to the archive, which already lists everything.
 
+- **The chips are the header, on every page**: logo, four chips, a search
+  button. Tags, archive and about moved to the footer and the phone menu.
 - **Chips are links, not filters.** Each strand is a page, so the pressed chip
-  is `aria-current="page"` and nothing is hidden client-side.
+  is `aria-current="page"`; a post presses its strand as `"true"`, because the
+  chip links away. `currentStrand` reads the path, posts via a slug map.
 - **A card presses as a whole but has one link**, its title, stretched by
   `::after`. Tags on the feature card sit above it with `relative z-10`
   [→ `announced-links`].
@@ -279,8 +282,8 @@ redirects to the archive, which already lists everything.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
   the `// latest post` and `// previous posts` labels are the `h2`s.
 - **A strand page is home with its chip pressed**, `/categories/[slug]`: an
-  `sr-only` `h1`, since the chip names it, the description as the lead, every
-  post in the strand, no pager and no trail. Its posts are filtered from
+  `sr-only` `h1`, since the chip names it, then every post in the strand, no
+  description (it stays the meta description), no pager and no trail. Its posts are filtered from
   `getAllPosts` in memory, because cards need category and authors.
 - **Tags never repeat a strand.** `/tags/film` and `/tags/blogging` redirect
   to their strands.
@@ -487,7 +490,8 @@ tell a working name from a broken one.
   wide pages render it unwrapped.
 - On `/search` the wrapper sits before the `<section>`, so `.search-empty`
   stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
-- Home and the strand pages carry no trail; the chip row says where you are.
+- Home and the strand pages carry no trail; the header's chips say where you
+  are.
 - Page position rides inline in the `h1` (`app/page-counter.tsx`), never in the
   trail.
 - Accepted: on `/tags/[slug]/page/[page]` `aria-current="page"` sits on the

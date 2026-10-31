@@ -26,7 +26,7 @@ export default function PostStream({
   return (
     <>
       {latest && (
-        <section className="mt-12">
+        <section className="mt-4">
           <Label>latest post</Label>
           <FeatureCard
             post={latest}
