@@ -73,7 +73,7 @@ const post = (slug: string, title: string, date: string) => ({
   excerpt: `Everything worth knowing about ${title.toLowerCase()}.`,
   coverImage: asset(slug),
   updatedDate: undefined,
-  category: { name: "Main Quest", slug: "main-quest" },
+  category: { name: "Blogging", slug: "blogging" },
   tagsCollection: { items: tags },
 });
 
@@ -120,12 +120,17 @@ vi.mock("@/lib/api", () => ({
   getAuthorBySlug: async () => author,
   getAllCategories: async () => [
     {
-      name: "Main Quest",
-      slug: "main-quest",
-      description: "The long haul.",
-      thumbnail: asset("main-quest"),
+      name: "Blogging",
+      slug: "blogging",
+      description: "Building and maintaining the site.",
+      thumbnail: asset("blogging"),
     },
   ],
+  getCategoryBySlug: async (slug: string) => ({
+    name: "Blogging",
+    slug,
+    description: "Building and maintaining the site.",
+  }),
   getRecentPostsByCategory: async () => posts.slice(0, 2),
   getPostAndMorePosts: async () => ({
     post: englishPost,
@@ -206,13 +211,13 @@ const describeViolations = (violations: Result[]) =>
 // A dynamic route's page takes its params, so it is wrapped to look like the
 // argument-free pages around it.
 const withSlug =
-  (load: () => Promise<{ default: unknown }>) =>
+  (load: () => Promise<{ default: unknown }>, slug = "first-post") =>
   async (): Promise<{ default: unknown }> => {
     const page = (await load()).default as (props: {
       params: Promise<{ slug: string }>;
     }) => Promise<ReactElement>;
     return {
-      default: () => page({ params: Promise.resolve({ slug: "first-post" }) }),
+      default: () => page({ params: Promise.resolve({ slug }) }),
     };
   };
 
@@ -224,6 +229,10 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
   ["/de/posts/[slug]", withSlug(() => import("@/app/de/posts/[slug]/page"))],
   ["/archive", () => import("@/app/archive/page")],
   ["/categories", () => import("@/app/categories/page")],
+  [
+    "/categories/[slug]",
+    withSlug(() => import("@/app/categories/[slug]/page"), "blogging"),
+  ],
   ["/tags", () => import("@/app/tags/page")],
   ["/authors", () => import("@/app/authors/page")],
   ["/about", () => import("@/app/about/page")],

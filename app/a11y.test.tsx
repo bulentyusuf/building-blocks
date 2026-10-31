@@ -62,6 +62,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
         items: [{ name: "Genial Yeti", slug: "genial-yeti" }],
       },
     })),
+  getCategoryBySlug: async (slug: string) => ({ name: "Films", slug }),
   getAllAuthors: async () => [
     {
       name: "Genial Yeti",
@@ -558,6 +559,37 @@ describe("home", () => {
     const main = document.querySelector("main")!;
     expect(main.querySelector('a[href="/archive"]')).not.toBeNull();
     expect(main.querySelector('a[href^="/page/"]')).toBeNull();
+    expect(
+      document.querySelectorAll('nav[aria-label="Breadcrumb"]'),
+    ).toHaveLength(0);
+  });
+});
+
+describe("a strand page", () => {
+  // Home with the strand's chip pressed and only its posts. [→ `strands`]
+  const render = async () =>
+    renderPage(
+      <RootLayout>
+        {await (
+          await import("@/app/categories/[slug]/page")
+        ).default({ params: Promise.resolve({ slug: "films" }) })}
+      </RootLayout>,
+    );
+
+  it("has no axe violations", async () => {
+    expectNoViolations(await render());
+  });
+
+  it("presses its own chip, shows only its posts, and carries no trail", async () => {
+    await render();
+    const strands = getByRole(document.body, "navigation", { name: "Strands" });
+    const current = strands.querySelectorAll('[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0].getAttribute("href")).toBe("/categories/films");
+    expect(document.querySelector("h1")?.textContent).toBe("Films");
+    const main = document.querySelector("main")!;
+    expect(main.querySelectorAll('a[href^="/posts/"]')).toHaveLength(1);
+    expect(duplicateLinksInMain()).toEqual([]);
     expect(
       document.querySelectorAll('nav[aria-label="Breadcrumb"]'),
     ).toHaveLength(0);

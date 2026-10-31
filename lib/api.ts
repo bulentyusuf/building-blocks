@@ -806,26 +806,6 @@ export const getCategoryBySlug = cache(
   },
 );
 
-// Uncapped, because the category index paginates in memory. Card fragment,
-// since both consumers render MoreStories.
-export const getPostsByCategory = cache(
-  async (slug: string, isDraftMode: boolean): Promise<CardPost[]> => {
-    return fetchAllCollectionItems<CardPost>(
-      "postCollection",
-      `query GetPostsByCategory($slug: String!, $preview: Boolean, $limit: Int!, $skip: Int!) {
-      postCollection(where: { category: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit, skip: $skip) {
-        total
-        items {
-          ${CARD_GRAPHQL_FIELDS}
-        }
-      }
-    }`,
-      isDraftMode,
-      { slug, preview: isDraftMode },
-    );
-  },
-);
-
 // Capped, for the teaser on /categories.
 export const getRecentPostsByCategory = cache(
   async (
