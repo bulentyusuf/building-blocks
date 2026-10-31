@@ -2,10 +2,10 @@ import PostCard, { FeatureCard } from "./post-card";
 import { postTags } from "@/lib/tags";
 import type { ListPost } from "@/lib/types";
 
-// A mono label, with the slashes kept out of its accessible name.
+// A muted mono label, with the slashes kept out of its accessible name.
 export function Label({ children }: { children: string }) {
   return (
-    <h2 className="mb-5 font-mono text-sm font-medium tracking-normal">
+    <h2 className="mb-5 font-mono text-sm font-medium tracking-normal text-brand-muted">
       <span aria-hidden="true">{"// "}</span>
       {children}
     </h2>

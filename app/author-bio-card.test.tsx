@@ -57,7 +57,7 @@ describe("AuthorBioCard", () => {
     expect(html).toContain("Bulent Yusuf is a writer");
     expect(html).toContain("developer.");
     expect(html).toContain('href="/authors/bulent-yusuf"');
-    expect(html).toContain("More posts by Bulent Yusuf →");
+    expect(html).toContain("More from Bulent Yusuf →");
     expect(html).toContain("https://images.ctfassets.net/test/avatar.jpg");
   });
 
@@ -67,7 +67,7 @@ describe("AuthorBioCard", () => {
 
     expect(html).toContain("Guest Contributor");
     expect(html).not.toContain("href=");
-    expect(html).not.toContain("More posts by");
+    expect(html).not.toContain("More from");
   });
 });
 
@@ -94,7 +94,7 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html).not.toContain("About the authors");
     expect(html).toContain("Bulent Yusuf");
     // Exactly one card rendered
-    expect(html.match(/More posts by/g)).toHaveLength(1);
+    expect(html.match(/More from/g)).toHaveLength(1);
   });
 
   it("keeps the foot-of-post bio out of the search index", () => {
@@ -131,9 +131,9 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html).not.toContain("About the author<");
     expect(html).toContain("Bulent Yusuf");
     expect(html).toContain("Trippy Robot");
-    expect(html).toContain("space-y-10");
+    expect(html).toContain("space-y-7");
     // Two cards rendered
-    expect(html.match(/More posts by/g)).toHaveLength(2);
+    expect(html.match(/More from/g)).toHaveLength(2);
   });
 
   it("renders only one card with singular 'About the author' for a two-author post where only one has a bio", () => {
@@ -148,6 +148,6 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html).not.toContain("About the authors");
     expect(html).toContain("Bulent Yusuf");
     expect(html).not.toContain("Trippy Robot");
-    expect(html.match(/More posts by/g)).toHaveLength(1);
+    expect(html.match(/More from/g)).toHaveLength(1);
   });
 });

@@ -393,3 +393,29 @@ describe("/archive German marker", () => {
     expect(marker.textContent).toMatch(/Auf Deutsch lesen,\s*DE/);
   });
 });
+
+describe("/posts/[slug] shape", () => {
+  // No trail, since the header presses the post's strand; more like this is
+  // home's cards. [→ `post-page`, `breadcrumbs`]
+  it("carries no trail and ends on two home cards", async () => {
+    const mod = await withSlug(() => import("@/app/posts/[slug]/page"))();
+    await auditRoute(mod.default as () => Promise<ReactElement>);
+    expect(document.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+    const more = [...document.querySelectorAll("main h2")].find(
+      (h) => h.textContent === "// more like this",
+    );
+    expect(more).toBeDefined();
+    expect(more!.closest("section")!.querySelectorAll("article")).toHaveLength(
+      2,
+    );
+  });
+
+  it("would see a trail where one renders", async () => {
+    // Known-bad control for the null check above. [→ `known-bad-controls`]
+    const mod = await import("@/app/archive/page");
+    await auditRoute(mod.default as () => Promise<ReactElement>);
+    expect(
+      document.querySelector('nav[aria-label="Breadcrumb"]'),
+    ).not.toBeNull();
+  });
+});

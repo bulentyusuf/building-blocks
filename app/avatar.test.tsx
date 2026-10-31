@@ -76,9 +76,9 @@ describe("Avatar, co-authors", () => {
     const out = html([author("a", "A"), author("b", "B"), author("c", "C")]);
     // Each name is its own anchor, so the joined text is not one contiguous
     // string — check the separators in place around the anchors instead.
-    expect(out).toContain(">A</a>, <a");
-    expect(out).toContain(">B</a> &amp; <a");
-    expect(out).toContain(">C</a>");
+    expect(out).toContain(">A</a></span>, <span");
+    expect(out).toContain(">B</a></span> &amp; <span");
+    expect(out).toContain(">C</a></span>");
     // No serial comma before the ampersand.
     expect(out).not.toContain(", &amp;");
   });

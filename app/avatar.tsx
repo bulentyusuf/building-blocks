@@ -21,15 +21,15 @@ function Portrait({ author }: { author: AvatarAuthor }) {
   return author.picture?.url ? (
     <ContentfulImage
       alt=""
-      className="object-cover h-full w-full rounded-full"
-      height={48}
-      width={48}
+      className="h-full w-full rounded-full object-cover"
+      height={40}
+      width={40}
       src={author.picture.url}
     />
   ) : (
     <div
       aria-hidden="true"
-      className="flex h-full w-full items-center justify-center rounded-full bg-brand-dark/10 text-sm font-bold text-brand-muted"
+      className="flex h-full w-full items-center justify-center rounded-full bg-brand-dark/10 text-xs font-bold text-brand-muted"
     >
       {initials(author.name)}
     </div>
@@ -40,7 +40,7 @@ function AuthorLink({ author }: { author: AvatarAuthor }) {
   return author.slug ? (
     <Link
       href={`/authors/${author.slug}`}
-      className="hover:text-brand-crimson transition-colors duration-200"
+      className="transition-colors duration-200 hover:text-brand-crimson"
     >
       {author.name}
     </Link>
@@ -50,8 +50,9 @@ function AuthorLink({ author }: { author: AvatarAuthor }) {
 }
 
 /**
- * The byline, lead author first. Handles the empty case itself; callers must
- * not guard on authors.length, which once dropped the dateline. [→ `authors-array`]
+ * The byline row: each author as a ringed portrait and name, then the meta.
+ * Handles the empty case itself; callers must not guard on authors.length,
+ * which once dropped the dateline. [→ `authors-array`]
  */
 export default function Avatar({
   authors,
@@ -63,56 +64,32 @@ export default function Avatar({
   // An empty array still renders the meta, so the date is never lost.
   if (authors.length === 0) {
     return meta ? (
-      <div className="text-sm font-normal leading-tight text-brand-muted">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 font-ui text-base">
         {meta}
       </div>
     ) : null;
   }
 
   const last = authors.length - 1;
-  const stacked = authors.length > 1;
 
   return (
-    <div className="flex items-center">
-      {stacked ? (
-        // Reversed row and array put the lead's disc in front; each ring uses
-        // the page colour so the overlap reads as two portraits.
-        // [→ `authors-array`]
-        <div className="mr-4 flex shrink-0 flex-row-reverse">
-          {[...authors].reverse().map((author) => (
-            <div
-              key={author.slug ?? author.name}
-              className="h-12 w-12 shrink-0 rounded-full ring-3 ring-brand-bg [&+*]:-mr-3.5"
-            >
-              <Portrait author={author} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="mr-4 w-12 h-12 shrink-0">
-          <Portrait author={authors[0]} />
-        </div>
-      )}
-      <div className="leading-tight">
-        {/* Names may wrap; clipping would be worse. */}
-        <div className="text-xl font-bold">
-          {stacked ? (
-            authors.map((author, i) => (
-              <Fragment key={author.slug ?? author.name}>
-                {i > 0 && (i === last ? " & " : ", ")}
-                <AuthorLink author={author} />
-              </Fragment>
-            ))
-          ) : (
-            <AuthorLink author={authors[0]} />
-          )}
-        </div>
-        {meta && (
-          <div className="mt-1 text-sm font-normal text-brand-muted">
-            {meta}
-          </div>
-        )}
-      </div>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 font-ui text-base">
+      {/* Names may wrap; clipping would be worse. */}
+      {/* Inline, not flex, so the spaces around "&" survive. */}
+      <p className="font-[800] leading-10">
+        {authors.map((author, i) => (
+          <Fragment key={author.slug ?? author.name}>
+            {i > 0 && (i === last ? " & " : ", ")}
+            <span className="inline-flex items-center gap-2.5 align-middle">
+              <span className="h-10 w-10 shrink-0 rounded-full border-[3px] border-brand-dark bg-brand-bg">
+                <Portrait author={author} />
+              </span>
+              <AuthorLink author={author} />
+            </span>
+          </Fragment>
+        ))}
+      </p>
+      {meta}
     </div>
   );
 }

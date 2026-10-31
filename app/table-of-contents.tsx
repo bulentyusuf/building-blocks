@@ -28,26 +28,27 @@ function TocNav({
   lang?: string;
 }) {
   return (
-    <nav aria-label="Table of contents" className="text-sm">
-      <p className="mb-3 font-ui text-xs font-bold uppercase tracking-widest text-brand-muted hidden xl:block">
-        On this page
+    <nav aria-label="Table of contents">
+      <p className="mb-4 hidden font-mono text-sm font-medium text-brand-muted xl:block">
+        <span aria-hidden="true">{"// "}</span>
+        on this page
       </p>
       {/* The entries are the post's headings, so they take its language; the
           label above is chrome. [→ `locale`] */}
-      <ul lang={lang} className="space-y-2 border-l border-brand-dark/10">
+      <ul lang={lang} className="space-y-4 font-ui leading-[1.3]">
         {headings.map((h) => (
           <li key={h.slug}>
             <a
               href={`#${h.slug}`}
-              // The active entry is otherwise signalled by colour, weight and
-              // border alone. aria-current gives assistive tech the same
-              // position information sighted readers get.
+              // The active entry is otherwise signalled by colour and weight
+              // alone. aria-current gives assistive tech the same position
+              // information sighted readers get.
               aria-current={activeId === h.slug ? "location" : undefined}
               onClick={() => onLinkClick(h.slug)}
-              className={`block border-l -ml-px pl-3 leading-snug transition-colors duration-200 ${
+              className={`block transition-colors duration-200 ${
                 activeId === h.slug
-                  ? "border-brand-crimson text-brand-crimson font-medium"
-                  : "border-transparent text-brand-muted hover:text-brand-crimson"
+                  ? "font-bold text-brand-crimson"
+                  : "font-medium hover:text-brand-crimson"
               }`}
             >
               {/* h.text is always a plain string; widont de-widows the entry in
@@ -167,7 +168,7 @@ export default function TableOfContents({
 
   return (
     <>
-      <details className="group overflow-hidden rounded-lg border border-brand-dark/10 bg-brand-dark/5 xl:hidden">
+      <details className="group overflow-hidden rounded-[18px] border-[3px] border-brand-dark bg-card xl:hidden">
         {/*
           summary is the mobile tap target and only exists on mobile now — the
           whole disclosure is xl:hidden, so there is nothing here for xl+ to
@@ -176,18 +177,10 @@ export default function TableOfContents({
           panel below is inside the same card rather than a separate block
           sitting beneath it.
         */}
-        <summary className="list-none flex items-center justify-between gap-3 cursor-pointer select-none px-4 py-3 font-ui text-sm font-bold uppercase tracking-wide text-brand-dark">
-          <span className="flex items-center gap-2">
-            <svg
-              className="h-4 w-4 text-brand-crimson"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M3 4.75A.75.75 0 0 1 3.75 4h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 4.75Zm0 5A.75.75 0 0 1 3.75 9h12.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 9.75Zm0 5a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" />
-            </svg>
-            On this page
+        <summary className="list-none flex min-h-12 items-center justify-between gap-3 cursor-pointer select-none px-5 py-3 font-mono text-sm font-medium text-brand-muted">
+          <span>
+            <span aria-hidden="true">{"// "}</span>
+            on this page
           </span>
           <svg
             className="h-4 w-4 text-brand-muted motion-safe:transition-transform motion-safe:duration-200 group-open:rotate-180"
@@ -203,7 +196,7 @@ export default function TableOfContents({
             />
           </svg>
         </summary>
-        <div className="border-t border-brand-dark/10 px-4 pt-3 pb-4">
+        <div className="px-5 pt-1 pb-5">
           <TocNav
             headings={headings}
             activeId={activeId}
@@ -212,7 +205,13 @@ export default function TableOfContents({
           />
         </div>
       </details>
-      <div className="hidden xl:block">
+      {/* The page's one strip of tape, half on and half off the top edge.
+          Never on anything carrying text. [→ `post-page`] */}
+      <div className="relative hidden rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-5 pb-6 xl:block">
+        <span
+          aria-hidden="true"
+          className="absolute -top-4 left-1/2 h-8 w-35 -translate-x-1/2 -rotate-3 bg-tape mix-blend-multiply [clip-path:polygon(0_4%,4%_0,8%_6%,12%_0,88%_0,92%_5%,96%_0,100%_6%,100%_96%,96%_100%,92%_94%,88%_100%,12%_100%,8%_95%,4%_100%,0_94%)] dark:mix-blend-normal"
+        />
         <TocNav
           headings={headings}
           activeId={activeId}

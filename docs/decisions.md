@@ -18,6 +18,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `band-retirement` — The masthead band was retired in favour of a 3px rule
 - `breadcrumbs` — Breadcrumbs, and the one page without them
 - `page-axis` — One axis, and it is the header measure
+- `post-page` — A post is a header group, a framed cover and a reading panel
 - `wide-page-shell` — How the wide-page header is built
 
 **Headers and home**
@@ -161,7 +162,7 @@ the attribute, so the permalink glyph is CSS generated content on an empty span,
 never a text node. Do not put the character back, and keep its
 `data-pagefind-ignore` too, which still keeps it out of the excerpt. The byline
 stays indexed, so an author's name still finds their posts, and so does the
-`Tagged` row, because tag names are real signal.
+`// tags` row, because tag names are real signal.
 
 ### The search emblem's dark-mode ground
 
@@ -219,18 +220,12 @@ Every wide route's header closes with a 3px `border-brand-dark` rule in
 
 **The band's inset stays two numbers, one each side of the rule**: the header's
 bottom margin above it and a gap below it. Folding both above the rule leaves
-the first content flush against a 3px line on home, the post page and the
-section fronts. `contentOwnsLeading` suppresses the gap below the rule, never
+the first content flush against a 3px line on the section fronts. `contentOwnsLeading` suppresses the gap below the rule, never
 the margin above, and only `app/listing-page.tsx` sets it, because a ruled
 listing's items supply their own leading. The ruled listings hide a fold,
 since their items carry their own padding, so a green suite is no evidence
 either way. The layout test in lib (listing-rhythm.layout.test.tsx) measures
 both halves separately, in a browser [→ `guard-limits`].
-
-What went with the band: the `bleed` prop and cover pull-ups (covers are
-contained now), the breadcrumb `tone` prop (every trail sits on cream and takes
-the accent), and `.band-prose`. The unbuilt cover-tint feature assumed the band
-and needs re-deriving if it is ever picked up.
 
 ### The masthead splits into heading and standfirst, right-anchored
 
@@ -287,6 +282,24 @@ redirects to the archive, which already lists everything.
   `getAllPosts` in memory, because cards need category and authors.
 - **Tags never repeat a strand.** `/tags/film` and `/tags/blogging` redirect
   to their strands.
+
+### A post is a header group, a framed cover and a reading panel
+
+<!-- key: post-page -->
+
+`app/posts/[slug]/post-view.tsx`, for both languages. No `WidePage`, rule or
+trail: the `h1`, the standfirst at full ink and the byline row
+(ringed portrait per author, muted date, the Updated stamp, the language link).
+The `h1` carries its own `data-pagefind-body`, since it sits outside the
+`<article>`; without it every title-only term drops out of search.
+
+- **Ink frames what stands on the page**, the cover. The reading panel and the
+  author card take `--color-edge-quiet`: they are read, not pressed.
+- **From `xl` the sidebar sits beside the panel**, the ToC under the page's
+  one strip of tape and the AI links below it. The panel is 49.25rem, the 42rem
+  measure plus padding, which needs the 1200px frame. Below `xl` the ToC is a
+  disclosure above the panel.
+- **More like this is two home cards** from `lib/related.ts`, unchanged.
 
 ### Covers take one of two frames, chosen by `wide`
 
@@ -490,8 +503,8 @@ tell a working name from a broken one.
   wide pages render it unwrapped.
 - On `/search` the wrapper sits before the `<section>`, so `.search-empty`
   stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
-- Home and the strand pages carry no trail; the header's chips say where you
-  are.
+- Home, the strand pages and posts carry no trail; the header's chips say
+  where you are, a post's strand pressed.
 - Page position rides inline in the `h1` (`app/page-counter.tsx`), never in the
   trail.
 - Accepted: on `/tags/[slug]/page/[page]` `aria-current="page"` sits on the
@@ -537,7 +550,7 @@ that says where they are. Old anchors still land.
   pill never links to a 404. Author pages get it from
   `getVisibleTagSlugs`; a tag page passes the set minus its own slug.
 - The glossary is `data-pagefind-ignore`. Pills sit below the body, never in the
-  xl-only sidebar, and not on "Read Next".
+  xl-only sidebar, and not on "more like this".
 
 ### Browse-page copy is editable, site identity is not
 
@@ -590,8 +603,8 @@ standalone package parses, which is what sank an earlier face.
 
 <!-- key: authors-array -->
 
-Co-authors, with `authors[0]` the lead: front of the portrait stack, first in
-the byline and OG card, and the RSS `<author>` when `AUTHOR_EMAIL` is set. The
+Co-authors, with `authors[0]` the lead: first in the byline (a ringed portrait
+per name) and OG card, and the RSS `<author>` when `AUTHOR_EMAIL` is set. The
 Contentful size validation and the GraphQL `limit` are both 3 and move
 together. Names join with an ampersand and no serial comma; in RSS each author
 gets a `<dc:creator>`.
@@ -678,10 +691,11 @@ Whether a page's header sits at `max-w-frame` or inside `max-w-2xl` decides the
 breadcrumb wrapper, the `h1` ramp and whether the header closes with the 3px
 rule. A route is wide or narrow; none sits half in each. The tell of a wrong
 choice is a 6xl heading in a 42rem measure. The measure is the
-header's, not the prose's: a post is wide with a narrow body, and `/search` is
-narrow. The route lists are in `CLAUDE.md`.
+header's, not the prose's: `/search` is narrow. The route lists are in
+`CLAUDE.md`.
 
-Home sits outside this axis: it has no header or rule [→ `strands`].
+Home, the strand pages and posts sit outside this axis: none has a rule
+[→ `strands`, `post-page`].
 
 **`MoreStories` sets card titles to `h3` when it renders a section heading and
 `h2` when it does not**, so adding or removing a heading re-levels every card.
@@ -696,8 +710,6 @@ the vertical rhythm. It exists because ten pages were two implementations of one
 design and every tuning pass landed on one half only. Do not assemble a header
 and `Container` in a route, and do not give a narrow route the wide header.
 
-- A post's `h1` carries its own `data-pagefind-body`, since it sits outside the
-  `<article>`; without it every title-only term drops out of search.
 - The logo is a button that scrolls to top on home and a link elsewhere
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. It no longer hides on home, which has no masthead.

@@ -1,5 +1,6 @@
-import WidePage from "../../wide-page";
-import MoreStories from "../../more-stories";
+import Container from "../../container";
+import PostCard from "../../post-card";
+import { Label } from "../../post-stream";
 import Avatar from "../../avatar";
 import Date from "../../date";
 import CoverImage from "../../cover-image";
@@ -15,12 +16,11 @@ import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
 import SidenoteEnterKey from "../../sidenote-enter-key";
-import { type Crumb } from "../../breadcrumb";
 import LanguageLink from "../../language-link";
 import { SITE_URL, SITE_AUTHOR, GERMAN_LOCALE } from "@/lib/constants";
 import { jsonLdHtml, postAuthorsNode } from "@/lib/json-ld";
 import { widont } from "@/lib/typography";
-import type { CardPost, ListPost, Post } from "@/lib/types";
+import type { ListPost, Post } from "@/lib/types";
 
 // The post body for both routes. German posts are kept out of the search index.
 // Only the German parts carry de-DE; bio, tags and asides stay en-GB. [→ `locale`]
@@ -33,7 +33,7 @@ export default async function PostView({
   languageLink,
 }: {
   post: Post;
-  morePosts: CardPost[];
+  morePosts: ListPost[];
   allPosts: ListPost[];
   slug: string;
   german: boolean;
@@ -72,70 +72,71 @@ export default async function PostView({
   const showUpdated = post.updatedDate && post.updatedDate !== post.date;
   const minutes = readingTimeMinutes(post.content.json);
 
-  // Published date, the revision flag (short on mobile), then reading time.
-  // In German with the post: it sits between German excerpt and body. The
-  // reading time never breaks across lines.
+  // Date and reading time in muted type, then the Updated stamp when the post
+  // has been revised. In German with the post. Reading time never breaks.
   const dateline = (
-    <span className="tabular-nums" lang={lang}>
-      <Date dateString={post.date} german={german} />
+    <>
+      <span className="tabular-nums text-brand-muted" lang={lang}>
+        <Date dateString={post.date} german={german} />
+        {" · "}
+        {german
+          ? `${minutes}\u00a0Min.\u00a0Lesezeit`
+          : `${minutes}\u00a0min\u00a0read`}
+      </span>
       {showUpdated && (
-        <>
-          <span className="md:hidden">
-            {german ? " (aktualisiert)" : " (updated)"}
-          </span>
-          <span className="hidden md:inline">
-            {" · "}
-            {german ? "Aktualisiert am " : "Updated "}
-            <Date dateString={post.updatedDate!} german={german} />
-          </span>
-        </>
+        // A double-ruled stamp: border plus an offset outline. Straight.
+        <span
+          lang={lang}
+          className="inline-flex min-h-7.5 items-center rounded-md border-2 border-brand-dark px-2.5 font-mono text-xs font-medium tracking-[0.06em] uppercase tabular-nums outline-1 outline-offset-2 outline-brand-dark"
+        >
+          {german ? "Aktualisiert am\u00a0" : "Updated\u00a0"}
+          <Date dateString={post.updatedDate!} german={german} />
+        </span>
       )}
-      {" · "}
-      {german
-        ? `${minutes}\u00a0Min.\u00a0Lesezeit`
-        : `${minutes}\u00a0min\u00a0read`}
-    </span>
+    </>
   );
 
   const promptId = coverPromptId(post);
   const headings = extractHeadings(post.content.json);
   const highlighted = await highlightCodeBlocks(post.content);
 
-  const crumbs: Crumb[] = post.category
-    ? [
-        { label: "Home", href: "/" },
-        { label: "Categories", href: "/categories" },
-        {
-          label: post.category.name,
-          href: `/categories/${post.category.slug}`,
-        },
-        { label: post.title, lang },
-      ]
-    : [
-        { label: "Home", href: "/" },
-        { label: post.title, lang },
-      ];
+  const hasToc = hasTableOfContents(headings);
 
   return (
-    // The excerpt stays in the body column. No contentOwnsLeading.
-    // [→ `band-retirement`]
-    <WidePage
-      crumbs={crumbs}
-      heading={
-        // Its own body region: the h1 sits outside the article.
-        // [→ `pagefind-index-scope`]
+    // No trail: the header presses the post's strand. A short header group,
+    // the cover, then the sidebar beside a quiet reading panel. [→ `post-page`]
+    <Container>
+      <header>
+        {/* Its own body region: the h1 sits outside the article.
+            [→ `pagefind-index-scope`] */}
         <h1
           data-pagefind-body={german ? undefined : true}
           lang={lang}
           // German compounds outrun a phone line, so hyphenate below md only.
           // Wider, text-balance narrows the box and hyphens split words that fit.
-          className={`text-4xl leading-tight md:text-5xl lg:text-6xl text-balance wrap-break-word${german ? " hyphens-auto md:hyphens-manual" : ""}`}
+          className={`max-w-[62.5rem] text-4xl leading-[0.98] font-[800] tracking-[-0.03em] text-balance wrap-break-word md:text-6xl lg:text-[4.75rem]${german ? " hyphens-auto md:hyphens-manual" : ""}`}
         >
           {/* Never widont(). [→ `heading-widont`] */}
           {post.title}
         </h1>
-      }
-    >
+        <p
+          lang={lang}
+          className="mt-5 max-w-[51.25rem] text-xl leading-[1.45] text-pretty md:text-2xl"
+        >
+          {widont(post.excerpt)}
+        </p>
+        <div className="mt-7">
+          <Avatar
+            authors={authors}
+            meta={
+              <>
+                {dateline}
+                {languageLink && <LanguageLink {...languageLink} />}
+              </>
+            }
+          />
+        </div>
+      </header>
       <SidenoteEnterKey />
       <script
         type="application/ld+json"
@@ -149,78 +150,40 @@ export default async function PostView({
           "data-pagefind-meta": "url[data-url]",
           "data-url": path,
         })}
-        className="mx-auto max-w-frame"
+        className="mt-11"
       >
         {post.coverImage && (
-          <div className="relative mb-10">
+          // A picture frame on the page: ink, never a shadow. [→ `post-page`]
+          <div className="relative overflow-hidden rounded-3xl border-[3px] border-brand-dark">
             <CoverImage
               image={post.coverImage}
               wide
+              bare
               priority
               sizes="(max-width: 768px) calc(100vw - 2rem), 1120px"
             />
             {promptId && (
-              // Over the image so the page keeps its position. Near-black and a
-              // white inner ring, because it sits on images of any tone, not on
-              // a scheme colour. 44px tall at every width.
+              // Over the image so the page keeps its position. Cream on any
+              // cover tone, 44px tall at every width.
               <a
                 href="#cover-prompt"
                 data-pagefind-ignore
-                className="absolute bottom-2 right-2 inline-flex h-11 items-center gap-1.5 rounded-full bg-black/85 px-3.5 font-ui text-sm font-semibold text-white no-underline shadow-md hover:bg-black md:bottom-3.5 md:right-3.5 focus-visible:outline-white focus-visible:-outline-offset-4"
+                className="absolute top-3 right-3 inline-flex h-11 items-center rounded-full border-2 border-brand-dark bg-brand-bg px-3.5 font-mono text-[0.8125rem] font-medium text-brand-dark no-underline md:top-4 md:right-4"
               >
-                {/* Lucide 'brush' icon, ISC licence. */}
-                <svg
-                  aria-hidden="true"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m11 10 3 3" />
-                  <path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z" />
-                  <path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031" />
-                </svg>
-                Prompt<span className="sr-only"> for this cover image</span>
+                prompt <span aria-hidden="true">↓</span>
+                <span className="sr-only"> for this cover image</span>
               </a>
             )}
           </div>
         )}
-        {/* Below xl one column ordered Head, Aside, Body; at xl the aside
-            spans both rows of the left track. */}
-        <div className="flex flex-col xl:grid xl:grid-cols-[1fr_3fr] xl:gap-x-10">
-          <div className="order-1 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-1 xl:mx-0">
-            <p
-              lang={lang}
-              className="mb-8 text-xl leading-relaxed text-brand-muted text-pretty"
-            >
-              {widont(post.excerpt)}
-            </p>
-            <div className="mb-10">
-              {/* In the meta column, so it aligns with the dateline however
-                  many portraits stack. */}
-              <Avatar
-                authors={authors}
-                meta={
-                  <>
-                    {dateline}
-                    {languageLink && <LanguageLink {...languageLink} />}
-                  </>
-                }
-              />
-            </div>
-          </div>
-
-          {/* The aside spans both rows so its sticky wrapper has room.
-              [→ `pagefind-index-scope`] */}
+        <div className="mt-12 flex flex-col gap-10 md:mt-16 xl:grid xl:grid-cols-[minmax(15rem,1fr)_minmax(0,49.25rem)] xl:gap-12">
+          {/* Stretches the row so the sticky wrapper has room. Below xl it
+              holds only the ToC disclosure. [→ `pagefind-index-scope`] */}
           <aside
             data-pagefind-ignore
-            className={`order-2 mx-auto w-full max-w-2xl xl:order-none xl:col-start-1 xl:row-start-1 xl:row-span-2 xl:mx-0 xl:max-w-none xl:mb-0${hasTableOfContents(headings) ? " mb-9" : ""}`}
+            className={`mx-auto w-full max-w-[49.25rem] xl:mx-0 xl:max-w-none${hasToc ? "" : " hidden xl:block"}`}
           >
-            <div className="xl:sticky xl:top-20 xl:space-y-8 xl:pb-4">
+            <div className="xl:sticky xl:top-20 xl:space-y-7 xl:pb-4">
               <TableOfContents headings={headings} lang={lang} />
               <div className="hidden xl:block">
                 <ExploreWithAI slug={slug} german={german} />
@@ -228,48 +191,60 @@ export default async function PostView({
             </div>
           </aside>
 
-          <div className="order-3 mx-auto w-full max-w-2xl xl:order-none xl:col-start-2 xl:row-start-2 xl:mx-0">
-            {/* Heading sizes are em, tracking the prose base; the plugin keys
-                heading margins to the heading's own size. */}
-            <div
-              lang={lang}
-              className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h3:font-[600] prose-h4:text-[1.15em]"
-            >
-              <RichText
-                content={post.content}
-                headings={headings}
-                highlighted={highlighted}
-                coverPromptId={promptId}
-              />
+          <div className="mx-auto w-full max-w-[49.25rem] xl:mx-0">
+            {/* 49.25rem is the 42rem measure plus this padding and edge.
+                [→ `prose-measure`] */}
+            <div className="rounded-3xl border-2 border-edge-quiet bg-card px-5 py-8 md:px-14 md:py-12">
+              {/* Heading sizes are em, tracking the prose base; the plugin
+                  keys heading margins to the heading's own size. */}
+              <div
+                lang={lang}
+                className="prose text-pretty prose-h2:text-[1.6em] prose-h3:text-[1.375em] prose-h3:font-[600] prose-h4:text-[1.15em]"
+              >
+                <RichText
+                  content={post.content}
+                  headings={headings}
+                  highlighted={highlighted}
+                  coverPromptId={promptId}
+                />
+              </div>
             </div>
-            {/* Below the body, since the sidebar is xl-only. The gap under
-                the pills is the author block's margin; change both together. */}
             {tags.length > 0 && (
               <nav
                 aria-label="Tags"
-                className="mt-8 border-t border-hairline pt-6"
+                className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2"
               >
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <span className="font-ui text-xs font-bold uppercase tracking-widest text-brand-muted shrink-0">
-                    Tagged
-                  </span>
-                  <ul className="flex flex-wrap items-center gap-2">
-                    {tags.map((tag) => (
-                      <li key={tag.slug}>
-                        <TagPill tag={tag} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <span className="font-mono text-sm font-medium text-brand-muted">
+                  <span aria-hidden="true">{"// "}</span>
+                  tags
+                </span>
+                <ul className="flex flex-wrap items-center gap-2">
+                  {tags.map((tag) => (
+                    <li key={tag.slug}>
+                      <TagPill tag={tag} />
+                    </li>
+                  ))}
+                </ul>
               </nav>
             )}
-            <AuthorBioSection authors={authors} hasTags={tags.length > 0} />
+            <div className="mt-10">
+              <AuthorBioSection authors={authors} />
+            </div>
           </div>
         </div>
       </article>
-      <div className="mt-section">
-        <MoreStories morePosts={morePosts} variant="grid" heading="Read Next" />
-      </div>
-    </WidePage>
+      {morePosts.length > 0 && (
+        <section className="mt-20">
+          <Label>more like this</Label>
+          <ul className="grid gap-8 md:grid-cols-2 md:gap-9">
+            {morePosts.map((card) => (
+              <li key={card.slug} className="flex">
+                <PostCard post={card} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </Container>
   );
 }

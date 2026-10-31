@@ -448,7 +448,7 @@ export const getPostAndMorePosts = cache(
   async (
     slug: string,
     preview: boolean,
-  ): Promise<{ post: Post | undefined; morePosts: CardPost[] }> => {
+  ): Promise<{ post: Post | undefined; morePosts: ListPost[] }> => {
     const [entry, allPosts] = await Promise.all([
       fetchGraphQL<PostCollectionResponse>(
         `query GetPost($slug: String!, $preview: Boolean) {
@@ -507,7 +507,7 @@ export const getGermanPostAndMorePosts = cache(
   async (
     slug: string,
     preview: boolean,
-  ): Promise<{ post: Post | undefined; morePosts: CardPost[] }> => {
+  ): Promise<{ post: Post | undefined; morePosts: ListPost[] }> => {
     const [entry, english] = await Promise.all([
       fetchGraphQL<{
         data?: {
