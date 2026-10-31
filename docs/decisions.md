@@ -278,9 +278,12 @@ redirects to the archive, which already lists everything.
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
   the `// latest post` and `// previous posts` labels are the `h2`s.
-- **A strand page is home with its chip pressed**, `/categories/[slug]`: a
-  visible `h1`, every post in the strand, no pager and no trail. Its posts are
-  filtered from `getAllPosts` in memory, because cards need category and authors.
+- **A strand page is home with its chip pressed**, `/categories/[slug]`: an
+  `sr-only` `h1`, since the chip names it, the description as the lead, every
+  post in the strand, no pager and no trail. Its posts are filtered from
+  `getAllPosts` in memory, because cards need category and authors.
+- **Tags never repeat a strand.** `/tags/film` and `/tags/blogging` redirect
+  to their strands.
 
 ### Covers take one of two frames, chosen by `wide`
 

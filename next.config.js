@@ -185,6 +185,17 @@ module.exports = {
         destination: "/categories",
         permanent: true,
       },
+      // Tags never repeat a strand, so these two retired into theirs.
+      {
+        source: "/tags/film/:path*",
+        destination: "/categories/films",
+        permanent: true,
+      },
+      {
+        source: "/tags/blogging/:path*",
+        destination: "/categories/blogging",
+        permanent: true,
+      },
     ];
   },
   async rewrites() {
