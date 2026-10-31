@@ -28,7 +28,7 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 - **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a link to one category, and links to up to three authors. Title, excerpt and body can carry a German translation; everything else is shared between the two versions
 - **Author**, name, picture, slug, and a short bio, with its own landing page. A post can carry more than one, and every author it names lists that post
-- **Category**, name, slug, description, and thumbnail, with its own landing page. Posts are filed under Main Quest or Side Quests
+- **Category**, name, slug, description, and an optional thumbnail, with its own landing page. Posts are filed under one of three strands, Blogging, Films, or Games & Gadgets
 - **Tag**, name, slug, and a one-line description, with its own landing page. Cross-cutting topics, up to three per post: where Category says where a post lives, a Tag says what it is about
 - **Code Block**, embedded into post bodies for syntax-highlighted snippets. Optional filename and a fixed list of languages
 - **Prompt Block**, embedded into post bodies to publish the generative-image prompt behind a cover, with an optional label and image

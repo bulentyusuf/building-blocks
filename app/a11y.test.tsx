@@ -46,9 +46,22 @@ vi.mock("@vercel/speed-insights/next", () => ({ SpeedInsights: () => null }));
 // "no LQIP underlay" branch, so this exercises a shipped path.
 vi.mock("@/lib/blur", () => ({ getBlurDataURL: async () => undefined }));
 // The footer's writers come from the CMS. One is enough for axe to see the
-// linked mascot.
+// linked mascot. Home's posts span the three strands and one stray category.
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
+  getAllPosts: async () =>
+    ["blogging", "films", "games-and-gadgets", "pictures"].map((slug, i) => ({
+      slug: `post-${i}`,
+      title: `Post ${i}`,
+      date: "2026-01-01",
+      excerpt: `Excerpt for post ${i}.`,
+      coverImage: { url: "https://images.ctfassets.net/x/y/cover.jpg" },
+      category: { name: slug, slug },
+      tagsCollection: { items: [{ name: "Design", slug: "design" }] },
+      authorsCollection: {
+        items: [{ name: "Genial Yeti", slug: "genial-yeti" }],
+      },
+    })),
   getAllAuthors: async () => [
     {
       name: "Genial Yeti",
@@ -474,89 +487,46 @@ describe("the index listing, which carries a trail again", () => {
   });
 });
 
-describe("home, whose header carries the masthead as its h1", () => {
-  // The masthead is home's h1 and everything below it is an h2, hero and cards
-  // alike, because the listing renders no heading of its own. One flat list of
-  // siblings under one page title.
-  //
-  // The assertions fail if any half is reverted on its own, which is the
-  // failure worth guarding: the masthead was a <p> precisely to protect a hero
-  // h1 that no longer exists, so putting one back without demoting the other
-  // gives the page two h1s and nothing complains at runtime. Reinstating the
-  // listing heading is the same shape of mistake from the other end, since
-  // MoreStories silently re-levels every card title when one is present.
-  const render = () =>
+describe("home", () => {
+  // The real route, so the chips, the feature card and the cards are the
+  // shipped ones. The logo names the site visually, so the h1 is sr-only, and
+  // the two mono labels are the h2s the post titles sit under. [→ `strands`]
+  const render = async () =>
     renderPage(
-      <RootLayout>
-        <WidePage
-          heading={
-            <h1 className="site-masthead text-4xl leading-tight md:text-5xl lg:text-6xl">
-              {SITE_TITLE}
-            </h1>
-          }
-          standfirst={
-            <p className="text-lg leading-relaxed">
-              A description of the site.
-            </p>
-          }
-        >
-          <section className="mx-auto max-w-5xl mb-section">
-            <h2>
-              <a href="/posts/a">Post a</a>
-            </h2>
-            <p>Excerpt for post a.</p>
-          </section>
-          <MoreStories
-            morePosts={[post("b"), post("c")]}
-            variant="grid"
-            heading={null}
-          />
-        </WidePage>
-      </RootLayout>,
+      <RootLayout>{await (await import("@/app/page")).default()}</RootLayout>,
     );
 
   it("has no axe violations", async () => {
     expectNoViolations(await render());
   });
 
-  it("renders no Latest Posts heading", async () => {
-    // Text, not level. A bare level check passes if someone reinstates the
-    // heading as an h2, which is exactly what MoreStories would emit.
+  it("gives each post one announced link", async () => {
+    // The card presses as a whole, but only its title is a link.
     await render();
-    const headings = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
-      (h) => h.textContent?.trim(),
-    );
-    expect(headings).not.toContain("Latest Posts");
-  });
-
-  it("puts the hero and every card title at the same level", async () => {
-    // The point of dropping the heading. The hero stops being a section with
-    // its own level and becomes the first entry in one list.
-    await render();
+    expect(duplicateLinksInMain()).toEqual([]);
     const main = document.querySelector("main")!;
-    const levels = [...main.querySelectorAll("h2,h3")].map((h) =>
-      Number(h.tagName[1]),
-    );
-    expect(levels.length).toBeGreaterThan(1);
-    expect(new Set(levels)).toEqual(new Set([2]));
+    for (let i = 0; i < 4; i++) {
+      expect(main.querySelectorAll(`a[href="/posts/post-${i}"]`)).toHaveLength(
+        1,
+      );
+    }
   });
 
-  it("has exactly one h1, and it is the masthead", async () => {
+  it("has one h1, the site's name, and labels that read without slashes", async () => {
     await render();
     const h1s = [...document.querySelectorAll("h1")];
     expect(h1s).toHaveLength(1);
     expect(h1s[0].textContent).toBe(SITE_TITLE);
-    expect(h1s[0].classList.contains("site-masthead")).toBe(true);
+    const labels = [...document.querySelectorAll("main h2")].map((h) =>
+      [...h.childNodes]
+        .filter((n) => !(n as Element).getAttribute?.("aria-hidden"))
+        .map((n) => n.textContent)
+        .join(""),
+    );
+    expect(labels).toEqual(["latest post", "previous posts"]);
   });
 
-  it("renders the hero title as an h2, still linked to its post", async () => {
-    await render();
-    const hero = document.querySelector("main h2 a");
-    expect(hero).not.toBeNull();
-    expect(hero!.getAttribute("href")).toBe("/posts/a");
-  });
-
-  it("keeps heading levels contiguous below a header with no listing heading in it", async () => {
+  it("keeps heading levels contiguous", async () => {
     await render();
     const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
       (h) => Number(h.tagName[1]),
@@ -567,38 +537,30 @@ describe("home, whose header carries the masthead as its h1", () => {
     }
   });
 
-  it("emits no breadcrumb landmark", async () => {
+  it("presses the All chip, and only that one", async () => {
     await render();
+    const strands = getByRole(document.body, "navigation", { name: "Strands" });
+    const current = strands.querySelectorAll('[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0].textContent).toBe("All");
+    expect(current[0].getAttribute("href")).toBe("/");
+  });
+
+  it("labels each card with its strand, and a stray category by its name", async () => {
+    await render();
+    const text = document.querySelector("main")!.textContent!;
+    for (const label of ["Blogging", "Films", "Games & Gadgets", "pictures"])
+      expect(text).toContain(label);
+  });
+
+  it("ends on the archive, with no pager", async () => {
+    await render();
+    const main = document.querySelector("main")!;
+    expect(main.querySelector('a[href="/archive"]')).not.toBeNull();
+    expect(main.querySelector('a[href^="/page/"]')).toBeNull();
     expect(
       document.querySelectorAll('nav[aria-label="Breadcrumb"]'),
     ).toHaveLength(0);
-  });
-
-  it("names the site once, in halves this environment cannot join", async () => {
-    // Both marks are in the DOM. What hides the bar's is a :has() rule, and
-    // jsdom applies no stylesheet, so a single querySelectorAll here would
-    // report two and prove nothing either way. The halves are asserted
-    // separately: the markup carries exactly the two hooks, and the
-    // stylesheet carries the rules that govern them.
-    await render();
-    expect(document.querySelectorAll(".site-masthead")).toHaveLength(1);
-    expect(document.querySelectorAll(".site-wordmark")).toHaveLength(1);
-
-    const css = fs.readFileSync(path.join(__dirname, "globals.css"), "utf8");
-
-    // The logo hides on home: display: none, so the header does not name
-    // the site twice above the masthead.
-    const wordmark =
-      /body:has\(\.site-masthead\)\s+\.site-wordmark\s*\{([^}]*)\}/.exec(css);
-    expect(wordmark).not.toBeNull();
-    expect(wordmark![1]).toMatch(/display:\s*none/);
-    // Not visibility: hidden. That still reserves the logo's box, leaving a
-    // gap before the nav where display: none lets the nav sit properly.
-    // Stripped of comments first, or this assertion would match its own
-    // explanation instead of a real declaration.
-    expect(wordmark![1].replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(
-      /visibility/,
-    );
   });
 });
 

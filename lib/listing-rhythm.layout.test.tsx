@@ -11,10 +11,10 @@ import type { ReactElement } from "react";
 // rather than matched in source. [→ `guard-limits`, `band-retirement`]
 //
 // The rhythm: on a listing, whatever sits above an item (the 3px rule or a
-// hairline) is the same distance from the cover below it. Home's ruled card
-// grid opens with that same inset. Home and /archive, which are not ruled
-// listings, open the same non-zero gap below the rule. And the header sits the
-// same distance above the rule everywhere. Every check is a relation between
+// hairline) is the same distance from the cover below it, /archive opens a
+// non-zero gap below its rule, and the header sits the same distance above the
+// rule on both. Home has no rule since the strand redesign, so only its bar and
+// feature card are measured. [→ `strands`] Every check is a relation between
 // two measured distances, never a pixel value, so a refactor that keeps the
 // pixels keeps this green.
 
@@ -61,7 +61,7 @@ const posts = [1, 2, 3, 4, 5].map((n) => ({
       { name: "Bulent Yusuf", slug: "bulent-yusuf", picture: asset("me") },
     ],
   },
-  category: { name: "Main Quest", slug: "main-quest" },
+  category: { name: "Blogging", slug: "blogging" },
   tagsCollection: { items: [tag] },
 }));
 
@@ -128,22 +128,22 @@ async function toHtml(element: ReactElement): Promise<string> {
 }
 
 type Measurement = {
-  headerToRule: number;
+  /** Null on home, which has no rule. */
+  headerToRule: number | null;
   /** From the rule to the top of the first element below it. */
-  ruleToContent: number;
+  ruleToContent: number | null;
   /** Listing only: from the rule to the first item's cover. */
   ruleToFirstCover: number | null;
   /** Listing only: from each later item's hairline to its cover. */
   hairlineToCover: number[];
-  /** Home only: from the card grid's opening hairline to its first cover. */
-  gridRuleToCover: number | null;
-  /** The sticky bar above every page. */
+  /** The bar above every page. */
   barHeight: number;
-  /** Home only: the hero title's and the first card title's computed sizes. */
-  heroTitlePx: number | null;
+  /** Home only: the feature card's title and the first card title's sizes. */
+  featureTitlePx: number | null;
   cardTitlePx: number | null;
-  /** Home only: from the hero's byline column to its excerpt column. */
-  heroColumnGap: number | null;
+  /** Home only: the feature card's cover and text column boxes. */
+  featureCover: { top: number; bottom: number; right: number } | null;
+  featureText: { top: number; left: number } | null;
 };
 
 // Runs in the page, so it closes over nothing.
@@ -153,28 +153,24 @@ function measureInPage(): Measurement {
   const borderTop = (el: Element) =>
     parseFloat(getComputedStyle(el).borderTopWidth);
   const cover = (el: Element) => el.querySelector('[class*="aspect-"]');
-
-  const header = main.querySelector("header")!;
-  const rule = main.querySelector('[class*="border-t-[3px]"]')!;
-  const below = rule.nextElementSibling!.firstElementChild!;
-  const grid = main.querySelector(
-    '[class*="md:grid-cols-2"][class*="border-y"]',
-  );
-  const items = [...main.querySelectorAll("section article")];
-  const listing = !grid && items.length > 0;
   const size = (el: Element | null | undefined) =>
     el ? parseFloat(getComputedStyle(el).fontSize) : null;
-  // Home's hero title is the first h2 in a section, and its grid is the
-  // title column's parent.
-  const heroTitle = grid ? main.querySelector("section h2") : null;
-  const heroColumns = heroTitle?.parentElement?.parentElement?.children;
+
+  const header = main.querySelector("header");
+  const rule = main.querySelector('[class*="border-t-[3px]"]');
+  const below = rule?.nextElementSibling?.firstElementChild;
+  const items = [...main.querySelectorAll("section article")];
+  // Home's feature card is the first article; its children are cover, text.
+  const feature = main.querySelector("section > article");
+  const listing = !feature && items.length > 0;
+  const featureCover = feature?.children[0];
+  const featureText = feature?.children[1];
 
   return {
-    headerToRule: box(rule).top - box(header).bottom,
-    ruleToContent: box(below).top - box(rule).bottom,
-    ruleToFirstCover: listing
-      ? box(cover(items[0])!).top - box(rule).bottom
-      : null,
+    headerToRule: header && rule ? box(rule).top - box(header).bottom : null,
+    ruleToContent: rule && below ? box(below).top - box(rule).bottom : null,
+    ruleToFirstCover:
+      listing && rule ? box(cover(items[0])!).top - box(rule).bottom : null,
     hairlineToCover: listing
       ? items
           .slice(1)
@@ -182,16 +178,19 @@ function measureInPage(): Measurement {
             (item) => box(cover(item)!).top - (box(item).top + borderTop(item)),
           )
       : [],
-    gridRuleToCover: grid
-      ? box(cover(grid)!).top - (box(grid).top + borderTop(grid))
-      : null,
     barHeight: box(document.querySelector("body > header")!).height,
-    heroTitlePx: size(heroTitle),
-    cardTitlePx: size(grid?.querySelector("h2")),
-    heroColumnGap:
-      heroColumns && heroColumns.length === 2
-        ? box(heroColumns[1]).top - box(heroColumns[0]).bottom
-        : null,
+    featureTitlePx: size(feature?.querySelector("h3")),
+    cardTitlePx: size(main.querySelector("li article h3")),
+    featureCover: featureCover
+      ? {
+          top: box(featureCover).top,
+          bottom: box(featureCover).bottom,
+          right: box(featureCover).right,
+        }
+      : null,
+    featureText: featureText
+      ? { top: box(featureText).top, left: box(featureText).left }
+      : null,
   };
 }
 
@@ -202,7 +201,7 @@ const same = (a: number, b: number) => Math.abs(a - b) < 0.5;
 /** Every way the measurements break the rhythm. Empty means it holds. */
 function rhythmProblems(m: Record<Page, Measurement>): string[] {
   const problems: string[] = [];
-  const { home, listing, archive } = m;
+  const { listing, archive } = m;
   const inset = listing.ruleToFirstCover;
 
   if (inset === null || listing.hairlineToCover.length < 2) {
@@ -217,32 +216,22 @@ function rhythmProblems(m: Record<Page, Measurement>): string[] {
       );
     }
   }
-  if (home.gridRuleToCover === null) {
-    problems.push("home rendered no ruled card grid");
-  } else if (!same(home.gridRuleToCover, inset)) {
+  if (archive.ruleToContent === null || !(archive.ruleToContent > 0))
+    problems.push("archive's content sits flush against the rule");
+  if (
+    listing.headerToRule === null ||
+    archive.headerToRule === null ||
+    !same(listing.headerToRule, archive.headerToRule)
+  ) {
     problems.push(
-      `home's card grid opens ${home.gridRuleToCover}px above its first cover, listings ${inset}px`,
+      `header to rule: listing ${listing.headerToRule}px, archive ${archive.headerToRule}px`,
     );
-  }
-  if (!(home.ruleToContent > 0))
-    problems.push("home's content sits flush against the rule");
-  if (!same(home.ruleToContent, archive.ruleToContent)) {
-    problems.push(
-      `below the rule: home ${home.ruleToContent}px, archive ${archive.ruleToContent}px`,
-    );
-  }
-  for (const page of ["listing", "archive"] as const) {
-    if (!same(m[page].headerToRule, home.headerToRule)) {
-      problems.push(
-        `header to rule: home ${home.headerToRule}px, ${page} ${m[page].headerToRule}px`,
-      );
-    }
   }
   return problems;
 }
 
-// The bar and the hero, each broken once in a way only a browser shows.
-// [→ `home-hero`, `guard-limits`]
+// The bar and the feature card, each broken once in a way only a browser
+// shows. [→ `strands`, `guard-limits`]
 function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
   const problems: string[] = [];
   const { home } = m;
@@ -253,19 +242,20 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
       );
     }
   }
-  if (home.heroTitlePx === null || home.cardTitlePx === null) {
-    return [...problems, "home rendered no hero title or card title"];
+  const { featureTitlePx, cardTitlePx, featureCover, featureText } = home;
+  if (!featureTitlePx || !cardTitlePx || !featureCover || !featureText) {
+    return [...problems, "home rendered no feature card or card title"];
   }
-  if (home.heroColumnGap === null) {
-    return [...problems, "home's hero rendered without its two columns"];
+  // Below md the cover sits above the text; from md they share a row.
+  if (width < 768 && !(featureText.top >= featureCover.bottom)) {
+    problems.push("the feature card's text overlaps its cover on mobile");
   }
-  // Below md the columns stack. From lg the hero title takes its own step.
-  if (width < 768 && !(home.heroColumnGap > 0)) {
-    problems.push(`the hero's columns sit ${home.heroColumnGap}px apart`);
+  if (width >= 768 && !(featureText.left >= featureCover.right)) {
+    problems.push("the feature card's cover and text do not share a row");
   }
-  if (width >= 1024 && !(home.heroTitlePx > home.cardTitlePx)) {
+  if (width >= 1024 && !(featureTitlePx > cardTitlePx)) {
     problems.push(
-      `hero title ${home.heroTitlePx}px, card title ${home.cardTitlePx}px`,
+      `feature title ${featureTitlePx}px, card title ${cardTitlePx}px`,
     );
   }
   return problems;
@@ -324,7 +314,7 @@ async function measure(
 }
 
 describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
-  it("holds on home, a tag listing and the archive", async () => {
+  it("holds on a tag listing and the archive", async () => {
     expect(rhythmProblems(await measure(width))).toEqual([]);
   }, 30_000);
 
@@ -347,12 +337,6 @@ describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
           '[class*="border-t-[3px]"] + div { padding-top: 1.5rem !important }',
       },
     ],
-    [
-      "home's card grid losing its inset",
-      {
-        home: '[class*="md:grid-cols-2"][class*="border-y"] { padding-top: 0 !important }',
-      },
-    ],
   ])(
     "reports %s",
     async (_name, breakage) => {
@@ -362,8 +346,8 @@ describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
   );
 });
 
-describe.each(WIDTHS)("the bar and the hero at %ipx", (width) => {
-  it("keep the bar's height, the hero's gap and its title step", async () => {
+describe.each(WIDTHS)("the bar and the feature card at %ipx", (width) => {
+  it("keep the bar's height, the feature's layout and its title step", async () => {
     expect(chromeProblems(await measure(width), width)).toEqual([]);
   }, 30_000);
 });
@@ -378,17 +362,20 @@ it.each([
   ],
   [
     375,
-    "the hero's columns without a grid below md",
+    "the feature's text pulled over its cover",
     {
-      home: "main section:first-of-type div:has(> div > h2) { display: block !important }",
+      home: "section > article > div:nth-child(2) { margin-top: -120px !important }",
     },
   ],
   [
     1280,
-    "the hero title at the card title's size",
-    {
-      home: "main section:first-of-type h2 { font-size: 1.875rem !important }",
-    },
+    "the feature card stacked at desktop",
+    { home: "section > article { display: block !important }" },
+  ],
+  [
+    1280,
+    "the feature title at the card title's size",
+    { home: "section > article h3 { font-size: 1.875rem !important }" },
   ],
 ] as const)(
   "at %ipx, reports %s",

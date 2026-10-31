@@ -145,17 +145,20 @@ const asset = {
 const ph = () => loc(link("placeholder-image", "Asset"));
 
 const entries = [
-  entry("cat-main-quest", "category", {
-    name: loc("Main Quest"),
-    slug: loc("main-quest"),
-    description: loc("The headline projects and the long builds."),
-    thumbnail: ph(),
+  entry("cat-blogging", "category", {
+    name: loc("Blogging"),
+    slug: loc("blogging"),
+    description: loc("Building and maintaining the site."),
   }),
-  entry("cat-side-quests", "category", {
-    name: loc("Side Quests"),
-    slug: loc("side-quests"),
-    description: loc("Smaller experiments and detours."),
-    thumbnail: ph(),
+  entry("cat-films", "category", {
+    name: loc("Films"),
+    slug: loc("films"),
+    description: loc("Movies and the people who make them."),
+  }),
+  entry("cat-games-and-gadgets", "category", {
+    name: loc("Games & Gadgets"),
+    slug: loc("games-and-gadgets"),
+    description: loc("Video games and the hardware they run on."),
   }),
   entry("author-alex", "author", {
     name: loc("Alex Placeholder"),
@@ -340,7 +343,7 @@ const entries = [
       ),
     ),
     authors: loc([link("author-alex")]),
-    category: loc(link("cat-main-quest")),
+    category: loc(link("cat-blogging")),
     tags: loc([link("tag-craft")]),
   }),
   entry("post-second", "post", {
@@ -393,7 +396,7 @@ const entries = [
     // exercises the co-authored byline: the overlapping portrait stack and
     // the ampersand name line. Sam is lead here, listed first.
     authors: loc([link("author-sam"), link("author-alex")]),
-    category: loc(link("cat-side-quests")),
+    category: loc(link("cat-films")),
     tags: loc([link("tag-craft"), link("tag-detours")]),
   }),
   entry("post-third", "post", {
@@ -407,7 +410,7 @@ const entries = [
     // threshold. Do not "fix" it by adding headings.
     content: loc(doc(paragraph(text(LOREM)), paragraph(text(LOREM2)))),
     authors: loc([link("author-alex")]),
-    category: loc(link("cat-main-quest")),
+    category: loc(link("cat-blogging")),
     tags: loc([link("tag-detours")]),
   }),
   entry("page-about", "page", {

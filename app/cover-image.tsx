@@ -7,7 +7,7 @@ import type { CoverImage as CoverImageAsset } from "@/lib/types";
 
 // The asset's alt text, or "" when it is only a filename. It matters on the
 // post hero, which renders no link. [→ `announced-links`]
-function coverAltText(image: CoverImageAsset): string {
+export function coverAltText(image: CoverImageAsset): string {
   if (isPlaceholderTitle(image.title, image.fileName)) {
     console.warn(
       `[cover-image] ${image.url} has no usable title (${JSON.stringify(

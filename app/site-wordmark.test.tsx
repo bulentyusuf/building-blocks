@@ -49,20 +49,12 @@ describe("the header's logo", () => {
     "/archive",
     "/categories/design",
     "/posts/some-post",
-    "/page/2",
   ])("links to home from %s", (route) => {
     // The regression this guards: an earlier fix removed the href on every
     // route to solve a problem that only existed on one. The wordmark is the
     // site's only "go home" control and it is present on all of these.
     const html = render(route);
     expect(html).toContain('href="/"');
-  });
-
-  it("carries .site-wordmark on both branches", () => {
-    // globals.css targets this class to hide the logo on home. Losing it on
-    // either branch fails silently at runtime.
-    expect(render("/")).toContain("site-wordmark");
-    expect(render("/about")).toContain("site-wordmark");
   });
 
   it("leaves its focus ring to the sitewide rule on both branches", () => {

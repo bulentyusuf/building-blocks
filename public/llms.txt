@@ -6,7 +6,7 @@
 
 - [Home](https://beuseful.net/): Latest posts from Be Useful., a blog about "Content & Code, with a little help from Generative AI."
 - [About](https://beuseful.net/about): Site purpose, author background, editorial approach, use of AI tools, and notes on the blog's AI-generated mascots.
-- [Categories](https://beuseful.net/categories): Posts grouped into two categories, Main Quest (building and maintaining the site) and Side Quests (movies, video games, popular culture).
+- [Categories](https://beuseful.net/categories): Posts grouped into three strands, Blogging (building and maintaining the site), Films, and Games & Gadgets.
 - [Tags](https://beuseful.net/tags): An index of cross-cutting topics. Each tag also has its own page at /tags/<slug> listing every post that carries it. Categories say where a post lives; tags say what it is about, up to three per post. A tag appears once two posts share it, so single-use tags are neither listed nor given a page.
 - [Authors](https://beuseful.net/authors): Author directory. Bulent Yusuf is a real person and writes most posts. Genial Yeti and Trippy Robot are AI-generated mascot personas, and the site is explicit that they are not real people.
 - [Archive](https://beuseful.net/archive): Every post on the site in a single page, grouped by year, with dates and categories.
@@ -30,7 +30,7 @@ This file does not enumerate every post on purpose, so it cannot fall out of dat
 - [Archive](https://beuseful.net/archive): Every post in a single page, grouped by year with titles, dates and categories. The most direct complete list.
 - [Sitemap](https://beuseful.net/sitemap.xml): Every indexable URL on the site.
 - [RSS feed](https://beuseful.net/feed.xml): Recent posts in a structured feed.
-- [Categories](https://beuseful.net/categories): Every post reachable by subject, under Main Quest or Side Quests.
+- [Categories](https://beuseful.net/categories): Every post reachable by subject, under Blogging, Films, or Games & Gadgets.
 - [Tags](https://beuseful.net/tags): Every post reachable by topic. The index groups posts under each tag; /tags/<slug> is the full list for one tag.
 - [Authors](https://beuseful.net/authors): Every post reachable by author, including the two mascot personas.
 

@@ -43,7 +43,6 @@ type Route = (props: {
 }) => Promise<unknown>;
 
 const routes: [string, () => Promise<{ default: Route }>, string][] = [
-  ["/page", () => import("@/app/page/[page]/page"), "/page/2"],
   [
     "/categories/x/page",
     () => import("@/app/categories/[slug]/page/[page]/page"),

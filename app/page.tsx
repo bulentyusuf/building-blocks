@@ -2,25 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 
-import Date from "./date";
-import CoverImage from "./cover-image";
-import Avatar from "./avatar";
-import WidePage from "./wide-page";
-import MoreStories, { TagRow } from "./more-stories";
-import Pagination from "./pagination";
+import StrandChips from "./strand-chips";
+import PostCard, { FeatureCard } from "./post-card";
 
 import { getAllPosts } from "@/lib/api";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
-import { postAuthors } from "@/lib/authors";
 import {
-  POSTS_PER_PAGE,
   SITE_URL,
   SITE_TITLE,
-  SITE_DESCRIPTION,
   HOME_TITLE,
   HOME_DESCRIPTION,
 } from "@/lib/constants";
-import { totalPagesFor } from "@/lib/paginate";
 
 export const metadata: Metadata = {
   // Absolute, or the layout's "%s | Be Useful." template repeats the name.
@@ -28,146 +20,64 @@ export const metadata: Metadata = {
   description: HOME_DESCRIPTION,
   alternates: { canonical: SITE_URL },
 };
-import type { Author, CoverImage as CoverImageType, Tag } from "@/lib/types";
-import { widont } from "@/lib/typography";
 
-function HeroPost({
-  title,
-  coverImage,
-  date,
-  updatedDate,
-  excerpt,
-  authors,
-  slug,
-  tags,
-}: {
-  title: string;
-  coverImage?: CoverImageType | null;
-  date: string;
-  updatedDate?: string;
-  excerpt: string;
-  authors: Author[];
-  slug: string;
-  /** Already filtered to tags with a live page. */
-  tags: Tag[];
-}) {
-  const showUpdated = updatedDate && updatedDate !== date;
+// The latest post plus this many, then the archive. No pager. [→ `strands`]
+const HOME_CARDS = 10;
 
-  // Updated date on desktop only. Kept inside Avatar's meta.
-  // [→ `card-meta`, `home-hero`]
-  const dateline = (
-    <>
-      <Date dateString={date} />
-      {showUpdated && (
-        <span className="hidden sm:inline">
-          {" · "}Updated <Date dateString={updatedDate!} />
-        </span>
-      )}
-    </>
-  );
-
-  // The bottom margin matches a listing item's padding. The cover is the LCP.
-  // [→ `priority-opaque`]
+// Mono labels, with the slashes kept out of the name.
+function Label({ children }: { children: string }) {
   return (
-    <section className="mx-auto max-w-5xl mb-10 md:mb-12">
-      {coverImage && (
-        // An ordinary block under the rule. [→ `band-retirement`]
-        <div className="mb-8 md:mb-10">
-          <CoverImage
-            slug={slug}
-            image={coverImage}
-            wide
-            priority
-            sizes="(max-width: 768px) calc(100vw - 2.5rem), 1024px"
-          />
-        </div>
-      )}
-      {/* [→ `home-hero`] */}
-      <div className="grid gap-y-6 md:grid-cols-2 md:gap-x-16 lg:gap-x-32 md:gap-y-0">
-        <div>
-          {/* An h2 under the masthead h1, capped at 40px so long titles hold
-              two lines. [→ `page-axis`, `home-hero`] */}
-          <h2 className="mb-4 text-2xl md:text-3xl lg:text-[2.5rem] leading-tight text-pretty">
-            <Link
-              href={`/posts/${slug}`}
-              className="hover:text-brand-crimson transition-colors duration-200"
-            >
-              {widont(title)}
-            </Link>
-          </h2>
-          <div className="flex items-center">
-            <Avatar authors={authors} meta={dateline} />
-          </div>
-        </div>
-        <div>
-          <p className="text-lg leading-relaxed text-pretty">
-            {widont(excerpt)}
-          </p>
-          <TagRow tags={tags} className="mt-3" />
-        </div>
-      </div>
-    </section>
+    <h2 className="mb-5 font-mono text-sm font-medium tracking-normal">
+      <span aria-hidden="true">{"// "}</span>
+      {children}
+    </h2>
   );
 }
 
 export default async function Page() {
   const { isEnabled } = await draftMode();
   const allPosts = await getAllPosts(isEnabled);
-
-  const heroPost = allPosts[0];
-  const morePosts = allPosts.slice(1, POSTS_PER_PAGE);
-  const totalPages = totalPagesFor(allPosts.length);
-
-  // Computed once so the hero and the cards agree on which tags have a page.
+  const [latest, ...rest] = allPosts;
+  const previous = rest.slice(0, HOME_CARDS);
   const visibleTags = visibleTagSlugs(allPosts);
 
   return (
-    // No crumbs on the root. The masthead is home's h1 and carries
-    // .site-masthead, which the bar's wordmark rule keys on, so the class moves
-    // with the heading. No weight class, no contentOwnsLeading.
-    // [→ `page-axis`, `wide-page-shell`]
-    <WidePage
-      heading={
-        // Crimson full stop only when the title really ends in one.
-        <h1 className="site-masthead text-5xl leading-[0.95] tracking-[-0.025em] md:text-6xl lg:text-7xl">
-          {SITE_TITLE.endsWith(".") ? (
-            <>
-              {SITE_TITLE.slice(0, -1)}
-              <span className="text-brand-crimson">.</span>
-            </>
-          ) : (
-            SITE_TITLE
-          )}
-        </h1>
-      }
-      // Every class is load-bearing. [→ `split-masthead`]
-      standfirst={
-        <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-          {widont(SITE_DESCRIPTION)}
-        </p>
-      }
-    >
-      {heroPost && (
-        <HeroPost
-          title={heroPost.title}
-          coverImage={heroPost.coverImage}
-          date={heroPost.date}
-          updatedDate={heroPost.updatedDate}
-          authors={postAuthors(heroPost)}
-          slug={heroPost.slug}
-          excerpt={heroPost.excerpt}
-          tags={postTags(heroPost).filter((t) => visibleTags.has(t.slug))}
-        />
+    <div className="mx-auto max-w-5xl px-5 pt-6 pb-16">
+      {/* The logo names the site visually; this names the page. */}
+      <h1 className="sr-only">{SITE_TITLE}</h1>
+      <StrandChips current="all" />
+
+      {latest && (
+        <section className="mt-12">
+          <Label>latest post</Label>
+          <FeatureCard
+            post={latest}
+            tags={postTags(latest).filter((t) => visibleTags.has(t.slug))}
+          />
+        </section>
       )}
-      {/* No heading, so card titles step up to h2. [→ `page-axis`] */}
-      <MoreStories
-        morePosts={morePosts}
-        variant="grid"
-        ruled
-        heading={null}
-        visibleTags={visibleTags}
-      />
-      <Pagination currentPage={1} totalPages={totalPages} basePath="/" />
-    </WidePage>
+
+      {previous.length > 0 && (
+        <section className="mt-16">
+          <Label>previous posts</Label>
+          <ul className="grid gap-8 md:grid-cols-2 md:gap-9">
+            {previous.map((post) => (
+              <li key={post.slug} className="flex">
+                <PostCard post={post} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div className="mt-12 flex justify-center">
+        <Link
+          href="/archive"
+          className="inline-flex min-h-11 items-center rounded-xl border-[3px] border-brand-dark bg-card px-5 font-mono text-[0.9375rem] font-medium shadow-[4px_4px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[4px] hover:shadow-none motion-reduce:transition-none"
+        >
+          Every post, in the archive
+        </Link>
+      </div>
+    </div>
   );
 }

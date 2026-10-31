@@ -15,12 +15,6 @@
 
 @plugin '@tailwindcss/typography';
 
-/* Home names itself in the masthead a few lines below, so the logo hides
-   there rather than name the site twice. [→ `wide-page-shell`] */
-body:has(.site-masthead) .site-wordmark {
-  display: none;
-}
-
 @theme {
   /* Four roles, generated from these tokens by Tailwind; --default-font-family
      is what Preflight puts on <body>. Nothing names a family directly.
@@ -37,6 +31,21 @@ body:has(.site-masthead) .site-wordmark {
   --color-brand-dark: #241b1d;
   --color-brand-bg: #faf5f1;
   --color-brand-muted: #6b5a52;
+
+  /* Strand fills carry cream text in both schemes, so they do not invert. The
+     shadows lift in dark mode, below. [→ `strands`] */
+  --color-strand-blogging: #9e2238;
+  --color-strand-films: #1f7a72;
+  --color-strand-games: #1e3a8a;
+  --color-on-strand: #faf5f1;
+  --color-strand-blogging-shadow: #9e2238;
+  --color-strand-films-shadow: #1f7a72;
+  --color-strand-games-shadow: #1e3a8a;
+  /* The raised surface of a card or chip. */
+  --color-card: #ffffff;
+  /* The quiet edge on things you read rather than press: images inside a
+     card, and later the reading panel. Ink edges mean pressable. [→ `strands`] */
+  --color-edge-quiet: #c9b5a7;
 
   /* Divider hairline, inverting with the scheme. [→ `border-roles`] Frame
      borders and the control edge are separate roles and do not use this. */
@@ -148,6 +157,14 @@ body:has(.site-masthead) .site-wordmark {
        the page. The 12% this replaced read 1.38:1 and 1.34:1, both under the
        floor. See the light value for why an edge is needed on navy at all. */
     --color-cover-keyline: rgb(242 234 228 / 0.18);
+
+    /* A step up from the page, and shadows lifted so they read on it. */
+    --color-card: #241c1a;
+    /* Provisional until the neutral dark palette lands. */
+    --color-edge-quiet: #54453f;
+    --color-strand-blogging-shadow: #ec8494;
+    --color-strand-films-shadow: #3ba99c;
+    --color-strand-games-shadow: #6f8fe0;
   }
 }
 
