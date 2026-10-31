@@ -29,7 +29,7 @@ export default async function Page() {
   const allPosts = await getAllPosts(isEnabled);
 
   return (
-    <div className="mx-auto max-w-5xl px-5 pt-6 pb-16">
+    <div className="mx-auto max-w-frame px-4 md:px-10 pt-6 pb-16">
       {/* The logo names the site visually; this names the page. */}
       <h1 className="sr-only">{SITE_TITLE}</h1>
       <StrandChips current="all" />

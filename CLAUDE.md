@@ -49,7 +49,7 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
 
 - **A route is wide or narrow, decided by the header measure, and everything
   follows.** No route sits half in each. [→ `page-axis`]
-- **Wide**: header at `max-w-5xl`, `<Breadcrumb>` unwrapped, `h1` at `text-4xl
+- **Wide**: header at `max-w-frame`, `<Breadcrumb>` unwrapped, `h1` at `text-4xl
 leading-tight md:text-5xl lg:text-6xl`, closed by a 3px `border-brand-dark`
   rule. Ten routes: `/posts/[slug]`, `/de/posts/[slug]`, `/archive`,
   `/categories`, `/tags`, `/authors`, and the four tag and author listings.
@@ -191,7 +191,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   [→ `image-loader`]
 - **Every image renders opaque in the server HTML**, `next/image` owns the blur
   placeholder, and the `"use client"` in `lib/contentful-image.tsx` is
-  load-bearing. A `sizes` value stops growing at 984px. [→ `priority-opaque`]
+  load-bearing. A `sizes` value stops growing at 1,120px. [→ `priority-opaque`]
 - **Every rich-text hyperlink goes through `lib/rich-text-link.tsx`** as the
   `INLINES.HYPERLINK` override. Do not copy the renderer to a second location.
   [→ `rich-text-links`]

@@ -149,7 +149,7 @@ export default async function PostView({
           "data-pagefind-meta": "url[data-url]",
           "data-url": path,
         })}
-        className="mx-auto max-w-5xl"
+        className="mx-auto max-w-frame"
       >
         {post.coverImage && (
           <div className="relative mb-10">
@@ -157,7 +157,7 @@ export default async function PostView({
               image={post.coverImage}
               wide
               priority
-              sizes="(max-width: 768px) calc(100vw - 2.5rem), 1024px"
+              sizes="(max-width: 768px) calc(100vw - 2rem), 1120px"
             />
             {promptId && (
               // Over the image so the page keeps its position. Near-black and a
