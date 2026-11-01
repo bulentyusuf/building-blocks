@@ -57,6 +57,17 @@ describe("the header's logo", () => {
     expect(html).toContain('href="/"');
   });
 
+  it("links home from the footer too", () => {
+    const html = renderToStaticMarkup(
+      <SiteWordmark title="Be Useful." size="footer" />,
+    );
+    expect(html).toContain("Be Useful.");
+    pathname.current = "/about";
+    expect(
+      renderToStaticMarkup(<SiteWordmark title="Be Useful." size="footer" />),
+    ).toContain('href="/"');
+  });
+
   it("leaves its focus ring to the sitewide rule on both branches", () => {
     // It sits on the page now, where the crimson ring in globals.css clears
     // 3:1. A local override would be the old aubergine exception surviving.
