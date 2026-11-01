@@ -115,37 +115,29 @@ describe("Pagefind's own bundle", () => {
     expect(html).toContain("/pagefind/pagefind-component-ui.js");
   });
 
-  it("keeps both tags in the shape React will actually hoist", () => {
-    // React refuses to hoist either element under conditions that are easy to
-    // reintroduce by accident, and it refuses QUIETLY — the tag renders in
-    // place, the fetch goes back to being late, and every other assertion here
-    // still passes because the href is present either way. So both are checked
-    // by the evidence that React treated them as resources rather than by the
-    // props that ask it to.
-    //
-    // A stylesheet needs `precedence`, and React signs a hoisted one with
-    // data-precedence. Drop the prop and that attribute goes with it.
+  it("keeps the stylesheet in the shape React will actually hoist", () => {
+    // React refuses to hoist a stylesheet without `precedence`, and refuses
+    // QUIETLY. The tag renders in place and the fetch goes late. It signs a
+    // hoisted one with data-precedence, so that is the evidence checked.
     expect(html).toMatch(
       /<link rel="stylesheet" href="\/pagefind\/pagefind-component-ui\.css" data-precedence="[^"]+"\s*\/?>/,
     );
+  });
 
-    // A script needs `async` and, critically, NEITHER onLoad nor onError —
-    // isHostHoistableType rejects a script carrying one. That is why the
-    // failure listener lives on a separate element created in the effect, and
-    // this is what fails if a later edit moves it back onto this tag.
-    const script = html.match(
-      /<script[^>]*pagefind-component-ui\.js[^>]*><\/script>/,
+  it("fetches the module early but never runs it before hydration", () => {
+    // A script tag in the server HTML runs whenever it arrives. If that is
+    // before hydration, Pagefind fills <pagefind-input> with its own <input>,
+    // React meets markup it did not render, and throws #418. A modulepreload
+    // fetches without running; the effect runs it. [→ `pagefind-ui`]
+    expect(html).toMatch(
+      /<link rel="modulepreload" href="\/pagefind\/pagefind-component-ui\.js"\s*\/?>/,
     );
+    const runsEarly = /<script[^>]*pagefind-component-ui\.js/;
+    expect(html).not.toMatch(runsEarly);
+    // Known-bad control: the tag that shipped the race. [→ `known-bad-controls`]
     expect(
-      script,
-      "the module script is missing from the server HTML",
-    ).not.toBeNull();
-    expect(script![0]).toContain('type="module"');
-    expect(script![0]).toContain("async");
-
-    // Both are emitted ahead of the page's own markup, which is what hoisting
-    // means here: the browser starts fetching during the initial parse rather
-    // than after hydration.
+      '<script type="module" src="/pagefind/pagefind-component-ui.js" async=""></script>',
+    ).toMatch(runsEarly);
     expect(html.indexOf("pagefind-component-ui.js")).toBeLessThan(
       html.indexOf("pagefind-scope"),
     );
