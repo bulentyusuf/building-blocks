@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import ListingPage from "../../listing-page";
-import PageCounter from "../../page-counter";
+import CollectionPage from "../../collection-page";
 import { type Crumb } from "../../breadcrumb";
 import { getAllPosts, getTagBySlug } from "@/lib/api";
 import { postsWithTag, visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
-import { pageItems, totalPagesFor } from "@/lib/paginate";
 import { widont } from "@/lib/typography";
 
 // A tag reaching its second post gets a page without a deploy.
@@ -71,29 +69,18 @@ export default async function TagPage({
     { label: tag.name },
   ];
 
-  const totalPages = totalPagesFor(posts.length);
-
   return (
-    // No emptyMessage: the threshold gate guarantees posts.
-    <ListingPage
+    // No empty case: the threshold gate guarantees posts.
+    <CollectionPage
       crumbs={crumbs}
-      posts={pageItems(posts, 1)}
-      currentPage={1}
-      totalPages={totalPages}
+      posts={posts}
       visibleTags={otherTags}
-      basePath={`/tags/${slug}`}
+      closing={`That’s all ${posts.length} posts tagged ${tag.name}.`}
       heading={
-        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-          {widont(tag.name)}{" "}
-          <PageCounter currentPage={1} totalPages={totalPages} />
+        <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
+          <span aria-hidden="true">#</span>
+          {widont(tag.name)}
         </h1>
-      }
-      standfirst={
-        tag.description && (
-          <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-            {widont(tag.description)}
-          </p>
-        )
       }
     />
   );

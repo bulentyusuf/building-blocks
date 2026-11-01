@@ -35,8 +35,8 @@ Four tests, in the order they usually bite:
   replaced something heavier.
 - **Count the duplication before abstracting it.** An abstraction needing a
   branch per caller is just the callers, spelled worse.
-- **A helper earns its place by removing a decision, not lines.**
-  `lib/paginate.ts` earns it. A wrapper that renames a one-liner does not.
+- **A helper earns its place by removing a decision, not lines.** A wrapper
+  that renames a one-liner does not.
 - **Do not build machinery for a problem that has not happened.** No rate
   limiting, no `X-Frame-Options`, no nonce pipeline — each a live decision
   rather than an oversight. [→ `reviewed-items`]
@@ -51,28 +51,21 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
   follows.** No route sits half in each. [→ `page-axis`]
 - **Wide**: header at `max-w-frame`, `<Breadcrumb>` unwrapped, `h1` at `text-4xl
 leading-tight md:text-5xl lg:text-6xl`, closed by a 3px `border-brand-dark`
-  rule. Eight routes: `/archive`, `/categories`, `/tags`, `/authors`, and the
-  four tag and author listings.
+  rule. Four routes: `/archive`, `/categories`, `/tags`, `/authors`.
 - **Home and the strand pages are neither**: a feature card and cards under
   the header's chips, no rule, no pager, no trail. [→ `strands`]
 - **Posts are neither either**: header group, an ink-framed cover, then the
   sidebar beside a quiet reading panel, no rule and no trail. [→ `post-page`]
+- **Tag and author pages are strand pages with a trail and a visible `h1`**,
+  through `app/collection-page.tsx`: every post, no pager. [→ `listing-shell`]
 - **Narrow**: header wrapped in `mx-auto max-w-2xl`, `h1` at `mb-6 text-4xl
 md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
   `/privacy`, `/search`.
-- **Every wide route renders through `app/wide-page.tsx`**, the middle four via
-  `app/listing-page.tsx`. Do not assemble a bespoke wide header or `Container`,
-  and do not give a narrow route the wide header. [→ `wide-page-shell`]
-- **`contentOwnsLeading` suppresses the gap below the 3px rule, never the
-  header's margin above it.** Only `app/listing-page.tsx` sets it.
-  [→ `band-retirement`]
-- **A listing under a header drops its opening rule and nothing else**
-  (`openRule={false}`). Item padding stays `py-10 md:py-12`, the page adds no
-  gap of its own, the closing rule stays, and `app/pagination.tsx` has no top
-  border. [→ `wide-page-shell`, `border-roles`]
-- **Breadcrumbs wrap in `mx-auto max-w-2xl` on narrow pages**, sit before
-  `<section>` on `/search`, and never carry page position — that rides inline
-  in the heading instead. [→ `breadcrumbs`]
+- **Every wide route renders through `app/wide-page.tsx`.** Do not assemble a
+  bespoke wide header or `Container`, and do not give a narrow route the wide
+  header. [→ `wide-page-shell`, `band-retirement`]
+- **Breadcrumbs wrap in `mx-auto max-w-2xl` on narrow pages** and sit before
+  `<section>` on `/search`. [→ `breadcrumbs`]
 
 ## Headers and home
 
@@ -81,24 +74,11 @@ md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
 md:text-right text-brand-muted`. Both `md:` prefixes are mandatory or mobile
   aligns to a boundary nothing else draws. [→ `split-masthead`]
 - **Standfirst copy budget is roughly 37 characters a line, 74 for two.**
-- **Author routes are the one exception**, via `splitHeader={false}`.
 - **Home's `h1` is an `sr-only` `SITE_TITLE`.** Its mono labels are the `h2`s,
   post titles `h3`. A card has one link, its stretched title. [→ `strands`]
-- **`MoreStories` sets card titles to `h3` when it renders a section heading and
-  `h2` when it does not.** Adding or removing a heading re-levels every card on
-  the route. [→ `page-axis`]
-- **The page counter is inline text inside each route's own `<h1>`**
-  (`app/page-counter.tsx`), rendered by all four paginated routes, returning
-  `null` on page 1. [→ `page-counter`]
-- **A paginated listing's header is identical on page 1 and later pages** apart
-  from that counter. [→ `listing-shell`]
-- **A listing card's meta line is the date alone, above the excerpt.** Home's
-  cards carry a strand pill and byline instead. [→ `card-meta`]
 - **Covers take one of two frames, chosen by `wide`**: 3:2 mobile and 16:9 from
   `md` with it, fixed 3:2 without. The mobile 3:2 is the single item most often
   re-raised as a finding. [→ `cover-frames`]
-- **`POSTS_PER_PAGE` is five** and changing it is a design pass over the
-  taxonomy listings, not a constant bump. [→ `posts-per-page`]
 - **The post `h1` renders `post.title` directly, never through `widont()`.**
   The glued last two words can outgrow that column, so `text-balance` on the
   heading covers the widow instead. [→ `heading-widont`]

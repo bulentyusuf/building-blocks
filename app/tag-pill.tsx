@@ -28,3 +28,25 @@ export default function TagPill({
     </Link>
   );
 }
+
+// Named by aria-label, not a visible label. Cards sit it below the excerpt, so
+// the pills are not the first thing a reader tabs to. [→ `tag-pills`]
+export function TagRow({
+  tags,
+  className,
+}: {
+  tags: Tag[];
+  className: string;
+}) {
+  if (tags.length === 0) return null;
+
+  return (
+    <ul aria-label="Tags" className={`flex flex-wrap gap-2 ${className}`}>
+      {tags.map((tag) => (
+        <li key={tag.slug}>
+          <TagPill tag={tag} size="compact" />
+        </li>
+      ))}
+    </ul>
+  );
+}

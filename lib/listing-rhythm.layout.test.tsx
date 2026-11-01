@@ -10,13 +10,12 @@ import type { ReactElement } from "react";
 // The spacing rhythm around WidePage's 3px rule, measured in a real browser
 // rather than matched in source. [→ `guard-limits`, `band-retirement`]
 //
-// The rhythm: on a listing, whatever sits above an item (the 3px rule or a
-// hairline) is the same distance from the cover below it, /archive opens a
-// non-zero gap below its rule, and the header sits the same distance above the
-// rule on both. Home has no rule since the strand redesign, so only its bar and
-// feature card are measured. [→ `strands`] Every check is a relation between
-// two measured distances, never a pixel value, so a refactor that keeps the
-// pixels keeps this green.
+// The rhythm: /archive opens a non-zero gap below its rule, and the header sits
+// the same distance above the rule on /archive and the /tags glossary. Home has
+// no rule since the strand redesign, so only its bar and feature card are
+// measured. [→ `strands`] Every check is a relation between two measured
+// distances, never a pixel value, so a refactor that keeps the pixels keeps
+// this green.
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/font/google", () => ({
@@ -48,8 +47,7 @@ const tag = {
   description: "How things get made.",
 };
 
-// Five posts: home shows a hero plus a row of cards, and the tag listing gets
-// enough items to measure a hairline-to-cover gap more than once.
+// Five posts: home shows a feature card plus a row of cards.
 const posts = [1, 2, 3, 4, 5].map((n) => ({
   slug: `post-${n}`,
   title: `Post number ${n}`,
@@ -71,7 +69,7 @@ vi.mock("@/lib/api", () => ({
   getGermanPostSlugs: async () => [],
   // No writers, so the footer renders no mascots.
   getAllAuthors: async () => [],
-  getTagBySlug: async () => tag,
+  getAllTags: async () => [tag],
   getBrowseIntro: async (slug: string) => ({
     title: slug,
     slug,
@@ -132,10 +130,6 @@ type Measurement = {
   headerToRule: number | null;
   /** From the rule to the top of the first element below it. */
   ruleToContent: number | null;
-  /** Listing only: from the rule to the first item's cover. */
-  ruleToFirstCover: number | null;
-  /** Listing only: from each later item's hairline to its cover. */
-  hairlineToCover: number[];
   /** The bar above every page. */
   barHeight: number;
   /** Home only: the feature card's title and the first card title's sizes. */
@@ -150,34 +144,20 @@ type Measurement = {
 function measureInPage(): Measurement {
   const main = document.querySelector("main")!;
   const box = (el: Element) => el.getBoundingClientRect();
-  const borderTop = (el: Element) =>
-    parseFloat(getComputedStyle(el).borderTopWidth);
-  const cover = (el: Element) => el.querySelector('[class*="aspect-"]');
   const size = (el: Element | null | undefined) =>
     el ? parseFloat(getComputedStyle(el).fontSize) : null;
 
   const header = main.querySelector("header");
   const rule = main.querySelector('[class*="border-t-[3px]"]');
   const below = rule?.nextElementSibling?.firstElementChild;
-  const items = [...main.querySelectorAll("section article")];
   // Home's feature card is the first article; its children are cover, text.
   const feature = main.querySelector("section > article");
-  const listing = !feature && items.length > 0;
   const featureCover = feature?.children[0];
   const featureText = feature?.children[1];
 
   return {
     headerToRule: header && rule ? box(rule).top - box(header).bottom : null,
     ruleToContent: rule && below ? box(below).top - box(rule).bottom : null,
-    ruleToFirstCover:
-      listing && rule ? box(cover(items[0])!).top - box(rule).bottom : null,
-    hairlineToCover: listing
-      ? items
-          .slice(1)
-          .map(
-            (item) => box(cover(item)!).top - (box(item).top + borderTop(item)),
-          )
-      : [],
     barHeight: box(document.querySelector("body > header")!).height,
     featureTitlePx: size(feature?.querySelector("h3")),
     cardTitlePx: size(main.querySelector("li article h3")),
@@ -194,37 +174,23 @@ function measureInPage(): Measurement {
   };
 }
 
-type Page = "home" | "listing" | "archive";
+type Page = "home" | "glossary" | "archive";
 
 const same = (a: number, b: number) => Math.abs(a - b) < 0.5;
 
 /** Every way the measurements break the rhythm. Empty means it holds. */
 function rhythmProblems(m: Record<Page, Measurement>): string[] {
   const problems: string[] = [];
-  const { listing, archive } = m;
-  const inset = listing.ruleToFirstCover;
-
-  if (inset === null || listing.hairlineToCover.length < 2) {
-    return ["the listing rendered too few items with covers to measure"];
-  }
-  if (!(inset > 0))
-    problems.push(`the first listing item sits ${inset}px under the rule`);
-  for (const gap of listing.hairlineToCover) {
-    if (!same(gap, inset)) {
-      problems.push(
-        `listing: rule to first cover ${inset}px, hairline to cover ${gap}px`,
-      );
-    }
-  }
+  const { glossary, archive } = m;
   if (archive.ruleToContent === null || !(archive.ruleToContent > 0))
     problems.push("archive's content sits flush against the rule");
   if (
-    listing.headerToRule === null ||
+    glossary.headerToRule === null ||
     archive.headerToRule === null ||
-    !same(listing.headerToRule, archive.headerToRule)
+    !same(glossary.headerToRule, archive.headerToRule)
   ) {
     problems.push(
-      `header to rule: listing ${listing.headerToRule}px, archive ${archive.headerToRule}px`,
+      `header to rule: glossary ${glossary.headerToRule}px, archive ${archive.headerToRule}px`,
     );
   }
   return problems;
@@ -235,7 +201,7 @@ function rhythmProblems(m: Record<Page, Measurement>): string[] {
 function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
   const problems: string[] = [];
   const { home } = m;
-  for (const page of ["listing", "archive"] as const) {
+  for (const page of ["glossary", "archive"] as const) {
     if (!same(m[page].barHeight, home.barHeight)) {
       problems.push(
         `bar height: home ${home.barHeight}px, ${page} ${m[page].barHeight}px`,
@@ -273,11 +239,7 @@ beforeAll(async () => {
   const RootLayout = (await import("@/app/layout")).default;
   const pages: Record<Page, ReactElement> = {
     home: await (await import("@/app/page")).default(),
-    listing: await (
-      await import("@/app/tags/[slug]/page")
-    ).default({
-      params: Promise.resolve({ slug: "design" }),
-    }),
+    glossary: await (await import("@/app/tags/page")).default(),
     archive: await (await import("@/app/archive/page")).default(),
   };
   documents = {} as Record<Page, string>;
@@ -314,7 +276,7 @@ async function measure(
 }
 
 describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
-  it("holds on a tag listing and the archive", async () => {
+  it("holds on the glossary and the archive", async () => {
     expect(rhythmProblems(await measure(width))).toEqual([]);
   }, 30_000);
 
@@ -324,18 +286,15 @@ describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
   // would pass the check above and fail these. [→ `known-bad-controls`]
   it.each([
     [
-      "the first listing item's top padding zeroed",
+      "the archive's content pulled flush against the rule",
       {
-        listing:
-          "main section article:first-child { padding-top: 0 !important }",
+        archive:
+          '[class*="border-t-[3px]"] + div { padding-top: 0 !important }',
       },
     ],
     [
-      "a gap added below the rule on a listing",
-      {
-        listing:
-          '[class*="border-t-[3px]"] + div { padding-top: 1.5rem !important }',
-      },
+      "the glossary's header margin dropped",
+      { glossary: "main header { margin-bottom: 0 !important }" },
     ],
   ])(
     "reports %s",

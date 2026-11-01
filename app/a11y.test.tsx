@@ -9,7 +9,7 @@ import { getByRole, queryByRole } from "@testing-library/dom";
 import fs from "node:fs";
 import path from "node:path";
 import { SITE_TITLE } from "@/lib/constants";
-import type { CardPost, Content } from "@/lib/types";
+import type { Content } from "@/lib/types";
 import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
 
@@ -80,11 +80,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 const RootLayout = (await import("@/app/layout")).default;
-const MoreStories = (await import("@/app/more-stories")).default;
 const Breadcrumb = (await import("@/app/breadcrumb")).default;
-const ListingPage = (await import("@/app/listing-page")).default;
-const WidePage = (await import("@/app/wide-page")).default;
-const PageCounter = (await import("@/app/page-counter")).default;
 const CoverImage = (await import("@/app/cover-image")).default;
 const Avatar = (await import("@/app/avatar")).default;
 const { RichText } = await import("@/lib/rich-text");
@@ -182,19 +178,6 @@ function duplicateLinksInMain(): string[] {
   return [...seen.entries()]
     .filter(([, n]) => n > 1)
     .map(([key, n]) => `${key} (×${n})`);
-}
-
-function post(slug: string, tags: string[] = []): CardPost {
-  return {
-    slug,
-    title: `Post ${slug}`,
-    date: "2026-01-01",
-    excerpt: `Excerpt for post ${slug}.`,
-    coverImage: { url: "https://images.ctfassets.net/x/y/cover.jpg" },
-    tagsCollection: {
-      items: tags.map((t) => ({ name: t, slug: t.toLowerCase() })),
-    },
-  };
 }
 
 // A body exercising every embedded type: a figure with a caption, a code
@@ -331,162 +314,6 @@ const bodyContent = {
     },
   },
 } as unknown as Content;
-
-describe("listing page through the shared shell", () => {
-  // One of the ten browsing routes, rendered through the real ListingPage so
-  // the header, its breadcrumb and the listing under it are the shipped ones.
-  // Page 2 of 5, so axe sees pagination with a previous link, not just next.
-  // Structural only: this suite disables axe's color-contrast rule because
-  // jsdom computes no boxes, and the numeric guards live in
-  // lib/palette-contrast.test.ts.
-  const render = () =>
-    renderPage(
-      <RootLayout>
-        <ListingPage
-          crumbs={[
-            { label: "Home", href: "/" },
-            { label: "Categories", href: "/categories" },
-            { label: "Design" },
-          ]}
-          posts={[post("a", ["Design"]), post("b", ["Retro"])]}
-          currentPage={2}
-          totalPages={5}
-          visibleTags={new Set(["design", "retro"])}
-          basePath="/categories/design"
-          heading={<h1>Design</h1>}
-          standfirst={<p>Posts filed under Design.</p>}
-        />
-      </RootLayout>,
-    );
-
-  it("has no axe violations", async () => {
-    expectNoViolations(await render());
-  });
-
-  it("announces each post exactly once", async () => {
-    await render();
-    expect(duplicateLinksInMain()).toEqual([]);
-  });
-
-  it("keeps heading levels contiguous across the move into the header", async () => {
-    // The h1 left <Container> for a sibling above it. Document
-    // order is what heading-order reads, so this is the check that the move
-    // did not reorder anything relative to the listing's h2s.
-    await render();
-    const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
-      (h) => Number(h.tagName[1]),
-    );
-    expect(levels[0]).toBe(1);
-    for (let i = 1; i < levels.length; i++) {
-      expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1);
-    }
-  });
-
-  it("has exactly one h1, and it is the header's", async () => {
-    await render();
-    const h1s = [...document.querySelectorAll("h1")];
-    expect(h1s).toHaveLength(1);
-    expect(h1s[0].textContent).toBe("Design");
-  });
-
-  it("renders exactly one breadcrumb trail", async () => {
-    // The shell owns the trail. Two would mean a route kept its own after
-    // the shell grew one — a duplicate landmark and a duplicate tab sequence.
-    await render();
-    expect(
-      document.querySelectorAll('nav[aria-label="Breadcrumb"]'),
-    ).toHaveLength(1);
-  });
-});
-
-describe("the index listing, which carries a trail again", () => {
-  // A REVERSAL, recorded as one. /page/[page] shipped without a trail on the
-  // argument that both its crumbs would point at /. They would not: the last
-  // crumb is never a link here, so the trail is Home / Latest Posts with one
-  // link, and the objection was to a shape this site does not build. The page
-  // number still stays out of it, because position is a state rather than a
-  // level — it rides inline in the h1 instead, via PageCounter (see the
-  // fixture below and docs/decisions.md, "The page counter moves inline, into
-  // the heading").
-  //
-  // `crumbs` stays optional on WidePage regardless. Home is the only route
-  // using that now, which is correct, since home is the root.
-  const render = (currentPage: number) =>
-    renderPage(
-      <RootLayout>
-        <ListingPage
-          crumbs={[{ label: "Home", href: "/" }, { label: "Latest Posts" }]}
-          posts={[post("a", ["Design"]), post("b", ["Retro"])]}
-          currentPage={currentPage}
-          totalPages={3}
-          visibleTags={new Set(["design", "retro"])}
-          basePath="/"
-          // Wired to PageCounter exactly as app/page/[page]/page.tsx wires
-          // it, rather than a bare <h1>, so this fixture exercises the real
-          // shape rather than the shape it had before the counter moved.
-          heading={
-            <h1>
-              Latest Posts{" "}
-              <PageCounter currentPage={currentPage} totalPages={3} />
-            </h1>
-          }
-          // Fixture prose. The real standfirst comes from the browseIntro
-          // entry keyed "latest-posts" and nothing here asserts its wording,
-          // so this stands in for "the header has a standfirst" and no more.
-          standfirst={
-            <p className="text-lg leading-relaxed text-pretty">
-              A standfirst, of the length one usually runs to.
-            </p>
-          }
-        />
-      </RootLayout>,
-    );
-
-  it("emits a breadcrumb landmark, with only the first crumb linked", async () => {
-    await render(2);
-    const trails = document.querySelectorAll('nav[aria-label="Breadcrumb"]');
-    expect(trails).toHaveLength(1);
-    const links = trails[0].querySelectorAll("a");
-    expect(links).toHaveLength(1);
-    expect(links[0].getAttribute("href")).toBe("/");
-  });
-
-  it("keeps heading levels contiguous", async () => {
-    await render(2);
-    const levels = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].map(
-      (h) => Number(h.tagName[1]),
-    );
-    expect(levels[0]).toBe(1);
-    for (let i = 1; i < levels.length; i++) {
-      expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1);
-    }
-  });
-
-  it("has exactly one h1, and it is the header's", async () => {
-    await render(2);
-    const h1s = [...document.querySelectorAll("h1")];
-    expect(h1s).toHaveLength(1);
-    expect(h1s[0].textContent?.replace(/\s+/g, " ").trim()).toBe(
-      "Latest Posts 2 of 3",
-    );
-  });
-
-  // The counter's own guard: not aria-hidden. Hiding it would make the
-  // visible text and the accessible name disagree, and the orientation it
-  // gives a sighted reader is worth exactly as much to a screen reader.
-  it("carries the position in the h1's accessible name on page 2", async () => {
-    await render(2);
-    const h1 = document.querySelector("h1")!;
-    expect(h1.textContent?.replace(/\s+/g, " ").trim()).toContain("2 of 3");
-    expect(h1.querySelector("[aria-hidden]")).toBeNull();
-  });
-
-  it("carries no position on page 1, where PageCounter renders null", async () => {
-    await render(1);
-    const h1 = document.querySelector("h1")!;
-    expect(h1.textContent?.replace(/\s+/g, " ").trim()).toBe("Latest Posts");
-  });
-});
 
 describe("home", () => {
   // The real route, so the chips, the feature card and the cards are the

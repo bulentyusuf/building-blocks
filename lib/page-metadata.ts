@@ -74,7 +74,7 @@ export async function browsePageMetadata({
   };
 }
 
-/** A category, tag or author listing, paginated or not. */
+/** A category, tag or author page. */
 export function listingMetadata({
   title,
   description,

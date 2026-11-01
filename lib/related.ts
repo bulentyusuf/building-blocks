@@ -2,7 +2,7 @@ import type { ListPost, Post } from "./types";
 import { postTags } from "./tags";
 import { postAuthors } from "./authors";
 
-/** Matches MoreStories' two-column grid; raising it is a layout change. */
+/** Matches the two-card "more like this" row; raising it is a layout change. */
 export const RELATED_COUNT = 2;
 
 type Candidate = Pick<
