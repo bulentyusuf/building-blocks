@@ -354,7 +354,8 @@ move those.
 <!-- key: tag-pills -->
 
 `app/tag-pill.tsx`, wrapped by `TagRow` in `app/more-stories.tsx` and used
-directly on the post page. A pill is a tag as metadata attached to something
+directly on the post page. Written `#name`, the `#` hidden from screen readers,
+with a 2px ink edge and an 8px radius; ink is what marks it pressable. A pill is a tag as metadata attached to something
 else; a link is a tag as destination, as on the `/tags` glossary and the search
 empty state. There is no third treatment. Small-caps text links were proposed
 and rejected; if revisited, it is one change reaching both call sites.
@@ -394,9 +395,6 @@ Defined in `app/globals.css`.
   grey borders. `app/pagination.tsx` has no top border because the listing
   above closes itself; a listing under a wide header drops its opening rule,
   never the closing one.
-- **`--color-control-edge`**: `app/tag-pill.tsx` only. It carries a WCAG 1.4.11
-  contrast floor as two literal values, and `lib/tag-pill.test.ts` recomputes
-  both and asserts the tokens stay distinct.
 - **`--color-cover-keyline`**: `app/cover-image.tsx` only, the part of a
   cover's edge its shadow cannot supply on the page.
 - **`--color-table-edge`, `-rule` and `-header`**: tables in `lib/rich-text.tsx`,
@@ -985,7 +983,7 @@ pass. What they cannot do:
   because CI has no Contentful credentials. A green run says the template agrees
   with the code, never that the space does.
 - **`app/a11y.test.tsx`** cannot check `color-contrast` or `target-size`, since
-  jsdom has no layout; `lib/tag-pill.test.ts` recomputes contrast instead. It
+  jsdom has no layout; `lib/palette-contrast.test.ts` recomputes contrast. It
   covers five page shapes, not routes, so **a new route goes in
   `app/routes.a11y.test.tsx`** or it has no axe run. Both assert the page
   rendered something. The first also checks `<main>` for duplicate

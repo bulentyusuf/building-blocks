@@ -11,9 +11,9 @@ import {
 
 // Two gaps this closes.
 //
-// One: nothing tested the accent's contrast. tag-pill.test.ts covers the control
-// edge only, and app/a11y.test.tsx disables axe's color-contrast rule because
-// jsdom computes no boxes and would report a false pass. So the crimson token
+// One: nothing tested the accent's contrast, and app/a11y.test.tsx disables
+// axe's color-contrast rule because jsdom computes no boxes and would report a
+// false pass. So the crimson token
 // could drift back below AAA with every check green.
 //
 // Two: three literal hexes exist because they CANNOT read the tokens — Satori has

@@ -16,7 +16,7 @@ import type { ReactElement } from "react";
 // The same two rules are disabled here as there, and for the same reason:
 // both need a layout engine that jsdom does not provide, so axe would report
 // a false pass. Contrast is asserted numerically in
-// lib/palette-contrast.test.ts and lib/tag-pill.test.ts instead.
+// lib/palette-contrast.test.ts instead.
 
 vi.mock("server-only", () => ({}));
 vi.mock("next/font/google", () => ({
