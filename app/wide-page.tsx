@@ -13,44 +13,31 @@ export default function WidePage({
   crumbs,
   heading,
   standfirst,
-  splitHeader = true,
   children,
-  contentOwnsLeading = false,
 }: {
-  /** Omitted on home, which has nothing above it. */
-  crumbs?: Crumb[];
-  /** The h1, plus anything inline with it (the author portrait). */
+  crumbs: Crumb[];
   heading: ReactNode;
   /** Must carry the full standfirst class set, both `md:` prefixes included.
    * [→ `split-masthead`] */
   standfirst?: ReactNode;
-  /** False only on the author routes. [→ `page-axis`] */
-  splitHeader?: boolean;
-  /** Suppresses the gap below the rule, never the margin above it. Only ruled
-   * listings set it. [→ `band-retirement`] */
-  contentOwnsLeading?: boolean;
   children: ReactNode;
 }) {
   return (
     <Container>
-      {crumbs && crumbs.length > 0 && <Breadcrumb items={crumbs} />}
+      <Breadcrumb items={crumbs} />
       <header className="mb-8">
-        {splitHeader && standfirst ? (
+        {standfirst ? (
           <div className="flex flex-col gap-3 md:flex-row md:items-baseline-last md:justify-between md:gap-10">
             {heading}
-            {/* A wrapper, because a fragment would give justify-between three
-                children. [→ `page-counter`] */}
+            {/* A wrapper, so justify-between always sees two children. */}
             <div>{standfirst}</div>
           </div>
         ) : (
-          <>
-            {heading}
-            {standfirst}
-          </>
+          heading
         )}
       </header>
       <div className="border-t-[3px] border-brand-dark" />
-      <div className={contentOwnsLeading ? undefined : "pt-6"}>{children}</div>
+      <div className="pt-6">{children}</div>
     </Container>
   );
 }

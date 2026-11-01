@@ -173,6 +173,17 @@ module.exports = {
         destination: "/categories/:slug",
         permanent: true,
       },
+      // Tag and author pages list every post too. [→ `listing-shell`]
+      {
+        source: "/tags/:slug/page/:n",
+        destination: "/tags/:slug",
+        permanent: true,
+      },
+      {
+        source: "/authors/:slug/page/:n",
+        destination: "/authors/:slug",
+        permanent: true,
+      },
       // Main Quest became Blogging. Side Quests split into Films and Games &
       // Gadgets, so it lands on the category index.
       {

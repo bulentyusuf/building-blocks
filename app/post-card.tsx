@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ContentfulImage from "@/lib/contentful-image";
 import DateComponent from "./date";
-import { TagRow } from "./more-stories";
+import { TagRow } from "./tag-pill";
 import { coverAltText } from "./cover-image";
 import { getBlurDataURL } from "@/lib/blur";
 import { STRANDS, strandFor, type Strand } from "@/lib/strands";

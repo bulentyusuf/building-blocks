@@ -1,34 +1,26 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import fs from "node:fs";
-import path from "node:path";
 
 // The split masthead (docs/decisions.md, "The split masthead"). WidePage lays a
 // heading and a standfirst out on one row from md up and stacks them below
 // it — jsdom applies no stylesheet, so this asserts the branch WidePage takes
 // and the classes it emits, not that flexbox actually resolves them.
 
-// ListingPage renders CoverImage (via MoreStories), which imports lib/blur —
-// "server-only" — so both need stubbing here even though the tests below
-// never render an image. Same pattern as app/more-stories.test.tsx.
-vi.mock("server-only", () => ({}));
-vi.mock("@/lib/blur", () => ({ getBlurDataURL: async () => undefined }));
-
 const { default: WidePage } = await import("./wide-page");
-const { default: ListingPage } = await import("./listing-page");
 
 afterEach(cleanup);
 
+const crumbs = [{ label: "Home", href: "/" }, { label: "A page" }];
 const heading = <h1>A heading</h1>;
 const standfirst = <p>A standfirst.</p>;
 
 describe("WidePage's split masthead", () => {
   it("puts heading and standfirst in one row that stacks below md", () => {
     render(
-      <WidePage heading={heading} standfirst={standfirst}>
+      <WidePage crumbs={crumbs} heading={heading} standfirst={standfirst}>
         <p>Body</p>
       </WidePage>,
     );
@@ -40,8 +32,8 @@ describe("WidePage's split masthead", () => {
   });
 
   it("keeps the row at two children whatever the caller passes", () => {
-    // The regression this exists for. app/listing-page.tsx pairs a standfirst
-    // with the pagination caption, and passed them as a FRAGMENT. A fragment
+    // The regression this exists for. A listing once paired a standfirst with
+    // the pagination caption, and passed them as a FRAGMENT. A fragment
     // generates no box, so its children became direct children of this row —
     // three, not two. justify-between then spread all three across the full
     // measure, stranding the standfirst mid-row and pushing "Page 2 of 3" to
@@ -56,6 +48,7 @@ describe("WidePage's split masthead", () => {
     // stops wrapping it, this goes to 3 and fails.
     render(
       <WidePage
+        crumbs={crumbs}
         heading={heading}
         standfirst={
           <>
@@ -73,83 +66,12 @@ describe("WidePage's split masthead", () => {
 
   it("falls back to the plain stack when there is no standfirst", () => {
     render(
-      <WidePage heading={heading}>
+      <WidePage crumbs={crumbs} heading={heading}>
         <p>Body</p>
       </WidePage>,
     );
     // No row wrapper: the heading's parent is <header> itself, exactly as a
     // narrow route's header renders.
     expect(screen.getByText("A heading").parentElement?.tagName).toBe("HEADER");
-  });
-
-  it("falls back to the plain stack when splitHeader is false", () => {
-    render(
-      <WidePage heading={heading} standfirst={standfirst} splitHeader={false}>
-        <p>Body</p>
-      </WidePage>,
-    );
-    expect(screen.getByText("A heading").parentElement?.tagName).toBe("HEADER");
-  });
-});
-
-describe("only the author routes opt out of the split masthead", () => {
-  const ROOT = path.join(__dirname, "..");
-  const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
-
-  // Anchored on the JSX prop form at line start, so a comment explaining the
-  // exception (every route that keeps it carries one) cannot be mistaken for
-  // the prop itself.
-  const PASSED = /^\s*splitHeader=/m;
-
-  it.each([
-    "app/authors/[slug]/page.tsx",
-    "app/authors/[slug]/page/[page]/page.tsx",
-  ])("%s sets it", (file) => {
-    expect(read(file)).toMatch(PASSED);
-  });
-
-  it.each([
-    "app/archive/page.tsx",
-    "app/categories/page.tsx",
-    "app/tags/page.tsx",
-    "app/tags/[slug]/page.tsx",
-    "app/tags/[slug]/page/[page]/page.tsx",
-    "app/authors/page.tsx",
-  ])("%s does not", (file) => {
-    expect(read(file)).not.toMatch(PASSED);
-  });
-});
-
-describe("every paginated route renders PageCounter inside its heading", () => {
-  // docs/decisions.md, "The page counter moves inline, into the heading".
-  // The single call site inside ListingPage/PageContext is gone; each of
-  // these four routes now renders <PageCounter> itself, inline in its own
-  // <h1>. Without this guard a route can silently lose its counter — a typo,
-  // a refactor that drops the fragment — and nothing would notice, which is
-  // exactly the failure mode the one call site used to make impossible.
-  //
-  // Anchored on the JSX at line start, never on the bare word "PageCounter":
-  // app/page-counter.tsx's own name and app/listing-page.tsx's docstring both
-  // say it in prose, and a guard that fails on its own documentation is a
-  // guard nobody keeps.
-  const ROOT = path.join(__dirname, "..");
-  const read = (p: string) => fs.readFileSync(path.join(ROOT, p), "utf8");
-  const RENDERED = /^\s*<PageCounter\b/m;
-
-  it.each([
-    "app/tags/[slug]/page.tsx",
-    "app/tags/[slug]/page/[page]/page.tsx",
-    "app/authors/[slug]/page.tsx",
-    "app/authors/[slug]/page/[page]/page.tsx",
-  ])("%s", (file) => {
-    expect(read(file)).toMatch(RENDERED);
-  });
-
-  it("app/listing-page.tsx no longer imports it", () => {
-    // Anchored on the import line, not the bare word — the docstring that
-    // explains the removal names the component too.
-    expect(read("app/listing-page.tsx")).not.toMatch(
-      /^import PageCounter from/m,
-    );
   });
 });

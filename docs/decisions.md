@@ -26,10 +26,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `split-masthead` — The masthead splits into heading and standfirst, right-anchored
 - `strands` — Home is strand chips, a feature card and ten cards, and a card presses as one link
 - `cover-frames` — Covers take one of two frames, chosen by `wide`
-- `posts-per-page` — `POSTS_PER_PAGE` is five, and changing it is a design pass
-- `card-meta` — A card's meta line is the date alone, above the excerpt
-- `listing-shell` — The tag and author listings share one shell
-- `page-counter` — The page counter moves inline, into the heading
+- `listing-shell` — Tag and author pages are strand pages with a trail
 - `heading-widont` — The post `h1` renders its title directly, without `widont()`
 
 **Type and styling**
@@ -220,12 +217,9 @@ Every wide route's header closes with a 3px `border-brand-dark` rule in
 
 **The band's inset stays two numbers, one each side of the rule**: the header's
 bottom margin above it and a gap below it. Folding both above the rule leaves
-the first content flush against a 3px line on the section fronts. `contentOwnsLeading` suppresses the gap below the rule, never
-the margin above, and only `app/listing-page.tsx` sets it, because a ruled
-listing's items supply their own leading. The ruled listings hide a fold,
-since their items carry their own padding, so a green suite is no evidence
-either way. The layout test in lib (listing-rhythm.layout.test.tsx) measures
-both halves separately, in a browser [→ `guard-limits`].
+the first content flush against a 3px line on the section fronts. The layout
+test in lib (listing-rhythm.layout.test.tsx) measures both halves, in a browser
+[→ `guard-limits`].
 
 ### The masthead splits into heading and standfirst, right-anchored
 
@@ -246,10 +240,7 @@ apply to the mobile stack, landing the text short of the page edge by an amount
 that grows with the viewport (15px at 390, 392px at 767), so one screen width
 cannot judge it.
 
-The cap sets a copy budget of about 37 characters a line, 74 for two. The
-`Design` tag description sits at exactly 74. The author routes are the one
-exception, via `splitHeader={false}`, because their `h1` already shares a row
-with a 112px portrait.
+The cap sets a copy budget of about 37 characters a line, 74 for two.
 
 ### Home is strand chips, a feature card and ten cards
 
@@ -313,25 +304,6 @@ every post cover off its 1920x1080 source, which a bare 3:2 frame crops by
 mobile 3:2 is the item most often re-raised as a finding. A 4:3 card crop and a
 uniform uncropped 16:9 were both proposed and rejected.
 
-### `POSTS_PER_PAGE` is five, and changing it is a design pass
-
-<!-- key: posts-per-page -->
-
-`lib/constants.ts`. Every taxonomy listing reads it, so a new number needs
-them looked at together. Eight and ten were both tried and reverted. Home no
-longer reads it; it shows ten cards and links to the archive [→ `strands`].
-
-### A card's meta line is the date alone, above the excerpt
-
-<!-- key: card-meta -->
-
-`PostPreview` in `app/more-stories.tsx`, both variants; home's cards carry a
-strand pill instead [→ `strands`]. No category here: with two categories the
-label carried about one bit, and it would need a
-per-route exception on the category pages, where it names the page the reader
-is on. Adding `category` to `CardPost` was rejected, which leaves
-`CARD_GRAPHQL_FIELDS` unchanged.
-
 ### The post `h1` renders its title directly, without `widont()`
 
 <!-- key: heading-widont -->
@@ -353,7 +325,7 @@ move those.
 
 <!-- key: tag-pills -->
 
-`app/tag-pill.tsx`, wrapped by `TagRow` in `app/more-stories.tsx` and used
+`app/tag-pill.tsx`, wrapped by `TagRow` in the same file on cards, and used
 directly on the post page. Written `#name`, the `#` hidden from screen readers,
 with a 2px ink edge and an 8px radius; ink is what marks it pressable. A pill is a tag as metadata attached to something
 else; a link is a tag as destination, as on the `/tags` glossary and the search
@@ -392,9 +364,7 @@ Defined in `app/globals.css`.
 
 - **`--color-hairline`**: every divider and the edges a listing draws. It
   inverts on its own, so never add a `dark:` variant, and never go back to bare
-  grey borders. `app/pagination.tsx` has no top border because the listing
-  above closes itself; a listing under a wide header drops its opening rule,
-  never the closing one.
+  grey borders.
 - **`--color-cover-keyline`**: `app/cover-image.tsx` only, the part of a
   cover's edge its shadow cannot supply on the page.
 - **`--color-table-edge`, `-rule` and `-header`**: tables in `lib/rich-text.tsx`,
@@ -505,10 +475,7 @@ tell a working name from a broken one.
   stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
 - Home, the strand pages and posts carry no trail; the header's chips say
   where you are, a post's strand pressed.
-- Page position rides inline in the `h1` (`app/page-counter.tsx`), never in the
-  trail.
-- Accepted: on `/tags/[slug]/page/[page]` `aria-current="page"` sits on the
-  section crumb, and archive rows carry two tab stops each.
+- Accepted: archive rows carry two tab stops each.
 
 ### Sidenotes carry several load-bearing constraints
 
@@ -538,7 +505,7 @@ numbering.
 <!-- key: tag-pages -->
 
 `/tags` lists every tag with its posts; each links to `/tags/[slug]`, a landing
-page with a trail, an `h1`, the description as standfirst and a paginated list.
+page in the strand layout with a trail and an `h1` [→ `listing-shell`].
 Do not go back to `#slug` anchors: an anchor drops the reader past everything
 that says where they are. Old anchors still land.
 
@@ -546,9 +513,8 @@ that says where they are. Old anchors still land.
   GraphQL cannot filter on an `Array<Link>` field. Callers pass the posts in.
 - Every surface reads the threshold through `visibleTagSlugs`: the glossary,
   the sitemap and `/tags/[slug]`, which 404s below it. A test asserts they agree.
-- `MoreStories` takes `visibleTags?: Set<string>`, computed from all posts, so a
-  pill never links to a 404. Author pages get it from
-  `getVisibleTagSlugs`; a tag page passes the set minus its own slug.
+- Cards take `visibleTags`, computed from all posts, so a pill never links to
+  a 404. A tag page passes the set minus its own slug.
 - The glossary is `data-pagefind-ignore`. Pills sit below the body, never in the
   xl-only sidebar, and not on "more like this".
 
@@ -694,18 +660,14 @@ choice is a 6xl heading in a 42rem measure. The measure is the
 header's, not the prose's: `/search` is narrow. The route lists are in
 `CLAUDE.md`.
 
-Home, the strand pages and posts sit outside this axis: none has a rule
-[→ `strands`, `post-page`].
-
-**`MoreStories` sets card titles to `h3` when it renders a section heading and
-`h2` when it does not**, so adding or removing a heading re-levels every card.
+Home, the strand pages, posts and the tag and author pages sit outside this
+axis: none has a rule [→ `strands`, `post-page`, `listing-shell`].
 
 ### How the wide-page header is built
 
 <!-- key: wide-page-shell -->
 
-`app/wide-page.tsx` is the one shell every wide route renders through, the
-middle four via `app/listing-page.tsx`. It owns the header, the container and
+`app/wide-page.tsx` is the one shell every wide route renders through. It owns the header, the container and
 the vertical rhythm. It exists because ten pages were two implementations of one
 design and every tuning pass landed on one half only. Do not assemble a header
 and `Container` in a route, and do not give a narrow route the wide header.
@@ -713,45 +675,22 @@ and `Container` in a route, and do not give a narrow route the wide header.
 - The logo is a button that scrolls to top on home and a link elsewhere
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. It no longer hides on home, which has no masthead.
-- `crumbs` is optional, used only by `/`. The shell's column is always
-  `max-w-frame`, matching `Container`, which is what puts every trail and
-  heading at the same coordinates. There is no logo mark to replace the wordmark with.
-- A listing under a header drops its opening rule and nothing else. Items keep
-  `py-10 md:py-12`, the page adds no gap of its own, the closing rule stays.
+- The shell's column is always `max-w-frame`, matching `Container`, which is
+  what puts every trail and heading at the same coordinates.
 
-### The tag and author listings share one shell
+### Tag and author pages are strand pages with a trail
 
 <!-- key: listing-shell -->
 
-Tag and author pages, paginated or not, render through `app/listing-page.tsx`.
-`lib/paginate.ts` owns the page arithmetic and `parsePageParam`, which both
-the component and `generateMetadata` read, so they cannot disagree about a
-segment like `/page/abc`. `listingMetadata` in
+`app/collection-page.tsx`: the trail, a visible `h1` (no chip names the page),
+then `PostStream`, the same feature card and cards as home and the strand
+pages, and a closing line with the count. Every post on one page: the
+collections run to a few dozen at most, and the archive covers deep browsing.
+No description; a tag's stays its meta description. The old `/page/n` URLs
+redirect to page one in `next.config.js`. `listingMetadata` in
 `lib/page-metadata.ts` owns the social blocks.
 
-Two things stay out of the shell on purpose: the `<header>` content, where the
-routes genuinely differ, and the fetch strategy. The header is identical on page
-1 and later pages, apart from the inline page counter. `emptyMessage` is omitted
-where empty is unreachable. `lib/paginate.ts` stays free of `next/navigation`,
-so 404s and redirects are visible in the route.
-
-### The page counter moves inline, into the heading
-
-<!-- key: page-counter -->
-
-`PageCounter` (`app/page-counter.tsx`) renders inline inside each route's own
-`<h1>` and returns `null` on page 1, so every paginated route renders it
-unconditionally. As a separate block in the standfirst slot it became the row's
-last baseline and shoved the standfirst upward; inline, it cannot split the
-header or land under a portrait. Four call sites instead of one is deliberate,
-the same trade as the header being children. Author routes take it too.
-
-Copy budget: the counter and its leading space take 42px. Desktop leaves 566px
-of heading text beside it; a phone leaves 298px, where a long tag name pushes
-the counter onto its own line. Accepted: hiding it on mobile was rejected,
-because that is where a reader is least likely to reach the pager.
-"Information Architecture" (691px) overflowed before the counter existed; do
-not shrink or hide the counter to compensate.
+The header content and the fetch stay in the route, where the two differ.
 
 ### Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
 
@@ -771,7 +710,7 @@ default emits `data.uri` as-is. Sidenotes once used the default and let a
 
 `jsonLdHtml` in `lib/json-ld.ts` escapes `<`, `>` and `&` before the string
 reaches `dangerouslySetInnerHTML`, so a value cannot close the script early.
-Three call sites: `app/breadcrumb.tsx`, `app/listing-page.tsx` and
+Three call sites: `app/breadcrumb.tsx`, `app/collection-page.tsx` and
 `app/posts/[slug]/post-view.tsx`. It is defence in depth over trusted CMS data, and
 the one raw-HTML sink that escapes rather than relying on trust.
 `lib/json-ld.test.ts` covers the escaping. No guard scans for an inline block;
@@ -999,7 +938,6 @@ pass. What they cannot do:
   install paths) and fails rather than skips without one, because a skipped
   guard reads as a passing one. It cannot see real fonts, since `next/font` is
   mocked, or real image files, since covers are sized by their aspect box.
-- **`lib/paginate.test.ts`** covers the arithmetic, not what pages render.
 - **`lib/docs-consistency.test.ts`** checks names, not claims: scripts, paths,
   the line budget, and that every `[→ key]` in `CLAUDE.md` and in source
   comments resolves. A sentence can name a real file and describe it wrongly.

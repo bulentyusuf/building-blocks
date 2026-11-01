@@ -88,9 +88,6 @@ export const SITE_REPO_URL =
   process.env.NEXT_PUBLIC_SITE_REPO_URL?.trim() ||
   "https://github.com/bulentyusuf/building-blocks";
 
-// [→ `posts-per-page`]
-export const POSTS_PER_PAGE = 5;
-
 // Must match the GraphQL limit and the Contentful validation, or a fourth
 // author silently vanishes. [→ `authors-array`]
 export const MAX_AUTHORS = 3;

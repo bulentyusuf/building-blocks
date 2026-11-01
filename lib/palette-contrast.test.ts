@@ -105,7 +105,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
   // markup cannot quietly drop coverage. The width cap, right alignment and
   // their md: prefixes are inside the pattern on purpose: a standfirst that
   // loses one stops matching instead of passing. [→ `split-masthead`]
-  // Author routes keep the old signature and are checked separately below.
   const STANDFIRST_M5 =
     /className="[^"]*md:max-w-\[20rem\] text-lg leading-relaxed md:text-right text-brand-muted[^"]*"/g;
 
@@ -121,8 +120,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     "app/tags/page.tsx",
     "app/authors/page.tsx",
     "app/archive/page.tsx",
-    "app/tags/[slug]/page.tsx",
-    "app/tags/[slug]/page/[page]/page.tsx",
   ])("%s", (file) => {
     const found = [...(read(file).match(STANDFIRST_M5) ?? [])];
     // Exact, not non-zero. See the note on EXPECTED_STANDFIRSTS: a zero-floor
@@ -130,35 +127,6 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     expect(found.length).toBe(EXPECTED_STANDFIRSTS[file] ?? 1);
     for (const className of found)
       expect(className).toMatch(/text-brand-muted/);
-  });
-
-  // The old, pre-M5 signature — no right alignment, and max-w-3xl rather than
-  // the 20rem cap — because these two routes render through splitHeader={false}
-  // and were never brought into the row. "Render as they do today" is the
-  // acceptance criterion for these two files specifically.
-  const STANDFIRST_AUTHOR =
-    /className="[^"]*max-w-3xl text-lg leading-relaxed text-brand-muted[^"]*"/g;
-
-  it.each([
-    // The author routes carry theirs as a RichText wrapper rather than a <p>,
-    // and it matches the same signature.
-    "app/authors/[slug]/page.tsx",
-    "app/authors/[slug]/page/[page]/page.tsx",
-  ])("%s (pre-M5 signature)", (file) => {
-    const found = [...(read(file).match(STANDFIRST_AUTHOR) ?? [])];
-    expect(found.length).toBe(1);
-    for (const className of found) {
-      expect(className).toMatch(/text-brand-muted/);
-      expect(className).not.toMatch(/text-right/);
-    }
-  });
-
-  it("the position counter takes it too", () => {
-    // It named no colour in the band, separating by size alone because the
-    // band forbade tinted text. Inline in the heading now (docs/decisions.md,
-    // "The page counter moves inline, into the heading"), it is still a meta
-    // string rather than heading text, and text-brand-muted is what says so.
-    expect(read("app/page-counter.tsx")).toMatch(/text-brand-muted/);
   });
 });
 

@@ -75,6 +75,9 @@ const post = (slug: string, title: string, date: string) => ({
   updatedDate: undefined,
   category: { name: "Blogging", slug: "blogging" },
   tagsCollection: { items: tags },
+  authorsCollection: {
+    items: [{ name: "Bulent Yusuf", slug: "bulent-yusuf" }],
+  },
 });
 
 // Three posts per tag so both clear MIN_POSTS_PER_TAG and the glossary, the
@@ -118,6 +121,7 @@ vi.mock("@/lib/api", () => ({
   getAllTags: async () => tags,
   getAllAuthors: async () => [author],
   getAuthorBySlug: async () => author,
+  getTagBySlug: async (slug: string) => tags.find((t) => t.slug === slug),
   getAllCategories: async () => [
     {
       name: "Blogging",
@@ -234,7 +238,12 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
     withSlug(() => import("@/app/categories/[slug]/page"), "blogging"),
   ],
   ["/tags", () => import("@/app/tags/page")],
+  ["/tags/[slug]", withSlug(() => import("@/app/tags/[slug]/page"), "design")],
   ["/authors", () => import("@/app/authors/page")],
+  [
+    "/authors/[slug]",
+    withSlug(() => import("@/app/authors/[slug]/page"), "bulent-yusuf"),
+  ],
   ["/about", () => import("@/app/about/page")],
   ["/privacy", () => import("@/app/privacy/page")],
   ["/search", () => import("@/app/search/page")],
@@ -417,5 +426,29 @@ describe("/posts/[slug] shape", () => {
     expect(
       document.querySelector('nav[aria-label="Breadcrumb"]'),
     ).not.toBeNull();
+  });
+});
+
+describe("tag and author pages", () => {
+  // Strand pages with a trail and a visible h1: every post, no pager.
+  // [→ `listing-shell`]
+  it.each([
+    ["/tags/[slug]", "design", () => import("@/app/tags/[slug]/page")],
+    [
+      "/authors/[slug]",
+      "bulent-yusuf",
+      () => import("@/app/authors/[slug]/page"),
+    ],
+  ] as const)("%s lists every post under one h1", async (_name, slug, load) => {
+    const mod = await withSlug(load, slug)();
+    await auditRoute(mod.default as () => Promise<ReactElement>);
+    expect(
+      document.querySelector('nav[aria-label="Breadcrumb"]'),
+    ).not.toBeNull();
+    expect(document.querySelectorAll("h1")).toHaveLength(1);
+    expect(document.querySelectorAll("main article")).toHaveLength(
+      posts.length,
+    );
+    expect(document.querySelector('nav[aria-label="Pagination"]')).toBeNull();
   });
 });

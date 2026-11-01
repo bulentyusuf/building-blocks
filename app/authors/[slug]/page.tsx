@@ -2,16 +2,13 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
-import ListingPage from "../../listing-page";
-import PageCounter from "../../page-counter";
+import CollectionPage from "../../collection-page";
 import { type Crumb } from "../../breadcrumb";
-import { RichText } from "@/lib/rich-text";
 import { getAllAuthors, getAllPosts, getAuthorBySlug } from "@/lib/api";
 import { postsByAuthor } from "@/lib/authors";
 import { visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
-import { pageItems, totalPagesFor } from "@/lib/paginate";
 import { widont } from "@/lib/typography";
 
 export const dynamicParams = true;
@@ -80,45 +77,34 @@ export default async function AuthorPage({
     },
   };
 
-  const totalPages = totalPagesFor(posts.length);
-
   return (
-    <ListingPage
+    <CollectionPage
       crumbs={crumbs}
-      posts={pageItems(posts, 1)}
-      currentPage={1}
-      totalPages={totalPages}
+      posts={posts}
       visibleTags={visibleTags}
-      basePath={`/authors/${slug}`}
-      emptyMessage="No posts by this author yet."
       jsonLd={jsonLd}
-      // The split masthead's exception: the h1 already shares a row with the
-      // portrait. [→ `split-masthead`]
-      splitHeader={false}
+      closing={
+        posts.length === 0
+          ? "No posts by this author yet."
+          : posts.length === 1
+            ? `That’s the only post by ${author.name}.`
+            : `That’s all ${posts.length} posts by ${author.name}.`
+      }
       heading={
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5 md:gap-7">
           {author.picture?.url && (
             <ContentfulImage
               alt=""
-              className="rounded-full object-cover h-28 w-28 shrink-0"
+              className="h-20 w-20 shrink-0 rounded-full border-[3px] border-brand-dark object-cover md:h-28 md:w-28"
               width={112}
               height={112}
               src={author.picture.url}
             />
           )}
-          {/* The standard ramp: the raised one overflows beside the portrait. */}
-          <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl text-pretty">
-            {widont(author.name)}{" "}
-            <PageCounter currentPage={1} totalPages={totalPages} />
+          <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
+            {widont(author.name)}
           </h1>
         </div>
-      }
-      standfirst={
-        author.bio && (
-          <div className="mt-4 max-w-3xl text-lg leading-relaxed text-brand-muted text-pretty">
-            <RichText content={author.bio} headings={[]} />
-          </div>
-        )
       }
     />
   );
