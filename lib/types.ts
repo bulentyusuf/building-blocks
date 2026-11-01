@@ -41,6 +41,13 @@ export interface PromptBlock {
   image?: { url: string; description?: string } | null; // linked asset; absent on text-only prompts
 }
 
+export interface Callout {
+  __typename: "Callout";
+  sys: { id: string };
+  label: string;
+  body: { json: Document }; // text only: no embeds inside a callout
+}
+
 export interface Sidenote {
   __typename: "Sidenote";
   sys: { id: string };
@@ -51,7 +58,7 @@ export interface Sidenote {
 
 export interface EntryLink {
   // Block embeds sit between paragraphs.
-  block: (CodeBlock | PromptBlock | null)[];
+  block: (CodeBlock | PromptBlock | Callout | null)[];
   // Inline embeds (Sidenote). Only POST_GRAPHQL_FIELDS fetches them.
   inline?: (Sidenote | null)[];
 }
@@ -133,6 +140,8 @@ export interface Post {
   coverImage?: CoverImage | null;
   date: string;
   updatedDate?: string; // optional, only set when post has been updated
+  // Section stamps and a numbered ToC; post detail only. [→ `post-page`]
+  numberedSections?: boolean | null;
 
   excerpt: string;
   content: Content;

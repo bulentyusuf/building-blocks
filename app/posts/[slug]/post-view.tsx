@@ -103,6 +103,8 @@ export default async function PostView({
   const highlighted = await highlightCodeBlocks(post.content);
 
   const hasToc = hasTableOfContents(headings);
+  // The owner's call per post, not automatic. [→ `post-page`]
+  const numbered = post.numberedSections === true;
 
   return (
     // No trail: the header presses the post's strand. A short header group,
@@ -193,7 +195,11 @@ export default async function PostView({
             className={`mx-auto w-full max-w-[49.25rem] xl:mx-0 xl:max-w-none${hasToc ? "" : " hidden xl:block"}`}
           >
             <div className="xl:sticky xl:top-20 xl:space-y-7 xl:pb-4">
-              <TableOfContents headings={headings} lang={lang} />
+              <TableOfContents
+                headings={headings}
+                lang={lang}
+                numbered={numbered}
+              />
               <div className="hidden xl:block">
                 <ExploreWithAI slug={slug} german={german} />
               </div>
@@ -215,6 +221,7 @@ export default async function PostView({
                   headings={headings}
                   highlighted={highlighted}
                   coverPromptId={promptId}
+                  numbered={numbered}
                 />
               </div>
             </div>

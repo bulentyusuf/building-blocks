@@ -240,6 +240,18 @@ const entries = [
       "a calm editorial illustration, warm directional light, gouache texture",
     ),
   }),
+  entry("callout-example", "callout", {
+    label: loc("A word on callouts"),
+    body: loc(
+      doc(
+        paragraph(
+          text(
+            "A callout boxes a short aside the reader should not miss, with its own label.",
+          ),
+        ),
+      ),
+    ),
+  }),
   // One sidenote entry, referenced from two posts. This entry existed in
   // seed.json but not here, so every regeneration deleted it along with the
   // inline embed in post-first; the drift guard in
@@ -264,6 +276,9 @@ const entries = [
     // line renders on exactly one page and the single-date case stays visible
     // on the other two.
     updatedDate: loc("2026-05-20"),
+    // The only numbered post, so the section stamps render on one page and
+    // plain H2s on the rest.
+    numberedSections: loc(true),
     coverImage: ph(),
     excerpt: loc("A short placeholder excerpt for the first seeded post."),
     // The showcase body. Five H2s clear the `< 3` gate in
@@ -299,6 +314,7 @@ const entries = [
         embedAsset("placeholder-image"),
         heading2("How the pieces fit"),
         paragraph(text(LOREM5)),
+        embed("callout-example"),
         bulletList(
           listItem(
             paragraph(

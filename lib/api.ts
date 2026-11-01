@@ -51,6 +51,7 @@ const POST_GRAPHQL_FIELDS = `
   }
   date
   updatedDate
+  numberedSections
 
   excerpt
   content {
@@ -78,6 +79,12 @@ const POST_GRAPHQL_FIELDS = `
             image {
               url
               description
+            }
+          }
+          ... on Callout {
+            label
+            body {
+              json
             }
           }
         }

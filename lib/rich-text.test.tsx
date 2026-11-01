@@ -1175,3 +1175,80 @@ describe("a single marked run keeps its mark", () => {
     expect(html).toContain("of body\u00a0copy.");
   });
 });
+
+describe("numbered sections and callouts", () => {
+  // [→ `post-page`]
+  const content = (block: unknown[] = []) =>
+    ({
+      json: doc,
+      links: { assets: { block: [] }, entries: { block, inline: [] } },
+    }) as unknown as Content;
+
+  it("stamps each non-empty H2 in order when numbered", () => {
+    const html = renderToStaticMarkup(
+      <RichText content={content()} headings={extractHeadings(doc)} numbered />,
+    );
+    const stamps = [
+      ...html.matchAll(/<span aria-hidden="true"[^>]*>(\d\d)<\/span>/g),
+    ].map((m) => m[1]);
+    // Five non-empty H2s; the empty one is skipped, as in extractHeadings.
+    expect(stamps).toEqual(["01", "02", "03", "04", "05"]);
+  });
+
+  it("stamps nothing when not numbered", () => {
+    const html = renderToStaticMarkup(
+      <RichText content={content()} headings={extractHeadings(doc)} />,
+    );
+    expect(html).not.toMatch(/>01<\/span>/);
+  });
+
+  it("renders a callout as an aside named by its label", () => {
+    const body = {
+      nodeType: BLOCKS.DOCUMENT,
+      data: {},
+      content: [
+        {
+          nodeType: BLOCKS.EMBEDDED_ENTRY,
+          data: {
+            target: { sys: { id: "c1", type: "Link", linkType: "Entry" } },
+          },
+          content: [],
+        },
+      ],
+    } as unknown as Document;
+    const html = renderToStaticMarkup(
+      <RichText
+        content={
+          {
+            json: body,
+            links: {
+              assets: { block: [] },
+              entries: {
+                block: [
+                  {
+                    sys: { id: "c1" },
+                    __typename: "Callout",
+                    label: "A word on boot media",
+                    body: {
+                      json: {
+                        nodeType: BLOCKS.DOCUMENT,
+                        data: {},
+                        content: [paragraph("Inside the box.")],
+                      },
+                    },
+                  },
+                ],
+                inline: [],
+              },
+            },
+          } as unknown as Content
+        }
+        headings={[]}
+      />,
+    );
+    expect(html).toContain('<aside aria-labelledby="callout-c1"');
+    expect(html).toMatch(/id="callout-c1"[^>]*>.*A word on boot media<\/span>/);
+    // widont() glues the last two words.
+    expect(html).toMatch(/Inside the\sbox\./u);
+  });
+});

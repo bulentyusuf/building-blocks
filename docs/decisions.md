@@ -297,6 +297,10 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
 - **More like this is two home cards** from `lib/related.ts`, unchanged.
 - **Code and prompt blocks are ink** with a `//` bar, grey-edged in dark mode.
   Inline code is cream with an outline, never a border, so leading holds.
+- **Numbered sections are the owner's call per post** (`numberedSections`):
+  each H2 gets a tilted ink stamp and the ToC its number, both `aria-hidden`.
+- **A callout boxes exactly what the author marked** (the `callout` type: a
+  label and text-only rich text), 2px ink on cream, flat and straight.
 
 ### Covers take one of two frames, chosen by `wide`
 
