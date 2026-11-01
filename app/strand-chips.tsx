@@ -7,6 +7,7 @@ import { STRANDS, currentStrand } from "@/lib/strands";
 const chip =
   "flex h-12 items-center gap-2.5 rounded-xl border-[3px] border-brand-dark px-4 font-display text-lg font-[800] transition-[translate,box-shadow] duration-150 motion-reduce:transition-none";
 // Raised until hovered. Pressed is the same chip already pushed in, flat.
+// Every fill is opaque, so the graph paper never shows through. [→ `strands`]
 const raised = "bg-card hover:translate-[4px] hover:shadow-none";
 const pressed = "translate-[4px]";
 const dot = "size-[18px] shrink-0 rounded-full border-2 border-brand-dark";
@@ -35,7 +36,7 @@ export default function StrandChips({
         aria-current={current === "all" ? mark : undefined}
         className={`${chip} ${
           current === "all"
-            ? `${pressed} bg-brand-dark/5`
+            ? `${pressed} bg-[color-mix(in_oklab,var(--color-brand-dark)_5%,var(--color-brand-bg))]`
             : `${raised} shadow-[4px_4px_0_var(--color-brand-crimson)]`
         }`}
       >

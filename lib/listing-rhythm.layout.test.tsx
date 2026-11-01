@@ -27,8 +27,10 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("@vercel/analytics/react", () => ({ Analytics: () => null }));
 vi.mock("@vercel/speed-insights/next", () => ({ SpeedInsights: () => null }));
+// Home renders at "/", so its All chip is pressed; the rest press none.
+const route = vi.hoisted(() => ({ path: "/archive" }));
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/archive",
+  usePathname: () => route.path,
   notFound: () => {
     throw new Error("notFound() called — the fixture is missing an entry");
   },
@@ -141,6 +143,8 @@ type Measurement = {
     height: number;
   } | null;
   featureText: { top: number; left: number } | null;
+  /** The pressed chip's computed background, null if none is pressed. */
+  pressedChipFill: string | null;
 };
 
 // Runs in the page, so it closes over nothing.
@@ -175,6 +179,12 @@ function measureInPage(): Measurement {
     featureText: featureText
       ? { top: box(featureText).top, left: box(featureText).left }
       : null,
+    pressedChipFill: (() => {
+      const chip = document.querySelector(
+        'nav[aria-label="Strands"] [aria-current]',
+      );
+      return chip ? getComputedStyle(chip).backgroundColor : null;
+    })(),
   };
 }
 
@@ -207,6 +217,16 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
         `bar height: home ${home.barHeight}px, ${page} ${m[page].barHeight}px`,
       );
     }
+  }
+  // The graph paper must not show through a pressed chip. [→ `strands`]
+  const fill = home.pressedChipFill;
+  const alpha = fill?.match(/\/\s*([\d.]+)\s*\)$|rgba\([^)]*,\s*([\d.]+)\)$/);
+  if (!fill) problems.push("home pressed no chip");
+  else if (
+    fill === "transparent" ||
+    (alpha && Number(alpha[1] ?? alpha[2]) < 1)
+  ) {
+    problems.push(`the pressed chip's fill is see-through: ${fill}`);
   }
   const { featureTitlePx, cardTitlePx, featureCover, featureText } = home;
   if (!featureTitlePx || !cardTitlePx || !featureCover || !featureText) {
@@ -249,6 +269,7 @@ beforeAll(async () => {
   };
   documents = {} as Record<Page, string>;
   for (const [name, page] of Object.entries(pages) as [Page, ReactElement][]) {
+    route.path = name === "home" ? "/" : "/archive";
     documents[name] = await toHtml(await RootLayout({ children: page }));
   }
 }, 60_000);
@@ -340,6 +361,13 @@ it.each([
     "the feature cover stretched to its text",
     {
       home: "section > article > div:first-child { aspect-ratio: auto !important; height: 400px !important }",
+    },
+  ],
+  [
+    1280,
+    "the pressed chip's fill see-through",
+    {
+      home: 'nav[aria-label="Strands"] [aria-current] { background-color: color-mix(in oklab, var(--color-brand-dark) 5%, transparent) !important }',
     },
   ],
   [
