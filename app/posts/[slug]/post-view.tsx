@@ -20,6 +20,7 @@ import LanguageLink from "../../language-link";
 import { SITE_URL, SITE_AUTHOR, GERMAN_LOCALE } from "@/lib/constants";
 import { jsonLdHtml, postAuthorsNode } from "@/lib/json-ld";
 import { widont } from "@/lib/typography";
+import { strandFor } from "@/lib/strands";
 import type { ListPost, Post } from "@/lib/types";
 
 // The post body for both routes. German posts are kept out of the search index.
@@ -45,6 +46,7 @@ export default async function PostView({
   const visible = visibleTagSlugs(allPosts);
   const tags = postTags(post).filter((t) => visible.has(t.slug));
   const authors = postAuthors(post);
+  const strand = strandFor(post.category);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -143,12 +145,19 @@ export default async function PostView({
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       {/* The indexed region. meta url gives results the extensionless route,
-          since Pagefind indexes the .html files. [→ `pagefind-index-scope`] */}
+          since Pagefind indexes the .html files; the strand feeds the result
+          pill. [→ `pagefind-index-scope`, `pagefind-ui`] */}
       <article
         {...(!german && {
           "data-pagefind-body": true,
-          "data-pagefind-meta": "url[data-url]",
+          "data-pagefind-meta": strand
+            ? "url[data-url], strand[data-strand], strandfill[data-strand-fill]"
+            : "url[data-url]",
           "data-url": path,
+          ...(strand && {
+            "data-strand": strand.label,
+            "data-strand-fill": strand.fill,
+          }),
         })}
         className="mt-11"
       >

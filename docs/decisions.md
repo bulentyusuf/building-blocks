@@ -126,7 +126,10 @@ known-bad control.
 `app/search/` mounts Pagefind's web components with a house result template.
 The markup is ours; keyboard and ARIA behaviour is upstream's and is not
 reimplemented. Search CSS needs no `!important`: if it seems to, fix the
-template. Keep `pagefind` at `^1.5.2` or later, where the Component UI exists.
+template. Style the component hosts (`pagefind-input`, `pagefind-results`) or
+our own template classes, never a `pf-*` class: the component resets those
+with `all: revert` at two-ID specificity. Each result carries its strand pill
+from the post's indexed `strand` and `strandfill` meta. Keep `pagefind` at `^1.5.2` or later, where the Component UI exists.
 
 The legacy default UI and a bespoke React UI were both tried and abandoned. Do
 not propose either, which also settles the ranking quirks (a missing term is
@@ -329,8 +332,8 @@ move those.
 `app/tag-pill.tsx`, wrapped by `TagRow` in the same file on cards, and used
 directly on the post page. Written `#name`, the `#` hidden from screen readers,
 with a 2px ink edge and an 8px radius; ink is what marks it pressable. A pill is a tag as metadata attached to something
-else; a link is a tag as destination, as on the `/tags` glossary and the search
-empty state. There is no third treatment. Small-caps text links were proposed
+else; a link is a tag as destination, as on the `/tags` glossary. The search
+empty state's taped note offers tags as pills. There is no third treatment. Small-caps text links were proposed
 and rejected; if revisited, it is one change reaching both call sites.
 
 ### Image loader passes only `w`, `q`, `fm=webp` by design

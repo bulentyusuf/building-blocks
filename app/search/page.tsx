@@ -3,6 +3,8 @@ import { draftMode } from "next/headers";
 import Container from "../container";
 import Breadcrumb, { type Crumb } from "../breadcrumb";
 import SearchClient from "./search-client";
+import TagPill from "../tag-pill";
+import Tape from "../tape";
 import { getAllPosts } from "@/lib/api";
 import { groupPostsByTag } from "@/lib/tags";
 
@@ -69,32 +71,40 @@ export default async function SearchPage() {
               className="h-auto w-full"
             />
           </figure>
-          {tags.length > 0 && (
-            <div className="flex flex-col gap-3.5">
-              <p
-                id="tag-entry-label"
-                className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted"
+          {/* A taped note, the page's one strip of tape. [→ `pagefind-ui`] */}
+          <div className="relative mt-6 rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-6 pb-6">
+            <Tape />
+            {tags.length > 0 && (
+              <>
+                <p
+                  id="tag-entry-label"
+                  className="font-ui text-xl leading-tight font-[800]"
+                >
+                  Or start from a tag
+                </p>
+                <ul
+                  aria-labelledby="tag-entry-label"
+                  className="mt-4 mb-5 flex flex-wrap gap-2"
+                >
+                  {tags.map((tag) => (
+                    <li key={tag.slug}>
+                      <TagPill tag={tag} size="compact" />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <p className="leading-relaxed text-brand-muted">
+              Or browse every post in the{" "}
+              <Link
+                href="/archive"
+                className="text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
               >
-                Or start from a tag
-              </p>
-              <ul
-                aria-labelledby="tag-entry-label"
-                className="flex flex-wrap gap-x-7 gap-y-3.5"
-              >
-                {tags.map((tag) => (
-                  <li key={tag.slug}>
-                    {/* Links, not pills. [→ `tag-pills`] */}
-                    <Link
-                      href={`/tags/${tag.slug}`}
-                      className="font-display text-xl md:text-2xl font-bold text-brand-crimson transition-opacity duration-200 hover:opacity-80"
-                    >
-                      {tag.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                archive
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </section>
     </Container>
