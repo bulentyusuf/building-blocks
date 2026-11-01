@@ -131,6 +131,10 @@ our own template classes, never a `pf-*` class: the component resets those
 with `all: revert` at two-ID specificity. Each result carries its strand pill
 from the post's indexed `strand` and `strandfill` meta. Keep `pagefind` at `^1.5.2` or later, where the Component UI exists.
 
+The module is a `modulepreload` in the server HTML and runs from the effect.
+A server-rendered `<script>` ran whenever it arrived, often before hydration,
+filled `<pagefind-input>` with its own `<input>`, and React threw #418.
+
 The legacy default UI and a bespoke React UI were both tried and abandoned. Do
 not propose either, which also settles the ranking quirks (a missing term is
 retried truncated, and a broad match can outrank a literal one): fixing them
