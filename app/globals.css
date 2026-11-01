@@ -51,7 +51,7 @@
      card, the reading panel, the author card. Ink means pressable. [→ `strands`] */
   --color-edge-quiet: #c9b5a7;
   /* The graph-paper dots on the page, decoration only. [→ `strands`] */
-  --color-dots: #e3d3c8;
+  --color-dots: #eee5de;
   /* The sidebar tape: the prompt label's yellow at 62%. [→ `post-page`] */
   --color-tape: rgb(242 193 78 / 0.62);
 
@@ -153,7 +153,7 @@
     --color-card: #241c1a;
     /* Provisional until the neutral dark palette lands. */
     --color-edge-quiet: #54453f;
-    --color-dots: #2a2220;
+    --color-dots: #231b19;
     --color-strand-blogging-shadow: #ec8494;
     --color-strand-films-shadow: #3ba99c;
     --color-strand-games-shadow: #6f8fe0;
