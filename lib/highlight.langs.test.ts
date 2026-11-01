@@ -111,6 +111,25 @@ describe("known-bad control: the themed-token check is not vacuous", () => {
   });
 });
 
+describe("the highlighted <pre> is not a second tab stop", () => {
+  // The wrapper in lib/rich-text.tsx is the focusable region. Shiki also gives
+  // its <pre> tabindex="0" by default, so every block took two Tab presses.
+  // [→ `scroll-region-names`]
+  const FOCUSABLE = /<pre[^>]*\btabindex=/;
+
+  it("emits no tabindex on the <pre>", async () => {
+    const html = await highlightOne("typescript", SNIPPETS.typescript);
+    expect(html).toMatch(CORE_THEMED_PRE);
+    expect(html).not.toMatch(FOCUSABLE);
+  });
+
+  it("known-bad control: Shiki's default output is caught", () => {
+    expect(
+      '<pre class="shiki min-dark" style="background-color:#1f1f1f" tabindex="0"><code>',
+    ).toMatch(FOCUSABLE);
+  });
+});
+
 describe("the CMS offers no language the highlighter cannot load", () => {
   // The Code Block dropdown in Contentful and LANGS are two lists nothing
   // relates, and the mismatch is silent in the direction that matters: a

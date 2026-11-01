@@ -474,7 +474,8 @@ Tables and code blocks in `lib/rich-text.tsx` are focusable scroll regions named
 by document order, `Table 2`, `Code block 2`, or by filename where a code block
 has one. A name derived from the header row would repeat cells announced again
 on entry. `app/a11y.test.tsx` renders two tables, the smallest fixture that can
-tell a working name from a broken one.
+tell a working name from a broken one. The wrapper is the only tab stop: Shiki's
+own `tabindex` on the `<pre>` is switched off in `lib/highlight.ts`.
 
 ### Breadcrumbs, and the one page without them
 
