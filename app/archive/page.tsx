@@ -117,13 +117,13 @@ export default async function ArchivePage() {
                         </Link>
                         {/* The one place a browsing reader learns a German
                             version exists. Visible "DE" stays in the name.
-                            [→ `locale`] */}
+                            Padded to a 24px target. [→ `locale`] */}
                         {german.has(post.slug) && (
                           <Link
                             href={`/de/posts/${post.slug}`}
                             hrefLang={GERMAN_LOCALE}
                             lang={GERMAN_LOCALE}
-                            className="ml-2.5 whitespace-nowrap font-mono text-xs font-medium tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+                            className="-my-1 ml-1 inline-block px-1.5 py-1 whitespace-nowrap font-mono text-xs font-medium tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
                           >
                             <span className="sr-only">Auf Deutsch lesen, </span>
                             DE

@@ -93,6 +93,8 @@ export async function highlightCodeBlocks(
           lang,
           theme: THEME,
           colorReplacements: COLOR_REPLACEMENTS,
+          // The wrapper is the tab stop. [→ `scroll-region-names`]
+          tabindex: false,
         }),
       );
     } catch {

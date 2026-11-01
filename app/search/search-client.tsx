@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
+import { preloadModule } from "react-dom";
 
 // Declares the Pagefind web components for TSX, under React 19's module.
 type CustomElement<E = unknown> = DetailedHTMLProps<
@@ -51,24 +52,27 @@ const RESULT_TEMPLATE = `
 </script>
 `;
 
+const PAGEFIND_MODULE = "/pagefind/pagefind-component-ui.js";
+
 export default function SearchClient() {
   const [failed, setFailed] = useState(false);
   const loadedRef = useRef(false);
+
+  // Fetched from the server HTML, run after hydration. [→ `pagefind-ui`]
+  preloadModule(PAGEFIND_MODULE);
 
   useEffect(() => {
     if (loadedRef.current) return;
     loadedRef.current = true;
 
-    // Failure detection only. React will not hoist a script carrying onError,
-    // so a second element listens; same module URL, so no extra request.
-    const probe = document.createElement("script");
-    probe.type = "module";
-    probe.src = "/pagefind/pagefind-component-ui.js";
-    probe.onerror = () => setFailed(true);
-    document.body.appendChild(probe);
+    const loader = document.createElement("script");
+    loader.type = "module";
+    loader.src = PAGEFIND_MODULE;
+    loader.onerror = () => setFailed(true);
+    document.body.appendChild(loader);
 
     return () => {
-      probe.remove();
+      loader.remove();
     };
   }, []);
 
@@ -83,15 +87,13 @@ export default function SearchClient() {
 
   return (
     <div className="pagefind-scope">
-      {/* Hoisted by React so the module and CSS start during the first parse.
-          Loaded from the build's own public/pagefind/, so they match the index.
-          `precedence` is what makes React hoist the stylesheet. */}
+      {/* Hoisted by React so the CSS starts during the first parse.
+          `precedence` is what makes React hoist it. */}
       <link
         rel="stylesheet"
         href="/pagefind/pagefind-component-ui.css"
         precedence="default"
       />
-      <script type="module" src="/pagefind/pagefind-component-ui.js" async />
       <pagefind-config excerpt-length="30"></pagefind-config>
       <pagefind-input placeholder="What are you looking for?"></pagefind-input>
       {/* Hidden by globals.css while the input is empty. */}
