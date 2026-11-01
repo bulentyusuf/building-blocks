@@ -8,6 +8,7 @@ import {
   type HeadingPosition,
 } from "@/lib/toc-active";
 import { widont } from "@/lib/typography";
+import Tape from "./tape";
 
 // The nav is rendered twice, once behind the mobile disclosure and once bare at
 // xl+. Exactly one is in the DOM at any viewport (the other is display:none via
@@ -205,13 +206,9 @@ export default function TableOfContents({
           />
         </div>
       </details>
-      {/* The page's one strip of tape, half on and half off the top edge.
-          Never on anything carrying text. [→ `post-page`] */}
+      {/* The page's one strip of tape. [→ `post-page`] */}
       <div className="relative hidden rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-5 pb-6 xl:block">
-        <span
-          aria-hidden="true"
-          className="absolute -top-4 left-1/2 h-8 w-35 -translate-x-1/2 -rotate-3 bg-tape mix-blend-multiply [clip-path:polygon(0_4%,4%_0,8%_6%,12%_0,88%_0,92%_5%,96%_0,100%_6%,100%_96%,96%_100%,92%_94%,88%_100%,12%_100%,8%_95%,4%_100%,0_94%)] dark:mix-blend-normal"
-        />
+        <Tape />
         <TocNav
           headings={headings}
           activeId={activeId}
