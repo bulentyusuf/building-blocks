@@ -3,6 +3,7 @@ import PostCard from "../../post-card";
 import { Label } from "../../post-stream";
 import Avatar from "../../avatar";
 import Date from "../../date";
+import UpdatedStamp from "../../updated-stamp";
 import CoverImage from "../../cover-image";
 import { RichText } from "@/lib/rich-text";
 import { postTags, visibleTagSlugs } from "@/lib/tags";
@@ -86,14 +87,7 @@ export default async function PostView({
           : `${minutes}\u00a0min\u00a0read`}
       </span>
       {showUpdated && (
-        // A double-ruled stamp: border plus an offset outline. Straight.
-        <span
-          lang={lang}
-          className="inline-flex min-h-7.5 items-center rounded-md border-2 border-brand-dark px-2.5 font-mono text-xs font-medium tracking-[0.06em] uppercase tabular-nums outline-1 outline-offset-2 outline-brand-dark"
-        >
-          {german ? "Aktualisiert am\u00a0" : "Updated\u00a0"}
-          <Date dateString={post.updatedDate!} german={german} />
-        </span>
+        <UpdatedStamp dateString={post.updatedDate!} german={german} />
       )}
     </>
   );

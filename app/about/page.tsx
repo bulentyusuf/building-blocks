@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
-import Date from "../date";
+import UpdatedStamp from "../updated-stamp";
 import Container from "../container";
 import Breadcrumb, { type Crumb } from "../breadcrumb";
 import { RichText } from "@/lib/rich-text";
@@ -57,28 +57,30 @@ export default async function AboutPage() {
 
   return (
     <Container>
-      {/* Constrained to the article's own measure. Container is max-w-frame, so
-          an unwrapped breadcrumb starts 224px left of the heading it labels.
-          Every other breadcrumb page has max-w-frame content and needs no wrap. */}
-      <div className="mx-auto max-w-2xl">
+      {/* A reading page: the header and the quiet panel share one centred
+          column, 49.25rem, the 42rem measure plus the panel's padding.
+          [→ `post-page`, `breadcrumbs`] */}
+      <div className="mx-auto max-w-[49.25rem]">
         <Breadcrumb items={crumbs} />
-      </div>
-      <article className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-4xl md:text-5xl">{page.title}</h1>
+        <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
+          {page.title}
+        </h1>
         {lastUpdated && (
-          <p className="mb-4 text-sm text-brand-muted">
-            Last updated <Date dateString={lastUpdated} />
+          <p className="mt-5">
+            <UpdatedStamp dateString={lastUpdated} />
           </p>
         )}
-        <div className="prose text-pretty">
-          <RichText
-            content={page.body}
-            headings={[]}
-            lightbox={false}
-            prioritizeFirstImage
-          />
-        </div>
-      </article>
+        <article className="mt-9 rounded-3xl border-2 border-edge-quiet bg-card px-5 py-8 md:px-14 md:py-12">
+          <div className="prose text-pretty">
+            <RichText
+              content={page.body}
+              headings={[]}
+              lightbox={false}
+              prioritizeFirstImage
+            />
+          </div>
+        </article>
+      </div>
     </Container>
   );
 }

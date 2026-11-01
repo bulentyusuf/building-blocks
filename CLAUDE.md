@@ -58,13 +58,13 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Four routes: `/archive`,
   sidebar beside a quiet reading panel, no rule and no trail. [→ `post-page`]
 - **Tag and author pages are strand pages with a trail and a visible `h1`**,
   through `app/collection-page.tsx`: every post, no pager. [→ `listing-shell`]
-- **Narrow**: header wrapped in `mx-auto max-w-2xl`, `h1` at `mb-6 text-4xl
-md:text-5xl` with no `leading-tight`, no rule. Three routes: `/about`,
-  `/privacy`, `/search`.
+- **Narrow**: one centred column, `h1` at the F2 scale, no rule. `/about` and
+  `/privacy` sit in a quiet reading panel 49.25rem wide; `/search` keeps
+  `max-w-2xl`. [→ `page-axis`]
 - **Every wide route renders through `app/wide-page.tsx`.** Do not assemble a
   bespoke wide header or `Container`, and do not give a narrow route the wide
   header. [→ `wide-page-shell`, `band-retirement`]
-- **Breadcrumbs wrap in `mx-auto max-w-2xl` on narrow pages** and sit before
+- **Breadcrumbs sit inside a narrow page's centred column** and before
   `<section>` on `/search`. [→ `breadcrumbs`]
 
 ## Headers and home
