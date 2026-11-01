@@ -271,6 +271,8 @@ redirects to the archive, which already lists everything.
   [→ `announced-links`].
 - **Ink means pressable.** Cards keep the 3px ink edge; the cover inside takes
   `--color-edge-quiet`. Shadows are the strand colour, lifted in dark mode.
+- **The page is graph paper**, `--color-dots` every 22px on `body`. The feature
+  card's cover is 16:9 at every width, so headline length never recrops it.
 - **Strand fills never invert**, so the pills keep cream text in both schemes;
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
