@@ -57,23 +57,6 @@
      borders and the control edge are separate roles and do not use this. */
   --color-hairline: #e5e7eb;
 
-  /* The closed boundary around an interactive control, currently only the tag
-     pills — not a divider, despite borrowing the token for years.
-     [→ `border-roles`] Pill text is brand-muted, the same colour as the dates
-     and meta beside it, so with the edge invisible a pill is indistinguishable
-     from static text. On --color-hairline it sat at 1.14:1 (light) and 1.47:1
-     (dark); at 70% of the muted ink it clears WCAG 1.4.11's 3:1 in both
-     (3.15:1 and 4.37:1).
-
-     Two literal values with a dark override, rather than color-mix() over
-     var(--color-brand-muted): Tailwind flattens a var() inside color-mix()
-     into an @supports (color: color-mix(in lab, red, red)) block with a
-     LITERAL light-mode fallback outside it, so any engine without color-mix
-     would paint the light edge on the dark page and lose the contrast this
-     token exists for. These are brand-muted at 70% in each scheme; the test
-     recomputes them, so retuning brand-muted without following here fails. */
-  --color-control-edge: rgb(107 90 82 / 0.7);
-
   /* The edge around a cover image. A fourth edge role after dividers, image
      frames and control boundaries. Its original job was block visibility where
      a cover sat on the masthead band, whose bottom edge the post cover crossed
@@ -100,8 +83,8 @@
      same on either ground is the property worth having for an element that
      straddles a seam.
 
-     Two literal values rather than color-mix() over a var(), for the reason set
-     out on --color-control-edge above. */
+     Two literal values rather than color-mix() over a var(): Tailwind flattens
+     a var() inside color-mix() behind an @supports with a light fallback. */
   --color-cover-keyline: rgb(250 245 241 / 0.75);
 
   /* Always-dark surface, in BOTH schemes. brand-dark is body ink and must
@@ -158,10 +141,6 @@
     /* Warm off-white at low alpha, matching the ink. The light #e5e7eb reads
        at ~15:1 on the #17110F page and glares. */
     --color-hairline: rgb(242 234 228 / 0.15);
-
-    /* brand-muted's dark value (#B3A49C) at the same 70%. Carried by hand for
-       the reason set out on the light value above. */
-    --color-control-edge: rgb(179 164 156 / 0.7);
 
     /* The ink's own colour at 18%, which lands at 1.63:1 on both the band and
        the page. The 12% this replaced read 1.38:1 and 1.34:1, both under the

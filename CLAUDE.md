@@ -124,9 +124,8 @@ md:text-right text-brand-muted`. Both `md:` prefixes are mandatory or mobile
   anything rendered on it uses literal hex in dark mode, never brand tokens.
   [→ `search-emblem`]
 - **Border roles are not interchangeable**: `--color-hairline` (dividers,
-  never a `dark:` variant), `--color-control-edge` (tag pills only, a WCAG
-  1.4.11 floor), the cover keyline, the table tokens and the `border-2` image
-  frames. Do not deduplicate the first two. [→ `border-roles`]
+  never a `dark:` variant), the cover keyline, the table tokens and the
+  `border-2` image frames. [→ `border-roles`]
 - **One focus indicator, in `@layer base`.** Do not add `focus-visible:ring-*`
   or `focus-visible:outline-*` to components. [→ `focus-indicator`]
 - **One scroll offset, `scroll-padding-top: 5rem` on `html`.** Never

@@ -96,8 +96,8 @@ const { extractHeadings } = await import("@/lib/headings");
  * Both need a layout engine, which jsdom has no part of — it computes no boxes
  * and applies no Tailwind stylesheet, so axe would either error or report a
  * false pass. Contrast is asserted numerically against the tokens themselves in
- * lib/tag-pill.test.ts, which is the more precise test anyway: it reads the
- * values out of globals.css rather than sampling rendered pixels.
+ * lib/palette-contrast.test.ts, which reads the values out of globals.css
+ * rather than sampling rendered pixels.
  */
 const LAYOUT_DEPENDENT_RULES = {
   "color-contrast": { enabled: false },
