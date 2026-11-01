@@ -50,8 +50,8 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
 - **A route is wide or narrow, decided by the header measure, and everything
   follows.** No route sits half in each. [→ `page-axis`]
 - **Wide**: header at `max-w-frame`, `<Breadcrumb>` unwrapped, `h1` at `text-5xl
-md:text-6xl lg:text-7xl` weight 800, no rule. Four routes: `/archive`,
-  `/categories`, `/tags`, `/authors`. [→ `band-retirement`]
+md:text-6xl lg:text-7xl` weight 800, no rule. Two routes: `/archive` and
+  `/tags`. [→ `band-retirement`]
 - **Home and the strand pages are neither**: a feature card and cards under
   the header's chips, no rule, no pager, no trail. [→ `strands`]
 - **Posts are neither either**: header group, an ink-framed cover, then the

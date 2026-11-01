@@ -176,14 +176,7 @@ describe("resolved CSP headers", () => {
         CMS_ORIGIN,
       ]);
     }
-    for (const path of [
-      "/",
-      "/about",
-      "/search",
-      "/categories",
-      "/archive",
-      "/de",
-    ]) {
+    for (const path of ["/", "/about", "/search", "/tags", "/archive", "/de"]) {
       expect(frameAncestorSources(await cspFor(path)), path).toEqual([
         "'self'",
       ]);

@@ -147,9 +147,8 @@ function expectNoViolations(results: AxeResults) {
  * apart. A cover image linking to the post its title also links to is the
  * shape this catches.
  *
- * Scoped to <main> deliberately. The header and footer both link to
- * /categories with the name "Categories", and that is ordinary site chrome,
- * not a defect — the landmarks distinguish them.
+ * Scoped to <main> deliberately. Site chrome can link one place twice under
+ * one name, and the landmarks distinguish those.
  */
 function duplicateLinksInMain(): string[] {
   const main = document.querySelector("main");

@@ -115,12 +115,7 @@ describe("every wide route's standfirst takes the Standfirst role", () => {
     "app/archive/page.tsx": 2,
   };
 
-  it.each([
-    "app/categories/page.tsx",
-    "app/tags/page.tsx",
-    "app/authors/page.tsx",
-    "app/archive/page.tsx",
-  ])("%s", (file) => {
+  it.each(["app/tags/page.tsx", "app/archive/page.tsx"])("%s", (file) => {
     const found = [...(read(file).match(STANDFIRST_M5) ?? [])];
     // Exact, not non-zero. See the note on EXPECTED_STANDFIRSTS: a zero-floor
     // check cannot see one of two standfirsts regressing.

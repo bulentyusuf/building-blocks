@@ -539,8 +539,7 @@ that says where they are. Old anchors still land.
 
 <!-- key: browse-copy -->
 
-The standfirst and meta description on `/tags`, `/categories`, `/authors` and
-`/archive` come from a `browseIntro` entry keyed by slug, through
+The standfirst and meta description on `/tags` and `/archive` come from a `browseIntro` entry keyed by slug, through
 `browsePageMetadata` in `lib/page-metadata.ts`. `generateMetadata` and the page
 pass the same slug constant (see `single-entry-cache`). A missing entry
 degrades to a heading.
@@ -710,6 +709,11 @@ redirect to page one in `next.config.js`. `listingMetadata` in
 
 The header content and the fetch stay in the route, where the two differ.
 
+There is no `/categories` or `/authors` index (November 2026). The chips, the
+mascots and the bylines are the way in, and an index nothing linked to was worse
+than none. `/categories` redirects home and `/authors` to `/about`, so an
+author page's trail is Home then the name, and the page opens with the bio.
+
 ### Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
 
 <!-- key: rich-text-links -->
@@ -856,8 +860,8 @@ ceiling for `getAllPosts`, `getAllPages`, `getAllTags`, `getAllCategories`,
 and `getAllAuthors`. A query handed to it accepts
 `$limit: Int!` and `$skip: Int!` and selects `total` beside `items`; without
 `total` the first page silently becomes the whole result. Raise the page size
-only against a measurement. `getRecentPostsByCategory` and the `limit: 1`
-fetchers are deliberately not paged.
+only against a measurement. The `limit: 1` fetchers are deliberately not
+paged.
 
 ### Contentful export/seed files are load-bearing and brittle
 
