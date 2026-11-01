@@ -244,10 +244,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
         <div className="border-t-[3px] border-brand-dark pt-10 pb-12">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
             <div className="col-span-2 md:col-span-1">
-              {/* Not a link, so no shadow: a shadow means pressable. */}
-              <p className="inline-block -rotate-2 rounded-lg bg-brand-dark px-3 py-1 font-display text-xl font-[800] text-brand-bg">
-                {SITE_TITLE}
-              </p>
+              <SiteWordmark title={SITE_TITLE} size="footer" />
               <p className="mt-4 max-w-sm text-base">{SITE_FOOTER_BLURB}</p>
             </div>
 
@@ -255,7 +252,6 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
               <FooterLabel>browse</FooterLabel>
               <ul className="mt-3">
                 {[
-                  ["/categories", "categories"],
                   ["/tags", "tags"],
                   ["/authors", "authors"],
                   ["/archive", "archive"],
@@ -285,6 +281,23 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                   </Link>
                 </li>
                 <li>
+                  <Link
+                    href="/privacy"
+                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
+                  >
+                    <Path label="privacy" />
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="/feed.xml"
+                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
+                  >
+                    <Path label="feed.xml" />
+                  </a>
+                </li>
+                <li>
+                  {/* Last, and marked: the one link that leaves the site. */}
                   <a
                     href={SITE_REPO_URL}
                     className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
@@ -292,24 +305,9 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                     rel="noopener noreferrer"
                   >
                     fork_on_github
+                    <span aria-hidden="true">&nbsp;↗</span>
                     <NewWindowHint />
                   </a>
-                </li>
-                <li>
-                  <a
-                    href="/feed.xml"
-                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
-                  >
-                    rss_feed
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    href="/privacy"
-                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
-                  >
-                    <Path label="privacy" />
-                  </Link>
                 </li>
               </ul>
             </nav>

@@ -691,6 +691,8 @@ and `Container` in a route, and do not give a narrow route the wide header.
 - The logo is a button that scrolls to top on home and a link elsewhere
   (`app/site-wordmark.tsx`), because a same-URL `Link` in Next 16 neither
   navigates nor scrolls. It no longer hides on home, which has no masthead.
+- The logo is the one link with no shadow, in the header and the footer alike.
+  With one it read as a second home button beside the All chip (November 2026).
 - The shell's column is always `max-w-frame`, matching `Container`, which is
   what puts every trail and heading at the same coordinates.
 
