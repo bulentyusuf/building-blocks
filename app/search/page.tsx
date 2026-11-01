@@ -49,14 +49,7 @@ export default async function SearchPage() {
             >
               archive
             </a>{" "}
-            lists every post by year, and{" "}
-            <a
-              href="/categories"
-              className="font-bold text-brand-crimson underline underline-offset-2 transition-opacity duration-200 hover:opacity-80"
-            >
-              categories
-            </a>{" "}
-            group them by subject.
+            lists every post by year.
           </p>
         </noscript>
         <SearchClient />

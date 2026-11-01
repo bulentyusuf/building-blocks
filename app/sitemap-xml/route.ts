@@ -129,15 +129,7 @@ export async function GET() {
       lastModified: newestSitewide,
     },
     {
-      url: `${SITE_URL}/categories`,
-      lastModified: newestSitewide,
-    },
-    {
       url: `${SITE_URL}/tags`,
-      lastModified: newestSitewide,
-    },
-    {
-      url: `${SITE_URL}/authors`,
       lastModified: newestSitewide,
     },
     {

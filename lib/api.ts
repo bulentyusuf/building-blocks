@@ -813,29 +813,6 @@ export const getCategoryBySlug = cache(
   },
 );
 
-// Capped, for the teaser on /categories.
-export const getRecentPostsByCategory = cache(
-  async (
-    slug: string,
-    limit: number,
-    isDraftMode: boolean,
-  ): Promise<CardPost[]> => {
-    const entries = await fetchGraphQL<CardPostCollectionResponse>(
-      `query GetRecentPostsByCategory($slug: String!, $limit: Int!, $preview: Boolean) {
-      postCollection(where: { category: { slug: $slug } }, order: date_DESC, preview: $preview, limit: $limit) {
-        items {
-          ${CARD_GRAPHQL_FIELDS}
-        }
-      }
-    }`,
-      isDraftMode,
-      { slug, limit, preview: isDraftMode },
-    );
-
-    return entries?.data?.postCollection?.items ?? [];
-  },
-);
-
 export const getAuthorBySlug = cache(
   async (slug: string, isDraftMode: boolean): Promise<Author | undefined> => {
     const entries = await fetchGraphQL<AuthorCollectionResponse>(

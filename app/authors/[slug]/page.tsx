@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import ContentfulImage from "@/lib/contentful-image";
+import { RichText } from "@/lib/rich-text";
 import CollectionPage from "../../collection-page";
 import { type Crumb } from "../../breadcrumb";
 import { getAllAuthors, getAllPosts, getAuthorBySlug } from "@/lib/api";
@@ -55,9 +56,9 @@ export default async function AuthorPage({
     notFound();
   }
 
+  // No /authors index to point at. [→ `listing-shell`]
   const crumbs: Crumb[] = [
     { label: "Home", href: "/" },
-    { label: "Authors", href: "/authors" },
     { label: author.name },
   ];
 
@@ -91,20 +92,27 @@ export default async function AuthorPage({
             : `That’s all ${posts.length} posts by ${author.name}.`
       }
       heading={
-        <div className="flex items-center gap-5 md:gap-7">
-          {author.picture?.url && (
-            <ContentfulImage
-              alt=""
-              className="h-20 w-20 shrink-0 rounded-full border-[3px] border-brand-dark object-cover md:h-28 md:w-28"
-              width={112}
-              height={112}
-              src={author.picture.url}
-            />
+        <>
+          <div className="flex items-center gap-5 md:gap-7">
+            {author.picture?.url && (
+              <ContentfulImage
+                alt=""
+                className="h-20 w-20 shrink-0 rounded-full border-[3px] border-brand-dark object-cover md:h-28 md:w-28"
+                width={112}
+                height={112}
+                src={author.picture.url}
+              />
+            )}
+            <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
+              {widont(author.name)}
+            </h1>
+          </div>
+          {author.bio && (
+            <div className="mt-6 max-w-2xl text-lg leading-relaxed text-pretty text-brand-muted">
+              <RichText content={author.bio} headings={[]} />
+            </div>
           )}
-          <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
-            {widont(author.name)}
-          </h1>
-        </div>
+        </>
       }
     />
   );

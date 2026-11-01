@@ -253,7 +253,6 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
               <ul className="mt-3">
                 {[
                   ["/tags", "tags"],
-                  ["/authors", "authors"],
                   ["/archive", "archive"],
                   ["/search", "search"],
                 ].map(([href, label]) => (

@@ -35,13 +35,12 @@ describe("search page without JavaScript", () => {
     expect(html).toMatch(/Search needs JavaScript/);
   });
 
-  it("offers the two routes that browse posts without scripts", () => {
+  it("offers the archive, which browses posts without scripts", () => {
     const noscript = html.slice(
       html.indexOf("<noscript>"),
       html.indexOf("</noscript>"),
     );
     expect(noscript).toContain('href="/archive"');
-    expect(noscript).toContain('href="/categories"');
   });
 
   it("keeps .search-empty as the immediate next sibling of .pagefind-scope", () => {

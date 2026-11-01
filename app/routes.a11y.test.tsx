@@ -135,7 +135,6 @@ vi.mock("@/lib/api", () => ({
     slug,
     description: "Building and maintaining the site.",
   }),
-  getRecentPostsByCategory: async () => posts.slice(0, 2),
   getPostAndMorePosts: async () => ({
     post: englishPost,
     morePosts: posts.slice(1),
@@ -232,14 +231,12 @@ const routes: [name: string, load: () => Promise<{ default: unknown }>][] = [
   ["/posts/[slug]", withSlug(() => import("@/app/posts/[slug]/page"))],
   ["/de/posts/[slug]", withSlug(() => import("@/app/de/posts/[slug]/page"))],
   ["/archive", () => import("@/app/archive/page")],
-  ["/categories", () => import("@/app/categories/page")],
   [
     "/categories/[slug]",
     withSlug(() => import("@/app/categories/[slug]/page"), "blogging"),
   ],
   ["/tags", () => import("@/app/tags/page")],
   ["/tags/[slug]", withSlug(() => import("@/app/tags/[slug]/page"), "design")],
-  ["/authors", () => import("@/app/authors/page")],
   [
     "/authors/[slug]",
     withSlug(() => import("@/app/authors/[slug]/page"), "bulent-yusuf"),

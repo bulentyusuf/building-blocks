@@ -185,7 +185,7 @@ module.exports = {
         permanent: true,
       },
       // Main Quest became Blogging. Side Quests split into Films and Games &
-      // Gadgets, so it lands on the category index.
+      // Gadgets, so it lands on home, where both chips are.
       {
         source: "/categories/main-quest/:path*",
         destination: "/categories/blogging/:path*",
@@ -193,9 +193,13 @@ module.exports = {
       },
       {
         source: "/categories/side-quests/:path*",
-        destination: "/categories",
+        destination: "/",
         permanent: true,
       },
+      // No index pages for strands or writers: the chips and mascots are the
+      // way in. [→ `listing-shell`]
+      { source: "/categories", destination: "/", permanent: true },
+      { source: "/authors", destination: "/about", permanent: true },
       // Tags never repeat a strand, so these two retired into theirs.
       {
         source: "/tags/film/:path*",
