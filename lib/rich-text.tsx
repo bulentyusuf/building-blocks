@@ -132,6 +132,7 @@ export function RichText({
   lightbox = true,
   prioritizeFirstImage = false,
   coverPromptId,
+  numbered = false,
 }: {
   content: Content;
   headings: Heading[];
@@ -140,6 +141,8 @@ export function RichText({
   prioritizeFirstImage?: boolean;
   // The prompt block that made the cover gets the id the hero's pill links to.
   coverPromptId?: string;
+  // Stamps each H2 with its number, matching the numbered ToC. [→ `post-page`]
+  numbered?: boolean;
 }) {
   // One index per non-empty H2, pairing each with extractHeadings()' slug. The
   // empty-heading skip must mirror extractHeadings(); a test holds them.
@@ -174,11 +177,23 @@ export function RichText({
       [BLOCKS.HEADING_2]: (node: Block | Inline, children: ReactNode) => {
         const text = headingText(node).trim();
         if (!text) return <h2>{children}</h2>;
-        const slug = headings[headingIndex++]?.slug;
+        const number = ++headingIndex;
+        const slug = headings[number - 1]?.slug;
         const isPlainRun = plainRun(node);
         return (
           // No scroll margin here. [→ `scroll-offset`]
           <h2 id={slug} className="group/heading">
+            {numbered && (
+              // A rubber stamp, so it tilts. Hidden and unindexed: the number
+              // is position, not part of the heading. [→ `post-page`]
+              <span
+                aria-hidden="true"
+                data-pagefind-ignore
+                className="mr-3.5 inline-flex size-[2.625rem] -rotate-8 items-center justify-center rounded-full bg-brand-dark align-[0.3em] font-mono text-sm font-medium tracking-normal text-brand-bg"
+              >
+                {String(number).padStart(2, "0")}
+              </span>
+            )}
             {isPlainRun ? widont(text) : children}
             {slug ? (
               <a
@@ -338,6 +353,34 @@ export function RichText({
                 </pre>
               )}
             </div>
+          );
+        }
+
+        if (entry.__typename === "Callout") {
+          const labelId = `callout-${entry.sys.id}`;
+          return (
+            // Marks exactly the text the author boxed: 2px ink, cream, flat
+            // and straight. Text only inside. [→ `post-page`]
+            <aside
+              aria-labelledby={labelId}
+              className="my-8 rounded-2xl border-2 border-brand-dark bg-brand-bg px-5 py-5 text-[0.94em] sm:px-6 [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
+            >
+              <span
+                id={labelId}
+                className="mb-2 block font-mono text-[0.82em] font-medium text-brand-muted"
+              >
+                <span aria-hidden="true">{"// "}</span>
+                {entry.label}
+              </span>
+              <RichText
+                content={{
+                  json: entry.body.json,
+                  links: { assets: { block: [] } },
+                }}
+                headings={[]}
+                lightbox={false}
+              />
+            </aside>
           );
         }
 

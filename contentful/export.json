@@ -224,6 +224,14 @@
                 ],
                 "embedded-entry-block": [
                   {
+                    "linkContentType": [
+                      "callout",
+                      "codeBlock",
+                      "promptBlock"
+                    ],
+                    "message": null
+                  },
+                  {
                     "size": {
                       "max": 10
                     },
@@ -249,6 +257,16 @@
               }
             }
           ],
+          "disabled": false,
+          "omitted": false
+        },
+        {
+          "id": "numberedSections",
+          "name": "Numbered sections",
+          "type": "Boolean",
+          "localized": false,
+          "required": false,
+          "validations": [],
           "disabled": false,
           "omitted": false
         },
@@ -748,6 +766,38 @@
     },
     {
       "sys": {
+        "id": "callout",
+        "type": "ContentType",
+        "publishedVersion": 1
+      },
+      "displayField": "label",
+      "name": "Callout",
+      "description": "A boxed aside inside a post, with a short label.",
+      "fields": [
+        {
+          "id": "label",
+          "name": "Label",
+          "type": "Symbol",
+          "localized": true,
+          "required": true,
+          "validations": [],
+          "disabled": false,
+          "omitted": false
+        },
+        {
+          "id": "body",
+          "name": "Body",
+          "type": "RichText",
+          "localized": true,
+          "required": true,
+          "validations": [],
+          "disabled": false,
+          "omitted": false
+        }
+      ]
+    },
+    {
+      "sys": {
         "id": "sidenote",
         "type": "ContentType",
         "publishedVersion": 1
@@ -916,6 +966,11 @@
         {
           "fieldId": "content",
           "widgetId": "richTextEditor",
+          "widgetNamespace": "builtin"
+        },
+        {
+          "fieldId": "numberedSections",
+          "widgetId": "boolean",
           "widgetNamespace": "builtin"
         },
         {
@@ -1138,6 +1193,31 @@
         {
           "fieldId": "image",
           "widgetId": "assetLinkEditor",
+          "widgetNamespace": "builtin"
+        }
+      ]
+    },
+    {
+      "sys": {
+        "id": "default",
+        "type": "EditorInterface",
+        "contentType": {
+          "sys": {
+            "id": "callout",
+            "type": "Link",
+            "linkType": "ContentType"
+          }
+        }
+      },
+      "controls": [
+        {
+          "fieldId": "label",
+          "widgetId": "singleLine",
+          "widgetNamespace": "builtin"
+        },
+        {
+          "fieldId": "body",
+          "widgetId": "richTextEditor",
           "widgetNamespace": "builtin"
         }
       ]

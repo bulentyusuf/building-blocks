@@ -22,11 +22,13 @@ function TocNav({
   activeId,
   onLinkClick,
   lang,
+  numbered,
 }: {
   headings: Heading[];
   activeId: string | null;
   onLinkClick: (slug: string) => void;
   lang?: string;
+  numbered: boolean;
 }) {
   return (
     <nav aria-label="Table of contents">
@@ -37,7 +39,7 @@ function TocNav({
       {/* The entries are the post's headings, so they take its language; the
           label above is chrome. [→ `locale`] */}
       <ul lang={lang} className="space-y-4 font-ui leading-[1.3]">
-        {headings.map((h) => (
+        {headings.map((h, i) => (
           <li key={h.slug}>
             <a
               href={`#${h.slug}`}
@@ -46,12 +48,23 @@ function TocNav({
               // information sighted readers get.
               aria-current={activeId === h.slug ? "location" : undefined}
               onClick={() => onLinkClick(h.slug)}
-              className={`block transition-colors duration-200 ${
+              className={`transition-colors duration-200 ${
+                numbered ? "grid grid-cols-[1.75rem_1fr]" : "block"
+              } ${
                 activeId === h.slug
                   ? "font-bold text-brand-crimson"
                   : "font-medium hover:text-brand-crimson"
               }`}
             >
+              {numbered && (
+                // Matches the H2's stamp, so hidden here too. [→ `post-page`]
+                <span
+                  aria-hidden="true"
+                  className="pt-0.5 font-mono text-[0.8125rem] font-medium"
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              )}
               {/* h.text is always a plain string; widont de-widows the entry in
                   the narrow TOC column. The link target is h.slug, computed
                   separately, so the NBSP never reaches the anchor. */}
@@ -67,9 +80,11 @@ function TocNav({
 export default function TableOfContents({
   headings,
   lang,
+  numbered = false,
 }: {
   headings: Heading[];
   lang?: string;
+  numbered?: boolean;
 }) {
   const [activeId, setActiveId] = useState<string>("");
 
@@ -203,6 +218,7 @@ export default function TableOfContents({
             activeId={activeId}
             onLinkClick={pin}
             lang={lang}
+            numbered={numbered}
           />
         </div>
       </details>
@@ -214,6 +230,7 @@ export default function TableOfContents({
           activeId={activeId}
           onLinkClick={pin}
           lang={lang}
+          numbered={numbered}
         />
       </div>
     </>

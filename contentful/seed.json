@@ -437,6 +437,45 @@
     },
     {
       "sys": {
+        "id": "callout-example",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "callout"
+          }
+        },
+        "publishedVersion": 1
+      },
+      "fields": {
+        "label": {
+          "en-US": "A word on callouts"
+        },
+        "body": {
+          "en-US": {
+            "nodeType": "document",
+            "data": {},
+            "content": [
+              {
+                "nodeType": "paragraph",
+                "data": {},
+                "content": [
+                  {
+                    "nodeType": "text",
+                    "value": "A callout boxes a short aside the reader should not miss, with its own label.",
+                    "marks": [],
+                    "data": {}
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "sys": {
         "id": "sidenote-example",
         "type": "Entry",
         "contentType": {
@@ -499,6 +538,9 @@
         },
         "updatedDate": {
           "en-US": "2026-05-20"
+        },
+        "numberedSections": {
+          "en-US": true
         },
         "coverImage": {
           "en-US": {
@@ -692,6 +734,19 @@
                     "data": {}
                   }
                 ]
+              },
+              {
+                "nodeType": "embedded-entry-block",
+                "data": {
+                  "target": {
+                    "sys": {
+                      "type": "Link",
+                      "linkType": "Entry",
+                      "id": "callout-example"
+                    }
+                  }
+                },
+                "content": []
               },
               {
                 "nodeType": "unordered-list",

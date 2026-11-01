@@ -222,3 +222,25 @@ describe("the entries' language", () => {
       .forEach((ul) => expect(ul.hasAttribute("lang")).toBe(false));
   });
 });
+
+describe("numbered entries", () => {
+  // Match the H2 stamps when the post turns them on. [→ `post-page`]
+  const numbers = (container: HTMLElement) =>
+    [...container.querySelectorAll('a span[aria-hidden="true"]')].map(
+      (s) => s.textContent,
+    );
+
+  it("prefixes each entry with its number in both copies", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} numbered />,
+    );
+    expect(numbers(container)).toEqual(["01", "02", "03", "01", "02", "03"]);
+  });
+
+  it("adds none by default", () => {
+    const { container } = render(
+      <TableOfContents headings={[1, 2, 3].map(heading)} />,
+    );
+    expect(numbers(container)).toEqual([]);
+  });
+});
