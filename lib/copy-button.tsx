@@ -30,10 +30,9 @@ export default function CopyButton({
 
   const variantStyles =
     variant === "dark"
-      ? // On the crimson prompt header. Light edge 3.5:1 on the bar. Dark mode
-        // flips to dark ink, since white fails on the lifted crimson: ink 5.8:1
-        // (6.5:1 hovered), edge 3.2:1.
-        "border border-white/60 bg-white/10 text-white hover:border-white/80 hover:bg-white/20 dark:border-surface-dark/70 dark:bg-white/10 dark:text-surface-dark dark:hover:border-surface-dark/70 dark:hover:bg-white/20"
+      ? // On the ink code bar and prompt block, ink in both schemes. The edge
+        // is white at 60%, over 3:1 on ink.
+        "border-[1.5px] border-white/60 bg-transparent text-white hover:border-white hover:bg-white/10"
       : // On the filename bar or over code. Light edge 4.6:1 on the bar and
         // 3.4:1 over code; dark edge 3.8:1. The dark hover pins the ink light so
         // the control brightens rather than recedes.

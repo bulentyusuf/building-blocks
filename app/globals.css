@@ -109,6 +109,10 @@
      ink used on the lifted-crimson prompt header — points here instead so it
      never flips to light. Deliberately excluded from the dark override. */
   --color-surface-dark: #241b1d;
+  /* The label inside the prompt block, on surface-dark. [→ `post-page`] */
+  --color-prompt-label: #f2c14e;
+  /* The inline code fill. [→ `post-page`] */
+  --color-code-bg: #f3eae3;
 
   /* Table treatment. Derived from the crimson token rather than the divider
      hairline, whose light value is a cool grey on a warm cream page and sits
@@ -522,22 +526,13 @@ html:has(dialog:modal) {
     font-family: var(--font-mono);
     font-weight: 400;
     font-style: normal;
-    /* No border. A 1px edge plus 0.4em padding made the inline box taller than
-       the line box, so leading went uneven in any paragraph carrying a pill
-       (measured 17px, 21px and 23px across three consecutive lines of one
-       paragraph). Worse, when a pill wrapped to the start of a line its border
-       sat on the margin and the letterforms inside began 0.4em further right,
-       so that line read as indented — and where a pill lands is not knowable
-       from the CMS. The tint alone still separates: 12% lands at 1.22:1
-       (light) and 1.20:1 (dark) against the page, matching the ~1.2
-       block-separation threshold chrome is held to sitewide, while ink on the
-       fill stays above 12.7:1 in
-       both modes. */
-    background-color: color-mix(
-      in srgb,
-      var(--color-brand-crimson) 12%,
-      transparent
-    );
+    /* An outline, never a border. A border plus padding made the inline box
+       taller than the line box, so leading went uneven in any paragraph
+       carrying a pill (measured 17px, 21px and 23px across three consecutive
+       lines), and a pill wrapped to a line start read as indented. An outline
+       takes no space, so neither happens. Ink on the fill is 14:1. */
+    background-color: var(--color-code-bg);
+    outline: 1.5px solid var(--color-brand-dark);
     color: var(--color-brand-dark);
     padding: 0.05em 0.3em;
     border-radius: 0.2rem;
@@ -558,22 +553,20 @@ html:has(dialog:modal) {
   }
 }
 
+/* The prompt block's "// " sits outside the figcaption's text, so it never
+   joins the name the figcaption gives its figure. [→ `post-page`] */
+.prompt-label::before {
+  content: "// " / "";
+}
+
 /* Inline code sits at high contrast against the near-black dark-mode page (the
    off-white ink), so this isn't a WCAG failure — but thin monospace strokes in
    a light ink read fainter on a dark ground than the same weight does in dark
-   ink on a light one, the mirror image of the PromptBlock label problem.
-   font-weight is the fix, same as there; size is untouched, and code blocks
-   stay unaffected since they're not-prose. Light mode keeps 400.
+   ink on a light one. font-weight is the fix; size is untouched, and code
+   blocks stay unaffected since they're not-prose. Light mode keeps 400.
 
-   The 12% crimson fill has the same problem the .pagefind-scope mark wash
-   below already documents: a tint tuned against the cream light page reads
-   correctly there but composites to a barely-there sliver on the near-black
-   dark ground, even though the numeric contrast ratio against the page is
-   nearly identical in both modes (1.22:1 light, 1.20:1 dark) — the eye is
-   simply less sensitive to small luminance steps at low absolute luminance.
-   22% restores a comparable perceived separation (1.45:1 against the page)
-   while ink-on-fill stays at 10.85:1, well clear of AAA. Light mode's 12%
-   is unaffected. */
+   The light fill is cream, which would vanish here, so dark mode keeps a 22%
+   crimson tint: 1.45:1 against the page, ink on it 10.85:1. */
 @media (prefers-color-scheme: dark) {
   .prose :where(code):not(:where([class~="not-prose"] *)) {
     font-weight: 500;

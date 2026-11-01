@@ -303,19 +303,22 @@ export function RichText({
           // A filename names the region better than a number.
           const position = ++codeBlockIndex;
           const label = entry.filename || `Code block ${position}`;
+          // The bar's mono label: the filename, else what the block holds.
+          const tag =
+            entry.filename ||
+            (entry.language === "bash" ? "terminal" : entry.language || "code");
 
           return (
-            <div className="not-prose relative my-8 overflow-hidden rounded-lg border border-hairline">
-              {entry.filename ? (
-                <div className="flex items-center justify-between border-b border-hairline bg-gray-50 px-4 py-2 font-mono text-[0.67em] text-brand-muted dark:bg-white/5">
-                  <span>{entry.filename}</span>
-                  <CopyButton code={entry.code} />
-                </div>
-              ) : (
-                <div className="absolute right-2 top-2">
-                  <CopyButton code={entry.code} />
-                </div>
-              )}
+            // An ink block with a bar, flat. A grey edge in dark mode keeps it
+            // off the page. [→ `post-page`]
+            <div className="not-prose my-8 overflow-hidden rounded-[14px] bg-surface-dark dark:border-2 dark:border-brand-muted">
+              <div className="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-2 font-mono text-xs font-medium text-white/75">
+                <span>
+                  <span aria-hidden="true">{"// "}</span>
+                  {tag}
+                </span>
+                <CopyButton code={entry.code} variant="dark" />
+              </div>
               {html ? (
                 <div
                   tabIndex={0}
@@ -329,7 +332,7 @@ export function RichText({
                   tabIndex={0}
                   role="region"
                   aria-label={label}
-                  className="overflow-x-auto p-4 text-[0.78em] focus-visible:outline-offset-[-2px]"
+                  className="overflow-x-auto p-4 text-[0.78em] text-white/90 focus-visible:outline-offset-[-2px]"
                 >
                   <code>{entry.code}</code>
                 </pre>
@@ -339,6 +342,10 @@ export function RichText({
         }
 
         if (entry.__typename === "PromptBlock") {
+          const thumb = entry.image?.url;
+          // Thumbnail left of label and prompt from 480px; the figcaption
+          // stays the first child, which is what names the figure.
+          const side = thumb ? "min-[480px]:col-start-2" : "";
           return (
             <figure
               // A fixed id: the hero pill links to this literal.
@@ -347,36 +354,36 @@ export function RichText({
               // [→ `locale`]
               lang={DEFAULT_LOCALE}
               data-pagefind-weight="0.1"
-              className="not-prose mt-10 mb-6 last:mb-0 overflow-hidden rounded-lg border border-hairline"
+              className={`not-prose mt-10 mb-6 grid gap-x-5 gap-y-2 rounded-[20px] bg-surface-dark px-5 py-6 text-white last:mb-0 sm:px-7 dark:border-2 dark:border-brand-muted${thumb ? " min-[480px]:grid-cols-[7.5rem_1fr]" : ""}`}
             >
               {/* Indexed at a low weight so a prompt match does not anchor the
-                  excerpt. Dark ink in dark mode: white is 2.53:1 on the lifted
-                  crimson, dark ink 6.64:1. Not mono: thin stems read worse than contrast
-                  predicts. */}
-              <figcaption className="flex items-center justify-between bg-brand-crimson px-4 py-2 text-[0.78em] font-semibold text-white dark:text-surface-dark">
+                  excerpt. The yellow label is 10:1 on ink. [→ `post-page`] */}
+              <figcaption
+                className={`prompt-label flex items-center justify-between gap-3 font-mono text-xs font-medium text-prompt-label ${side}`}
+              >
                 <span className="min-w-0 flex-1">
                   {entry.label || "Prompt"}
                 </span>
                 <CopyButton code={entry.prompt} label="prompt" variant="dark" />
               </figcaption>
-              <div className="flow-root whitespace-pre-wrap break-words bg-gray-50 p-4 font-mono text-[0.78em] text-gray-800 dark:bg-white/5 dark:text-brand-dark">
-                {entry.image?.url && (
-                  /* Decorative. The text beside the float is the viewport less
-                     164px: about 17 characters at 320px, 35 at 480px (at a
-                     measured 8.9px each), so it floats only from 480px up. */
-                  <span
-                    aria-hidden="true"
-                    className="relative mb-3 block h-[52px] w-[78px] overflow-hidden rounded-md shadow-md ring-1 ring-black/10 min-[480px]:float-left min-[480px]:mt-2 min-[480px]:mr-3 min-[480px]:mb-1"
-                  >
-                    <ContentfulImage
-                      src={entry.image.url}
-                      alt=""
-                      fill
-                      sizes="78px"
-                      className="object-cover"
-                    />
-                  </span>
-                )}
+              {thumb && (
+                // Decorative.
+                <span
+                  aria-hidden="true"
+                  className="relative mb-2 block aspect-video w-30 overflow-hidden rounded-[10px] border-2 border-brand-bg min-[480px]:col-start-1 min-[480px]:row-span-2 min-[480px]:row-start-1 min-[480px]:mb-0 dark:border-white"
+                >
+                  <ContentfulImage
+                    src={thumb}
+                    alt=""
+                    fill
+                    sizes="120px"
+                    className="object-cover"
+                  />
+                </span>
+              )}
+              <div
+                className={`whitespace-pre-wrap break-words font-mono text-sm leading-relaxed ${side}`}
+              >
                 <code>{entry.prompt}</code>
               </div>
             </figure>
