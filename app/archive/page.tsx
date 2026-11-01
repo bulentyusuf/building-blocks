@@ -3,10 +3,12 @@ import Link from "next/link";
 import { draftMode } from "next/headers";
 import DateComponent, { formatMonthYear } from "../date";
 import WidePage from "../wide-page";
+import { StrandPill } from "../post-card";
 import { type Crumb } from "../breadcrumb";
 import { getAllPosts, getBrowseIntro, getGermanPostSlugs } from "@/lib/api";
 import { GERMAN_LOCALE } from "@/lib/constants";
 import type { ListPost } from "@/lib/types";
+import { strandFor } from "@/lib/strands";
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
@@ -47,7 +49,7 @@ export default async function ArchivePage() {
     <WidePage
       crumbs={crumbs}
       heading={
-        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">
+        <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
           Archive
         </h1>
       }
@@ -76,68 +78,71 @@ export default async function ArchivePage() {
         years.map((year) => {
           const yearPosts = byYear.get(year)!;
           return (
-            <section key={year} className="mb-10 last:mb-0">
-              {/* Body ink one step below the h1: the page's spine. Face and
-                  weight come from the base layer. */}
-              <h2 className="mb-2.5 flex items-baseline gap-4">
-                <span className="text-3xl leading-none tabular-nums md:text-4xl lg:text-5xl">
+            <section key={year} className="mb-12 last:mb-0">
+              {/* The year is the page's spine; the count is a muted label. */}
+              <h2 className="mb-4 flex items-baseline gap-4">
+                <span className="text-4xl leading-none font-[800] tracking-[-0.02em] tabular-nums md:text-5xl lg:text-[3.25rem]">
                   {year}
                 </span>
-                <span className="font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
+                <span className="font-mono text-sm font-medium text-brand-muted">
+                  <span aria-hidden="true">{"// "}</span>
                   {yearPosts.length} {yearPosts.length === 1 ? "post" : "posts"}
                 </span>
               </h2>
-              {/* Three fixed lanes per row so columns align down the page. One
-                  column below sm, title first. */}
-              <ul>
-                {yearPosts.map((post) => (
-                  <li
-                    key={post.slug}
-                    className="grid grid-cols-1 items-baseline gap-x-6 gap-y-1 border-t border-hairline py-3 last:border-b sm:grid-cols-[5rem_1fr_10rem]"
-                  >
-                    <span className="order-2 shrink-0 text-sm tabular-nums text-brand-muted sm:order-1">
-                      <DateComponent
-                        dateString={post.date}
-                        variant="dayMonth"
-                      />
-                      {/* The heading carries the year; restore it for link
-                          navigation. */}
-                      <span className="sr-only"> {year}</span>
-                    </span>
-                    <span className="order-1 sm:order-2">
-                      <Link
-                        href={`/posts/${post.slug}`}
-                        className="text-xl hover:text-brand-crimson transition-colors duration-200"
-                      >
-                        {widont(post.title)}
-                      </Link>
-                      {/* The one place a browsing reader learns a German
-                          version exists. Visible "DE" stays in the name.
-                          [→ `locale`] */}
-                      {german.has(post.slug) && (
+              {/* A list panel: read, not pressed, so the quiet edge. Three fixed
+                  lanes from sm, title first below it. [→ `post-page`] */}
+              <ul className="overflow-hidden rounded-3xl border-2 border-edge-quiet bg-card">
+                {yearPosts.map((post) => {
+                  const strand = strandFor(post.category);
+                  return (
+                    <li
+                      key={post.slug}
+                      className="grid grid-cols-1 items-baseline gap-x-6 gap-y-1.5 px-5 py-3.5 even:bg-brand-bg sm:grid-cols-[4.75rem_1fr_auto] sm:px-7"
+                    >
+                      <span className="order-2 font-ui text-[0.9375rem] font-semibold tabular-nums text-brand-muted sm:order-1">
+                        <DateComponent
+                          dateString={post.date}
+                          variant="dayMonth"
+                        />
+                        {/* The heading carries the year; restore it for link
+                            navigation. */}
+                        <span className="sr-only"> {year}</span>
+                      </span>
+                      <span className="order-1 sm:order-2">
                         <Link
-                          href={`/de/posts/${post.slug}`}
-                          hrefLang={GERMAN_LOCALE}
-                          lang={GERMAN_LOCALE}
-                          className="ml-2.5 whitespace-nowrap font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+                          href={`/posts/${post.slug}`}
+                          className="font-ui text-xl leading-snug font-bold transition-colors duration-200 hover:text-brand-crimson"
                         >
-                          <span className="sr-only">Auf Deutsch lesen, </span>
-                          DE
+                          {widont(post.title)}
+                        </Link>
+                        {/* The one place a browsing reader learns a German
+                            version exists. Visible "DE" stays in the name.
+                            [→ `locale`] */}
+                        {german.has(post.slug) && (
+                          <Link
+                            href={`/de/posts/${post.slug}`}
+                            hrefLang={GERMAN_LOCALE}
+                            lang={GERMAN_LOCALE}
+                            className="ml-2.5 whitespace-nowrap font-mono text-xs font-medium tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+                          >
+                            <span className="sr-only">Auf Deutsch lesen, </span>
+                            DE
+                          </Link>
+                        )}
+                      </span>
+                      {strand && (
+                        <Link
+                          href={`/categories/${strand.slug}`}
+                          className="order-3 justify-self-start sm:justify-self-end"
+                        >
+                          {/* Keeps the title from running into the strand. */}
+                          <span className="sr-only">in </span>
+                          <StrandPill strand={strand} />
                         </Link>
                       )}
-                    </span>
-                    {post.category && (
-                      <Link
-                        href={`/categories/${post.category.slug}`}
-                        className="order-3 font-ui text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson sm:justify-self-end sm:text-right"
-                      >
-                        {/* Keeps the title from running into the category. */}
-                        <span className="sr-only">in </span>
-                        {post.category.name}
-                      </Link>
-                    )}
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           );

@@ -15,7 +15,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 
 **Page shape**
 
-- `band-retirement` — The masthead band was retired in favour of a 3px rule
+- `band-retirement` — No page draws a rule under its header
 - `breadcrumbs` — Breadcrumbs, and the one page without them
 - `page-axis` — One axis, and it is the header measure
 - `post-page` — A post is a header group, a framed cover and a reading panel
@@ -208,18 +208,19 @@ restates the code is deleted. This caps what had grown unchecked: by September
 trimming another, never by raising it. The 20-line rule alone did not stop the
 file reaching 2,405 lines, because nothing counted them.
 
-### The masthead band was retired in favour of a 3px rule
+### No page draws a rule under its header
 
 <!-- key: band-retirement -->
 
-Every wide route's header closes with a 3px `border-brand-dark` rule in
-`app/wide-page.tsx`, standing in for the colour step the navy band drew.
+The navy masthead band gave way to a 3px ink rule, and F2 retired that too: the
+graph-paper page and the panels below the header do the separating. The index
+pages keep `app/wide-page.tsx` for the trail and the split header, which ends
+on a fixed gap before the content. The layout test in lib
+(listing-rhythm.layout.test.tsx) holds that gap the same on `/archive` and
+`/tags`, in a browser [→ `guard-limits`].
 
-**The band's inset stays two numbers, one each side of the rule**: the header's
-bottom margin above it and a gap below it. Folding both above the rule leaves
-the first content flush against a 3px line on the section fronts. The layout
-test in lib (listing-rhythm.layout.test.tsx) measures both halves, in a browser
-[→ `guard-limits`].
+The archive lists each year in a list panel: white, the quiet edge, rows
+striped in the page colour, the strand as its pill linking to the strand page.
 
 ### The masthead splits into heading and standfirst, right-anchored
 
@@ -654,14 +655,13 @@ it, with a commented-out declaration as its control.
 <!-- key: page-axis -->
 
 Whether a page's header sits at `max-w-frame` or inside `max-w-2xl` decides the
-breadcrumb wrapper, the `h1` ramp and whether the header closes with the 3px
-rule. A route is wide or narrow; none sits half in each. The tell of a wrong
+breadcrumb wrapper and the `h1` ramp. A route is wide or narrow; none sits half in each. The tell of a wrong
 choice is a 6xl heading in a 42rem measure. The measure is the
 header's, not the prose's: `/search` is narrow. The route lists are in
 `CLAUDE.md`.
 
 Home, the strand pages, posts and the tag and author pages sit outside this
-axis: none has a rule [→ `strands`, `post-page`, `listing-shell`].
+axis [→ `strands`, `post-page`, `listing-shell`].
 
 ### How the wide-page header is built
 

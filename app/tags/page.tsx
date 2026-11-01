@@ -41,7 +41,9 @@ export default async function TagsPage() {
     <WidePage
       crumbs={crumbs}
       heading={
-        <h1 className="text-4xl leading-tight md:text-5xl lg:text-6xl">Tags</h1>
+        <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
+          Tags
+        </h1>
       }
       // Not the meta description, which repeats the site name.
       standfirst={

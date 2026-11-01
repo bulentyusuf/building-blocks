@@ -7,13 +7,12 @@ import { renderToReadableStream } from "react-dom/server";
 import { chromium, type Browser } from "playwright-core";
 import type { ReactElement } from "react";
 
-// The spacing rhythm around WidePage's 3px rule, measured in a real browser
-// rather than matched in source. [→ `guard-limits`, `band-retirement`]
+// The spacing under WidePage's header, measured in a real browser rather than
+// matched in source. [→ `guard-limits`, `band-retirement`]
 //
-// The rhythm: /archive opens a non-zero gap below its rule, and the header sits
-// the same distance above the rule on /archive and the /tags glossary. Home has
-// no rule since the strand redesign, so only its bar and feature card are
-// measured. [→ `strands`] Every check is a relation between two measured
+// The rhythm: the first content sits a non-zero distance below the header, the
+// same on /archive and the /tags glossary. Home's bar and feature card are
+// measured too. [→ `strands`] Every check is a relation between two measured
 // distances, never a pixel value, so a refactor that keeps the pixels keeps
 // this green.
 
@@ -126,10 +125,8 @@ async function toHtml(element: ReactElement): Promise<string> {
 }
 
 type Measurement = {
-  /** Null on home, which has no rule. */
-  headerToRule: number | null;
-  /** From the rule to the top of the first element below it. */
-  ruleToContent: number | null;
+  /** From the page header to the first content below it. Null on home. */
+  headerToContent: number | null;
   /** The bar above every page. */
   barHeight: number;
   /** Home only: the feature card's title and the first card title's sizes. */
@@ -148,16 +145,15 @@ function measureInPage(): Measurement {
     el ? parseFloat(getComputedStyle(el).fontSize) : null;
 
   const header = main.querySelector("header");
-  const rule = main.querySelector('[class*="border-t-[3px]"]');
-  const below = rule?.nextElementSibling?.firstElementChild;
+  const below = header?.nextElementSibling?.firstElementChild;
   // Home's feature card is the first article; its children are cover, text.
   const feature = main.querySelector("section > article");
   const featureCover = feature?.children[0];
   const featureText = feature?.children[1];
 
   return {
-    headerToRule: header && rule ? box(rule).top - box(header).bottom : null,
-    ruleToContent: rule && below ? box(below).top - box(rule).bottom : null,
+    headerToContent:
+      header && below ? box(below).top - box(header).bottom : null,
     barHeight: box(document.querySelector("body > header")!).height,
     featureTitlePx: size(feature?.querySelector("h3")),
     cardTitlePx: size(main.querySelector("li article h3")),
@@ -182,17 +178,13 @@ const same = (a: number, b: number) => Math.abs(a - b) < 0.5;
 function rhythmProblems(m: Record<Page, Measurement>): string[] {
   const problems: string[] = [];
   const { glossary, archive } = m;
-  if (archive.ruleToContent === null || !(archive.ruleToContent > 0))
-    problems.push("archive's content sits flush against the rule");
-  if (
-    glossary.headerToRule === null ||
-    archive.headerToRule === null ||
-    !same(glossary.headerToRule, archive.headerToRule)
-  ) {
-    problems.push(
-      `header to rule: glossary ${glossary.headerToRule}px, archive ${archive.headerToRule}px`,
-    );
-  }
+  const a = archive.headerToContent;
+  const g = glossary.headerToContent;
+  if (a === null || g === null) return ["a page rendered no header or content"];
+  if (!(a > 0))
+    problems.push("archive's content sits flush against its header");
+  if (!same(a, g))
+    problems.push(`header to content: glossary ${g}px, archive ${a}px`);
   return problems;
 }
 
@@ -286,15 +278,14 @@ describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
   // would pass the check above and fail these. [→ `known-bad-controls`]
   it.each([
     [
-      "the archive's content pulled flush against the rule",
-      {
-        archive:
-          '[class*="border-t-[3px]"] + div { padding-top: 0 !important }',
-      },
+      "the archive's header margin dropped",
+      { archive: "main header { margin-bottom: 0 !important }" },
     ],
     [
-      "the glossary's header margin dropped",
-      { glossary: "main header { margin-bottom: 0 !important }" },
+      "a gap added above the glossary's content",
+      {
+        glossary: "main header + div { padding-top: 1.5rem !important }",
+      },
     ],
   ])(
     "reports %s",
