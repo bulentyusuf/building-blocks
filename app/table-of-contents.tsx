@@ -38,7 +38,8 @@ function TocNav({
       </p>
       {/* The entries are the post's headings, so they take its language; the
           label above is chrome. [→ `locale`] */}
-      <ul lang={lang} className="space-y-4 font-ui leading-[1.3]">
+      {/* Phone entries are 44px tap targets; xl keeps the gap. [→ `post-page`] */}
+      <ul lang={lang} className="font-ui leading-[1.3] xl:space-y-4">
         {headings.map((h, i) => (
           <li key={h.slug}>
             <a
@@ -48,7 +49,7 @@ function TocNav({
               // information sighted readers get.
               aria-current={activeId === h.slug ? "location" : undefined}
               onClick={() => onLinkClick(h.slug)}
-              className={`transition-colors duration-200 ${
+              className={`py-3 transition-colors duration-200 xl:py-0 ${
                 numbered ? "grid grid-cols-[1.75rem_1fr]" : "block"
               } ${
                 activeId === h.slug
@@ -212,7 +213,7 @@ export default function TableOfContents({
             />
           </svg>
         </summary>
-        <div className="px-5 pt-1 pb-5">
+        <div className="px-5 pb-2">
           <TocNav
             headings={headings}
             activeId={activeId}
