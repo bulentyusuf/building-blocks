@@ -476,9 +476,10 @@ tell a working name from a broken one.
 
 <!-- key: breadcrumbs -->
 
-- Pages in a `max-w-2xl` column wrap `<Breadcrumb>` in
-  `<div className="mx-auto max-w-2xl">`, or it starts 176px left of the heading;
-  wide pages render it unwrapped.
+- A narrow page puts `<Breadcrumb>` inside its centred column (`max-w-2xl` on
+  `/search`, the 49.25rem reading panel on `/about` and `/privacy`), or it
+  starts far left of the heading; wide pages render it unwrapped.
+- The 404 carries no trail: the header's chips and its own links lead out.
 - On `/search` the wrapper sits before the `<section>`, so `.search-empty`
   stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
 - Home, the strand pages and posts carry no trail; the header's chips say

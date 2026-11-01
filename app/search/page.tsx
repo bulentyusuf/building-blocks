@@ -31,7 +31,9 @@ export default async function SearchPage() {
         <Breadcrumb items={crumbs} />
       </div>
       <section className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-4xl md:text-5xl">Search</h1>
+        <h1 className="mb-7 text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
+          Search
+        </h1>
         {/* Without scripts the input never appears, so say why. Before
             SearchClient, to keep the emblem's adjacency rule intact. */}
         <noscript>
