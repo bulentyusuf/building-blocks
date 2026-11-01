@@ -133,7 +133,13 @@ type Measurement = {
   featureTitlePx: number | null;
   cardTitlePx: number | null;
   /** Home only: the feature card's cover and text column boxes. */
-  featureCover: { top: number; bottom: number; right: number } | null;
+  featureCover: {
+    top: number;
+    bottom: number;
+    right: number;
+    width: number;
+    height: number;
+  } | null;
   featureText: { top: number; left: number } | null;
 };
 
@@ -162,6 +168,8 @@ function measureInPage(): Measurement {
           top: box(featureCover).top,
           bottom: box(featureCover).bottom,
           right: box(featureCover).right,
+          width: box(featureCover).width,
+          height: box(featureCover).height,
         }
       : null,
     featureText: featureText
@@ -210,6 +218,11 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
   }
   if (width >= 768 && !(featureText.left >= featureCover.right)) {
     problems.push("the feature card's cover and text do not share a row");
+  }
+  // 16:9 at every width, whatever the headline's length. [→ `strands`]
+  const ratio = featureCover.width / featureCover.height;
+  if (Math.abs(ratio - 16 / 9) > 0.02) {
+    problems.push(`the feature cover is ${ratio.toFixed(2)}:1, not 16:9`);
   }
   if (width >= 1024 && !(featureTitlePx > cardTitlePx)) {
     problems.push(
@@ -321,6 +334,13 @@ it.each([
     1280,
     "the feature card stacked at desktop",
     { home: "section > article { display: block !important }" },
+  ],
+  [
+    1280,
+    "the feature cover stretched to its text",
+    {
+      home: "section > article > div:first-child { aspect-ratio: auto !important; height: 400px !important }",
+    },
   ],
   [
     1280,
