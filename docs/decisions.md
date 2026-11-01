@@ -297,7 +297,10 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
 - **From `xl` the sidebar sits beside the panel**, the ToC under the page's
   one strip of tape and the AI links below it. The panel is 49.25rem, the 42rem
   measure plus padding, which needs the 1200px frame. Below `xl` the ToC is a
-  disclosure above the panel.
+  disclosure above the panel, its entries padded to 44px tap targets.
+- **Below `md` there is no panel**, on posts, About and Privacy: no edge, ground
+  or side padding, so text runs between the 16px gutters, about 40 characters a
+  line at 375px against 35 inside it. A named exception, settled November 2026.
 - **More like this is two home cards** from `lib/related.ts`, unchanged.
 - **Code and prompt blocks are ink** with a `//` bar, grey-edged in dark mode.
   Inline code is cream with an outline, never a border, so leading holds.

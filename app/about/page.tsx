@@ -70,7 +70,7 @@ export default async function AboutPage() {
             <UpdatedStamp dateString={lastUpdated} />
           </p>
         )}
-        <article className="mt-9 rounded-3xl border-2 border-edge-quiet bg-card px-5 py-8 md:px-14 md:py-12">
+        <article className="mt-9 pt-2 md:rounded-3xl md:border-2 md:border-edge-quiet md:bg-card md:px-14 md:py-12">
           <div className="prose text-pretty">
             <RichText
               content={page.body}
