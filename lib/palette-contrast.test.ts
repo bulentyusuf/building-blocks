@@ -66,6 +66,20 @@ describe("strand pills and card text clear AA in both schemes", () => {
   });
 });
 
+describe("the post's code and prompt surfaces clear AAA", () => {
+  // Ink stays ink in dark mode and the cream fill is light-only, so light
+  // values cover both schemes.
+  // [→ `post-page`]
+  it("the prompt label on ink, and ink on the inline code fill", () => {
+    expect(
+      contrast(light("--color-prompt-label"), light("--color-surface-dark")),
+    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+    expect(
+      contrast(light("--color-brand-dark"), light("--color-code-bg")),
+    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  });
+});
+
 describe("muted small-caps labels clear AA in both schemes", () => {
   // Every uppercase micro-label site-wide (tag pills, archive counts and
   // categories, the TOC eyebrow, "read more" links, error eyebrows) renders in

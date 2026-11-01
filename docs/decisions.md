@@ -300,6 +300,8 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
   measure plus padding, which needs the 1200px frame. Below `xl` the ToC is a
   disclosure above the panel.
 - **More like this is two home cards** from `lib/related.ts`, unchanged.
+- **Code and prompt blocks are ink** with a `//` bar, grey-edged in dark mode.
+  Inline code is cream with an outline, never a border, so leading holds.
 
 ### Covers take one of two frames, chosen by `wide`
 
