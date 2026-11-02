@@ -48,13 +48,13 @@ A recurring subject of the blog is the process of building and maintaining it. M
 **Finding things**
 
 - Site search that runs entirely in the visitor's browser, with no third-party service and no query leaving the page
-- Tag landing pages, and a glossary indexing every topic with its posts grouped beneath it. Tag pills on each post and on every listing card
+- A header of strand chips, one per category plus All, that marks where the reader is. On phones they become one row that scrolls sideways, and Tags, Archive and About move into a menu
+- A home page with the latest post as a feature card, six more as cards and a link to the archive. No pagination anywhere
+- Category, tag and author landing pages that show every post: the latest seven as cards, the rest as compact rows. There is no index page for categories or authors, and those URLs redirect
+- A glossary indexing every topic with its posts grouped beneath it. Tag pills on each post and on the feature card
 - Archive page listing every post grouped by year
-- Paginated home, category, and author listings
 - Related posts scored on shared tags weighted by rarity, so an uncommon tag counts for more than a common one, with category and shared authorship as lesser signals
-- Category and author landing pages, each with a directory index
-- Breadcrumb navigation with `BreadcrumbList` structured data
-- Responsive header nav with inline links from `md` up and a hamburger disclosure on mobile
+- Breadcrumb trails with `BreadcrumbList` structured data on tag and author pages, the archive, tags and search pages, and About and Privacy
 
 **Reading**
 
