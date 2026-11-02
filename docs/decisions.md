@@ -258,7 +258,7 @@ The F2 refresh. Posts sit in three strands, the Contentful categories
 `blogging`, `films` and `games-and-gadgets`; `lib/strands.ts` maps each to a
 label and literal Tailwind classes, and any other category falls back to
 Blogging's colours under its own name. Home is the latest post as a feature
-card, ten more cards and a link to `/archive`. No pager: `/page/:n`
+card, six more cards and a link to `/archive`. No pager: `/page/:n`
 redirects to the archive, which already lists everything.
 
 - **The chips are the header, on every page**: logo, four chips, a search
@@ -282,9 +282,11 @@ redirects to the archive, which already lists everything.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
   the `// latest post` and `// previous posts` labels are the `h2`s.
 - **A strand page is home with its chip pressed**, `/categories/[slug]`: an
-  `sr-only` `h1`, since the chip names it, then every post in the strand, no
-  description (it stays the meta description), no pager and no trail. Its posts are filtered from
-  `getAllPosts` in memory, because cards need category and authors.
+  `sr-only` `h1`, since the chip names it, then every post in the strand,
+  seven as cards and the rest as rows, none repeating the strand pill. No
+  description (it stays the meta description), no pager and no trail. Its
+  posts are filtered from `getAllPosts` in memory, because cards need category
+  and authors.
 - **Tags never repeat a strand.** `/tags/film` and `/tags/blogging` redirect
   to their strands.
 
@@ -707,9 +709,11 @@ and `Container` in a route, and do not give a narrow route the wide header.
 <!-- key: listing-shell -->
 
 `app/collection-page.tsx`: the trail, a visible `h1` (no chip names the page),
-then `PostStream`, the same feature card and cards as home and the strand
-pages, and a closing line with the count. Every post on one page: the
-collections run to a few dozen at most, and the archive covers deep browsing.
+then `PostStream` with the latest seven, the same feature card and cards as
+home, then every older post as an archive-style row (`app/post-row.tsx`), and
+a closing line with the count. Every post on one page, nothing behind a load
+more: the collections run to a few dozen at most, and rows keep a long one
+short. Load more would need focus handling and state restored on Back.
 No description; a tag's stays its meta description. The old `/page/n` URLs
 redirect to page one in `next.config.js`. `listingMetadata` in
 `lib/page-metadata.ts` owns the social blocks.

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
 
-import PostStream from "./post-stream";
+import PostStream, { STREAM_POSTS } from "./post-stream";
 
 import { getAllPosts } from "@/lib/api";
 import { visibleTagSlugs } from "@/lib/tags";
@@ -20,9 +20,6 @@ export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 };
 
-// The latest post plus this many, then the archive. No pager. [→ `strands`]
-const HOME_CARDS = 10;
-
 export default async function Page() {
   const { isEnabled } = await draftMode();
   const allPosts = await getAllPosts(isEnabled);
@@ -32,9 +29,11 @@ export default async function Page() {
       {/* The logo names the site visually; this names the page. */}
       <h1 className="sr-only">{SITE_TITLE}</h1>
 
+      {/* Seven posts, then the archive. No pager. [→ `strands`] */}
       <PostStream
-        posts={allPosts.slice(0, HOME_CARDS + 1)}
+        posts={allPosts.slice(0, STREAM_POSTS)}
         visibleTags={visibleTagSlugs(allPosts)}
+        showStrand
       />
 
       <div className="mt-12 flex justify-center">

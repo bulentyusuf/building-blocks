@@ -7,7 +7,8 @@ import type { ListPost } from "@/lib/types";
 
 /**
  * A tag or author page: a strand page with a trail and a visible h1, since no
- * chip names it. Every post, no pager, no description. [→ `listing-shell`]
+ * chip names it. Every post, as cards then rows, no pager, no description.
+ * [→ `listing-shell`]
  */
 export default function CollectionPage({
   crumbs,
@@ -37,7 +38,7 @@ export default function CollectionPage({
       )}
       <Breadcrumb items={crumbs} />
       <header className="mb-10">{heading}</header>
-      <PostStream posts={posts} visibleTags={visibleTags} />
+      <PostStream posts={posts} visibleTags={visibleTags} showStrand />
       <p className="mt-12 text-center font-ui font-semibold text-brand-muted">
         {closing}{" "}
         <Link
