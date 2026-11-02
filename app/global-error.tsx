@@ -40,7 +40,7 @@ export default function GlobalError({
           <button
             type="button"
             onClick={reset}
-            className="mt-8 text-base font-bold text-brand-crimson hover:opacity-80 transition-opacity duration-200"
+            className="mt-8 inline-flex min-h-11 items-center text-base font-bold text-brand-crimson decoration-2 underline-offset-[3px] hover:underline"
           >
             Reload
           </button>

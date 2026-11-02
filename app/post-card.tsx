@@ -111,7 +111,9 @@ export async function FeatureCard({
       <Cover
         post={post}
         priority
-        sizes="(max-width: 768px) calc(100vw - 4.5rem), (max-width: 1279px) 1120px, 450px"
+        // Stacked, then the frame less padding until it stops growing, then
+        // beside the text from xl. [→ `priority-opaque`]
+        sizes="(width < 48rem) calc(100vw - 4.5rem), (width < 75rem) calc(100vw - 8.625rem), (width < 80rem) 1062px, 450px"
         className="aspect-3/2 self-center rounded-xl xl:col-span-5 xl:aspect-4/3"
       />
       <div className="flex flex-col gap-4 xl:col-span-7 xl:self-center">
@@ -150,7 +152,8 @@ export default async function PostCard({
       <Cover
         post={post}
         priority={false}
-        sizes="(max-width: 768px) calc(100vw - 4.5rem), 500px"
+        // One column to md, then two. [→ `priority-opaque`]
+        sizes="(width < 48rem) calc(100vw - 4.5rem), (width < 75rem) calc(50vw - 6.5rem), 500px"
         className="aspect-3/2 rounded-xl"
       />
       <Meta post={post} className="text-sm" showStrand={showStrand} />
