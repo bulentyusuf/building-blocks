@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
-import DateComponent from "../date";
+import PostRow, { ROWS_PANEL } from "../post-row";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getAllTags, getBrowseIntro } from "@/lib/api";
+import { getAllPosts, getBrowseIntro } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
@@ -22,18 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
 
-  // Descriptions come from their own query, joined by slug, so they stay out
-  // of every other page's fragment. [→ `tag-pages`]
-  const intro = await getBrowseIntro("tags", isEnabled);
-  // Two elements only: a third made TypeScript infer a union and drop fields.
-  const [posts, allTags] = await Promise.all([
+  const [intro, posts] = await Promise.all([
+    getBrowseIntro("tags", isEnabled),
     getAllPosts(isEnabled),
-    getAllTags(isEnabled),
   ]);
   const groups = groupPostsByTag(posts);
-  const descriptions = new Map(
-    allTags.map((tag) => [tag.slug, tag.description]),
-  );
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Tags" }];
 
@@ -67,50 +60,33 @@ export default async function TagsPage() {
               key={tag.slug}
               // Kept so old /tags#slug links still land.
               id={tag.slug}
-              className="mb-10 last:mb-0"
+              className="mb-12 last:mb-0"
             >
-              {/* Term and gloss left, posts right; one column below lg. */}
-              <div className="lg:grid lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] lg:gap-x-10">
-                <div className="lg:sticky lg:top-20 lg:self-start">
-                  {/* Inline, not flex, so the count follows a wrapped name.
-                      Links to the tag's page. [→ `tag-pages`] */}
-                  <h2 className="mb-1 text-xl md:text-2xl">
-                    <Link
-                      href={`/tags/${tag.slug}`}
-                      className="transition-colors duration-200 hover:text-brand-crimson"
-                    >
-                      {tag.name}
-                    </Link>{" "}
-                    <span className="font-ui text-xs font-normal uppercase tracking-wide whitespace-nowrap text-brand-muted tabular-nums">
-                      {tagged.length} {tagged.length === 1 ? "post" : "posts"}
-                    </span>
-                  </h2>
-                  {descriptions.get(tag.slug) && (
-                    <p className="mb-4 leading-relaxed text-brand-muted text-pretty lg:mb-0">
-                      {descriptions.get(tag.slug)}
-                    </p>
-                  )}
-                </div>
-
-                <ul className="space-y-3 border-t border-hairline pt-4 lg:border-t-0 lg:pt-1">
-                  {tagged.map((post) => (
-                    <li
-                      key={post.slug}
-                      className="flex flex-col gap-y-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-x-6"
-                    >
-                      <Link
-                        href={`/posts/${post.slug}`}
-                        className="hover:text-brand-crimson transition-colors duration-200"
-                      >
-                        {widont(post.title)}
-                      </Link>
-                      <span className="shrink-0 text-sm tabular-nums text-brand-muted sm:text-right">
-                        <DateComponent dateString={post.date} />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* Built like the archive: the tag is the spine, the count a
+                  muted label, the posts a list panel. [→ `tag-pages`] */}
+              <h2 className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <Link
+                  href={`/tags/${tag.slug}`}
+                  className="text-4xl leading-none font-[800] tracking-[-0.02em] transition-colors duration-200 hover:text-brand-crimson md:text-5xl lg:text-[3.25rem]"
+                >
+                  #{tag.name}
+                </Link>
+                <span className="font-mono text-sm font-medium text-brand-muted">
+                  <span aria-hidden="true">{"// "}</span>
+                  {tagged.length} {tagged.length === 1 ? "post" : "posts"}
+                </span>
+              </h2>
+              <ul className={`${ROWS_PANEL} mt-4`}>
+                {tagged.map((post) => (
+                  <PostRow
+                    key={post.slug}
+                    post={post}
+                    german={false}
+                    date="long"
+                    showStrand
+                  />
+                ))}
+              </ul>
             </section>
           ))}
         </div>

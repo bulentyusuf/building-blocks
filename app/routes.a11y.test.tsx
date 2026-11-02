@@ -344,11 +344,12 @@ const EXPECTED_DUPLICATES: Record<string, { href: RegExp; because: string }> = {
     because: "every row links its own category, by design",
   },
   "/tags": {
-    href: /^\/posts\//,
+    href: /^\/(posts|categories)\//,
     // The glossary groups every post under each of its tags, so a post with
     // three tags appears three times — that repetition IS the index.
     // docs/decisions.md notes the same property as the reason the page is
-    // data-pagefind-ignore.
+    // data-pagefind-ignore. Its rows are the archive's, so each also links its
+    // strand, as the archive's do.
     because: "the glossary lists each post once per tag it carries",
   },
 };

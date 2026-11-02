@@ -531,8 +531,10 @@ numbering.
 
 <!-- key: tag-pages -->
 
-`/tags` lists every tag with its posts; each links to `/tags/[slug]`, a landing
-page in the strand layout with a trail and an `h1` [→ `listing-shell`].
+`/tags` lists every tag with its posts, built like the archive: the tag as a
+large heading with a `//` count, then the posts as `app/post-row.tsx` rows in
+a list panel. Tag descriptions show only as each tag page's meta description. Each heading links to `/tags/[slug]`,
+a landing page in the strand layout with a trail and an `h1` [→ `listing-shell`].
 Do not go back to `#slug` anchors: an anchor drops the reader past everything
 that says where they are. Old anchors still land.
 
