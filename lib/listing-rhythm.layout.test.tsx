@@ -166,8 +166,13 @@ type Measurement = {
   /** The pressed chip's computed background, null if none is pressed. */
   pressedChipFill: string | null;
   /** Search only: the results column and the tag panel beside it. */
-  searchResults: { right: number; bottom: number; width: number } | null;
-  searchTags: { left: number; top: number } | null;
+  searchResults: {
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+  } | null;
+  searchTags: { left: number; top: number; panelTop: number } | null;
 };
 
 // Runs in the page, so it closes over nothing.
@@ -212,12 +217,19 @@ function measureInPage(): Measurement {
       return {
         searchResults: results
           ? {
+              top: box(results).top,
               right: box(results).right,
               bottom: box(results).bottom,
               width: box(results).width,
             }
           : null,
-        searchTags: tags ? { left: box(tags).left, top: box(tags).top } : null,
+        searchTags: tags
+          ? {
+              left: box(tags).left,
+              top: box(tags).top,
+              panelTop: box(tags.firstElementChild!).top,
+            }
+          : null,
       };
     })(),
     featureBylineLines: (() => {
@@ -283,6 +295,11 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
   else if (width >= 1024) {
     if (!(tags.left >= results.right)) {
       problems.push("search's tag panel is not beside the results");
+    }
+    if (Math.abs(tags.panelTop - results.top) > 0.5) {
+      problems.push(
+        `search's tag panel starts ${tags.panelTop - results.top}px off the input`,
+      );
     }
     if (results.width > 720.5) {
       problems.push(`search's results column is ${results.width}px wide`);
@@ -478,6 +495,11 @@ it.each([
     1280,
     "search's tag panel dropped below the results",
     { search: "main div:has(> aside) { display: block !important }" },
+  ],
+  [
+    1280,
+    "search's tag panel lower than the input",
+    { search: "main aside { margin-top: 0 !important }" },
   ],
   [
     1280,
