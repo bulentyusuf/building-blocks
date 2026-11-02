@@ -489,6 +489,8 @@ own `tabindex` on the `<pre>` is switched off in `lib/highlight.ts`.
 - Home, the strand pages and posts carry no trail; the header's chips say
   where you are, a post's strand pressed.
 - Accepted: archive rows carry two tab stops each.
+- **A trail link is a 44px tap target**, padded with a matching negative
+  margin so the trail keeps its height; at its text height it was 23px.
 
 ### Sidenotes carry several load-bearing constraints
 

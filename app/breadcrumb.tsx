@@ -35,7 +35,9 @@ export default function Breadcrumb({ items }: { items: Crumb[] }) {
                   <Link
                     href={item.href}
                     lang={item.lang}
-                    className={`transition-colors duration-200 hover:text-brand-crimson ${
+                    // 44px to tap, the negative margin keeps the line its
+                    // own height. [→ `breadcrumbs`]
+                    className={`-my-2.5 inline-flex min-h-11 items-center transition-colors duration-200 hover:text-brand-crimson ${
                       i === 0 ? "" : "text-brand-crimson"
                     }`}
                   >

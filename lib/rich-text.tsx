@@ -191,11 +191,9 @@ export function RichText({
                 // Just "Permalink": inside the h2, a longer name would repeat
                 // the heading's own text.
                 aria-label="Permalink"
-                // The negative right margin stops the marker wrapping onto a
-                // line of its own. 0.75em, not 1em: at 1em it overhung a 20px
-                // gutter and scrolled the page sideways. Not clipped, because
-                // the glyph is also the link's focus indicator.
-                className="ml-2 -mr-[0.75em] inline-block align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
+                // The negative margin keeps the marker off a line of its own.
+                // Hidden below md: hover-only, and it overhangs a 16px gutter.
+                className="ml-2 -mr-[0.75em] inline-block max-md:hidden align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
               >
                 {/* Generated content, never a text node. [→ `pagefind-index-scope`] */}
                 <span aria-hidden="true" className="after:content-['#']" />
