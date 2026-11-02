@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { STRANDS, currentStrand } from "@/lib/strands";
 
@@ -30,6 +30,26 @@ export default function StrandChips({
   const current = found?.slug;
   const mark = found?.onPost ? "true" : "page";
   const row = useRef<HTMLElement>(null);
+  const [more, setMore] = useState(false);
+  // While more chips lie past the right edge, the row fades out there. The
+  // cut-off chip alone is not enough: at a 20px root a chip edge can land
+  // exactly on the screen edge. [→ `strands`]
+  useEffect(() => {
+    const nav = row.current;
+    if (!nav) return;
+    const check = () =>
+      setMore(
+        getComputedStyle(nav).overflowX !== "visible" &&
+          nav.scrollWidth - nav.clientWidth - nav.scrollLeft > 1,
+      );
+    check();
+    nav.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      nav.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, []);
   // A pressed chip cut off at the edge (Games & Gadgets on a phone) scrolls
   // fully into view. scrollLeft, not scrollIntoView, so the page never moves.
   useEffect(() => {
@@ -46,7 +66,8 @@ export default function StrandChips({
     <nav
       aria-label="Strands"
       ref={row}
-      className="order-last -mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1.5 md:order-none md:mx-0 md:w-auto md:flex-wrap md:gap-5 md:overflow-visible md:px-0 md:pb-0"
+      data-more={more || undefined}
+      className="order-last -mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1.5 md:order-none md:mx-0 md:w-auto md:flex-wrap md:gap-5 md:overflow-visible md:px-0 md:pb-0 data-more:[mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
     >
       <Link
         href="/"

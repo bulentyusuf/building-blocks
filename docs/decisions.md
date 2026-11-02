@@ -246,6 +246,8 @@ redirects to the archive, which already lists everything.
   Below `md` the chips are one row that scrolls sideways (November 2026; three
   wrapped rows took 204px of a phone): 44px tall, sized so the last chip is
   always cut off at 360 to 430px, and a pressed chip past the edge scrolls in.
+  While more lies past the edge the row fades out over its last 3rem, since at
+  a 20px root a chip edge can land on the screen edge and nothing peeks in.
 - **Chips are links, not filters.** Each strand is a page, so the pressed chip
   is `aria-current="page"`; a post presses its strand as `"true"`, because the
   chip links away. `currentStrand` reads the path, posts via a slug map.
