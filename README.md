@@ -8,7 +8,7 @@ The code in this repo is an extension of the [Next.js Blog with Draft Mode](http
 
 A small, statically generated blog. Posts are written and managed in a headless CMS, rendered by Next.js, and deployed continuously.
 
-The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, and a Sidenote type for asides set in the margin. There's also a Page type for standalone pages like the privacy notice.
+The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, a Callout type for boxed asides, and a Sidenote type for asides set in the margin. There's also a Page type for standalone pages like the privacy notice.
 
 The site is written in British English. Some posts also have a German translation, published post by post rather than site-wide: a translated post gets a second page under `/de/posts/`, and everything else stays English.
 
@@ -26,12 +26,13 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 ## 🧩 Content model
 
-- **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a link to one category, and links to up to three authors. Title, excerpt and body can carry a German translation; everything else is shared between the two versions
+- **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a numbered-sections switch, a link to one category, links to up to three authors, and up to three tags. Title, excerpt and body can carry a German translation; everything else is shared between the two versions
 - **Author**, name, picture, slug, and a short bio, with its own landing page. A post can carry more than one, and every author it names lists that post
-- **Category**, name, slug, description, and an optional thumbnail, with its own landing page. Posts are filed under one of three strands, Blogging, Films, or Games & Gadgets
-- **Tag**, name, slug, and a one-line description, with its own landing page. Cross-cutting topics, up to three per post: where Category says where a post lives, a Tag says what it is about
+- **Category**, name, slug, a description of up to 80 characters, and an optional thumbnail, with its own landing page. Posts are filed under one of three strands, Blogging, Films, or Games & Gadgets
+- **Tag**, name, slug, and a description of up to 80 characters, with its own landing page. Cross-cutting topics, up to three per post: where Category says where a post lives, a Tag says what it is about
 - **Code Block**, embedded into post bodies for syntax-highlighted snippets. Optional filename and a fixed list of languages
 - **Prompt Block**, embedded into post bodies to publish the generative-image prompt behind a cover, with an optional label and image
+- **Callout**, embedded into post bodies to box a passage the author wants to stand out, with a short label. Label and body can carry a German translation
 - **Sidenote**, embedded inline in post bodies for asides set in the margin. A title for finding the entry in the CMS, and a rich-text note deliberately limited to bold, italic, and links. The note can carry a German translation; the title is for editors and stays English
 - **Page**, standalone rich-text pages such as About and Privacy
 

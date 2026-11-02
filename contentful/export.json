@@ -202,7 +202,7 @@
                 "embedded-entry-inline",
                 "table"
               ],
-              "message": "Only heading 1, heading 2, heading 3, heading 4, heading 5, heading 6, ordered list, unordered list, horizontal rule, quote, block entry, asset, link to Url, link to entry, link to asset, inline entry, and table nodes are allowed"
+              "message": "Only heading 1, heading 2, heading 3, heading 4, heading 5, heading 6, ordered list, Unordered list, horizontal rule, quote, block entry, asset, link to Url, link to entry, link to asset, inline entry, and table nodes are allowed"
             },
             {
               "nodes": {
@@ -266,6 +266,9 @@
           "type": "Boolean",
           "localized": false,
           "required": false,
+          "defaultValue": {
+            "en-US": false
+          },
           "validations": [],
           "disabled": false,
           "omitted": false
@@ -485,8 +488,9 @@
           "validations": [
             {
               "size": {
-                "max": 300
-              }
+                "max": 80
+              },
+              "message": "Two lines, right-anchored beside the category heading. Keep it under 80 characters or it runs to three."
             }
           ],
           "disabled": false,
@@ -561,9 +565,9 @@
           "validations": [
             {
               "size": {
-                "max": 300
+                "max": 80
               },
-              "message": "One line. Shown as the gloss under the tag heading on /tags."
+              "message": "Two lines beside the tag heading, and the gloss on /tags. Keep it under 80 characters or it runs to three lines and outgrows the heading."
             }
           ],
           "disabled": false,
@@ -680,7 +684,7 @@
       },
       "displayField": "label",
       "name": "Callout",
-      "description": "A boxed aside inside a post, with a short label.",
+      "description": "",
       "fields": [
         {
           "id": "label",
@@ -698,7 +702,45 @@
           "type": "RichText",
           "localized": true,
           "required": true,
-          "validations": [],
+          "validations": [
+            {
+              "enabledMarks": [
+                "bold",
+                "italic",
+                "underline",
+                "code",
+                "superscript",
+                "subscript",
+                "strikethrough"
+              ],
+              "message": "Only bold, italic, underline, code, superscript, subscript, and strikethrough marks are allowed"
+            },
+            {
+              "enabledNodeTypes": [
+                "heading-1",
+                "heading-2",
+                "heading-3",
+                "heading-4",
+                "heading-5",
+                "heading-6",
+                "ordered-list",
+                "unordered-list",
+                "hr",
+                "blockquote",
+                "embedded-entry-block",
+                "embedded-asset-block",
+                "table",
+                "asset-hyperlink",
+                "embedded-entry-inline",
+                "entry-hyperlink",
+                "hyperlink"
+              ],
+              "message": "Only heading 1, heading 2, heading 3, heading 4, heading 5, heading 6, ordered list, Unordered list, horizontal rule, quote, block entry, asset, table, link to asset, inline entry, link to entry, and link to Url nodes are allowed"
+            },
+            {
+              "nodes": {}
+            }
+          ],
           "disabled": false,
           "omitted": false
         }
@@ -742,7 +784,10 @@
               "enabledNodeTypes": [
                 "hyperlink"
               ],
-              "message": "Only hyperlinks are allowed — keep a sidenote a genuine aside, no headings or embeds"
+              "message": "Only link to Url nodes are allowed"
+            },
+            {
+              "nodes": {}
             }
           ],
           "disabled": false,
@@ -882,12 +927,13 @@
           "widgetNamespace": "builtin"
         },
         {
-          "fieldId": "author",
+          "fieldId": "authors",
           "settings": {
+            "bulkEditing": false,
             "showLinkEntityAction": true,
             "showCreateEntityAction": false
           },
-          "widgetId": "entryCardEditor",
+          "widgetId": "entryLinksEditor",
           "widgetNamespace": "builtin"
         },
         {
