@@ -47,7 +47,6 @@ This file does not enumerate every post on purpose, so it cannot fall out of dat
 ## AI and content transparency
 
 - Most posts include a "Prompt for key visual" section giving the Midjourney prompt used to generate the cover image.
-- Most posts include an "Explore with AI" area linking to ChatGPT and Claude, so a reader can open the post directly in a chat assistant.
 - Breadcrumb navigation appears across the site for way-finding back to the homepage, whether through a category or an author.
 - Site search runs entirely in the reader's browser using a prebuilt index, with no third-party search service and no queries leaving the page.
 - The site is explicitly about using generative AI as a collaborator, while remaining transparent about where AI is used and where it is not.
