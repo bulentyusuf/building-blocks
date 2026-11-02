@@ -1,4 +1,5 @@
 import PostCard, { FeatureCard } from "./post-card";
+import PostRow, { ROWS_PANEL } from "./post-row";
 import { postTags } from "@/lib/tags";
 import type { ListPost } from "@/lib/types";
 
@@ -12,17 +13,25 @@ export function Label({ children }: { children: string }) {
   );
 }
 
-/** The latest post as a feature card, then the rest as cards. Home and the
- *  strand pages share it. [→ `strands`] */
+/** This many posts show as cards: the feature card, then three rows of two.
+ *  Home stops there; other listings go on as rows. [→ `strands`] */
+export const STREAM_POSTS = 7;
+
+/** The latest post as a feature card, six more as cards, then every older
+ *  post as a row. Home, strand, tag and author pages share it. [→ `strands`] */
 export default function PostStream({
   posts,
   visibleTags,
+  showStrand,
 }: {
   posts: ListPost[];
+  /** False on a strand page, whose cards and rows would repeat its strand. */
+  showStrand: boolean;
   /** Computed from all posts, so a pill never links to a 404. */
   visibleTags: Set<string>;
 }) {
-  const [latest, ...previous] = posts;
+  const [latest, ...previous] = posts.slice(0, STREAM_POSTS);
+  const older = posts.slice(STREAM_POSTS);
   return (
     <>
       {latest && (
@@ -31,6 +40,7 @@ export default function PostStream({
           <FeatureCard
             post={latest}
             tags={postTags(latest).filter((t) => visibleTags.has(t.slug))}
+            showStrand={showStrand}
           />
         </section>
       )}
@@ -40,8 +50,24 @@ export default function PostStream({
           <ul className="grid gap-8 md:grid-cols-2 md:gap-9">
             {previous.map((post) => (
               <li key={post.slug} className="flex">
-                <PostCard post={post} />
+                <PostCard post={post} showStrand={showStrand} />
               </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {older.length > 0 && (
+        <section className="mt-16">
+          <Label>older posts</Label>
+          <ul className={ROWS_PANEL}>
+            {older.map((post) => (
+              <PostRow
+                key={post.slug}
+                post={post}
+                german={false}
+                date="long"
+                showStrand={showStrand}
+              />
             ))}
           </ul>
         </section>

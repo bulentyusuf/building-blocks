@@ -64,7 +64,11 @@ export default async function CategoryPage({
   return (
     <div className="mx-auto max-w-frame px-4 md:px-10 pt-6 pb-16">
       <h1 className="sr-only">{category.name}</h1>
-      <PostStream posts={posts} visibleTags={visibleTagSlugs(allPosts)} />
+      <PostStream
+        posts={posts}
+        visibleTags={visibleTagSlugs(allPosts)}
+        showStrand={false}
+      />
 
       <p className="mt-12 text-center font-ui font-semibold text-brand-muted">
         {posts.length === 0

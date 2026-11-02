@@ -31,13 +31,16 @@ export function StrandPill({ strand }: { strand: Strand }) {
 function Meta({
   post,
   className,
+  showStrand,
   bylineClassName = "",
 }: {
   post: ListPost;
   className: string;
+  /** Off on a strand page, where every card would repeat its strand. */
+  showStrand: boolean;
   bylineClassName?: string;
 }) {
-  const strand = strandFor(post.category);
+  const strand = showStrand ? strandFor(post.category) : undefined;
   return (
     <p className={`flex flex-wrap items-center gap-2.5 ${className}`}>
       {strand && (
@@ -93,10 +96,12 @@ async function Cover({
 export async function FeatureCard({
   post,
   tags,
+  showStrand,
 }: {
   post: ListPost;
   /** Already filtered to tags with a live page. */
   tags: Tag[];
+  showStrand: boolean;
 }) {
   const strand = strandFor(post.category);
   return (
@@ -113,6 +118,7 @@ export async function FeatureCard({
         <Meta
           post={post}
           className="text-base xl:flex-nowrap"
+          showStrand={showStrand}
           bylineClassName="xl:min-w-0 xl:truncate"
         />
         <h3 className="text-3xl xl:line-clamp-3 font-[800] leading-none tracking-[-0.02em] text-pretty md:text-4xl lg:text-[2.875rem]">
@@ -129,7 +135,13 @@ export async function FeatureCard({
   );
 }
 
-export default async function PostCard({ post }: { post: ListPost }) {
+export default async function PostCard({
+  post,
+  showStrand,
+}: {
+  post: ListPost;
+  showStrand: boolean;
+}) {
   const strand = strandFor(post.category);
   return (
     <article
@@ -141,7 +153,7 @@ export default async function PostCard({ post }: { post: ListPost }) {
         sizes="(max-width: 768px) calc(100vw - 4.5rem), 500px"
         className="aspect-3/2 rounded-xl"
       />
-      <Meta post={post} className="text-sm" />
+      <Meta post={post} className="text-sm" showStrand={showStrand} />
       <h3 className="text-2xl font-[800] leading-[1.05] text-pretty md:text-[1.875rem]">
         <Link href={`/posts/${post.slug}`} className={stretched}>
           {widont(post.title)}

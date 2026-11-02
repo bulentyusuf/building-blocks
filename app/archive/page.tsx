@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { draftMode } from "next/headers";
-import DateComponent, { formatMonthYear } from "../date";
+import { formatMonthYear } from "../date";
 import WidePage from "../wide-page";
-import { StrandPill } from "../post-card";
+import PostRow, { ROWS_PANEL } from "../post-row";
 import { type Crumb } from "../breadcrumb";
 import { getAllPosts, getBrowseIntro, getGermanPostSlugs } from "@/lib/api";
-import { GERMAN_LOCALE } from "@/lib/constants";
 import type { ListPost } from "@/lib/types";
-import { strandFor } from "@/lib/strands";
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
 
@@ -89,60 +86,16 @@ export default async function ArchivePage() {
                   {yearPosts.length} {yearPosts.length === 1 ? "post" : "posts"}
                 </span>
               </h2>
-              {/* A list panel: read, not pressed, so the quiet edge. Three fixed
-                  lanes from sm, title first below it. [→ `post-page`] */}
-              <ul className="overflow-hidden rounded-3xl border-2 border-edge-quiet bg-card">
-                {yearPosts.map((post) => {
-                  const strand = strandFor(post.category);
-                  return (
-                    <li
-                      key={post.slug}
-                      className="grid grid-cols-1 items-baseline gap-x-6 gap-y-1.5 px-5 py-3.5 even:bg-brand-bg sm:grid-cols-[4.75rem_1fr_auto] sm:px-7"
-                    >
-                      <span className="order-2 font-ui text-[0.9375rem] font-semibold tabular-nums text-brand-muted sm:order-1">
-                        <DateComponent
-                          dateString={post.date}
-                          variant="dayMonth"
-                        />
-                        {/* The heading carries the year; restore it for link
-                            navigation. */}
-                        <span className="sr-only"> {year}</span>
-                      </span>
-                      <span className="order-1 sm:order-2">
-                        <Link
-                          href={`/posts/${post.slug}`}
-                          className="font-ui text-xl leading-snug font-bold transition-colors duration-200 hover:text-brand-crimson"
-                        >
-                          {widont(post.title)}
-                        </Link>
-                        {/* The one place a browsing reader learns a German
-                            version exists. Visible "DE" stays in the name.
-                            Padded to a 24px target. [→ `locale`] */}
-                        {german.has(post.slug) && (
-                          <Link
-                            href={`/de/posts/${post.slug}`}
-                            hrefLang={GERMAN_LOCALE}
-                            lang={GERMAN_LOCALE}
-                            className="-my-1 ml-1 inline-block px-1.5 py-1 whitespace-nowrap font-mono text-xs font-medium tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
-                          >
-                            <span className="sr-only">Auf Deutsch lesen, </span>
-                            DE
-                          </Link>
-                        )}
-                      </span>
-                      {strand && (
-                        <Link
-                          href={`/categories/${strand.slug}`}
-                          className="order-3 justify-self-start sm:justify-self-end"
-                        >
-                          {/* Keeps the title from running into the strand. */}
-                          <span className="sr-only">in </span>
-                          <StrandPill strand={strand} />
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
+              <ul className={ROWS_PANEL}>
+                {yearPosts.map((post) => (
+                  <PostRow
+                    key={post.slug}
+                    post={post}
+                    german={german.has(post.slug)}
+                    date="dayMonth"
+                    showStrand
+                  />
+                ))}
               </ul>
             </section>
           );

@@ -57,7 +57,7 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Two routes: `/archive` and
 - **Posts are neither either**: header group, an ink-framed cover, then the
   sidebar beside a quiet reading panel, no rule and no trail. [→ `post-page`]
 - **Tag and author pages are strand pages with a trail and a visible `h1`**,
-  through `app/collection-page.tsx`: every post, no pager. [→ `listing-shell`]
+  through `app/collection-page.tsx`: seven cards, then rows. [→ `listing-shell`]
 - **Narrow**: one centred column, `h1` at the F2 scale, no rule. `/about` and
   `/privacy` sit in a quiet reading panel 49.25rem wide; `/search` keeps
   `max-w-2xl`. [→ `page-axis`]
