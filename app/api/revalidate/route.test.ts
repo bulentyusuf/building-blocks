@@ -70,12 +70,6 @@ describe("the revalidation webhook", () => {
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 
-  it("purges only the browse-intro tag for a Browse Intro", async () => {
-    await POST(fire(entry("browseIntro")));
-    expect(tagsPurged()).toEqual([CACHE_TAGS.BROWSE_INTROS]);
-    expect(tagsPurged()).not.toContain(CACHE_TAGS.POSTS);
-  });
-
   it("purges everything for the types that genuinely reach everywhere", async () => {
     // A renamed tag shows on every card and pill, a new author name appears in
     // bylines across the archive, and a published post changes the Read Next

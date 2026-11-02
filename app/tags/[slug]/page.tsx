@@ -81,7 +81,7 @@ export default async function TagPage({
       germanSlugs={new Set(germanSlugs)}
       closing={`That’s all ${posts.length} posts tagged ${tag.name}.`}
       heading={
-        <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
+        <h1 className="text-[length:min(3rem,13.5vw)] leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
           <span aria-hidden="true">#</span>
           {widont(tag.name)}
         </h1>

@@ -18,8 +18,6 @@ import type {
   CategoryCollectionResponse,
   Tag,
   TagCollectionResponse,
-  BrowseIntro,
-  BrowseIntroCollectionResponse,
   Author,
   AuthorCollectionResponse,
 } from "./types";
@@ -255,8 +253,6 @@ export const CACHE_TAGS = {
   POSTS: "posts",
   /** CMS `Page` entries — /about, /privacy — and the sitemap that lists them. */
   PAGES: "pages",
-  /** `BrowseIntro` entries: the standfirst and meta description on a front. */
-  BROWSE_INTROS: "browseIntros",
 } as const;
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];
@@ -732,33 +728,6 @@ export const getAllPages = cache(
       // The sitemap reads this too.
       CACHE_TAGS.PAGES,
     );
-  },
-);
-
-// Undefined when no entry exists; callers fall back to a bare heading.
-// [→ `single-entry-cache`, `browse-copy`]
-export const getBrowseIntro = cache(
-  async (
-    slug: string,
-    isDraftMode: boolean,
-  ): Promise<BrowseIntro | undefined> => {
-    const entries = await fetchGraphQL<BrowseIntroCollectionResponse>(
-      `query GetBrowseIntro($slug: String!, $preview: Boolean) {
-      browseIntroCollection(where: { slug: $slug }, preview: $preview, limit: 1) {
-        items {
-          title
-          slug
-          standfirst
-          metaDescription
-        }
-      }
-    }`,
-      isDraftMode,
-      { slug, preview: isDraftMode },
-      CACHE_TAGS.BROWSE_INTROS,
-    );
-
-    return entries?.data?.browseIntroCollection?.items?.[0];
   },
 );
 

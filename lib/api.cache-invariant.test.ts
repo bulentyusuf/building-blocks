@@ -53,11 +53,10 @@ describe("lib/api.ts fetcher caching", () => {
   });
 
   it("still finds the wrapped exports it is meant to be checking", () => {
-    // Fifteen after PR E. If a fetcher is added this fails and the author has
-    // to make the same decision rather than inherit whatever they pasted. If
-    // the regex goes stale this also fails, which the assertion above cannot
-    // tell apart from a clean file on its own.
-    expect(cacheWrappedExports(source).length).toBeGreaterThanOrEqual(15);
+    // Fourteen since getBrowseIntro went (November 2026). If the regex goes
+    // stale this fails, which the assertion above cannot tell apart from a
+    // clean file on its own.
+    expect(cacheWrappedExports(source).length).toBeGreaterThanOrEqual(14);
   });
 
   it("declares no defaulted or optional parameter on any fetcher", () => {

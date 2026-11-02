@@ -112,7 +112,7 @@ export default async function AuthorPage({
                 src={author.picture.url}
               />
             )}
-            <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
+            <h1 className="text-[length:min(3rem,13.5vw)] leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">
               {widont(author.name)}
             </h1>
           </div>

@@ -89,12 +89,6 @@ vi.mock("@/lib/api", () => ({
   // No writers, so the footer renders no mascots.
   getAllAuthors: async () => [],
   getAllTags: async () => [tag],
-  getBrowseIntro: async (slug: string) => ({
-    title: slug,
-    slug,
-    standfirst: "A short line describing this index.",
-    metaDescription: "A short line describing this index.",
-  }),
 }));
 
 const ROOT = path.join(__dirname, "..");
