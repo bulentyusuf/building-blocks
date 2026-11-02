@@ -4,7 +4,7 @@ import { draftMode } from "next/headers";
 import PostRow, { ROWS_PANEL } from "../post-row";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getBrowseIntro } from "@/lib/api";
+import { getAllPosts, getBrowseIntro, getGermanPostSlugs } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
@@ -22,11 +22,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
 
-  const [intro, posts] = await Promise.all([
+  const [intro, posts, germanSlugs] = await Promise.all([
     getBrowseIntro("tags", isEnabled),
     getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
   ]);
   const groups = groupPostsByTag(posts);
+  // Translated posts, for the rows' DE marker. [→ `locale`]
+  const german = new Set(germanSlugs);
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Tags" }];
 
@@ -81,7 +84,7 @@ export default async function TagsPage() {
                   <PostRow
                     key={post.slug}
                     post={post}
-                    german={false}
+                    german={german.has(post.slug)}
                     date="long"
                     showStrand
                   />

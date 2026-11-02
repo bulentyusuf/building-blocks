@@ -46,8 +46,8 @@ export default function PostRow({
         >
           {widont(post.title)}
         </Link>
-        {/* The one place a browsing reader learns a German version exists.
-            Visible "DE" stays in the name. Padded to a 24px target. [→ `locale`] */}
+        {/* Where a browsing reader learns a German version exists, on every
+            row. Visible "DE" stays in the name. 24px target. [→ `locale`] */}
         {german && (
           <Link
             href={`/de/posts/${post.slug}`}

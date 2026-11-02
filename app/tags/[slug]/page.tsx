@@ -3,7 +3,7 @@ import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import CollectionPage from "../../collection-page";
 import { type Crumb } from "../../breadcrumb";
-import { getAllPosts, getTagBySlug } from "@/lib/api";
+import { getAllPosts, getGermanPostSlugs, getTagBySlug } from "@/lib/api";
 import { postsWithTag, visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
@@ -51,7 +51,10 @@ export default async function TagPage({
     notFound();
   }
 
-  const allPosts = await getAllPosts(isEnabled);
+  const [allPosts, germanSlugs] = await Promise.all([
+    getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
+  ]);
   const visible = visibleTagSlugs(allPosts);
 
   if (!visible.has(slug)) {
@@ -75,6 +78,7 @@ export default async function TagPage({
       crumbs={crumbs}
       posts={posts}
       visibleTags={otherTags}
+      germanSlugs={new Set(germanSlugs)}
       closing={`That’s all ${posts.length} posts tagged ${tag.name}.`}
       heading={
         <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] text-pretty md:text-6xl lg:text-7xl">

@@ -23,10 +23,13 @@ export default function PostStream({
   posts,
   visibleTags,
   showStrand,
+  germanSlugs,
 }: {
   posts: ListPost[];
   /** False on a strand page, whose cards and rows would repeat its strand. */
   showStrand: boolean;
+  /** Posts with a German version, for the rows' DE marker. [→ `locale`] */
+  germanSlugs: Set<string>;
   /** Computed from all posts, so a pill never links to a 404. */
   visibleTags: Set<string>;
 }) {
@@ -64,7 +67,7 @@ export default function PostStream({
               <PostRow
                 key={post.slug}
                 post={post}
-                german={false}
+                german={germanSlugs.has(post.slug)}
                 date="long"
                 showStrand={showStrand}
               />

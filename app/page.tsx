@@ -34,6 +34,8 @@ export default async function Page() {
         posts={allPosts.slice(0, STREAM_POSTS)}
         visibleTags={visibleTagSlugs(allPosts)}
         showStrand
+        // Home stops at the cards, so it has no rows to mark.
+        germanSlugs={new Set()}
       />
 
       <div className="mt-12 flex justify-center">
