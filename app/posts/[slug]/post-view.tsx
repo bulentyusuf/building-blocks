@@ -201,7 +201,7 @@ export default async function PostView({
             data-pagefind-ignore
             className={`mx-auto w-full max-w-[49.25rem] xl:mx-0 xl:max-w-none${hasToc ? "" : " hidden xl:block"}`}
           >
-            <div className="xl:sticky xl:top-20 xl:pb-4">
+            <div className="xl:sticky xl:top-20">
               <TableOfContents
                 headings={headings}
                 lang={lang}
