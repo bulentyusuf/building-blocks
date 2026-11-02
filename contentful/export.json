@@ -490,7 +490,7 @@
               "size": {
                 "max": 80
               },
-              "message": "Two lines, right-anchored beside the category heading. Keep it under 80 characters or it runs to three."
+              "message": "Keep it under 80 characters."
             }
           ],
           "disabled": false,
@@ -506,7 +506,7 @@
       },
       "displayField": "name",
       "name": "Tag",
-      "description": "A cross-cutting topic. Many per post, up to three. While Category says where a post lives, a Tag indicates what it's about. Tags with fewer than two posts are hidden from the /tags glossary.",
+      "description": "A cross-cutting topic. Many per post, up to three. While Category says where a post lives, a Tag indicates what it’s about. Tags with fewer than two posts are hidden from the /tags glossary.",
       "fields": [
         {
           "id": "name",
@@ -556,7 +556,7 @@
               "size": {
                 "max": 80
               },
-              "message": "Two lines beside the tag heading, and the gloss on /tags. Keep it under 80 characters or it runs to three lines and outgrows the heading."
+              "message": "Keep it under 80 characters."
             }
           ],
           "disabled": false,
