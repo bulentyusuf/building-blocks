@@ -8,15 +8,10 @@ import { getAllPosts, getGermanPostSlugs } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
 import { browsePageMetadata } from "@/lib/page-metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  // [→ `single-entry-cache`]
-  const { isEnabled } = await draftMode();
-  return browsePageMetadata({
-    slug: "tags",
-    title: "Tags",
-    isDraftMode: isEnabled,
-  });
-}
+export const metadata: Metadata = browsePageMetadata({
+  slug: "tags",
+  title: "Tags",
+});
 
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();

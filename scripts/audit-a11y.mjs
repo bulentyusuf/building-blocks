@@ -139,6 +139,14 @@ const BISECT = `(() => {
   return { ...describe(node), over: over() };
 })()`;
 
+// axe reads no background through the dots' gradient, so contrast on the page
+// ground lands in "incomplete", which this never prints. Self test proves it.
+async function clearPageGround(page) {
+  await page.addStyleTag({
+    content: "body{background-image:none !important}",
+  });
+}
+
 async function measure(page, path, pass) {
   await page.setViewportSize({ width: pass.width, height: pass.height });
   await page.goto(BASE + path, { waitUntil: "load" });
@@ -147,6 +155,7 @@ async function measure(page, path, pass) {
   await page.waitForTimeout(250);
 
   const reflow = await page.evaluate(BISECT);
+  await clearPageGround(page);
   await page.addScriptTag({ content: AXE });
   const violations = await page.evaluate(async (tags) => {
     const r = await window.axe.run(document, {
@@ -176,7 +185,21 @@ async function selfTest() {
   const browser = await launch();
   const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
   await page.goto(BASE + "/", { waitUntil: "load" });
+  await clearPageGround(page);
   await page.addScriptTag({ content: AXE });
+  // Pale text straight on the page ground. If the dots come back, or
+  // clearPageGround stops removing them, this lands in "incomplete" and fails.
+  const contrast = await page.evaluate(async () => {
+    const faint = document.createElement("p");
+    faint.textContent = "Faint text on the page ground.";
+    faint.style.color = "#CCCCCC";
+    document.querySelector("main").prepend(faint);
+    const r = await window.axe.run(faint, {
+      runOnly: { type: "rule", values: ["color-contrast"] },
+    });
+    faint.remove();
+    return r.violations.map((v) => v.id);
+  });
   const found = await page.evaluate(async (tags) => {
     const probe = document.createElement("div");
     probe.innerHTML =
@@ -206,6 +229,12 @@ async function selfTest() {
     );
     process.exit(1);
   }
+  if (!contrast.includes("color-contrast")) {
+    console.error(
+      "SELF TEST FAILED: axe did not flag faint text on the page ground, so contrast there is going unchecked.",
+    );
+    process.exit(1);
+  }
   if (found.ok.length) {
     console.error(
       `SELF TEST FAILED: axe flagged ordinary markup (${found.ok.join(", ")}).`,
@@ -213,7 +242,7 @@ async function selfTest() {
     process.exit(1);
   }
   console.log(
-    `Self test passed: planted defects reported (${found.bad.join(", ")}), clean markup silent.`,
+    `Self test passed: planted defects reported (${[...found.bad, ...contrast].join(", ")}), clean markup silent.`,
   );
 }
 

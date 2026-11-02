@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getBrowseIntro } from "./api";
 import {
   SITE_TITLE,
   SITE_URL,
@@ -47,23 +46,15 @@ function socialCard({
   };
 }
 
-/**
- * `slug` is both the route and the BrowseIntro key. Pass the same slug the
- * page passes to getBrowseIntro(). [→ `single-entry-cache`]
- */
-export async function browsePageMetadata({
+/** `/archive` and `/tags`, which carry the site description. [→ `browse-copy`] */
+export function browsePageMetadata({
   slug,
   title,
-  isDraftMode,
 }: {
   slug: string;
   title: string;
-  isDraftMode: boolean;
-}): Promise<Metadata> {
-  const intro = await getBrowseIntro(slug, isDraftMode);
-
-  // A missing or blank entry falls back to the site description.
-  const description = intro?.metaDescription?.trim() || SITE_DESCRIPTION;
+}): Metadata {
+  const description = SITE_DESCRIPTION;
   const url = `${SITE_URL}/${slug}`;
 
   return {
