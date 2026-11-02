@@ -127,7 +127,6 @@ vi.mock("@/lib/api", () => ({
       name: "Blogging",
       slug: "blogging",
       description: "Building and maintaining the site.",
-      thumbnail: asset("blogging"),
     },
   ],
   getCategoryBySlug: async (slug: string) => ({
@@ -295,12 +294,10 @@ describe.each(routes)("%s", (name, load) => {
  * axe does not implement this — both links are perfectly labelled, which is
  * exactly the problem — so app/a11y.test.tsx carries its own version for the
  * listing shapes. These routes were never run through it. The archive puts two
- * tab stops on every row, and the category and author indexes each point a
- * thumbnail, a heading and a "read more" at one destination, so this is where
- * the check has the most to say.
+ * tab stops on every row, so this is where the check has the most to say.
  *
  * A link hidden from assistive tech cannot duplicate an announcement, which is
- * how the cover and thumbnail links deliberately opt out.
+ * how the cover links deliberately opt out.
  */
 function duplicateAnnouncements(): string[] {
   const main = document.querySelector("main");

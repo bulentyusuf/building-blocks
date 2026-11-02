@@ -786,11 +786,6 @@ export const getAllCategories = cache(
           name
           slug
           description
-          thumbnail {
-            url
-            title
-            fileName
-          }
         }
       }
     }`,
