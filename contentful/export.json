@@ -495,17 +495,6 @@
           ],
           "disabled": false,
           "omitted": false
-        },
-        {
-          "id": "thumbnail",
-          "name": "Thumbnail",
-          "type": "Link",
-          "localized": false,
-          "required": false,
-          "validations": [],
-          "disabled": false,
-          "omitted": false,
-          "linkType": "Asset"
         }
       ]
     },
@@ -707,35 +696,17 @@
               "enabledMarks": [
                 "bold",
                 "italic",
-                "underline",
-                "code",
-                "superscript",
-                "subscript",
-                "strikethrough"
+                "code"
               ],
-              "message": "Only bold, italic, underline, code, superscript, subscript, and strikethrough marks are allowed"
+              "message": "Only bold, italic, and code marks are allowed"
             },
             {
               "enabledNodeTypes": [
-                "heading-1",
-                "heading-2",
-                "heading-3",
-                "heading-4",
-                "heading-5",
-                "heading-6",
-                "ordered-list",
+                "hyperlink",
                 "unordered-list",
-                "hr",
-                "blockquote",
-                "embedded-entry-block",
-                "embedded-asset-block",
-                "table",
-                "asset-hyperlink",
-                "embedded-entry-inline",
-                "entry-hyperlink",
-                "hyperlink"
+                "ordered-list"
               ],
-              "message": "Only heading 1, heading 2, heading 3, heading 4, heading 5, heading 6, ordered list, Unordered list, horizontal rule, quote, block entry, asset, table, link to asset, inline entry, link to entry, and link to Url nodes are allowed"
+              "message": "Only link to Url, Unordered list, and ordered list nodes are allowed"
             },
             {
               "nodes": {}
@@ -1013,15 +984,6 @@
         {
           "fieldId": "description",
           "widgetId": "markdown",
-          "widgetNamespace": "builtin"
-        },
-        {
-          "fieldId": "thumbnail",
-          "settings": {
-            "showLinkEntityAction": true,
-            "showCreateEntityAction": true
-          },
-          "widgetId": "assetLinkEditor",
           "widgetNamespace": "builtin"
         }
       ]

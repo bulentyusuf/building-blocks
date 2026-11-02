@@ -28,11 +28,11 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 - **Post**, the main entry type. Title, slug, publish and updated dates, cover image, excerpt, rich-text body, a numbered-sections switch, a link to one category, links to up to three authors, and up to three tags. Title, excerpt and body can carry a German translation; everything else is shared between the two versions
 - **Author**, name, picture, slug, and a short bio, with its own landing page. A post can carry more than one, and every author it names lists that post
-- **Category**, name, slug, a description of up to 80 characters, and an optional thumbnail, with its own landing page. Posts are filed under one of three strands, Blogging, Films, or Games & Gadgets
+- **Category**, name, slug, and a description of up to 80 characters, with its own landing page. Posts are filed under one of three strands, Blogging, Films, or Games & Gadgets
 - **Tag**, name, slug, and a description of up to 80 characters, with its own landing page. Cross-cutting topics, up to three per post: where Category says where a post lives, a Tag says what it is about
 - **Code Block**, embedded into post bodies for syntax-highlighted snippets. Optional filename and a fixed list of languages
 - **Prompt Block**, embedded into post bodies to publish the generative-image prompt behind a cover, with an optional label and image
-- **Callout**, embedded into post bodies to box a passage the author wants to stand out, with a short label. Label and body can carry a German translation
+- **Callout**, embedded into post bodies to box a passage the author wants to stand out, with a short label. Its body takes text, links and lists only. Label and body can carry a German translation
 - **Sidenote**, embedded inline in post bodies for asides set in the margin. A title for finding the entry in the CMS, and a rich-text note deliberately limited to bold, italic, and links. The note can carry a German translation; the title is for editors and stays English
 - **Page**, standalone rich-text pages such as About and Privacy
 
@@ -136,7 +136,7 @@ Seeds a few placeholder posts, authors, categories, tags, and pages, all publish
 npm run import:seed -- --space-id YOUR_SPACE_ID --management-token YOUR_MANAGEMENT_TOKEN
 ```
 
-The seed ships a single placeholder image, reused for every cover, avatar, and thumbnail. This keeps the import light and free of bundled media. Replace it and the dummy text with your own once you are set up.
+The seed ships a single placeholder image, reused for every cover, avatar, and body image. This keeps the import light and free of bundled media. Replace it and the dummy text with your own once you are set up.
 
 `contentful/seed.json` is generated, not hand-edited: `contentful/build-seed.mjs` is the source of truth, and `npm run build:seed` regenerates the JSON from it.
 
@@ -189,7 +189,7 @@ Forking this template carries over the original author's specifics. Change these
 - **Search illustration.** The empty-state emblem, `public/search-emblem.svg`, is bespoke artwork for this site, loaded via `<img>` in `app/search/page.tsx`. Replace or remove it.
 - **German posts (optional).** The content model template ships one locale, `en-US`, so a fresh fork has no German pages and needs no setup. Contentful answers the German queries in a space without that locale with an empty result, so the build carries on and logs a partial-response warning. To translate posts, add a `de-DE` locale in your space with no fallback, then fill in a post's German title, excerpt and body. The German route lives in `app/de/posts/[slug]/page.tsx`. Swapping German for another language is more than a constant change, because the German dateline, link labels and AI prompt are written in German in the code.
 - **Security headers (careful).** The Content Security Policy in `next.config.js` relaxes two directives per route, and both are load-bearing. `'wasm-unsafe-eval'` is allowed in `script-src` on the `/search` document and `/pagefind/*` assets only, because Pagefind's matching runs as WebAssembly inside a SharedWorker; removing it breaks search with no visible error. `frame-ancestors` allows `https://app.contentful.com` on `/posts/*` and `/de/posts/*` only, which is what lets Contentful frame a draft for live preview; every other route is framable by its own origin alone. If you point a preview URL at a content type outside `/posts`, add its route there too.
-- **Seed images (optional).** If you re-run the seed, repoint `PLACEHOLDER_ASSET_URL` in `contentful/build-seed.mjs` to your own copy, then replace the placeholder cover, avatar, and thumbnail with real assets afterwards.
+- **Seed images (optional).** If you re-run the seed, repoint `PLACEHOLDER_ASSET_URL` in `contentful/build-seed.mjs` to your own copy, then replace the placeholder covers, avatars, and body images with real assets afterwards.
 - **CLAUDE.md and docs/decisions.md (optional).** Useful as-is for working with Claude Code on the repo. `CLAUDE.md` carries the conventions; `docs/decisions.md` carries the reasoning behind them. Review both for any notes specific to the original author.
 
 `public/pagefind` is generated at build time and is not tracked in git. There is nothing to replace there.
