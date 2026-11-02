@@ -239,6 +239,18 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
             <div className="col-span-2 md:col-span-1">
               <SiteWordmark title={SITE_TITLE} size="footer" />
               <p className="mt-4 max-w-sm text-base">{SITE_FOOTER_BLURB}</p>
+              {/* With the blurb, not the colophon: it is about the code, and
+                  the one footer link that leaves the site, so marked. */}
+              <a
+                href={SITE_REPO_URL}
+                className={`${footerLink} mt-2 inline-flex min-h-11 items-center md:min-h-8`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Fork on GitHub
+                <span aria-hidden="true">&nbsp;↗</span>
+                <NewWindowHint />
+              </a>
             </div>
 
             <nav aria-label="Browse">
@@ -286,19 +298,6 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                     className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
                   >
                     RSS feed
-                  </a>
-                </li>
-                <li>
-                  {/* Last, and marked: the one link that leaves the site. */}
-                  <a
-                    href={SITE_REPO_URL}
-                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Fork on GitHub
-                    <span aria-hidden="true">&nbsp;↗</span>
-                    <NewWindowHint />
                   </a>
                 </li>
               </ul>
