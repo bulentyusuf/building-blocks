@@ -229,6 +229,9 @@ pages read daily they were noise, and the heading says enough. The layout test i
 
 The archive lists each year in a list panel: white, the quiet edge, rows
 striped in the page colour, the strand as its pill linking to the strand page.
+Below `sm` the pill gives way to a coloured dot before the date, on one line
+under the title (November 2026): a row went from 142px to 112px at 375px, and
+the dot is not a link, so no undersized tap target.
 
 ### Home is strand chips, a feature card and ten cards
 
