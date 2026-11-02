@@ -46,15 +46,14 @@ export default async function TagPage({
   const { isEnabled } = await draftMode();
   const { slug } = await params;
 
-  const tag = await getTagBySlug(slug, isEnabled);
-  if (!tag) {
-    notFound();
-  }
-
-  const [allPosts, germanSlugs] = await Promise.all([
+  const [tag, allPosts, germanSlugs] = await Promise.all([
+    getTagBySlug(slug, isEnabled),
     getAllPosts(isEnabled),
     getGermanPostSlugs(isEnabled),
   ]);
+  if (!tag) {
+    notFound();
+  }
   const visible = visibleTagSlugs(allPosts);
 
   if (!visible.has(slug)) {

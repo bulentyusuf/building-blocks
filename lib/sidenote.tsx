@@ -62,9 +62,25 @@ export default function Sidenote({
         </span>
         <sup aria-hidden="true">{number}</sup>
       </label>
+      {/* Floated notes have no toggle, so these mark where one starts and
+          ends; shown from 105rem only. [→ `sidenotes`] */}
+      <span
+        className="sidenote-bound sr-only"
+        lang={DEFAULT_LOCALE}
+        data-pagefind-ignore
+      >
+        Note {number}:
+      </span>
       {/* not-prose: .sidenote-body owns the note's type and links. */}
       <span id={bodyId} lang={lang} className="sidenote-body not-prose">
         {body}
+      </span>
+      <span
+        className="sidenote-bound sr-only"
+        lang={DEFAULT_LOCALE}
+        data-pagefind-ignore
+      >
+        End of note.
       </span>
     </span>
   );
