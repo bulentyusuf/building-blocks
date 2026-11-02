@@ -134,7 +134,7 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
 
 - **One announced link per card, one description per figure.** A linked cover
   is `aria-hidden`/`tabIndex={-1}` with no `title`, footer labels are `<p>`
-  not `<h4>`, and a figure's `alt` is empty when its caption renders.
+  not `<h4>`, and a figure's `alt` is its `title`, its caption `description`.
   [→ `announced-links`]
 - **A scroll region's accessible name is its position** (`Table 2`, `Code
 block 2`), never a summary of its contents. [→ `scroll-region-names`]

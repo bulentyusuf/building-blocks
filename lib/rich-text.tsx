@@ -102,7 +102,7 @@ function RichTextAsset({
       ) : (
         <ContentfulImage
           src={asset.url}
-          // "" with a build warning above, never a filename or a guess.
+          // "" only when title is absent; a placeholder renders and warns above.
           alt={asset.title ?? ""}
           // 3:2 fallback, as in lightbox-image.tsx.
           width={asset.width ?? 1200}

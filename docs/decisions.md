@@ -471,8 +471,10 @@ Three doubled labels that each look like a missing one. Do not restore any.
 - **Footer column labels are `<p>`, not `<h4>`**: as headings they skipped a
   level, and as `h2` they would take the display face. Both navs carry
   `aria-label`.
-- **An embedded figure's `alt` is empty whenever a caption renders**, because
-  Contentful's `description` does both jobs.
+- **An embedded figure's `alt` is its `title` and its caption its
+  `description`**, two fields with two jobs. Unlike a cover, a filing-label
+  title still renders as alt, with a build warning as the signal.
+  `app/a11y.test.tsx` fails if alt and caption ever match.
 
 ### A scroll region's name carries its position, not its contents
 
@@ -630,13 +632,12 @@ own token; do not merge them. There is no `font-sans` utility.
 
 - **Display**: `h1` to `h3` and the mastheads, via the base-layer rule. Do not
   add `font-display` to a heading.
-- **Body**: prose and the meta around it, dates, bylines, breadcrumbs, captions.
-  A stray `font-ui` on a date is a regression.
-- **UI**: links and buttons in the chrome (menu, footer, "Every post"), strand
-  and tag pills, stamps and section numbers, the archive and tag count spans,
-  and every small uppercase letterspaced label. The footer's links are words,
-  not paths. A new surface that seems to want UI stays on the body face until
-  raised.
+- **Body**: prose and captions, and nothing around them.
+- **UI**: everything around the prose, since the F2 post frame (#655). The
+  meta line (bylines, dates, reading time), breadcrumbs, the contents list,
+  links and buttons in the chrome, strand and tag pills, stamps, archive rows,
+  empty-state lines and every small uppercase letterspaced label. The footer's
+  links are words, not paths. A new surface outside the prose takes UI.
 - **Mono**: `//` labels and machine text only: code, inline and block, the
   copy button and the prompt block, via `font-mono` (November 2026; it had
   spread to nav, pills and stamps). Plex Mono's x-height and cap height sit
