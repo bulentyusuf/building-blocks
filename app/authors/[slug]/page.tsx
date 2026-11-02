@@ -5,7 +5,12 @@ import ContentfulImage from "@/lib/contentful-image";
 import { RichText } from "@/lib/rich-text";
 import CollectionPage from "../../collection-page";
 import { type Crumb } from "../../breadcrumb";
-import { getAllAuthors, getAllPosts, getAuthorBySlug } from "@/lib/api";
+import {
+  getAllAuthors,
+  getAllPosts,
+  getAuthorBySlug,
+  getGermanPostSlugs,
+} from "@/lib/api";
 import { postsByAuthor } from "@/lib/authors";
 import { visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
@@ -63,7 +68,10 @@ export default async function AuthorPage({
   ];
 
   // Filtered in memory; there is no getPostsByAuthor. [→ `authors-array`]
-  const allPosts = await getAllPosts(isEnabled);
+  const [allPosts, germanSlugs] = await Promise.all([
+    getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
+  ]);
   const posts = postsByAuthor(allPosts, slug);
   const visibleTags = visibleTagSlugs(allPosts);
 
@@ -83,6 +91,7 @@ export default async function AuthorPage({
       crumbs={crumbs}
       posts={posts}
       visibleTags={visibleTags}
+      germanSlugs={new Set(germanSlugs)}
       jsonLd={jsonLd}
       closing={
         posts.length === 0

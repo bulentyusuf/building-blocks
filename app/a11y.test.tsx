@@ -63,6 +63,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
       },
     })),
   getCategoryBySlug: async (slug: string) => ({ name: "Films", slug }),
+  getGermanPostSlugs: async () => [],
   getAllAuthors: async () => [
     {
       name: "Genial Yeti",

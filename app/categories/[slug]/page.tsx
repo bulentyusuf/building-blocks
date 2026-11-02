@@ -3,7 +3,12 @@ import Link from "next/link";
 import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import PostStream from "../../post-stream";
-import { getAllCategories, getAllPosts, getCategoryBySlug } from "@/lib/api";
+import {
+  getAllCategories,
+  getAllPosts,
+  getCategoryBySlug,
+  getGermanPostSlugs,
+} from "@/lib/api";
 import { visibleTagSlugs } from "@/lib/tags";
 import { SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { listingMetadata } from "@/lib/page-metadata";
@@ -50,9 +55,10 @@ export default async function CategoryPage({
 
   // Independent queries, so they go out together. Filtered in memory, like
   // postsByAuthor, because the cards need each post's category and authors.
-  const [category, allPosts] = await Promise.all([
+  const [category, allPosts, germanSlugs] = await Promise.all([
     getCategoryBySlug(slug, isEnabled),
     getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
   ]);
 
   if (!category) {
@@ -68,6 +74,7 @@ export default async function CategoryPage({
         posts={posts}
         visibleTags={visibleTagSlugs(allPosts)}
         showStrand={false}
+        germanSlugs={new Set(germanSlugs)}
       />
 
       <p className="mt-12 text-center font-ui font-semibold text-brand-muted">

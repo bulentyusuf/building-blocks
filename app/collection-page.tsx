@@ -15,6 +15,7 @@ export default function CollectionPage({
   heading,
   posts,
   visibleTags,
+  germanSlugs,
   closing,
   jsonLd,
 }: {
@@ -24,6 +25,8 @@ export default function CollectionPage({
   posts: ListPost[];
   /** Tag slugs with a live page. */
   visibleTags: Set<string>;
+  /** Posts with a German version, for the rows' DE marker. */
+  germanSlugs: Set<string>;
   /** The closing line's lead-in, before "Browse the archive". */
   closing: string;
   jsonLd?: unknown;
@@ -38,7 +41,12 @@ export default function CollectionPage({
       )}
       <Breadcrumb items={crumbs} />
       <header className="mb-10">{heading}</header>
-      <PostStream posts={posts} visibleTags={visibleTags} showStrand />
+      <PostStream
+        posts={posts}
+        visibleTags={visibleTags}
+        showStrand
+        germanSlugs={germanSlugs}
+      />
       <p className="mt-12 text-center font-ui font-semibold text-brand-muted">
         {closing}{" "}
         <Link

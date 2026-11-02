@@ -25,6 +25,8 @@ const posts = Array.from({ length: 12 }, (_, i) => ({
 vi.mock("@/lib/api", () => ({
   getAllPosts: async () => posts,
   getCategoryBySlug: async () => ({ name: "Blogging", slug: "blogging" }),
+  // Post 10 is old enough to be a row; post 2, a card, is never marked.
+  getGermanPostSlugs: async () => ["post-2", "post-10"],
 }));
 vi.mock("next/navigation", () => ({
   notFound: () => {
@@ -69,6 +71,7 @@ describe("a collection page", () => {
         heading={<h1>Design</h1>}
         posts={posts.slice(0, n)}
         visibleTags={new Set()}
+        germanSlugs={new Set(["post-2", "post-10"])}
         closing="That’s all."
       />,
     );
@@ -83,6 +86,10 @@ describe("a collection page", () => {
     // strand page below.
     expect(count(html, /href="\/categories\/blogging"/g)).toBe(5);
     expect(count(html, /text-on-strand/g)).toBe(12);
+    // A row says when a German version exists, as the archive does; cards do
+    // not. [→ `locale`]
+    expect(count(html, /href="\/de\/posts\/post-10"/g)).toBe(1);
+    expect(count(html, /href="\/de\/posts\/post-2"/g)).toBe(0);
   });
 
   it("shows no rows, and no older posts label, at seven or fewer", async () => {
@@ -104,5 +111,6 @@ describe("a strand page", () => {
     // The page is the strand, so neither its cards nor its rows repeat it.
     expect(count(html, /href="\/categories\/blogging"/g)).toBe(0);
     expect(count(html, /text-on-strand/g)).toBe(0);
+    expect(count(html, /href="\/de\/posts\/post-10"/g)).toBe(1);
   });
 });
