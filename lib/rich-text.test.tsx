@@ -1196,6 +1196,21 @@ describe("numbered sections and callouts", () => {
     expect(stamps).toEqual(["01", "02", "03", "04", "05"]);
   });
 
+  it("hangs a numbered heading's text beside its stamp", () => {
+    // Wrapped lines start beside the stamp, never under it: the stamp and the
+    // text are the h2's two columns. [→ `post-page`]
+    const html = renderToStaticMarkup(
+      <RichText content={content()} headings={extractHeadings(doc)} numbered />,
+    );
+    const hanging =
+      /<h2[^>]*class="[^"]*\bflex\b[^"]*"><span aria-hidden="true"[^>]*>\d\d<\/span><span class="min-w-0">/g;
+    expect(html.match(hanging)).toHaveLength(5);
+    // Known-bad control: the stamp inline in the text, as before.
+    expect(
+      '<h2 class="group/heading"><span aria-hidden="true" class="mr-3.5">01</span>Title</h2>',
+    ).not.toMatch(hanging);
+  });
+
   it("stamps nothing when not numbered", () => {
     const html = renderToStaticMarkup(
       <RichText content={content()} headings={extractHeadings(doc)} />,

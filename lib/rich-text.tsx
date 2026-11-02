@@ -180,20 +180,8 @@ export function RichText({
         const number = ++headingIndex;
         const slug = headings[number - 1]?.slug;
         const isPlainRun = plainRun(node);
-        return (
-          // No scroll margin here. [→ `scroll-offset`]
-          <h2 id={slug} className="group/heading">
-            {numbered && (
-              // A rubber stamp, so it tilts. Hidden and unindexed: the number
-              // is position, not part of the heading. [→ `post-page`]
-              <span
-                aria-hidden="true"
-                data-pagefind-ignore
-                className="mr-3.5 inline-flex size-[2.625rem] -rotate-8 items-center justify-center rounded-full bg-brand-dark align-[0.3em] font-ui text-sm font-bold tracking-normal tabular-nums text-brand-bg"
-              >
-                {String(number).padStart(2, "0")}
-              </span>
-            )}
+        const body = (
+          <>
             {isPlainRun ? widont(text) : children}
             {slug ? (
               <a
@@ -213,6 +201,27 @@ export function RichText({
                 <span aria-hidden="true" className="after:content-['#']" />
               </a>
             ) : null}
+          </>
+        );
+        return numbered ? (
+          // A hanging indent: wrapped lines start beside the stamp, never
+          // under it. No scroll margin. [→ `post-page`, `scroll-offset`]
+          <h2 id={slug} className="group/heading flex items-start gap-3.5">
+            {/* A rubber stamp, so it tilts. Hidden and unindexed: the number
+                is position, not part of the heading. [→ `post-page`] */}
+            <span
+              aria-hidden="true"
+              data-pagefind-ignore
+              className="-mt-[0.15em] inline-flex size-[2.625rem] shrink-0 -rotate-8 items-center justify-center rounded-full bg-brand-dark font-ui text-sm font-bold tracking-normal tabular-nums text-brand-bg"
+            >
+              {String(number).padStart(2, "0")}
+            </span>
+            <span className="min-w-0">{body}</span>
+          </h2>
+        ) : (
+          // No scroll margin here. [→ `scroll-offset`]
+          <h2 id={slug} className="group/heading">
+            {body}
           </h2>
         );
       },
