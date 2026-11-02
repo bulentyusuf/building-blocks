@@ -59,6 +59,24 @@ describe("Avatar, single author", () => {
 });
 
 describe("Avatar, co-authors", () => {
+  it("stacks every portrait before the first name", () => {
+    // One group of portraits, then one line of names: a portrait between two
+    // names splits "A & B" across a picture. [→ `post-page`]
+    const out = html([author("a", "A"), author("b", "B"), author("c", "C")]);
+    const firstName = out.indexOf(">A</a>");
+    expect(out.match(/rounded-full border-\[3px\]/g)).toHaveLength(3);
+    expect(out.lastIndexOf("rounded-full border-[3px]")).toBeLessThan(
+      firstName,
+    );
+    // Known-bad control: the old markup, a portrait beside each name.
+    // [→ `known-bad-controls`]
+    const old =
+      '<span class="rounded-full border-[3px]"></span><a>A</a> &amp; <span class="rounded-full border-[3px]"></span><a>B</a>';
+    expect(old.lastIndexOf("rounded-full border-[3px]")).toBeGreaterThan(
+      old.indexOf(">A</a>"),
+    );
+  });
+
   it("renders no separator and no & for one author", () => {
     const out = html([author("a", "A")]);
     expect(out).not.toContain(" & ");
@@ -76,9 +94,9 @@ describe("Avatar, co-authors", () => {
     const out = html([author("a", "A"), author("b", "B"), author("c", "C")]);
     // Each name is its own anchor, so the joined text is not one contiguous
     // string — check the separators in place around the anchors instead.
-    expect(out).toContain(">A</a></span>, <span");
-    expect(out).toContain(">B</a></span> &amp; <span");
-    expect(out).toContain(">C</a></span>");
+    expect(out).toContain(">A</a>, <a");
+    expect(out).toContain(">B</a> &amp; <a");
+    expect(out).toContain(">C</a></p>");
     // No serial comma before the ampersand.
     expect(out).not.toContain(", &amp;");
   });
