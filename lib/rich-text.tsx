@@ -386,9 +386,13 @@ export function RichText({
 
         if (entry.__typename === "PromptBlock") {
           const thumb = entry.image?.url;
-          // Thumbnail left of label and prompt from 480px; the figcaption
-          // stays the first child, which is what names the figure.
-          const side = thumb ? "min-[480px]:col-start-2" : "";
+          // From 480px the thumbnail and label share a header row and the
+          // prompt runs the full width below; the figcaption stays the first
+          // child, which is what names the figure. [→ `post-page`]
+          const side = thumb
+            ? "min-[480px]:col-start-2 min-[480px]:row-start-1"
+            : "";
+          const below = thumb ? "min-[480px]:col-span-2" : "";
           return (
             <figure
               // A fixed id: the hero pill links to this literal.
@@ -397,7 +401,7 @@ export function RichText({
               // [→ `locale`]
               lang={DEFAULT_LOCALE}
               data-pagefind-weight="0.1"
-              className={`not-prose mt-10 mb-6 grid gap-x-5 gap-y-2 rounded-[20px] bg-surface-dark px-5 py-6 text-white last:mb-0 sm:px-7 dark:border-2 dark:border-brand-muted${thumb ? " min-[480px]:grid-cols-[7.5rem_1fr]" : ""}`}
+              className={`not-prose mt-10 mb-6 grid gap-x-5 gap-y-2 rounded-[20px] bg-surface-dark px-5 py-6 text-white last:mb-0 sm:px-7 dark:border-2 dark:border-brand-muted${thumb ? " min-[480px]:grid-cols-[7.5rem_1fr] min-[480px]:items-center min-[480px]:gap-y-4" : ""}`}
             >
               {/* Indexed at a low weight so a prompt match does not anchor the
                   excerpt. The yellow label is 10:1 on ink. [→ `post-page`] */}
@@ -413,7 +417,7 @@ export function RichText({
                 // Decorative.
                 <span
                   aria-hidden="true"
-                  className="relative mb-2 block aspect-video w-30 overflow-hidden rounded-[10px] border-2 border-brand-bg min-[480px]:col-start-1 min-[480px]:row-span-2 min-[480px]:row-start-1 min-[480px]:mb-0 dark:border-white"
+                  className="relative mb-2 block aspect-video w-30 overflow-hidden rounded-[10px] border-2 border-brand-bg min-[480px]:col-start-1 min-[480px]:row-start-1 min-[480px]:mb-0 dark:border-white"
                 >
                   <ContentfulImage
                     src={thumb}
@@ -425,7 +429,7 @@ export function RichText({
                 </span>
               )}
               <div
-                className={`whitespace-pre-wrap break-words font-mono text-sm leading-relaxed ${side}`}
+                className={`whitespace-pre-wrap break-words font-mono text-sm leading-relaxed ${below}`}
               >
                 <code>{entry.prompt}</code>
               </div>
