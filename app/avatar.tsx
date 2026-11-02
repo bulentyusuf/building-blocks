@@ -50,7 +50,8 @@ function AuthorLink({ author }: { author: AvatarAuthor }) {
 }
 
 /**
- * The byline row: each author as a ringed portrait and name, then the meta.
+ * The byline row: the authors' ringed portraits stacked, their names as one
+ * line ("A, B & C"), then the meta. [→ `post-page`, `authors-array`]
  * Handles the empty case itself; callers must not guard on authors.length,
  * which once dropped the dateline. [→ `authors-array`]
  */
@@ -74,21 +75,28 @@ export default function Avatar({
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-3 font-ui text-base">
-      {/* Names may wrap; clipping would be worse. */}
-      {/* Inline, not flex, so the spaces around "&" survive. */}
-      <p className="font-[800] leading-10">
-        {authors.map((author, i) => (
-          <Fragment key={author.slug ?? author.name}>
-            {i > 0 && (i === last ? " & " : ", ")}
-            <span className="inline-flex items-center gap-2.5 align-middle">
-              <span className="h-10 w-10 shrink-0 rounded-full border-[3px] border-brand-dark bg-brand-bg">
-                <Portrait author={author} />
-              </span>
-              <AuthorLink author={author} />
+      <div className="flex items-center gap-2.5">
+        {/* Portraits overlap as one group, decoration beside the names. */}
+        <span aria-hidden="true" className="flex shrink-0 -space-x-3">
+          {authors.map((author) => (
+            <span
+              key={author.slug ?? author.name}
+              className="h-10 w-10 rounded-full border-[3px] border-brand-dark bg-brand-bg"
+            >
+              <Portrait author={author} />
             </span>
-          </Fragment>
-        ))}
-      </p>
+          ))}
+        </span>
+        {/* Names may wrap; clipping would be worse. */}
+        <p className="font-[800]">
+          {authors.map((author, i) => (
+            <Fragment key={author.slug ?? author.name}>
+              {i > 0 && (i === last ? " & " : ", ")}
+              <AuthorLink author={author} />
+            </Fragment>
+          ))}
+        </p>
+      </div>
       {meta}
     </div>
   );

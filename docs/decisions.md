@@ -294,7 +294,8 @@ redirects to the archive, which already lists everything.
 
 `app/posts/[slug]/post-view.tsx`, for both languages. No `WidePage`, rule or
 trail: the `h1`, the standfirst at full ink and the byline row
-(ringed portrait per author, muted date, the Updated stamp, the language link).
+(ringed portraits stacked, then the names as one line, muted date, the Updated
+stamp, the language link).
 The `h1` carries its own `data-pagefind-body`, since it sits outside the
 `<article>`; without it every title-only term drops out of search.
 
@@ -591,8 +592,8 @@ standalone package parses, which is what sank an earlier face.
 
 <!-- key: authors-array -->
 
-Co-authors, with `authors[0]` the lead: first in the byline (a ringed portrait
-per name) and OG card, and the RSS `<author>` when `AUTHOR_EMAIL` is set. The
+Co-authors, with `authors[0]` the lead: first in the byline (its portrait leads the
+stack) and OG card, and the RSS `<author>` when `AUTHOR_EMAIL` is set. The
 Contentful size validation and the GraphQL `limit` are both 3 and move
 together. Names join with an ampersand and no serial comma; in RSS each author
 gets a `<dc:creator>`.
