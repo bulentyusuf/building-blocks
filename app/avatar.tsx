@@ -81,7 +81,7 @@ export default function Avatar({
           {authors.map((author) => (
             <span
               key={author.slug ?? author.name}
-              className="h-10 w-10 rounded-full border-[3px] border-brand-dark bg-brand-bg"
+              className="h-10 w-10 rounded-full border-[3px] border-outline bg-brand-bg"
             >
               <Portrait author={author} />
             </span>

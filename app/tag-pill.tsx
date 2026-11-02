@@ -21,7 +21,7 @@ export default function TagPill({
   return (
     <Link
       href={`/tags/${tag.slug}`}
-      className={`inline-flex items-center rounded-lg border-2 border-brand-dark bg-card font-ui font-semibold ${SIZES[size]} transition-colors duration-200 hover:text-brand-crimson`}
+      className={`inline-flex items-center rounded-lg border-2 border-outline bg-card font-ui font-semibold ${SIZES[size]} transition-colors duration-200 hover:text-brand-crimson`}
     >
       <span aria-hidden="true">#</span>
       {tag.name}

@@ -14,7 +14,7 @@ import type { ListPost, Tag } from "@/lib/types";
 // else clickable sits above it with `relative z-10`. Ink edge because it
 // presses; the cover inside takes the quiet edge. [→ `strands`]
 const press =
-  "relative border-[3px] border-brand-dark bg-card transition-[translate,box-shadow] duration-150 hover:shadow-none motion-reduce:transition-none";
+  "relative border-[3px] border-outline bg-card transition-[translate,box-shadow] duration-150 hover:shadow-none motion-reduce:transition-none";
 const stretched =
   "after:absolute after:inset-0 after:content-[''] hover:text-brand-crimson transition-colors duration-200";
 

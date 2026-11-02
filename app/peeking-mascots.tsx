@@ -31,7 +31,7 @@ export default function PeekingMascots({ authors }: { authors: Mascot[] }) {
             alt=""
             width={92}
             height={92}
-            className="size-[68px] rounded-full border-[3px] border-brand-dark bg-brand-bg object-cover md:size-[92px]"
+            className="size-[68px] rounded-full border-[3px] border-outline bg-brand-bg object-cover md:size-[92px]"
           />
         </Link>
       ))}

@@ -100,7 +100,7 @@ export const AUTHOR_EMAIL = process.env.AUTHOR_EMAIL?.trim() || "";
 export const THEME_COLOR = "#FAF5F1";
 
 // Dark-scheme twin.
-export const THEME_COLOR_DARK = "#17110F";
+export const THEME_COLOR_DARK = "#18181B";
 
 // [→ `locale`]
 export const DEFAULT_LOCALE = "en-GB";

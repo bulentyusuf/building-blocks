@@ -119,7 +119,7 @@ const NAV_LINKS = [
 
 // The square buttons in the header row: search and the phone menu.
 const squareButton =
-  "flex size-12 items-center justify-center rounded-xl border-[3px] border-brand-dark bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]";
+  "flex size-12 items-center justify-center rounded-xl border-[3px] border-outline bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]";
 
 // Links are words in the UI face; mono is for // labels and code.
 // [→ `type-roles`]
@@ -192,7 +192,7 @@ async function Header({ isDraftMode }: { isDraftMode: boolean }) {
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-0 top-full z-40 hidden h-dvh bg-black/40 group-open:block"
               />
-              <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-xl border-[3px] border-brand-dark bg-brand-bg px-4 py-3 shadow-[4px_4px_0_var(--color-brand-crimson)]">
+              <div className="absolute right-5 top-full z-50 mt-2 min-w-[12rem] rounded-xl border-[3px] border-outline bg-brand-bg px-4 py-3 shadow-[4px_4px_0_var(--color-brand-crimson)]">
                 <ul>
                   {NAV_LINKS.map(({ href, label }) => (
                     <li key={href}>
@@ -234,7 +234,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
     <footer>
       <div className="max-w-frame mx-auto px-4 md:px-10">
         <PeekingMascots authors={authors} />
-        <div className="border-t-[3px] border-brand-dark pt-10 pb-12">
+        <div className="border-t-[3px] border-outline pt-10 pb-12">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-[2fr_1fr_1fr] md:gap-12">
             <div className="col-span-2 md:col-span-1">
               <SiteWordmark title={SITE_TITLE} size="footer" />
