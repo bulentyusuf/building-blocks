@@ -329,9 +329,10 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
       `the feature text is ${featureText.height}px, taller than its ${featureCover.height}px cover`,
     );
   }
-  // 16:9 stacked, 4:3 beside the text, whatever the headline's length.
+  // 3:2 stacked, as the cards; 4:3 beside the text, whatever the headline's
+  // length.
   const ratio = featureCover.width / featureCover.height;
-  const [want, name] = width >= 1280 ? [4 / 3, "4:3"] : [16 / 9, "16:9"];
+  const [want, name] = width >= 1280 ? [4 / 3, "4:3"] : [3 / 2, "3:2"];
   if (Math.abs(ratio - want) > 0.02) {
     problems.push(`the feature cover is ${ratio.toFixed(2)}:1, not ${name}`);
   }
