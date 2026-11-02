@@ -626,7 +626,7 @@ own token; do not merge them. There is no `font-sans` utility.
   add `font-display` to a heading.
 - **Body**: prose and the meta around it, dates, bylines, breadcrumbs, captions.
   A stray `font-ui` on a date is a regression.
-- **UI**: the table-of-contents and "Explore with AI" labels, the tag pill, the
+- **UI**: the table-of-contents label, the tag pill, the
   archive and tag count spans, and every small uppercase
   letterspaced label. Uppercase plus letterspacing is the tell. A new surface
   that seems to want UI stays on the body face until raised.

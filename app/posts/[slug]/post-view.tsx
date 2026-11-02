@@ -13,7 +13,6 @@ import { readingTimeMinutes } from "@/lib/reading-time";
 import { coverPromptId } from "@/lib/cover-prompt";
 import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
-import ExploreWithAI from "../../explore-with-ai";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
 import SidenoteEnterKey from "../../sidenote-enter-key";
@@ -182,21 +181,18 @@ export default async function PostView({
           </div>
         )}
         <div className="mt-12 flex flex-col gap-10 md:mt-16 xl:grid xl:grid-cols-[minmax(15rem,1fr)_minmax(0,49.25rem)] xl:gap-12">
-          {/* Stretches the row so the sticky wrapper has room. Below xl it
-              holds only the ToC disclosure. [→ `pagefind-index-scope`] */}
+          {/* Stretches the row so the sticky wrapper has room, and keeps the
+              column on xl when there is no ToC. [→ `pagefind-index-scope`] */}
           <aside
             data-pagefind-ignore
             className={`mx-auto w-full max-w-[49.25rem] xl:mx-0 xl:max-w-none${hasToc ? "" : " hidden xl:block"}`}
           >
-            <div className="xl:sticky xl:top-20 xl:space-y-7 xl:pb-4">
+            <div className="xl:sticky xl:top-20 xl:pb-4">
               <TableOfContents
                 headings={headings}
                 lang={lang}
                 numbered={numbered}
               />
-              <div className="hidden xl:block">
-                <ExploreWithAI slug={slug} german={german} />
-              </div>
             </div>
           </aside>
 
