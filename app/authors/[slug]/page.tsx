@@ -33,7 +33,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  const author = await getAuthorBySlug(slug, isEnabled);
+  // Filtered in memory; there is no getPostsByAuthor. [→ `authors-array`]
+  const [author, allPosts, germanSlugs] = await Promise.all([
+    getAuthorBySlug(slug, isEnabled),
+    getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
+  ]);
 
   if (!author) {
     return { title: "Author not found" };
@@ -55,7 +60,12 @@ export default async function AuthorPage({
   const { isEnabled } = await draftMode();
   const { slug } = await params;
 
-  const author = await getAuthorBySlug(slug, isEnabled);
+  // Filtered in memory; there is no getPostsByAuthor. [→ `authors-array`]
+  const [author, allPosts, germanSlugs] = await Promise.all([
+    getAuthorBySlug(slug, isEnabled),
+    getAllPosts(isEnabled),
+    getGermanPostSlugs(isEnabled),
+  ]);
 
   if (!author) {
     notFound();
@@ -67,11 +77,6 @@ export default async function AuthorPage({
     { label: author.name },
   ];
 
-  // Filtered in memory; there is no getPostsByAuthor. [→ `authors-array`]
-  const [allPosts, germanSlugs] = await Promise.all([
-    getAllPosts(isEnabled),
-    getGermanPostSlugs(isEnabled),
-  ]);
   const posts = postsByAuthor(allPosts, slug);
   const visibleTags = visibleTagSlugs(allPosts);
 
