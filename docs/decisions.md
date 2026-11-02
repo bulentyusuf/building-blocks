@@ -129,7 +129,8 @@ reimplemented. Search CSS needs no `!important`: if it seems to, fix the
 template. Style the component hosts (`pagefind-input`, `pagefind-results`) or
 our own template classes, never a `pf-*` class: the component resets those
 with `all: revert` at two-ID specificity. Each result carries its strand pill
-from the post's indexed `strand` and `strandfill` meta. Keep `pagefind` at `^1.5.2` or later, where the Component UI exists.
+and date from the post's indexed `strand`, `strandfill` and `date` meta. That
+reset is also why Pagefind's own "Clear" button keeps the browser's font. Keep `pagefind` at `^1.5.2` or later, where the Component UI exists.
 
 The module is a `modulepreload` in the server HTML and runs from the effect.
 A server-rendered `<script>` ran whenever it arrived, often before hydration,
@@ -493,12 +494,12 @@ own `tabindex` on the `<pre>` is switched off in `lib/highlight.ts`.
 
 <!-- key: breadcrumbs -->
 
-- A narrow page puts `<Breadcrumb>` inside its centred column (`max-w-2xl` on
-  `/search`, the 49.25rem reading panel on `/about` and `/privacy`), or it
-  starts far left of the heading; wide pages render it unwrapped.
+- A narrow page puts `<Breadcrumb>` inside its centred column (the 49.25rem
+  reading panel on `/about` and `/privacy`), or it starts far left of the
+  heading; wide pages render it unwrapped.
 - The 404 carries no trail: the header's chips and its own links lead out.
-- On `/search` the wrapper sits before the `<section>`, so `.search-empty`
-  stays the next sibling of `.pagefind-scope` for the emblem's `:has()` rule.
+- On `/search` nothing renders between `.pagefind-scope` and `.search-empty`,
+  which must stay its next sibling for the emblem's `:has()` rule.
 - Home, the strand pages and posts carry no trail; the header's chips say
   where you are, a post's strand pressed.
 - Accepted: archive rows carry two tab stops each.
@@ -681,8 +682,10 @@ it, with a commented-out declaration as its control.
 Whether a page's header sits at `max-w-frame` or inside `max-w-2xl` decides the
 breadcrumb wrapper and the `h1` ramp. A route is wide or narrow; none sits half in each. The tell of a wrong
 choice is a 6xl heading in a 42rem measure. The measure is the
-header's, not the prose's: `/search` is narrow. The route lists are in
-`CLAUDE.md`.
+header's, not the prose's. `/search` is wide (November 2026, from the F2
+board): a results column of at most 720px with the tag panel beside it from
+`lg`, sticky and visible while searching, below it on narrower screens. The
+route lists are in `CLAUDE.md`.
 
 Home, the strand pages, posts and the tag and author pages sit outside this
 axis [→ `strands`, `post-page`, `listing-shell`].

@@ -50,8 +50,8 @@ lines an entry, a line or two plus a key per comment. [→ `reopening-decisions`
 - **A route is wide or narrow, decided by the header measure, and everything
   follows.** No route sits half in each. [→ `page-axis`]
 - **Wide**: header at `max-w-frame`, `<Breadcrumb>` unwrapped, `h1` at `text-5xl
-md:text-6xl lg:text-7xl` weight 800, no rule. Two routes: `/archive` and
-  `/tags`. [→ `band-retirement`]
+md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
+  `/tags` and `/search`. [→ `band-retirement`, `page-axis`]
 - **Home and the strand pages are neither**: a feature card and cards under
   the header's chips, no rule, no pager, no trail. [→ `strands`]
 - **Posts are neither either**: header group, an ink-framed cover, then the
@@ -59,13 +59,11 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Two routes: `/archive` and
 - **Tag and author pages are strand pages with a trail and a visible `h1`**,
   through `app/collection-page.tsx`: seven cards, then rows. [→ `listing-shell`]
 - **Narrow**: one centred column, `h1` at the F2 scale, no rule. `/about` and
-  `/privacy` sit in a quiet reading panel 49.25rem wide; `/search` keeps
-  `max-w-2xl`. [→ `page-axis`]
+  `/privacy` sit in a quiet reading panel 49.25rem wide. [→ `page-axis`]
 - **Every wide route renders through `app/wide-page.tsx`.** Do not assemble a
   bespoke wide header or `Container`, and do not give a narrow route the wide
   header. [→ `wide-page-shell`, `band-retirement`]
-- **Breadcrumbs sit inside a narrow page's centred column** and before
-  `<section>` on `/search`. [→ `breadcrumbs`]
+- **Breadcrumbs sit inside a narrow page's centred column.** [→ `breadcrumbs`]
 
 ## Headers and home
 

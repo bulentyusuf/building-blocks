@@ -2,7 +2,7 @@ import Container from "../../container";
 import PostCard from "../../post-card";
 import { Label } from "../../post-stream";
 import Avatar from "../../avatar";
-import Date from "../../date";
+import Date, { formatLongDate } from "../../date";
 import UpdatedStamp from "../../updated-stamp";
 import CoverImage from "../../cover-image";
 import { RichText } from "@/lib/rich-text";
@@ -141,14 +141,15 @@ export default async function PostView({
       />
       {/* The indexed region. meta url gives results the extensionless route,
           since Pagefind indexes the .html files; the strand feeds the result
-          pill. [→ `pagefind-index-scope`, `pagefind-ui`] */}
+          pill and the date. [→ `pagefind-index-scope`, `pagefind-ui`] */}
       <article
         {...(!german && {
           "data-pagefind-body": true,
           "data-pagefind-meta": strand
-            ? "url[data-url], strand[data-strand], strandfill[data-strand-fill]"
-            : "url[data-url]",
+            ? "url[data-url], date[data-date], strand[data-strand], strandfill[data-strand-fill]"
+            : "url[data-url], date[data-date]",
           "data-url": path,
+          "data-date": formatLongDate(post.date),
           ...(strand && {
             "data-strand": strand.label,
             "data-strand-fill": strand.fill,

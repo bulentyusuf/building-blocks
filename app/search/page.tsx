@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { draftMode } from "next/headers";
-import Container from "../container";
-import Breadcrumb, { type Crumb } from "../breadcrumb";
+import WidePage from "../wide-page";
+import { type Crumb } from "../breadcrumb";
 import SearchClient from "./search-client";
 import TagPill from "../tag-pill";
 import Tape from "../tape";
@@ -25,49 +25,57 @@ export default async function SearchPage() {
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Search" }];
 
   return (
-    <Container>
-      {/* Wrapped, and sits before the <section>. [→ `breadcrumbs`] */}
-      <div className="mx-auto max-w-2xl">
-        <Breadcrumb items={crumbs} />
-      </div>
-      <section className="mx-auto max-w-2xl">
-        <h1 className="mb-7 text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
+    <WidePage
+      crumbs={crumbs}
+      heading={
+        <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
           Search
         </h1>
-        {/* Without scripts the input never appears, so say why. Before
-            SearchClient, to keep the emblem's adjacency rule intact. */}
-        <noscript>
-          {/* Underlined: crimson against the muted text is 1.17:1 light and
-              1.05:1 dark, far below 3:1. */}
-          <p className="mb-6 text-brand-muted">
-            Search needs JavaScript. The index runs entirely in your browser, so
-            no query ever leaves this page — which also means there is nothing
-            to search with when scripts are turned off. The{" "}
-            <a
-              href="/archive"
-              className="font-bold text-brand-crimson underline underline-offset-2 transition-opacity duration-200 hover:opacity-80"
-            >
-              archive
-            </a>{" "}
-            lists every post by year.
-          </p>
-        </noscript>
-        <SearchClient />
-        {/* Everything that hides with the empty state lives inside it: the
-              CSS rule needs it to be the next sibling of .pagefind-scope. */}
-        <div className="search-empty">
-          {/* Static SVG, not inline. [→ `search-emblem`] */}
-          <figure className="mx-auto mt-10 max-w-[16rem] p-8">
-            <img
-              src="/search-emblem.svg"
-              alt=""
-              width={1735}
-              height={1867}
-              className="h-auto w-full"
-            />
-          </figure>
+      }
+    >
+      {/* Results up to 720px, the tag panel beside them from lg, where both
+          fit; it stays while searching. [→ `page-axis`, `pagefind-ui`] */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,45rem)_minmax(17.5rem,22.5rem)] lg:items-start lg:justify-between lg:gap-16">
+        <section>
+          {/* Without scripts the input never appears, so say why. Before
+              SearchClient, to keep the emblem's adjacency rule intact. */}
+          <noscript>
+            {/* Underlined: crimson against the muted text is 1.17:1 light and
+                1.05:1 dark, far below 3:1. */}
+            <p className="mb-6 text-brand-muted">
+              Search needs JavaScript. The index runs entirely in your browser,
+              so no query ever leaves this page — which also means there is
+              nothing to search with when scripts are turned off. The{" "}
+              <a
+                href="/archive"
+                className="font-bold text-brand-crimson underline underline-offset-2 transition-opacity duration-200 hover:opacity-80"
+              >
+                archive
+              </a>{" "}
+              lists every post by year.
+            </p>
+          </noscript>
+          <SearchClient />
+          {/* Hides on the first keystroke: the CSS rule needs it to be the
+              next sibling of .pagefind-scope. */}
+          <div className="search-empty">
+            {/* Static SVG, not inline. [→ `search-emblem`] */}
+            <figure className="mx-auto mt-10 max-w-[16rem] p-8">
+              <img
+                src="/search-emblem.svg"
+                alt=""
+                width={1735}
+                height={1867}
+                className="h-auto w-full"
+              />
+            </figure>
+          </div>
+        </section>
+        {/* Sticky from lg, scrolling on its own if taller than the window;
+            the top padding keeps the tape inside the scroll box. */}
+        <aside className="mt-12 lg:sticky lg:top-20 lg:mt-0 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto lg:pt-5">
           {/* A taped note, the page's one strip of tape. [→ `pagefind-ui`] */}
-          <div className="relative mt-6 rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-6 pb-6">
+          <div className="relative rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-6 pb-6">
             <Tape />
             {tags.length > 0 && (
               <>
@@ -100,8 +108,8 @@ export default async function SearchPage() {
               .
             </p>
           </div>
-        </div>
-      </section>
-    </Container>
+        </aside>
+      </div>
+    </WidePage>
   );
 }
