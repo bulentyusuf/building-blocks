@@ -4,10 +4,9 @@ import { draftMode } from "next/headers";
 import PostRow, { ROWS_PANEL } from "../post-row";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getBrowseIntro, getGermanPostSlugs } from "@/lib/api";
+import { getAllPosts, getGermanPostSlugs } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
 import { browsePageMetadata } from "@/lib/page-metadata";
-import { widont } from "@/lib/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
   // [→ `single-entry-cache`]
@@ -22,8 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
 
-  const [intro, posts, germanSlugs] = await Promise.all([
-    getBrowseIntro("tags", isEnabled),
+  const [posts, germanSlugs] = await Promise.all([
     getAllPosts(isEnabled),
     getGermanPostSlugs(isEnabled),
   ]);
@@ -40,14 +38,6 @@ export default async function TagsPage() {
         <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
           Tags
         </h1>
-      }
-      // Not the meta description, which repeats the site name.
-      standfirst={
-        intro?.standfirst && (
-          <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-            {widont(intro.standfirst)}
-          </p>
-        )
       }
     >
       {groups.length === 0 ? (

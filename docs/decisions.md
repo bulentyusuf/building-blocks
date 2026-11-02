@@ -23,7 +23,6 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 
 **Headers and home**
 
-- `split-masthead` — The masthead splits into heading and standfirst, right-anchored
 - `strands` — Home is strand chips, a feature card and ten cards, and a card presses as one link
 - `cover-frames` — Covers take one of two frames, chosen by `wide`
 - `listing-shell` — Tag and author pages are strand pages with a trail
@@ -222,34 +221,14 @@ file reaching 2,405 lines, because nothing counted them.
 
 The navy masthead band gave way to a 3px ink rule, and F2 retired that too: the
 graph-paper page and the panels below the header do the separating. The index
-pages keep `app/wide-page.tsx` for the trail and the split header, which ends
-on a fixed gap before the content. The layout test in lib
+pages keep `app/wide-page.tsx` for the trail and the heading, which ends on a
+fixed gap before the content. Standfirsts were retired in November 2026: on
+pages read daily they were noise, and the heading says enough. The layout test in lib
 (listing-rhythm.layout.test.tsx) holds that gap the same on `/archive` and
 `/tags`, in a browser [→ `guard-limits`].
 
 The archive lists each year in a list panel: white, the quiet edge, rows
 striped in the page colour, the strand as its pill linking to the strand page.
-
-### The masthead splits into heading and standfirst, right-anchored
-
-<!-- key: split-masthead -->
-
-From `md` up a wide header lays heading and standfirst on one row, the
-standfirst pinned to the container's right edge; below `md` it stacks.
-`justify-between` and the standfirst's 320px cap ship together: without the cap
-a one-line standfirst strands at the far margin, without `justify-between` it
-strands mid-row. `items-baseline-last` closes both blocks on their last line.
-The stack below `md` is required: a 60px heading runs to 330px and a 390px
-phone has 350px of content, so there is no room for a standfirst beside it.
-
-Every standfirst carries `md:max-w-[20rem] text-lg leading-relaxed
-md:text-right text-brand-muted`, and `lib/palette-contrast.test.ts` anchors on
-all four. Both `md:` prefixes are mandatory: unprefixed, the cap and alignment
-apply to the mobile stack, landing the text short of the page edge by an amount
-that grows with the viewport (15px at 390, 392px at 767), so one screen width
-cannot judge it.
-
-The cap sets a copy budget of about 37 characters a line, 74 for two.
 
 ### Home is strand chips, a feature card and ten cards
 
@@ -551,15 +530,14 @@ that says where they are. Old anchors still land.
 
 <!-- key: browse-copy -->
 
-The standfirst and meta description on `/tags` and `/archive` come from a `browseIntro` entry keyed by slug, through
-`browsePageMetadata` in `lib/page-metadata.ts`. `generateMetadata` and the page
-pass the same slug constant (see `single-entry-cache`). A missing entry
-degrades to a heading.
+The meta description on `/tags` and `/archive` comes from a `browseIntro`
+entry keyed by slug, through `browsePageMetadata` in `lib/page-metadata.ts`.
+The entry's `standfirst` field is no longer rendered (standfirsts were retired
+in November 2026) and can be removed from the content model.
 
 `SITE_DESCRIPTION` is site chrome, like `SITE_TITLE`, read on routes that never
 touch Contentful; home's fuller `HOME_TITLE` and `HOME_DESCRIPTION` sit beside
-them. None of them moves into the CMS. `/archive`'s standfirst is generated from
-the data, and its `browseIntro` field is an all-or-nothing override.
+them. None of them moves into the CMS.
 
 ### The OG card's font is guarded by a real render, not a hash
 

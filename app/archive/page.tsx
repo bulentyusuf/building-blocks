@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { draftMode } from "next/headers";
-import { formatMonthYear } from "../date";
 import WidePage from "../wide-page";
 import PostRow, { ROWS_PANEL } from "../post-row";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getBrowseIntro, getGermanPostSlugs } from "@/lib/api";
+import { getAllPosts, getGermanPostSlugs } from "@/lib/api";
 import type { ListPost } from "@/lib/types";
 import { browsePageMetadata } from "@/lib/page-metadata";
-import { widont } from "@/lib/typography";
 
 export async function generateMetadata(): Promise<Metadata> {
   // Same slug as the component. [→ `single-entry-cache`]
@@ -21,8 +19,6 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ArchivePage() {
   const { isEnabled } = await draftMode();
-  const intro = await getBrowseIntro("archive", isEnabled);
-
   const [posts, germanSlugs] = await Promise.all([
     getAllPosts(isEnabled),
     getGermanPostSlugs(isEnabled),
@@ -38,8 +34,6 @@ export default async function ArchivePage() {
   }
   const years = [...byYear.keys()].sort((a, b) => b - a); // newest year first
 
-  const oldest = posts.length > 0 ? posts[posts.length - 1] : undefined;
-
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Archive" }];
 
   return (
@@ -49,24 +43,6 @@ export default async function ArchivePage() {
         <h1 className="text-5xl leading-[0.98] font-[800] tracking-[-0.03em] md:text-6xl lg:text-7xl">
           Archive
         </h1>
-      }
-      // Generated from the posts, so it never goes stale; a browseIntro entry
-      // can override it. Both branches carry the standfirst classes.
-      // [→ `browse-copy`, `split-masthead`]
-      standfirst={
-        intro?.standfirst ? (
-          <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-            {widont(intro.standfirst)}
-          </p>
-        ) : (
-          oldest && (
-            <p className="md:max-w-[20rem] text-lg leading-relaxed md:text-right text-brand-muted text-pretty">
-              {widont(
-                `${posts.length} ${posts.length === 1 ? "post" : "posts"} since ${formatMonthYear(oldest.date)}, newest first.`,
-              )}
-            </p>
-          )
-        )
       }
     >
       {years.length === 0 ? (

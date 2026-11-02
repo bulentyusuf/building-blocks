@@ -67,11 +67,7 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
 
 ## Headers and home
 
-- **The split header is `justify-between md:flex-row items-baseline-last`,** and
-  every standfirst carries all four of `md:max-w-[20rem] text-lg leading-relaxed
-md:text-right text-brand-muted`. Both `md:` prefixes are mandatory or mobile
-  aligns to a boundary nothing else draws. [→ `split-masthead`]
-- **Standfirst copy budget is roughly 37 characters a line, 74 for two.**
+- **Wide pages carry no standfirst**: the heading stands alone. [→ `wide-page-shell`]
 - **Home's `h1` is an `sr-only` `SITE_TITLE`.** Its mono labels are the `h2`s,
   post titles `h3`. A card has one link, its stretched title. [→ `strands`]
 - **Covers take one of two frames, chosen by `wide`**: 3:2 mobile and 16:9 from
@@ -195,7 +191,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   Do not add `.nvmrc`, `volta.node`, `devEngines.runtime` or a hardcoded
   `node-version:`. `@types/node` follows the runtime major, not latest.
   [→ `node-pin`]
-- **Browse-page standfirst and meta description are CMS-editable** via a
+- **Browse-page meta descriptions are CMS-editable** via a
   `browseIntro` entry; site identity (`SITE_TITLE`, `SITE_DESCRIPTION`) stays
   in code. [→ `browse-copy`]
 - **Two copies of `@contentful/rich-text-types` ship on purpose** — the app

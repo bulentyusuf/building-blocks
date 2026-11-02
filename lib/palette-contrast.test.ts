@@ -97,34 +97,6 @@ describe("muted small-caps labels clear AA in both schemes", () => {
   });
 });
 
-// On cream, a standfirst that names no colour renders as body ink and competes
-// with the h1, so the role is asserted, not assumed. [→ `band-retirement`]
-
-describe("every wide route's standfirst takes the Standfirst role", () => {
-  // Anchored on the standfirst's classes, not the route's markup, so recomposed
-  // markup cannot quietly drop coverage. The width cap, right alignment and
-  // their md: prefixes are inside the pattern on purpose: a standfirst that
-  // loses one stops matching instead of passing. [→ `split-masthead`]
-  const STANDFIRST_M5 =
-    /className="[^"]*md:max-w-\[20rem\] text-lg leading-relaxed md:text-right text-brand-muted[^"]*"/g;
-
-  // Counted exactly, not as non-zero: where a file has two standfirsts, one
-  // regressing leaves the other to keep a non-zero count green. Archive has two,
-  // the CMS entry and the generated oldest-post fallback.
-  const EXPECTED_STANDFIRSTS: Record<string, number> = {
-    "app/archive/page.tsx": 2,
-  };
-
-  it.each(["app/tags/page.tsx", "app/archive/page.tsx"])("%s", (file) => {
-    const found = [...(read(file).match(STANDFIRST_M5) ?? [])];
-    // Exact, not non-zero. See the note on EXPECTED_STANDFIRSTS: a zero-floor
-    // check cannot see one of two standfirsts regressing.
-    expect(found.length).toBe(EXPECTED_STANDFIRSTS[file] ?? 1);
-    for (const className of found)
-      expect(className).toMatch(/text-brand-muted/);
-  });
-});
-
 describe("literal hexes track the tokens they duplicate", () => {
   // Channel comparison, not string: globals.css writes tokens lowercase and the
   // TSX literals are uppercase, so === on the text fails for the wrong reason.
