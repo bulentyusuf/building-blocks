@@ -6,6 +6,11 @@ import { useEffect } from "react";
 import Link from "next/link";
 import Container from "./container";
 
+// Standalone, so crimson with a hover underline, and 44px to tap.
+// [→ `type-roles`, `breadcrumbs`]
+const action =
+  "inline-flex min-h-11 items-center font-ui text-base font-bold text-brand-crimson decoration-2 underline-offset-[3px] hover:underline";
+
 export default function Error({
   error,
   reset,
@@ -42,17 +47,10 @@ export default function Error({
           aria-label="Recovery options"
           className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
         >
-          <button
-            type="button"
-            onClick={reset}
-            className="text-base font-bold text-brand-crimson hover:opacity-80 transition-opacity duration-200"
-          >
+          <button type="button" onClick={reset} className={action}>
             Try again
           </button>
-          <Link
-            href="/"
-            className="text-base font-bold text-brand-crimson hover:opacity-80 transition-opacity duration-200"
-          >
+          <Link href="/" className={action}>
             Home
           </Link>
         </nav>
