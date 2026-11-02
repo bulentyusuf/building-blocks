@@ -525,9 +525,14 @@ entry renders nothing; do not make it an error.
   and a CSS counter; both markers are `aria-hidden` and the label is named by
   an `sr-only` "Note N". Never name a `sup` (it announces twice) or drop the
   span (the control announces as a bare "1").
+- **A floated note is bounded in words.** From 105rem there is no toggle, so
+  `sr-only` "Note N:" and "End of note." spans sit either side of the body,
+  hidden below 105rem; without them the note read on mid-sentence. The
+  margin number takes empty alt text so it is not heard twice.
 
 `lib/rich-text.test.tsx` guards the phrasing rule, the absent `<button>` and the
-numbering.
+numbering; `lib/sidenote.layout.test.tsx` reads both layouts from Chromium's
+accessibility tree.
 
 ### Tags have their own pages, and `/tags` is the index
 

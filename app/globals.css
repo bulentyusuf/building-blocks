@@ -345,6 +345,12 @@ html:has(dialog:modal) {
   border-left: 2px solid var(--color-brand-crimson);
 }
 
+/* Below 105rem the toggle names the note, so its sr-only bounds would double
+   it. Unlayered, so this beats the sr-only utility. [→ `sidenotes`] */
+.sidenote-bound {
+  display: none;
+}
+
 /* The note's paragraphs are spans (see lib/sidenote.tsx — a real <p> would close
    the paragraph the reference sits in), so they need blocking out by hand. */
 .sidenote-para {
@@ -370,6 +376,9 @@ html:has(dialog:modal) {
   .sidenote-toggle {
     display: none;
   }
+  .sidenote-bound {
+    display: inline;
+  }
   /* clear:right stacks multiple notes instead of overlapping them (dense
      reference clusters can still collide — a known Tufte-CSS limit). The
      :checked selector is repeated so a note opened on mobile and then resized
@@ -391,6 +400,9 @@ html:has(dialog:modal) {
   }
   .sidenote-body::before {
     content: counter(sidenote) ". ";
+    /* Empty alt: the "Note N:" bound already says it. Older browsers drop
+       this line and keep the one above. */
+    content: counter(sidenote) ". " / "";
     font-weight: 600;
     color: var(--color-brand-crimson);
   }
