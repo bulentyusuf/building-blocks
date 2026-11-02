@@ -13,7 +13,8 @@ export const ROWS_PANEL =
 /**
  * One compact row: date, title, strand. The archive shows day and month under
  * its year heading; a collection page has no year heading, so the full date.
- * Three fixed lanes from sm, title first below it. [→ `listing-shell`]
+ * Three fixed lanes from sm. Below it the title comes first, then the strand as
+ * a coloured dot before the date on one line. [→ `listing-shell`]
  */
 export default function PostRow({
   post,
@@ -30,16 +31,16 @@ export default function PostRow({
   const strand = showStrand ? strandFor(post.category) : undefined;
   return (
     <li
-      className={`grid grid-cols-1 items-baseline gap-x-6 gap-y-1.5 px-5 py-3.5 even:bg-brand-bg sm:px-7 ${date === "dayMonth" ? "sm:grid-cols-[4.75rem_1fr_auto]" : "sm:grid-cols-[9.5rem_1fr_auto]"}`}
+      className={`grid grid-cols-[auto_1fr] items-baseline gap-x-2 gap-y-1.5 px-5 py-3.5 even:bg-brand-bg sm:gap-x-6 sm:px-7 ${date === "dayMonth" ? "sm:grid-cols-[4.75rem_1fr_auto]" : "sm:grid-cols-[9.5rem_1fr_auto]"}`}
     >
-      <span className="order-2 font-ui text-[0.9375rem] font-semibold tabular-nums text-brand-muted sm:order-1">
+      <span className="order-3 font-ui text-[0.9375rem] font-semibold tabular-nums text-brand-muted sm:order-1">
         <DateComponent dateString={post.date} variant={date} />
         {/* The heading carries the year; restore it for link navigation. */}
         {date === "dayMonth" && (
           <span className="sr-only"> {new Date(post.date).getFullYear()}</span>
         )}
       </span>
-      <span className="order-1 sm:order-2">
+      <span className="order-1 col-span-full sm:order-2 sm:col-span-1">
         <Link
           href={`/posts/${post.slug}`}
           className="font-ui text-xl leading-snug font-bold transition-colors duration-200 hover:text-brand-crimson"
@@ -61,9 +62,18 @@ export default function PostRow({
         )}
       </span>
       {strand && (
+        // Phones: a dot, not a link, so no undersized tap target. After the
+        // title in the source, so a screen reader hears it there.
+        <span
+          className={`order-2 size-3 self-center rounded-full border-2 border-brand-dark sm:hidden ${strand.fill}`}
+        >
+          <span className="sr-only">in {strand.label}</span>
+        </span>
+      )}
+      {strand && (
         <Link
           href={`/categories/${strand.slug}`}
-          className="order-3 justify-self-start sm:justify-self-end"
+          className="order-3 hidden justify-self-end sm:block"
         >
           {/* Keeps the title from running into the strand. */}
           <span className="sr-only">in </span>

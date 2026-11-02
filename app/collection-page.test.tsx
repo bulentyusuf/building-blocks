@@ -49,7 +49,8 @@ async function toHtml(element: ReactElement): Promise<string> {
 const count = (html: string, pattern: RegExp) =>
   (html.match(pattern) ?? []).length;
 const cards = (html: string) => count(html, /<article/g);
-const rows = (html: string) => count(html, /<li class="grid grid-cols-1/g);
+const rows = (html: string) =>
+  count(html, /<li class="grid grid-cols-\[auto_1fr\]/g);
 const linksTo = (html: string, slug: string) =>
   count(html, new RegExp(`href="/posts/${slug}"`, "g"));
 
@@ -86,6 +87,8 @@ describe("a collection page", () => {
     // strand page below.
     expect(count(html, /href="\/categories\/blogging"/g)).toBe(5);
     expect(count(html, /text-on-strand/g)).toBe(12);
+    // On phones each row's strand is a dot instead, the control for below.
+    expect(count(html, /border-brand-dark sm:hidden/g)).toBe(5);
     // A row says when a German version exists, as the archive does; cards do
     // not. [→ `locale`]
     expect(count(html, /href="\/de\/posts\/post-10"/g)).toBe(1);
@@ -111,6 +114,7 @@ describe("a strand page", () => {
     // The page is the strand, so neither its cards nor its rows repeat it.
     expect(count(html, /href="\/categories\/blogging"/g)).toBe(0);
     expect(count(html, /text-on-strand/g)).toBe(0);
+    expect(count(html, /border-brand-dark sm:hidden/g)).toBe(0);
     expect(count(html, /href="\/de\/posts\/post-10"/g)).toBe(1);
   });
 });
