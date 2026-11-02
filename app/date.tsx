@@ -21,20 +21,9 @@ const DAY_MONTH = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
-const MONTH_YEAR = new Intl.DateTimeFormat("en-GB", {
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
-
 // A string, for the search index's result dates. [→ `pagefind-ui`]
 export function formatLongDate(dateString: string): string {
   return LONG.format(new Date(dateString));
-}
-
-// A string, for the archive standfirst.
-export function formatMonthYear(dateString: string): string {
-  return MONTH_YEAR.format(new Date(dateString));
 }
 
 export default function DateComponent({
