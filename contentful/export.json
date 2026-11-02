@@ -202,7 +202,7 @@
                 "embedded-entry-inline",
                 "table"
               ],
-              "message": "Only heading 1, heading 2, heading 3, heading 4, heading 5, heading 6, ordered list, unordered list, horizontal rule, quote, block entry, asset, link to Url, link to entry, link to asset, inline entry, and table nodes are allowed"
+              "message": "Only heading 1, heading 2, heading 3, heading 4, heading 5, heading 6, ordered list, Unordered list, horizontal rule, quote, block entry, asset, link to Url, link to entry, link to asset, inline entry, and table nodes are allowed"
             },
             {
               "nodes": {
@@ -266,6 +266,9 @@
           "type": "Boolean",
           "localized": false,
           "required": false,
+          "defaultValue": {
+            "en-US": false
+          },
           "validations": [],
           "disabled": false,
           "omitted": false
@@ -437,7 +440,7 @@
       },
       "displayField": "name",
       "name": "Category",
-      "description": "A post category. One per post. Name, unique slug, optional description for the eventual category page.",
+      "description": "A post category. One per post. Name, unique slug, optional meta description for its page.",
       "fields": [
         {
           "id": "name",
@@ -485,23 +488,13 @@
           "validations": [
             {
               "size": {
-                "max": 300
-              }
+                "max": 80
+              },
+              "message": "Keep it under 80 characters."
             }
           ],
           "disabled": false,
           "omitted": false
-        },
-        {
-          "id": "thumbnail",
-          "name": "Thumbnail",
-          "type": "Link",
-          "localized": false,
-          "required": false,
-          "validations": [],
-          "disabled": false,
-          "omitted": false,
-          "linkType": "Asset"
         }
       ]
     },
@@ -513,7 +506,7 @@
       },
       "displayField": "name",
       "name": "Tag",
-      "description": "A cross-cutting topic. Many per post, up to three. While Category says where a post lives, a Tag indicates what it's about. Tags with fewer than two posts are hidden from the /tags glossary.",
+      "description": "A cross-cutting topic. Many per post, up to three. While Category says where a post lives, a Tag indicates what it’s about. Tags with fewer than two posts are hidden from the /tags glossary.",
       "fields": [
         {
           "id": "name",
@@ -561,9 +554,9 @@
           "validations": [
             {
               "size": {
-                "max": 300
+                "max": 80
               },
-              "message": "One line. Shown as the gloss under the tag heading on /tags."
+              "message": "Keep it under 80 characters."
             }
           ],
           "disabled": false,
@@ -680,7 +673,7 @@
       },
       "displayField": "label",
       "name": "Callout",
-      "description": "A boxed aside inside a post, with a short label.",
+      "description": "",
       "fields": [
         {
           "id": "label",
@@ -698,7 +691,27 @@
           "type": "RichText",
           "localized": true,
           "required": true,
-          "validations": [],
+          "validations": [
+            {
+              "enabledMarks": [
+                "bold",
+                "italic",
+                "code"
+              ],
+              "message": "Only bold, italic, and code marks are allowed"
+            },
+            {
+              "enabledNodeTypes": [
+                "hyperlink",
+                "unordered-list",
+                "ordered-list"
+              ],
+              "message": "Only link to Url, Unordered list, and ordered list nodes are allowed"
+            },
+            {
+              "nodes": {}
+            }
+          ],
           "disabled": false,
           "omitted": false
         }
@@ -742,7 +755,10 @@
               "enabledNodeTypes": [
                 "hyperlink"
               ],
-              "message": "Only hyperlinks are allowed — keep a sidenote a genuine aside, no headings or embeds"
+              "message": "Only link to Url nodes are allowed"
+            },
+            {
+              "nodes": {}
             }
           ],
           "disabled": false,
@@ -882,12 +898,13 @@
           "widgetNamespace": "builtin"
         },
         {
-          "fieldId": "author",
+          "fieldId": "authors",
           "settings": {
+            "bulkEditing": false,
             "showLinkEntityAction": true,
             "showCreateEntityAction": false
           },
-          "widgetId": "entryCardEditor",
+          "widgetId": "entryLinksEditor",
           "widgetNamespace": "builtin"
         },
         {
@@ -967,15 +984,6 @@
         {
           "fieldId": "description",
           "widgetId": "markdown",
-          "widgetNamespace": "builtin"
-        },
-        {
-          "fieldId": "thumbnail",
-          "settings": {
-            "showLinkEntityAction": true,
-            "showCreateEntityAction": true
-          },
-          "widgetId": "assetLinkEditor",
           "widgetNamespace": "builtin"
         }
       ]

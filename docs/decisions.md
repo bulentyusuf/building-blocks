@@ -313,7 +313,8 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
 - **Numbered sections are the owner's call per post** (`numberedSections`):
   each H2 gets a tilted ink stamp and the ToC its number, both `aria-hidden`.
 - **A callout boxes exactly what the author marked** (the `callout` type: a
-  label and text-only rich text), 2px ink on cream, flat and straight.
+  label and rich text limited to links and lists), 2px ink on cream, flat and
+  straight.
 
 ### Covers take one of two frames, chosen by `wide`
 
