@@ -38,7 +38,21 @@ export default function CopyButton({
         // the control brightens rather than recedes.
         "border border-gray-500 bg-white text-gray-600 hover:border-gray-600 hover:text-gray-900 dark:border-white/40 dark:bg-white/10 dark:text-brand-dark dark:hover:border-white/60 dark:hover:bg-white/20 dark:hover:text-brand-dark";
 
-  if (!mounted) return null;
+  const box = `rounded-md px-2 py-1 font-mono text-xs ${variantStyles}`;
+
+  // Before mount, an invisible stand-in the button's size, so its arrival
+  // moves nothing. Hidden from assistive tech and the index. [→ `post-page`]
+  if (!mounted) {
+    return (
+      <span
+        aria-hidden="true"
+        data-pagefind-ignore
+        className={`invisible ${box}`}
+      >
+        Copy
+      </span>
+    );
+  }
 
   return (
     <>
@@ -48,7 +62,7 @@ export default function CopyButton({
         // Tracks the visible text, so a speech user can say "click Copied"
         // (WCAG 2.5.3).
         aria-label={copied ? `Copied ${label}` : `Copy ${label}`}
-        className={`rounded-md px-2 py-1 font-mono text-xs transition-colors ${variantStyles}`}
+        className={`${box} transition-colors`}
       >
         {copied ? "Copied" : "Copy"}
       </button>

@@ -590,12 +590,22 @@ describe("prompt block", () => {
   // disabled above. getByRole locates the element; the name itself is read
   // from the figcaption directly rather than through a name-option filter
   // that this environment cannot resolve.
+  // The figcaption's text as accname reads it, so the copy button's
+  // aria-hidden stand-in does not count. [→ `post-page`]
+  const captionName = (figure: HTMLElement) => {
+    const caption = figure
+      .querySelector("figcaption")!
+      .cloneNode(true) as Element;
+    caption
+      .querySelectorAll('[aria-hidden="true"]')
+      .forEach((el) => el.remove());
+    return caption.textContent?.trim();
+  };
+
   it("exposes an accessible name matching its label", async () => {
     await renderPrompt({ label: "A prompt", prompt: "Draw a cat" });
     const figure = getByRole(document.body, "figure");
-    expect(figure.querySelector("figcaption")?.textContent?.trim()).toBe(
-      "A prompt",
-    );
+    expect(captionName(figure)).toBe("A prompt");
   });
 
   it("keeps the figcaption as the figure's direct child", async () => {
@@ -610,9 +620,7 @@ describe("prompt block", () => {
   it('falls back to "Prompt" when the label is absent', async () => {
     await renderPrompt({ prompt: "Draw a cat" });
     const figure = getByRole(document.body, "figure");
-    expect(figure.querySelector("figcaption")?.textContent?.trim()).toBe(
-      "Prompt",
-    );
+    expect(captionName(figure)).toBe("Prompt");
   });
 
   it("hides the decorative thumbnail from the accessibility tree", async () => {
