@@ -280,9 +280,9 @@ html:has(dialog:modal) {
 }
 
 /*
-  Tufte-style sidenotes (lib/sidenote.tsx). [→ `sidenotes`] Below 2xl the note
-  collapses behind a checkbox toggle; at 2xl+ it floats into the right margin
-  outside the max-w-2xl prose column and the toggle goes away.
+  Tufte-style sidenotes (lib/sidenote.tsx). [→ `sidenotes`] Below 105rem the
+  note collapses behind a checkbox toggle; from 105rem it floats into the
+  margin beside the reading panel and the toggle goes away.
 
   counter-increment lives on the always-displayed wrapper, not on either
   marker, since a display:none element does not advance a counter.
@@ -292,7 +292,7 @@ html:has(dialog:modal) {
   counter-increment: sidenote;
 }
 
-/* In-text marker: 2xl+ only. */
+/* In-text marker: 105rem+ only. */
 .sidenote-ref {
   display: none;
   font-weight: 600;
@@ -300,7 +300,7 @@ html:has(dialog:modal) {
 }
 
 /* Visually hidden, not display:none — display:none cannot be focused or
-   reached by keyboard. [→ `sidenotes`] Removed outright at 2xl+, where there
+   reached by keyboard. [→ `sidenotes`] Removed outright at 105rem+, where there
    is nothing to operate. */
 .sidenote-checkbox {
   position: absolute;
@@ -313,7 +313,7 @@ html:has(dialog:modal) {
   white-space: nowrap;
 }
 
-/* Tap target: below 2xl only. A <label>, so the toggle needs no JavaScript. */
+/* Tap target: below 105rem only. A <label>, so the toggle needs no JavaScript. */
 .sidenote-toggle {
   display: inline;
   cursor: pointer;
@@ -362,7 +362,7 @@ html:has(dialog:modal) {
   text-underline-offset: 2px;
 }
 
-@media (min-width: 1536px) {
+@media (min-width: 105rem) {
   .sidenote-ref {
     display: inline;
   }
@@ -373,22 +373,19 @@ html:has(dialog:modal) {
   /* clear:right stacks multiple notes instead of overlapping them (dense
      reference clusters can still collide — a known Tufte-CSS limit). The
      :checked selector is repeated so a note opened on mobile and then resized
-     to 2xl drops its mobile rule instead of keeping the left border. */
-  /* 13.5rem, up from 12rem, because the note's type went from 14px to 15.75px
-     when the prose base moved to 1.125rem — the same +12.5% — so a fixed width
-     would have cost about three characters a line. The right margin carries the
-     increase so the 3rem gap to the column is unchanged (margin = width + 3rem,
-     negative). The note then extends 16.5rem past the column's right edge; at
-     the 1536px breakpoint where it floats, that edge sits at 1214px, leaving
-     roughly 58px of viewport to spare. Widen either value further only against
-     a real measurement. */
+     to 105rem drops its mobile rule instead of keeping the left border. */
+  /* Outside the reading panel, never on its edge: from the prose column the
+     panel's padding and edge take 3.625rem, then a 1.5rem gap, so the margin is
+     the 13.5rem width plus 5.125rem, negative. That needs 15rem beside the
+     panel, which a 1536px window lacks (13rem); a 1680px window (105rem) has
+     17.5rem. Measure before changing any of the three. */
   .sidenote-body,
   .sidenote-checkbox:checked ~ .sidenote-body {
     display: block;
     float: right;
     clear: right;
     width: 13.5rem;
-    margin: 0 -16.5rem 0 0;
+    margin: 0 -18.625rem 0 0;
     padding-left: 0;
     border-left: 0;
   }
@@ -401,7 +398,7 @@ html:has(dialog:modal) {
      blocked-out paragraph push it down: a note this narrow cannot spare a whole
      line for a two-character label, and a label alone on its line reads as a
      heading for the note instead of a reference mark. Only the first paragraph
-     goes inline; later ones stay blocks and keep their margin. Scoped to 2xl
+     goes inline; later ones stay blocks and keep their margin. Scoped to 105rem
      because the number is only rendered here — below it the expanded note has
      no prefix to run in after. */
   .sidenote-body > .sidenote-para:first-child {

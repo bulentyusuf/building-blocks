@@ -498,6 +498,9 @@ entry renders nothing; do not make it an error.
   enhancement, never a dependency.
 - **Responsive display lives in the unlayered `.sidenote-*` rules**, never in
   utilities, which lose to unlayered styles.
+- **Notes float from 105rem only**, 1.5rem outside the reading panel. Below
+  that there is no room beside the panel (a 1536px window has 13rem, the note
+  needs 15), so the note opens inline from its toggle.
 - **Numbering has two halves**, a document-order index in `lib/rich-text.tsx`
   and a CSS counter; both markers are `aria-hidden` and the label is named by
   an `sr-only` "Note N". Never name a `sup` (it announces twice) or drop the
