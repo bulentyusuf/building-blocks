@@ -507,9 +507,9 @@ export const getGermanPostSlugs = cache(
 );
 
 // Undefined unless title, excerpt and content are all German. Only those three
-// come from de-DE, plus an embed's alt and caption: the locale cascades to
-// links, and an asset's file has no German version, so covers, portraits and
-// images come from the English post. [→ `single-entry-cache`, `locale`]
+// come from de-DE, plus an embed's alt and caption and a callout's text: the
+// locale cascades to links, and an asset's file has no German version, so
+// covers, portraits and images come from the English post. [→ `single-entry-cache`, `locale`]
 export const getGermanPostAndMorePosts = cache(
   async (
     slug: string,
@@ -533,6 +533,12 @@ export const getGermanPostAndMorePosts = cache(
                     } | null)[];
                   };
                   entries?: {
+                    block?: ({
+                      __typename?: string;
+                      sys: { id: string };
+                      label?: string | null;
+                      body?: { json: Post["content"]["json"] } | null;
+                    } | null)[];
                     inline?: ({
                       __typename?: string;
                       sys: { id: string };
@@ -565,6 +571,18 @@ export const getGermanPostAndMorePosts = cache(
                   }
                 }
                 entries {
+                  block {
+                    sys {
+                      id
+                    }
+                    __typename
+                    ... on Callout {
+                      label
+                      body {
+                        json
+                      }
+                    }
+                  }
                   inline {
                     sys {
                       id
@@ -610,7 +628,25 @@ export const getGermanPostAndMorePosts = cache(
             : [],
         ),
     );
+    // A callout turns German whole, label and body, or stays English and says
+    // so, like a sidenote.
+    const germanCallouts = new Map(
+      (german.content.links?.entries?.block ?? [])
+        .filter(present)
+        .flatMap((e) =>
+          e.__typename === "Callout" && e.label && e.body?.json
+            ? [[e.sys.id, { label: e.label, json: e.body.json }] as const]
+            : [],
+        ),
+    );
     const links = english.post.content.links;
+    const entryBlock = links.entries?.block.map((entry) => {
+      if (entry?.__typename !== "Callout") return entry;
+      const de = germanCallouts.get(entry.sys.id);
+      return de
+        ? { ...entry, label: de.label, body: { json: de.json } }
+        : { ...entry, lang: DEFAULT_LOCALE };
+    });
     const inline = links.entries?.inline?.filter(present).map((note) => {
       const json = germanNotes.get(note.sys.id);
       return json
@@ -644,7 +680,9 @@ export const getGermanPostAndMorePosts = cache(
         links: {
           ...links,
           assets: { ...links.assets, block },
-          ...(links.entries && { entries: { ...links.entries, inline } }),
+          ...(links.entries && {
+            entries: { ...links.entries, block: entryBlock ?? [], inline },
+          }),
         },
       },
     };
