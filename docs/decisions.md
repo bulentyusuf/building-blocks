@@ -243,6 +243,9 @@ redirects to the archive, which already lists everything.
 
 - **The chips are the header, on every page**: logo, four chips, a search
   button. Tags, archive and about moved to the footer and the phone menu.
+  Below `md` the chips are one row that scrolls sideways (November 2026; three
+  wrapped rows took 204px of a phone): 44px tall, sized so the last chip is
+  always cut off at 360 to 430px, and a pressed chip past the edge scrolls in.
 - **Chips are links, not filters.** Each strand is a page, so the pressed chip
   is `aria-current="page"`; a post presses its strand as `"true"`, because the
   chip links away. `currentStrand` reads the path, posts via a slug map.

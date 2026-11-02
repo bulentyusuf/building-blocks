@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { STRANDS, currentStrand } from "@/lib/strands";
 
+// Below md the chips are one row that scrolls sideways, sized so the last
+// chip is always cut off at the edge, the cue that there is more. [→ `strands`]
 const chip =
-  "flex h-12 items-center gap-2.5 rounded-xl border-[3px] border-brand-dark px-4 font-display text-lg font-[800] transition-[translate,box-shadow] duration-150 motion-reduce:transition-none";
+  "flex h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl border-[3px] border-brand-dark pr-3 pl-2.5 font-display text-[0.9375rem] font-[800] transition-[translate,box-shadow] duration-150 motion-reduce:transition-none md:h-12 md:px-4 md:text-lg";
 // Raised until hovered. Pressed is the same chip already pushed in, flat.
 // Every fill is opaque, so the graph paper never shows through. [→ `strands`]
 const raised = "bg-card hover:translate-[4px] hover:shadow-none";
@@ -26,10 +29,24 @@ export default function StrandChips({
   const found = currentStrand(usePathname(), postStrands);
   const current = found?.slug;
   const mark = found?.onPost ? "true" : "page";
+  const row = useRef<HTMLElement>(null);
+  // A pressed chip cut off at the edge (Games & Gadgets on a phone) scrolls
+  // fully into view. scrollLeft, not scrollIntoView, so the page never moves.
+  useEffect(() => {
+    const nav = row.current;
+    const on = nav?.querySelector<HTMLElement>("[aria-current]");
+    if (!nav || !on) return;
+    const over =
+      on.getBoundingClientRect().right -
+      (nav.getBoundingClientRect().right -
+        parseFloat(getComputedStyle(nav).paddingRight));
+    if (over > 0) nav.scrollLeft += over;
+  }, [current]);
   return (
     <nav
       aria-label="Strands"
-      className="order-last flex w-full flex-wrap items-center gap-3 md:order-none md:w-auto md:gap-5"
+      ref={row}
+      className="order-last -mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1.5 md:order-none md:mx-0 md:w-auto md:flex-wrap md:gap-5 md:overflow-visible md:px-0 md:pb-0"
     >
       <Link
         href="/"
@@ -49,7 +66,7 @@ export default function StrandChips({
             key={strand.slug}
             href={`/categories/${strand.slug}`}
             aria-current={on ? mark : undefined}
-            className={`${chip} pl-3 ${
+            className={`${chip} md:pl-3 ${
               on
                 ? `${pressed} ${strand.fill} text-on-strand`
                 : `${raised} ${strand.shadow}`
