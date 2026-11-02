@@ -67,14 +67,16 @@ function parseIp(ip: string): { bits: number; value: bigint } | null {
 }
 
 export function inRange(ip: string, cidr: string): boolean {
-  const [base, lengthText] = cidr.split("/");
+  const [base, lengthText, ...rest] = cidr.split("/");
   const address = parseIp(ip);
   const network = parseIp(base ?? "");
   if (!address || !network || address.bits !== network.bits) return false;
-  const length = lengthText === undefined ? address.bits : Number(lengthText);
-  if (!Number.isInteger(length) || length < 0 || length > address.bits) {
+  // Digits only: Number("") is 0, so "x/" would read as /0 and match every IP.
+  if (rest.length || (lengthText !== undefined && !/^\d+$/.test(lengthText))) {
     return false;
   }
+  const length = lengthText === undefined ? address.bits : Number(lengthText);
+  if (length > address.bits) return false;
   const shift = BigInt(address.bits - length);
   return address.value >> shift === network.value >> shift;
 }
