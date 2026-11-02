@@ -61,7 +61,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `csp-scoping` — CSP: `'unsafe-inline'` stays global, every relaxation is scoped to a route
 - `image-loader` — Image loader passes only `w`, `q`, `fm=webp` by design
 - `priority-opaque` — Every image is opaque in the server HTML, and that is the LCP fix
-- `browse-copy` — Browse-page copy is editable, site identity is not
+- `browse-copy` — Browse-page copy lives in code, beside site identity
 - `authors-array` — Posts carry `authors`, an ordered array capped at three
 - `rich-text-links` — Every rich-text hyperlink goes through `lib/rich-text-link.tsx`
 - `json-ld` — Every structured-data block goes through `jsonLdHtml`
@@ -69,7 +69,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `single-entry-cache` — Single-entry fetchers are `cache()`-wrapped on purpose
 - `og-card-on-demand` — The post OG card renders on demand, not at build
 - `fetcher-cache` — Every fetcher in `lib/api.ts` is `cache()`-wrapped
-- `cache-tags` — Three cache tags, and the webhook picks between them
+- `cache-tags` — Two cache tags, and the webhook picks between them
 - `post-scheduling` — Scheduling is Contentful's job, and `date` is not a gate
 - `collection-paging` — Every unbounded collection query pages, and must keep selecting `total`
 - `fixtures` — Contentful export/seed files are load-bearing and brittle
@@ -547,14 +547,16 @@ that says where they are. Old anchors still land.
 - The glossary is `data-pagefind-ignore`. Pills sit below the body, never in the
   xl-only sidebar, and not on "more like this".
 
-### Browse-page copy is editable, site identity is not
+### Browse-page copy lives in code, beside site identity
 
 <!-- key: browse-copy -->
 
-The meta description on `/tags` and `/archive` comes from a `browseIntro`
-entry keyed by slug, through `browsePageMetadata` in `lib/page-metadata.ts`.
-The entry's `standfirst` field is no longer rendered (standfirsts were retired
-in November 2026) and can be removed from the content model.
+`/tags` and `/archive` take `SITE_DESCRIPTION` through `browsePageMetadata` in
+`lib/page-metadata.ts`. The `browseIntro` type that once supplied their meta
+descriptions was deleted from the space in November 2026, after standfirsts
+were retired; neither live entry held a description by then. Deleting the type
+before the query broke every build, so retire the code first next time.
+Reopen if a browse page needs copy an editor changes often.
 
 `SITE_DESCRIPTION` is site chrome, like `SITE_TITLE`, read on routes that never
 touch Contentful; home's fuller `HOME_TITLE` and `HOME_DESCRIPTION` sit beside
@@ -843,13 +845,12 @@ list down is still house style, for legibility. No fetcher declares a defaulted
 or optional parameter, since `cache()` keys on the arguments as passed; `tsc`
 then holds every call site.
 
-### Three cache tags, and the webhook picks between them
+### Two cache tags, and the webhook picks between them
 
 <!-- key: cache-tags -->
 
-`CACHE_TAGS` in `lib/api.ts`: `posts`, `pages`, `browseIntros`. `getPage`,
-`getAllPages` and `getBrowseIntro` carry the narrow two, so editing `/about` no
-longer re-renders every post. Everything else stays on `posts`, because tags,
+`CACHE_TAGS` in `lib/api.ts`: `posts` and `pages`. `getPage` and `getAllPages`
+carry the narrow one, so editing `/about` no longer re-renders every post. Everything else stays on `posts`, because tags,
 categories, authors and posts genuinely reach every page. A new fetcher passing
 no tag gets `posts`. `app/api/revalidate/route.ts` maps the webhook's content
 type onto tags, and anything unrecognised purges everything.

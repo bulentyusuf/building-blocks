@@ -155,7 +155,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   [→ `single-entry-cache`]
 - **`app/posts/[slug]/opengraph-image.tsx` has no `generateStaticParams` and
   must not get one back.** [→ `og-card-on-demand`]
-- **Three cache tags: `posts`, `pages`, `browseIntros`** (`CACHE_TAGS` in
+- **Two cache tags: `posts` and `pages`** (`CACHE_TAGS` in
   `lib/api.ts`). Anything unrecognised in the webhook purges everything, and a
   new fetcher passing no tag gets `posts`. `expire: 0` stays. [→ `cache-tags`]
 - **Every unbounded collection query pages through
@@ -191,9 +191,8 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   Do not add `.nvmrc`, `volta.node`, `devEngines.runtime` or a hardcoded
   `node-version:`. `@types/node` follows the runtime major, not latest.
   [→ `node-pin`]
-- **Browse-page meta descriptions are CMS-editable** via a
-  `browseIntro` entry; site identity (`SITE_TITLE`, `SITE_DESCRIPTION`) stays
-  in code. [→ `browse-copy`]
+- **Browse-page copy lives in code.** `/archive` and `/tags` take
+  `SITE_DESCRIPTION`; there is no `browseIntro` type. [→ `browse-copy`]
 - **Two copies of `@contentful/rich-text-types` ship on purpose** — the app
   resolves `17.x`, `contentful-management` nests its own `^16.6.1` dev copy.
   Do not force a resolution to dedupe it. [→ `rich-text-types-dupe`]

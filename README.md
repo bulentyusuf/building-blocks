@@ -8,7 +8,7 @@ The code in this repo is an extension of the [Next.js Blog with Draft Mode](http
 
 A small, statically generated blog. Posts are written and managed in a headless CMS, rendered by Next.js, and deployed continuously.
 
-The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, and a Sidenote type for asides set in the margin. There's also a Page type for standalone pages like the privacy notice, and a Browse Intro type holding the editable copy at the top of each browse page.
+The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, and a Sidenote type for asides set in the margin. There's also a Page type for standalone pages like the privacy notice.
 
 The site is written in British English. Some posts also have a German translation, published post by post rather than site-wide: a translated post gets a second page under `/de/posts/`, and everything else stays English.
 
@@ -34,7 +34,6 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - **Prompt Block**, embedded into post bodies to publish the generative-image prompt behind a cover, with an optional label and image
 - **Sidenote**, embedded inline in post bodies for asides set in the margin. A title for finding the entry in the CMS, and a rich-text note deliberately limited to bold, italic, and links. The note can carry a German translation; the title is for editors and stays English
 - **Page**, standalone rich-text pages such as About and Privacy
-- **Browse Intro**, the editable standfirst and meta description for a browse page, keyed by route. Lets the copy on Tags, Categories, Authors and Archive be reworded in the CMS rather than deployed
 
 ## ✨ Features
 
@@ -76,7 +75,6 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - Auto-generated sitemap, `robots.txt`, and RSS feed
 - Open Graph and Twitter card metadata for shareable links
 - Hand-written `llms.txt`, with a CI job that checks its links still resolve
-- Standfirsts and meta descriptions editable in the CMS, falling back gracefully when an entry is absent
 
 **Engineering**
 
@@ -131,7 +129,7 @@ npm run import:contentful -- --space-id YOUR_SPACE_ID --management-token YOUR_MA
 
 ### 4. Add example content (optional)
 
-Seeds a few placeholder posts, authors, categories, tags, browse intros, and pages, all published, so the site renders straight away.
+Seeds a few placeholder posts, authors, categories, tags, and pages, all published, so the site renders straight away.
 
 ```
 npm run import:seed -- --space-id YOUR_SPACE_ID --management-token YOUR_MANAGEMENT_TOKEN

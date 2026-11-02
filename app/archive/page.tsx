@@ -7,15 +7,10 @@ import { getAllPosts, getGermanPostSlugs } from "@/lib/api";
 import type { ListPost } from "@/lib/types";
 import { browsePageMetadata } from "@/lib/page-metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  // Same slug as the component. [→ `single-entry-cache`]
-  const { isEnabled } = await draftMode();
-  return browsePageMetadata({
-    slug: "archive",
-    title: "Archive",
-    isDraftMode: isEnabled,
-  });
-}
+export const metadata: Metadata = browsePageMetadata({
+  slug: "archive",
+  title: "Archive",
+});
 
 export default async function ArchivePage() {
   const { isEnabled } = await draftMode();
