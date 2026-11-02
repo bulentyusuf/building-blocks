@@ -29,7 +29,7 @@ const RESULT_TEMPLATE = `
   <li class="result-item px-5 py-6 sm:px-7">
     <p class="mb-2.5 flex flex-wrap items-center gap-2.5">
       {{#if meta.strand}}
-      <span class="{{ meta.strandfill }} rounded-full border-2 border-brand-dark px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-[0.06em] text-on-strand">{{ meta.strand }}</span>
+      <span class="{{ meta.strandfill }} rounded-full border-2 border-brand-dark px-2 py-0.5 font-ui text-xs font-bold uppercase tracking-[0.06em] text-on-strand">{{ meta.strand }}</span>
       {{/if}}
       {{#if meta.date}}
       <span class="font-ui text-[0.9375rem] font-semibold tabular-nums text-brand-muted">{{ meta.date }}</span>

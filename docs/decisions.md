@@ -629,14 +629,18 @@ own token; do not merge them. There is no `font-sans` utility.
   add `font-display` to a heading.
 - **Body**: prose and the meta around it, dates, bylines, breadcrumbs, captions.
   A stray `font-ui` on a date is a regression.
-- **UI**: the table-of-contents label, the tag pill, the
-  archive and tag count spans, and every small uppercase
-  letterspaced label. Uppercase plus letterspacing is the tell. A new surface
-  that seems to want UI stays on the body face until raised.
-- **Mono**: code, inline and block, the copy button, and the header and
-  footer's paths and `//` labels, via `font-mono`. Plex
-  Mono's x-height and cap height sit closest to the other two faces. Its
-  fallback is a monospace stack, never next/font's Arial-adjusted one.
+- **UI**: links and buttons in the chrome (menu, footer, "Every post", the
+  prompt button), strand and tag pills, stamps and section numbers, the
+  archive and tag count spans, and every small uppercase letterspaced label.
+  The footer's links are words, not paths. A new surface that seems to want UI
+  stays on the body face until raised.
+- **Mono**: `//` labels and machine text only: code, inline and block, the
+  copy button and the prompt block, via `font-mono` (November 2026; it had
+  spread to nav, pills and stamps). Plex Mono's x-height and cap height sit
+  closest to the other two faces. Its fallback is a monospace stack, never
+  next/font's Arial-adjusted one.
+- **Underlines** mark links inside a sentence. A link standing on its own
+  ("Auf Deutsch lesen", "More from …") is crimson and underlines on hover.
 
 `app/global-error.tsx` is excluded; it renders its own `<html>` without the font
 variables. A replacement display face must contrast with the serif, carry an

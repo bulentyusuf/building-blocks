@@ -189,7 +189,7 @@ export function RichText({
               <span
                 aria-hidden="true"
                 data-pagefind-ignore
-                className="mr-3.5 inline-flex size-[2.625rem] -rotate-8 items-center justify-center rounded-full bg-brand-dark align-[0.3em] font-mono text-sm font-medium tracking-normal text-brand-bg"
+                className="mr-3.5 inline-flex size-[2.625rem] -rotate-8 items-center justify-center rounded-full bg-brand-dark align-[0.3em] font-ui text-sm font-bold tracking-normal tabular-nums text-brand-bg"
               >
                 {String(number).padStart(2, "0")}
               </span>

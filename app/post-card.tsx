@@ -21,7 +21,7 @@ const stretched =
 export function StrandPill({ strand }: { strand: Strand }) {
   return (
     <span
-      className={`${strand.fill} rounded-full border-2 border-brand-dark px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-[0.06em] text-on-strand`}
+      className={`${strand.fill} rounded-full border-2 border-brand-dark px-2 py-0.5 font-ui text-xs font-bold uppercase tracking-[0.06em] text-on-strand`}
     >
       {strand.label}
     </span>

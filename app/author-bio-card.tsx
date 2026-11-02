@@ -34,7 +34,7 @@ export default function AuthorBioCard({ author }: { author: Author }) {
         {author.slug && (
           <Link
             href={`/authors/${author.slug}`}
-            className="self-start font-ui font-semibold text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
+            className="self-start font-ui font-semibold text-brand-crimson decoration-2 underline-offset-[3px] hover:underline"
           >
             More from {author.name} →
           </Link>

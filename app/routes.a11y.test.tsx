@@ -381,6 +381,30 @@ describe.each(routes)("%s", (name, load) => {
   );
 });
 
+// Mono is for // labels and machine text only. Anything else in mono on a
+// rendered route is the old spread coming back. [→ `type-roles`]
+function strayMono(root: ParentNode): string[] {
+  return [...root.querySelectorAll(".font-mono")]
+    .filter((el) => !el.closest("pre, code, figure"))
+    .map((el) => (el.textContent ?? "").trim())
+    .filter((text) => !text.startsWith("//") && !/^copy/i.test(text));
+}
+
+describe.each(routes)("%s", (name, load) => {
+  it("sets nothing in mono but // labels and code", async () => {
+    const mod = (await load()) as { default: () => Promise<ReactElement> };
+    await auditRoute(mod.default);
+    expect(strayMono(document.body), name).toEqual([]);
+  });
+});
+
+it("would catch a mono nav link", () => {
+  // Known-bad control: the footer link as it was. [→ `known-bad-controls`]
+  const div = document.createElement("div");
+  div.innerHTML = '<a class="font-mono text-sm">/archive</a>';
+  expect(strayMono(div)).toEqual(["/archive"]);
+});
+
 describe("/archive German marker", () => {
   it("links a translated post's German page, and only that post's", async () => {
     // Fixture: getGermanPostSlugs returns first-post alone.

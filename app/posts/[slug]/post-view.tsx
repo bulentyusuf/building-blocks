@@ -173,7 +173,7 @@ export default async function PostView({
               <a
                 href="#cover-prompt"
                 data-pagefind-ignore
-                className="absolute top-3 right-3 inline-flex h-11 items-center rounded-full border-2 border-brand-dark bg-brand-bg px-3.5 font-mono text-[0.8125rem] font-medium text-brand-dark no-underline md:top-4 md:right-4"
+                className="absolute top-3 right-3 inline-flex h-11 items-center rounded-full border-2 border-brand-dark bg-brand-bg px-3.5 font-ui text-sm font-semibold text-brand-dark no-underline md:top-4 md:right-4"
               >
                 prompt <span aria-hidden="true">↓</span>
                 <span className="sr-only"> for this cover image</span>

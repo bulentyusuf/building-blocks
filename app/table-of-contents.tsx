@@ -61,7 +61,7 @@ function TocNav({
                 // Matches the H2's stamp, so hidden here too. [→ `post-page`]
                 <span
                   aria-hidden="true"
-                  className="pt-0.5 font-mono text-[0.8125rem] font-medium"
+                  className="pt-0.5 font-ui text-[0.8125rem] font-bold tabular-nums"
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
