@@ -112,7 +112,7 @@ export async function FeatureCard({
         post={post}
         priority
         sizes="(max-width: 768px) calc(100vw - 4.5rem), (max-width: 1279px) 1120px, 450px"
-        className="aspect-video self-center rounded-xl xl:col-span-5 xl:aspect-4/3"
+        className="aspect-3/2 self-center rounded-xl xl:col-span-5 xl:aspect-4/3"
       />
       <div className="flex flex-col gap-4 xl:col-span-7 xl:self-center">
         <Meta
