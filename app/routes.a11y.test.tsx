@@ -416,13 +416,17 @@ describe("/posts/[slug] shape", () => {
     );
   });
 
-  it("indexes its strand for the search result pill", async () => {
+  it("indexes its strand and date for the search result", async () => {
     // [→ `pagefind-ui`]
     const mod = await withSlug(() => import("@/app/posts/[slug]/page"))();
     await auditRoute(mod.default as () => Promise<ReactElement>);
     const article = document.querySelector("article[data-pagefind-body]")!;
     expect(article.getAttribute("data-pagefind-meta")).toBe(
-      "url[data-url], strand[data-strand], strandfill[data-strand-fill]",
+      "url[data-url], date[data-date], strand[data-strand], strandfill[data-strand-fill]",
+    );
+    // en-GB, as every date on the site. [→ `locale`]
+    expect(article.getAttribute("data-date")).toMatch(
+      /^\d{1,2} [A-Z][a-z]+ \d{4}$/,
     );
     expect(article.getAttribute("data-strand")).toBe("Blogging");
     expect(article.getAttribute("data-strand-fill")).toBe("bg-strand-blogging");

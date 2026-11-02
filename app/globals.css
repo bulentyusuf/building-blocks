@@ -622,6 +622,8 @@ html:has(dialog:modal) {
 /* The input box and the results list panel, styled on the component hosts:
    anything classed pf-* is reset by the component's own CSS. [→ `pagefind-ui`] */
 .pagefind-scope pagefind-input {
+  /* The typed query is UI text, as the board draws it. [→ `type-roles`] */
+  --pf-font: var(--font-ui), sans-serif;
   display: block;
   border: 3px solid var(--color-brand-dark);
   border-radius: 14px;
@@ -647,9 +649,19 @@ html:has(dialog:modal) {
    does not invalidate reliably in Chromium, so the host is toggled from its
    preceding <pagefind-input> instead. */
 .pagefind-scope pagefind-summary {
-  display: block;
+  /* A // label like the site's others: mono, the slashes kept out of its
+     accessible name. Flex, so they sit on the summary's line. */
+  display: flex;
+  gap: 1ch;
+  font-family: var(--font-mono);
+  font-weight: 500;
   margin-top: 2rem;
   padding-bottom: 0.75rem;
+}
+.pagefind-scope pagefind-summary::before {
+  content: "//" / "";
+  font-size: var(--pf-summary-font-size);
+  color: var(--color-brand-muted);
 }
 .pagefind-scope pagefind-input:has(input:placeholder-shown) ~ pagefind-summary {
   display: none;

@@ -88,15 +88,21 @@ describe("search page tag entry point", () => {
     expect(html).not.toContain('aria-label="Tags"');
   });
 
-  it("keeps the tag list inside .search-empty, not beside it", () => {
-    // The wrapper is what globals.css hides on the first keystroke (see the
-    // adjacency test above); a tag list rendered as a sibling instead would
-    // survive a search rather than disappearing with the rest of the empty
-    // state.
-    const wrapperOpen = html.indexOf('class="search-empty"');
-    const tagLabel = html.indexOf("Or start from a tag");
-    expect(wrapperOpen).toBeGreaterThan(-1);
-    expect(tagLabel).toBeGreaterThan(wrapperOpen);
+  it("keeps the tag list out of .search-empty, so it stays while searching", () => {
+    // globals.css hides .search-empty on the first keystroke. The tag panel is
+    // the sidebar beside the results, so it must sit after the section that
+    // holds the wrapper, never inside it. [→ `pagefind-ui`]
+    const after = (markup: string) =>
+      markup.indexOf("Or start from a tag") > markup.indexOf("</section>");
+    expect(html.indexOf('class="search-empty"')).toBeGreaterThan(-1);
+    expect(after(html)).toBe(true);
+    // Known-bad control: the tags inside the empty state, as before.
+    // [→ `known-bad-controls`]
+    expect(
+      after(
+        '<section><div class="search-empty"><p>Or start from a tag</p></div></section>',
+      ),
+    ).toBe(false);
   });
 });
 

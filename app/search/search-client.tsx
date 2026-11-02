@@ -22,14 +22,19 @@ declare module "react" {
 }
 
 // House result template; the main link must be an <a> for the components'
-// keyboard handling. meta.url wins over the .html path; the strand pill reads
-// the post's indexed strand. [→ `reviewed-items`, `pagefind-ui`]
+// keyboard handling. meta.url wins over the .html path; the strand pill and
+// date read the post's indexed meta. [→ `reviewed-items`, `pagefind-ui`]
 const RESULT_TEMPLATE = `
 <script type="text/pagefind-template">
   <li class="result-item px-5 py-6 sm:px-7">
-    {{#if meta.strand}}
-    <span class="{{ meta.strandfill }} mb-2.5 inline-block rounded-full border-2 border-brand-dark px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-[0.06em] text-on-strand">{{ meta.strand }}</span>
-    {{/if}}
+    <p class="mb-2.5 flex flex-wrap items-center gap-2.5">
+      {{#if meta.strand}}
+      <span class="{{ meta.strandfill }} rounded-full border-2 border-brand-dark px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-[0.06em] text-on-strand">{{ meta.strand }}</span>
+      {{/if}}
+      {{#if meta.date}}
+      <span class="font-ui text-[0.9375rem] font-semibold tabular-nums text-brand-muted">{{ meta.date }}</span>
+      {{/if}}
+    </p>
     <p class="font-ui text-2xl leading-tight font-[800] md:text-[1.625rem]">
       <a class="result-link text-brand-dark transition-colors duration-200 hover:text-brand-crimson" href="{{ meta.url | default(url) | safeUrl }}">{{ meta.title | default("Untitled") }}</a>
     </p>

@@ -165,6 +165,14 @@ type Measurement = {
   featureBylineLines: number | null;
   /** The pressed chip's computed background, null if none is pressed. */
   pressedChipFill: string | null;
+  /** Search only: the results column and the tag panel beside it. */
+  searchResults: {
+    top: number;
+    right: number;
+    bottom: number;
+    width: number;
+  } | null;
+  searchTags: { left: number; top: number; panelTop: number } | null;
 };
 
 // Runs in the page, so it closes over nothing.
@@ -203,6 +211,27 @@ function measureInPage(): Measurement {
           height: box(featureText).height,
         }
       : null,
+    ...(() => {
+      const tags = main.querySelector("aside");
+      const results = tags?.previousElementSibling;
+      return {
+        searchResults: results
+          ? {
+              top: box(results).top,
+              right: box(results).right,
+              bottom: box(results).bottom,
+              width: box(results).width,
+            }
+          : null,
+        searchTags: tags
+          ? {
+              left: box(tags).left,
+              top: box(tags).top,
+              panelTop: box(tags.firstElementChild!).top,
+            }
+          : null,
+      };
+    })(),
     featureBylineLines: (() => {
       const byline = featureText?.querySelector("p > span:last-child");
       if (!byline) return null;
@@ -219,7 +248,7 @@ function measureInPage(): Measurement {
   };
 }
 
-type Page = "home" | "glossary" | "archive";
+type Page = "home" | "glossary" | "archive" | "search";
 
 const same = (a: number, b: number) => Math.abs(a - b) < 0.5;
 
@@ -258,6 +287,25 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
     (alpha && Number(alpha[1] ?? alpha[2]) < 1)
   ) {
     problems.push(`the pressed chip's fill is see-through: ${fill}`);
+  }
+  // Search: the tag panel beside a results column of at most 720px from lg,
+  // below it on narrower screens. [→ `page-axis`]
+  const { searchResults: results, searchTags: tags } = m.search;
+  if (!results || !tags) problems.push("search rendered no tag panel");
+  else if (width >= 1024) {
+    if (!(tags.left >= results.right)) {
+      problems.push("search's tag panel is not beside the results");
+    }
+    if (Math.abs(tags.panelTop - results.top) > 0.5) {
+      problems.push(
+        `search's tag panel starts ${tags.panelTop - results.top}px off the input`,
+      );
+    }
+    if (results.width > 720.5) {
+      problems.push(`search's results column is ${results.width}px wide`);
+    }
+  } else if (!(tags.top >= results.bottom)) {
+    problems.push("search's tag panel is not below the results");
   }
   const { featureTitlePx, cardTitlePx, featureCover, featureText } = home;
   if (!featureTitlePx || !cardTitlePx || !featureCover || !featureText) {
@@ -309,6 +357,7 @@ beforeAll(async () => {
     home: await (await import("@/app/page")).default(),
     glossary: await (await import("@/app/tags/page")).default(),
     archive: await (await import("@/app/archive/page")).default(),
+    search: await (await import("@/app/search/page")).default(),
   };
   documents = {} as Record<Page, string>;
   for (const [name, page] of Object.entries(pages) as [Page, ReactElement][]) {
@@ -373,11 +422,14 @@ describe.each(WIDTHS)("the spacing rhythm at %ipx", (width) => {
   );
 });
 
-describe.each(WIDTHS)("the bar and the feature card at %ipx", (width) => {
-  it("keep the bar's height, the feature's layout and its title step", async () => {
-    expect(chromeProblems(await measure(width), width)).toEqual([]);
-  }, 30_000);
-});
+describe.each(WIDTHS)(
+  "the bar, the feature card and search at %ipx",
+  (width) => {
+    it("keep the bar's height, the feature's layout and search's columns", async () => {
+      expect(chromeProblems(await measure(width), width)).toEqual([]);
+    }, 30_000);
+  },
+);
 
 // Known-bad controls, each at a width where its check applies.
 // [→ `known-bad-controls`]
@@ -437,6 +489,32 @@ it.each([
     "the pressed chip's fill see-through",
     {
       home: 'nav[aria-label="Strands"] [aria-current] { background-color: color-mix(in oklab, var(--color-brand-dark) 5%, transparent) !important }',
+    },
+  ],
+  [
+    1280,
+    "search's tag panel dropped below the results",
+    { search: "main div:has(> aside) { display: block !important }" },
+  ],
+  [
+    1280,
+    "search's tag panel lower than the input",
+    { search: "main aside { margin-top: 0 !important }" },
+  ],
+  [
+    1280,
+    "search's results column past 720px",
+    {
+      search:
+        "main div:has(> aside) { grid-template-columns: 1fr 17.5rem !important }",
+    },
+  ],
+  [
+    375,
+    "search's tag panel beside the results on a phone",
+    {
+      search:
+        "main div:has(> aside) { display: grid !important; grid-template-columns: 1fr 1fr !important }",
     },
   ],
   [
