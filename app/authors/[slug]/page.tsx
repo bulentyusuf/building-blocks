@@ -106,7 +106,7 @@ export default async function AuthorPage({
             {author.picture?.url && (
               <ContentfulImage
                 alt=""
-                className="h-20 w-20 shrink-0 rounded-full border-[3px] border-brand-dark object-cover md:h-28 md:w-28"
+                className="h-20 w-20 shrink-0 rounded-full border-[3px] border-outline object-cover md:h-28 md:w-28"
                 width={112}
                 height={112}
                 src={author.picture.url}

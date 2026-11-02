@@ -76,7 +76,7 @@ export default async function SearchPage() {
             matching negative margin lines the panel up with the input. */}
         <aside className="mt-12 lg:sticky lg:top-20 lg:-mt-5 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto lg:pt-5">
           {/* A taped note, the page's one strip of tape. [→ `pagefind-ui`] */}
-          <div className="relative rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-6 pb-6">
+          <div className="relative rounded-[18px] border-[3px] border-outline bg-card px-5.5 pt-6 pb-6">
             <Tape />
             {tags.length > 0 && (
               <>

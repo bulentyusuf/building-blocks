@@ -159,7 +159,7 @@ export default async function PostView({
       >
         {post.coverImage && (
           // A picture frame on the page: ink, never a shadow. [→ `post-page`]
-          <div className="relative overflow-hidden rounded-3xl border-[3px] border-brand-dark">
+          <div className="relative overflow-hidden rounded-3xl border-[3px] border-outline">
             <CoverImage
               image={post.coverImage}
               wide
@@ -174,7 +174,7 @@ export default async function PostView({
                 href="#cover-prompt"
                 aria-label="Prompt for this cover image"
                 data-pagefind-ignore
-                className="absolute top-3 right-3 flex size-11 items-center justify-center rounded-xl border-[3px] border-brand-dark bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:top-4 md:right-4 md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]"
+                className="absolute top-3 right-3 flex size-11 items-center justify-center rounded-xl border-[3px] border-outline bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:top-4 md:right-4 md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]"
               >
                 <svg
                   width="20"

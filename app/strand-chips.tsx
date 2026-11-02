@@ -8,7 +8,7 @@ import { STRANDS, currentStrand } from "@/lib/strands";
 // Below md the chips are one row that scrolls sideways, sized so the last
 // chip is always cut off at the edge, the cue that there is more. [→ `strands`]
 const chip =
-  "flex h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl border-[3px] border-brand-dark pr-3 pl-2.5 font-display text-[0.9375rem] font-[800] transition-[translate,box-shadow] duration-150 motion-reduce:transition-none md:h-12 md:px-4 md:text-lg";
+  "flex h-11 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl border-[3px] border-outline pr-3 pl-2.5 font-display text-[0.9375rem] font-[800] transition-[translate,box-shadow] duration-150 motion-reduce:transition-none md:h-12 md:px-4 md:text-lg";
 // Raised until hovered. Pressed is the same chip already pushed in, flat.
 // Every fill is opaque, so the graph paper never shows through. [→ `strands`]
 const raised = "bg-card hover:translate-[4px] hover:shadow-none";

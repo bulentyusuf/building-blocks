@@ -185,7 +185,7 @@ export default function TableOfContents({
 
   return (
     <>
-      <details className="group overflow-hidden rounded-[18px] border-[3px] border-brand-dark bg-card xl:hidden">
+      <details className="group overflow-hidden rounded-[18px] border-[3px] border-outline bg-card xl:hidden">
         {/*
           summary is the mobile tap target and only exists on mobile now — the
           whole disclosure is xl:hidden, so there is nothing here for xl+ to
@@ -224,7 +224,7 @@ export default function TableOfContents({
         </div>
       </details>
       {/* The page's one strip of tape. [→ `post-page`] */}
-      <div className="relative hidden rounded-[18px] border-[3px] border-brand-dark bg-card px-5.5 pt-5 pb-6 xl:block">
+      <div className="relative hidden rounded-[18px] border-[3px] border-outline bg-card px-5.5 pt-5 pb-6 xl:block">
         <Tape />
         <TocNav
           headings={headings}

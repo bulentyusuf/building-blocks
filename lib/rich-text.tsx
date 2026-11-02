@@ -371,7 +371,7 @@ export function RichText({
             <aside
               aria-labelledby={labelId}
               lang={entry.lang}
-              className="my-8 rounded-2xl border-2 border-brand-dark bg-brand-bg px-5 py-5 text-[0.94em] sm:px-6 [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
+              className="my-8 rounded-2xl border-2 border-outline bg-brand-bg px-5 py-5 text-[0.94em] sm:px-6 [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
             >
               <span
                 id={labelId}

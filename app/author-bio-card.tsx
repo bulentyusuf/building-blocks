@@ -13,7 +13,7 @@ export default function AuthorBioCard({ author }: { author: Author }) {
       {author.picture?.url && (
         <ContentfulImage
           alt=""
-          className="h-22 w-22 shrink-0 rounded-full border-[3px] border-brand-dark object-cover"
+          className="h-22 w-22 shrink-0 rounded-full border-[3px] border-outline object-cover"
           width={88}
           height={88}
           src={author.picture.url}
