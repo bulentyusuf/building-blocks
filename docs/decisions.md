@@ -298,7 +298,7 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
 - **Ink frames what stands on the page**, the cover. The reading panel and the
   author card take `--color-edge-quiet`: they are read, not pressed.
 - **From `xl` the sidebar sits beside the panel**, the ToC under the page's
-  one strip of tape and the AI links below it. The panel is 49.25rem, the 42rem
+  one strip of tape. The panel is 49.25rem, the 42rem
   measure plus padding, which needs the 1200px frame. Below `xl` the ToC is a
   disclosure above the panel, its entries padded to 44px tap targets.
 - **Below `md` there is no panel**, on posts, About and Privacy: no edge, ground
