@@ -144,12 +144,6 @@ vi.mock("@/lib/api", () => ({
     morePosts: posts.slice(1),
   }),
   getGermanPostSlugs: async () => ["first-post"],
-  getBrowseIntro: async (slug: string) => ({
-    title: slug,
-    slug,
-    standfirst: "A short line describing this index.",
-    metaDescription: "A short line describing this index.",
-  }),
   getPage: async () => ({
     slug: "about",
     title: "About",

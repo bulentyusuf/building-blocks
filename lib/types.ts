@@ -120,22 +120,6 @@ export interface TagCollectionResponse {
   };
 }
 
-// Both fields optional to read, so an empty space degrades. [→ `browse-copy`]
-export interface BrowseIntro {
-  title: string;
-  slug: string;
-  standfirst?: string;
-  metaDescription?: string;
-}
-
-export interface BrowseIntroCollectionResponse {
-  data?: {
-    browseIntroCollection?: {
-      items: BrowseIntro[];
-    };
-  };
-}
-
 export interface Post {
   slug: string;
   title: string;

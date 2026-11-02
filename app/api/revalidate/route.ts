@@ -3,10 +3,9 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { safeCompare } from "@/lib/secret";
 import { CACHE_TAGS, type CacheTag } from "@/lib/api";
 
-// Only `page` and `browseIntro` narrow; anything else purges all. [→ `cache-tags`]
+// Only `page` narrows; anything else purges all. [→ `cache-tags`]
 const NARROW_TAGS: Record<string, CacheTag> = {
   page: CACHE_TAGS.PAGES,
-  browseIntro: CACHE_TAGS.BROWSE_INTROS,
 };
 
 const ALL_TAGS: CacheTag[] = Object.values(CACHE_TAGS);
