@@ -261,7 +261,8 @@ redirects to the archive, which already lists everything.
   fixed 4:3 in five columns, the text beside it in seven, and the byline (one
   line), title (three) and excerpt (two) are clamped to fit, so headline
   length never recrops the cover or grows the card. Below `xl` it stacks with
-  a 16:9 cover, since at 1024px a 4:3 cover is too short for the text.
+  a 3:2 cover, the same as the cards under it (November 2026; a 16:9 feature
+  over 3:2 cards looked like an accident on a phone).
 - **Strand fills never invert**, so the pills keep cream text in both schemes;
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
