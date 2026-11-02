@@ -59,8 +59,9 @@ export default async function SearchPage() {
           {/* Hides on the first keystroke: the CSS rule needs it to be the
               next sibling of .pagefind-scope. */}
           <div className="search-empty">
-            {/* Static SVG, not inline. [→ `search-emblem`] */}
-            <figure className="mx-auto mt-10 max-w-[16rem] p-8">
+            {/* Static SVG, not inline. Smaller on phones, so the tag panel
+                shows above the fold. [→ `search-emblem`] */}
+            <figure className="mx-auto mt-6 max-w-[9rem] p-4 sm:mt-10 sm:max-w-[16rem] sm:p-8">
               <img
                 src="/search-emblem.svg"
                 alt=""

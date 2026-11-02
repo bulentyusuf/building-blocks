@@ -67,7 +67,7 @@ export default function StrandChips({
       aria-label="Strands"
       ref={row}
       data-more={more || undefined}
-      className="order-last -mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1.5 md:order-none md:mx-0 md:w-auto md:flex-wrap md:gap-5 md:overflow-visible md:px-0 md:pb-0 data-more:[mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
+      className="order-last -mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1.5 md:order-none md:mx-0 md:w-auto md:flex-wrap md:gap-5 md:overflow-visible md:px-0 md:pb-0 [scrollbar-width:none] data-more:[mask-image:linear-gradient(to_right,black_calc(100%-3rem),transparent)]"
     >
       <Link
         href="/"
