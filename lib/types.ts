@@ -102,7 +102,6 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  thumbnail?: CoverImage | null; // optional 4:3 category tile; absent on categories without one
 }
 
 // Up to three per post. The glossary is a text index, so no thumbnail.
