@@ -928,7 +928,8 @@ describe("prompt block thumbnail", () => {
     );
 
     // The known-bad control for the test below, which asserts this is absent.
-    expect(html).toContain('aria-hidden="true"');
+    // Matched by its image, since the copy button's stand-in is aria-hidden too.
+    expect(html).toMatch(/<span aria-hidden="true"[^>]*><img/);
   });
 
   it("renders no thumbnail span when the entry has no image", () => {
@@ -939,7 +940,7 @@ describe("prompt block thumbnail", () => {
       />,
     );
 
-    expect(html).not.toContain('aria-hidden="true"');
+    expect(html).not.toMatch(/<span aria-hidden="true"[^>]*><img/);
   });
 
   it("gives the cover prompt the id the hero pill links to", () => {
