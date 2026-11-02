@@ -296,6 +296,9 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
   or side padding, so text runs between the 16px gutters, about 40 characters a
   line at 375px against 35 inside it. A named exception, settled November 2026.
 - **More like this is two home cards** from `lib/related.ts`, unchanged.
+- **The cover's prompt button is a brush**, 44px, in the header's button style
+  with a shadow, since it is pressable. Icon only at every width (November
+  2026): the "prompt" pill covered too much of a phone cover.
 - **Code and prompt blocks are ink** with a `//` bar, grey-edged in dark mode.
   Inline code is cream with an outline, never a border, so leading holds.
 - **Numbered sections are the owner's call per post** (`numberedSections`):
@@ -387,12 +390,11 @@ Defined in `app/globals.css`.
 
 One `:focus-visible` rule in `app/globals.css`, repeated once for the sidenote
 label because the checkbox that takes focus is hidden. Components add no
-`focus-visible:ring-*` or `focus-visible:outline-*`. Three exceptions, each
+`focus-visible:ring-*` or `focus-visible:outline-*`. Two exceptions, each
 argued in its file: the code-block scroll regions in `lib/rich-text.tsx`, which
-draw inward because their parent clips; the "Prompt" badge over a post cover, a
-white outline drawn inward because it sits on images of any tone; and the fixed
-controls, `app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox
-close button, which take a two-tone ring because a fixed control floats over
+draw inward because their parent clips; and the fixed controls,
+`app/back-to-top.tsx`, `app/exit-preview-button.tsx` and the lightbox close
+button, which take a two-tone ring because a fixed control floats over
 grounds no one colour clears. That last group was once "simplified" and
 reverted. The header and footer need no exception: they sit on the page.
 
@@ -617,11 +619,11 @@ own token; do not merge them. There is no `font-sans` utility.
   add `font-display` to a heading.
 - **Body**: prose and the meta around it, dates, bylines, breadcrumbs, captions.
   A stray `font-ui` on a date is a regression.
-- **UI**: links and buttons in the chrome (menu, footer, "Every post", the
-  prompt button), strand and tag pills, stamps and section numbers, the
-  archive and tag count spans, and every small uppercase letterspaced label.
-  The footer's links are words, not paths. A new surface that seems to want UI
-  stays on the body face until raised.
+- **UI**: links and buttons in the chrome (menu, footer, "Every post"), strand
+  and tag pills, stamps and section numbers, the archive and tag count spans,
+  and every small uppercase letterspaced label. The footer's links are words,
+  not paths. A new surface that seems to want UI stays on the body face until
+  raised.
 - **Mono**: `//` labels and machine text only: code, inline and block, the
   copy button and the prompt block, via `font-mono` (November 2026; it had
   spread to nav, pills and stamps). Plex Mono's x-height and cap height sit

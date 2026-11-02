@@ -168,15 +168,28 @@ export default async function PostView({
               sizes="(max-width: 768px) calc(100vw - 2rem), 1120px"
             />
             {promptId && (
-              // Over the image so the page keeps its position. Cream on any
-              // cover tone, 44px tall at every width.
+              // Over the image so the page keeps its position. A brush in the
+              // header's button style, so it covers little of any cover.
               <a
                 href="#cover-prompt"
+                aria-label="Prompt for this cover image"
                 data-pagefind-ignore
-                className="absolute top-3 right-3 inline-flex h-11 items-center rounded-full border-2 border-brand-dark bg-brand-bg px-3.5 font-ui text-sm font-semibold text-brand-dark no-underline md:top-4 md:right-4"
+                className="absolute top-3 right-3 flex size-11 items-center justify-center rounded-xl border-[3px] border-brand-dark bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:top-4 md:right-4 md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]"
               >
-                prompt <span aria-hidden="true">↓</span>
-                <span className="sr-only"> for this cover image</span>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
+                  <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
+                </svg>
               </a>
             )}
           </div>
