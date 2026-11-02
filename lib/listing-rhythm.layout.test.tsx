@@ -48,17 +48,35 @@ const tag = {
   description: "How things get made.",
 };
 
-// Five posts: home shows a feature card plus a row of cards.
+// Five posts: home shows a feature card plus a row of cards. The feature is
+// the worst case: a title, an excerpt and three writers' names all longer
+// than the card has room for, so its clamps are what hold it. [→ `strands`]
+const writer = (name: string) => ({
+  name,
+  slug: name.toLowerCase().replace(/ /g, "-"),
+  picture: asset("me"),
+});
 const posts = [1, 2, 3, 4, 5].map((n) => ({
   slug: `post-${n}`,
-  title: `Post number ${n}`,
-  date: `2026-0${6 - n}-01T00:00:00Z`,
-  excerpt: `Everything worth knowing about post number ${n}.`,
+  title:
+    n === 1
+      ? "A headline far longer than any on the site, written to run past the three lines the feature card allows it"
+      : `Post number ${n}`,
+  date: n === 1 ? "2026-09-23T00:00:00Z" : `2026-0${6 - n}-01T00:00:00Z`,
+  excerpt:
+    n === 1
+      ? "An excerpt long enough to run past three lines in the feature card's text column, so the clamp is what keeps the card at the height of its cover rather than the length of this sentence, which keeps going for a good while longer than any real excerpt on the site."
+      : `Everything worth knowing about post number ${n}.`,
   coverImage: asset(`post-${n}`),
   authorsCollection: {
-    items: [
-      { name: "Bulent Yusuf", slug: "bulent-yusuf", picture: asset("me") },
-    ],
+    items:
+      n === 1
+        ? [
+            writer("Bulent Yusuf"),
+            writer("Genial Yeti of the Mountains"),
+            writer("Trippy Robot of the Arcade"),
+          ]
+        : [writer("Bulent Yusuf")],
   },
   category: { name: "Blogging", slug: "blogging" },
   tagsCollection: { items: [tag] },
@@ -142,7 +160,9 @@ type Measurement = {
     width: number;
     height: number;
   } | null;
-  featureText: { top: number; left: number } | null;
+  featureText: { top: number; left: number; height: number } | null;
+  /** The feature byline's height over its line height. */
+  featureBylineLines: number | null;
   /** The pressed chip's computed background, null if none is pressed. */
   pressedChipFill: string | null;
 };
@@ -177,8 +197,19 @@ function measureInPage(): Measurement {
         }
       : null,
     featureText: featureText
-      ? { top: box(featureText).top, left: box(featureText).left }
+      ? {
+          top: box(featureText).top,
+          left: box(featureText).left,
+          height: box(featureText).height,
+        }
       : null,
+    featureBylineLines: (() => {
+      const byline = featureText?.querySelector("p > span:last-child");
+      if (!byline) return null;
+      return (
+        box(byline).height / parseFloat(getComputedStyle(byline).lineHeight)
+      );
+    })(),
     pressedChipFill: (() => {
       const chip = document.querySelector(
         'nav[aria-label="Strands"] [aria-current]',
@@ -232,17 +263,29 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
   if (!featureTitlePx || !cardTitlePx || !featureCover || !featureText) {
     return [...problems, "home rendered no feature card or card title"];
   }
-  // Below md the cover sits above the text; from md they share a row.
-  if (width < 768 && !(featureText.top >= featureCover.bottom)) {
-    problems.push("the feature card's text overlaps its cover on mobile");
+  // Below xl the cover sits above the text; from xl they share a row, and the
+  // text never outgrows the cover, so the card's height is the cover's.
+  if (width < 1280 && !(featureText.top >= featureCover.bottom)) {
+    problems.push("the feature card's text overlaps its cover when stacked");
   }
-  if (width >= 768 && !(featureText.left >= featureCover.right)) {
+  if (width >= 1280 && !(featureText.left >= featureCover.right)) {
     problems.push("the feature card's cover and text do not share a row");
   }
-  // 16:9 at every width, whatever the headline's length. [→ `strands`]
+  if (width >= 1280 && !(home.featureBylineLines! < 1.5)) {
+    problems.push(
+      `the feature byline runs to ${home.featureBylineLines} lines`,
+    );
+  }
+  if (width >= 1280 && featureText.height > featureCover.height + 0.5) {
+    problems.push(
+      `the feature text is ${featureText.height}px, taller than its ${featureCover.height}px cover`,
+    );
+  }
+  // 16:9 stacked, 4:3 beside the text, whatever the headline's length.
   const ratio = featureCover.width / featureCover.height;
-  if (Math.abs(ratio - 16 / 9) > 0.02) {
-    problems.push(`the feature cover is ${ratio.toFixed(2)}:1, not 16:9`);
+  const [want, name] = width >= 1280 ? [4 / 3, "4:3"] : [16 / 9, "16:9"];
+  if (Math.abs(ratio - want) > 0.02) {
+    problems.push(`the feature cover is ${ratio.toFixed(2)}:1, not ${name}`);
   }
   if (width >= 1024 && !(featureTitlePx > cardTitlePx)) {
     problems.push(
@@ -252,7 +295,7 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
   return problems;
 }
 
-const WIDTHS = [375, 1280];
+const WIDTHS = [375, 1024, 1280];
 
 let browser: Browser;
 let stylesheet: string;
@@ -361,6 +404,32 @@ it.each([
     "the feature cover stretched to its text",
     {
       home: "section > article > div:first-child { aspect-ratio: auto !important; height: 400px !important }",
+    },
+  ],
+  [
+    1024,
+    "the feature card side by side below xl",
+    { home: "section > article { grid-template-columns: 7fr 5fr !important }" },
+  ],
+  [
+    1280,
+    "the feature excerpt unclamped",
+    {
+      home: "section > article > div:nth-child(2) > p:nth-of-type(2) { display: block !important; -webkit-line-clamp: none !important }",
+    },
+  ],
+  [
+    1280,
+    "the feature title unclamped",
+    {
+      home: "section > article h3 { display: block !important; -webkit-line-clamp: none !important }",
+    },
+  ],
+  [
+    1280,
+    "the feature byline wrapping",
+    {
+      home: "section > article > div:nth-child(2) > p:first-child, section > article > div:nth-child(2) > p:first-child > span { flex-wrap: wrap !important; white-space: normal !important }",
     },
   ],
   [

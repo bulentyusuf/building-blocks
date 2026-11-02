@@ -28,12 +28,24 @@ export function StrandPill({ strand }: { strand: Strand }) {
   );
 }
 
-function Meta({ post, className }: { post: ListPost; className: string }) {
+function Meta({
+  post,
+  className,
+  bylineClassName = "",
+}: {
+  post: ListPost;
+  className: string;
+  bylineClassName?: string;
+}) {
   const strand = strandFor(post.category);
   return (
     <p className={`flex flex-wrap items-center gap-2.5 ${className}`}>
-      {strand && <StrandPill strand={strand} />}
-      <span className="font-ui font-semibold tabular-nums">
+      {strand && (
+        <span className="shrink-0">
+          <StrandPill strand={strand} />
+        </span>
+      )}
+      <span className={`font-ui font-semibold tabular-nums ${bylineClassName}`}>
         {formatAuthorsByline(postAuthors(post))} ·{" "}
         <DateComponent dateString={post.date} />
       </span>
@@ -73,7 +85,11 @@ async function Cover({
   );
 }
 
-/** The latest post, wide. Its cover is home's LCP. [→ `priority-opaque`] */
+/**
+ * The latest post, wide. Its cover is home's LCP. [→ `priority-opaque`]
+ * From xl the text sits beside a 4:3 cover and is clamped to fit beside it,
+ * so the card is one height on every page. [→ `strands`]
+ */
 export async function FeatureCard({
   post,
   tags,
@@ -85,22 +101,26 @@ export async function FeatureCard({
   const strand = strandFor(post.category);
   return (
     <article
-      className={`${press} grid gap-6 rounded-3xl p-4 hover:translate-[3px] md:grid-cols-12 md:gap-8 md:p-6 md:hover:translate-[6px] ${(strand ?? STRANDS[0]).featureShadow}`}
+      className={`${press} grid gap-6 rounded-3xl p-4 hover:translate-[3px] md:gap-8 md:p-6 xl:grid-cols-12 md:hover:translate-[6px] ${(strand ?? STRANDS[0]).featureShadow}`}
     >
       <Cover
         post={post}
         priority
-        sizes="(max-width: 768px) calc(100vw - 4.5rem), 620px"
-        className="aspect-video self-center rounded-xl md:col-span-7"
+        sizes="(max-width: 768px) calc(100vw - 4.5rem), (max-width: 1279px) 1120px, 450px"
+        className="aspect-video self-center rounded-xl xl:col-span-5 xl:aspect-4/3"
       />
-      <div className="flex flex-col gap-4 md:col-span-5 md:self-center">
-        <Meta post={post} className="text-base" />
-        <h3 className="text-3xl font-[800] leading-none tracking-[-0.02em] text-pretty md:text-4xl lg:text-[2.875rem]">
+      <div className="flex flex-col gap-4 xl:col-span-7 xl:self-center">
+        <Meta
+          post={post}
+          className="text-base xl:flex-nowrap"
+          bylineClassName="xl:min-w-0 xl:truncate"
+        />
+        <h3 className="text-3xl xl:line-clamp-3 font-[800] leading-none tracking-[-0.02em] text-pretty md:text-4xl lg:text-[2.875rem]">
           <Link href={`/posts/${post.slug}`} className={stretched}>
             {widont(post.title)}
           </Link>
         </h3>
-        <p className="text-lg leading-relaxed text-pretty">
+        <p className="text-lg leading-relaxed text-pretty xl:line-clamp-2">
           {widont(post.excerpt)}
         </p>
         <TagRow tags={tags} className="relative z-10" />

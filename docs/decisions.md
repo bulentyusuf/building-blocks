@@ -271,8 +271,12 @@ redirects to the archive, which already lists everything.
   [→ `announced-links`].
 - **Ink means pressable.** Cards keep the 3px ink edge; the cover inside takes
   `--color-edge-quiet`. Shadows are the strand colour, lifted in dark mode.
-- **The page is graph paper**, `--color-dots` every 22px on `body`. The feature
-  card's cover is 16:9 at every width, so headline length never recrops it.
+- **The page is graph paper**, `--color-dots` every 22px on `body`.
+- **The feature card is one height on every page from `xl`.** Its cover is a
+  fixed 4:3 in five columns, the text beside it in seven, and the byline (one
+  line), title (three) and excerpt (two) are clamped to fit, so headline
+  length never recrops the cover or grows the card. Below `xl` it stacks with
+  a 16:9 cover, since at 1024px a 4:3 cover is too short for the text.
 - **Strand fills never invert**, so the pills keep cream text in both schemes;
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
