@@ -112,26 +112,19 @@ const plexMono = IBM_Plex_Mono({
 // The phone menu only; on wider screens these live in the footer. Written as
 // paths; the slash is decoration and stays out of the name. [→ `strands`]
 const NAV_LINKS = [
-  { href: "/tags", label: "tags" },
-  { href: "/archive", label: "archive" },
-  { href: "/about", label: "about" },
+  { href: "/tags", label: "Tags" },
+  { href: "/archive", label: "Archive" },
+  { href: "/about", label: "About" },
 ];
 
 // The square buttons in the header row: search and the phone menu.
 const squareButton =
   "flex size-12 items-center justify-center rounded-xl border-[3px] border-brand-dark bg-card text-brand-dark shadow-[3px_3px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[3px] hover:shadow-none motion-reduce:transition-none md:shadow-[4px_4px_0_var(--color-brand-crimson)] md:hover:translate-[4px]";
 
+// Links are words in the UI face; mono is for // labels and code.
+// [→ `type-roles`]
 const navLink =
-  "font-mono text-sm font-medium text-brand-dark hover:text-brand-crimson transition-colors duration-200";
-
-function Path({ label }: { label: string }) {
-  return (
-    <>
-      <span aria-hidden="true">/</span>
-      {label}
-    </>
-  );
-}
+  "font-ui text-base font-semibold text-brand-dark hover:text-brand-crimson transition-colors duration-200";
 
 // One row: logo, strand chips, search. On phones the chips wrap below and a
 // menu joins search. [→ `strands`]
@@ -208,7 +201,7 @@ async function Header({ isDraftMode }: { isDraftMode: boolean }) {
                         href={href}
                         className={`${navLink} flex min-h-11 items-center`}
                       >
-                        <Path label={label} />
+                        {label}
                       </Link>
                     </li>
                   ))}
@@ -223,7 +216,7 @@ async function Header({ isDraftMode }: { isDraftMode: boolean }) {
 }
 
 const footerLink =
-  "font-mono text-sm text-brand-dark hover:text-brand-crimson transition-colors duration-200";
+  "font-ui text-base font-semibold text-brand-dark hover:text-brand-crimson transition-colors duration-200";
 
 // Column labels are <p>, not headings. [→ `announced-links`]
 function FooterLabel({ children }: { children: React.ReactNode }) {
@@ -252,16 +245,16 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
               <FooterLabel>browse</FooterLabel>
               <ul className="mt-3">
                 {[
-                  ["/tags", "tags"],
-                  ["/archive", "archive"],
-                  ["/search", "search"],
+                  ["/tags", "Tags"],
+                  ["/archive", "Archive"],
+                  ["/search", "Search"],
                 ].map(([href, label]) => (
                   <li key={href}>
                     <Link
                       href={href}
                       className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
                     >
-                      <Path label={label} />
+                      {label}
                     </Link>
                   </li>
                 ))}
@@ -276,7 +269,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                     href="/about"
                     className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
                   >
-                    <Path label="about" />
+                    About
                   </Link>
                 </li>
                 <li>
@@ -284,7 +277,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                     href="/privacy"
                     className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
                   >
-                    <Path label="privacy" />
+                    Privacy
                   </Link>
                 </li>
                 <li>
@@ -292,7 +285,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                     href="/feed.xml"
                     className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
                   >
-                    <Path label="feed.xml" />
+                    RSS feed
                   </a>
                 </li>
                 <li>
@@ -303,7 +296,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    fork_on_github
+                    Fork on GitHub
                     <span aria-hidden="true">&nbsp;↗</span>
                     <NewWindowHint />
                   </a>

@@ -2,7 +2,8 @@ import Link from "next/link";
 
 // Points at the other language version of a post. Its own lang, as it sits
 // beside text of the opposite language, and kept out of the search index.
-// The last item in the byline row, underlined like an article link. [→ `locale`]
+// The last item in the byline row. Standalone, so underlined only on hover.
+// [→ `locale`, `type-roles`]
 export default function LanguageLink({
   href,
   lang,
@@ -18,7 +19,7 @@ export default function LanguageLink({
         href={href}
         hrefLang={lang}
         lang={lang}
-        className="inline-flex min-h-6 items-center gap-1.5 font-ui font-semibold text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
+        className="inline-flex min-h-6 items-center gap-1.5 font-ui font-semibold text-brand-crimson decoration-2 underline-offset-[3px] hover:underline"
       >
         {/* Lucide 'languages' icon, ISC licence. */}
         <svg

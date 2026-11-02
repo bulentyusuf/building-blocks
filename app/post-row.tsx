@@ -53,7 +53,7 @@ export default function PostRow({
             href={`/de/posts/${post.slug}`}
             hrefLang={GERMAN_LOCALE}
             lang={GERMAN_LOCALE}
-            className="-my-1 ml-1 inline-block px-1.5 py-1 whitespace-nowrap font-mono text-xs font-medium tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+            className="-my-1 ml-1 inline-block px-1.5 py-1 whitespace-nowrap font-ui text-xs font-bold tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
           >
             <span className="sr-only">Auf Deutsch lesen, </span>
             DE

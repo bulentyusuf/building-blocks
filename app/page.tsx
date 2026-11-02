@@ -39,7 +39,7 @@ export default async function Page() {
       <div className="mt-12 flex justify-center">
         <Link
           href="/archive"
-          className="inline-flex min-h-11 items-center rounded-xl border-[3px] border-brand-dark bg-card px-5 font-mono text-[0.9375rem] font-medium shadow-[4px_4px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[4px] hover:shadow-none motion-reduce:transition-none"
+          className="inline-flex min-h-11 items-center rounded-xl border-[3px] border-brand-dark bg-card px-5 font-ui text-base font-semibold shadow-[4px_4px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[4px] hover:shadow-none motion-reduce:transition-none"
         >
           Every post, in the archive
         </Link>
