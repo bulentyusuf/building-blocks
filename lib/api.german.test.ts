@@ -72,7 +72,20 @@ describe("getGermanPostAndMorePosts", () => {
               links: {
                 assets: { block: [{ sys: { id: "img" } }] },
                 entries: {
-                  block: [],
+                  block: [
+                    {
+                      __typename: "Callout",
+                      sys: { id: "c1" },
+                      label: "A word on boot media",
+                      body: { json: "en-c1" },
+                    },
+                    {
+                      __typename: "Callout",
+                      sys: { id: "c2" },
+                      label: "Another word",
+                      body: { json: "en-c2" },
+                    },
+                  ],
                   inline: [
                     {
                       __typename: "Sidenote",
@@ -271,5 +284,49 @@ describe("getGermanPostAndMorePosts", () => {
     // Known-bad control: the untranslated note keeps its English text.
     expect(n2.note.json).toBe("en-2");
     expect(n2.lang).toBe("en-GB");
+  });
+
+  it("uses a German callout where one exists and tags the rest English", async () => {
+    // The RetroPie post's callout rendered English on its German page because
+    // the German query never asked for block entries. [→ `locale`]
+    vi.stubGlobal(
+      "fetch",
+      respond({
+        title: "Titel",
+        excerpt: "Auszug",
+        content: {
+          json: { nodeType: "document", content: [] },
+          links: {
+            entries: {
+              block: [
+                {
+                  __typename: "Callout",
+                  sys: { id: "c1" },
+                  label: "Ein Wort zum Bootmedium",
+                  body: { json: "de-c1" },
+                },
+                {
+                  __typename: "Callout",
+                  sys: { id: "c2" },
+                  label: null,
+                  body: null,
+                },
+              ],
+            },
+          },
+        },
+      }),
+    );
+
+    const { post } = await getGermanPostAndMorePosts("e-post", false);
+    const [c1, c2] = post!.content.links.entries!.block.map(
+      (c) => c as { label: string; body: { json: unknown }; lang?: string },
+    );
+    expect(c1.label).toBe("Ein Wort zum Bootmedium");
+    expect(c1.body.json).toBe("de-c1");
+    expect(c1.lang).toBeUndefined();
+    // Known-bad control: the untranslated callout keeps its English text.
+    expect(c2.label).toBe("Another word");
+    expect(c2.lang).toBe("en-GB");
   });
 });

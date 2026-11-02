@@ -46,6 +46,8 @@ export interface Callout {
   sys: { id: string };
   label: string;
   body: { json: Document }; // text only: no embeds inside a callout
+  // Set only when an English callout stands in on a German page. [→ `locale`]
+  lang?: string;
 }
 
 export interface Sidenote {
