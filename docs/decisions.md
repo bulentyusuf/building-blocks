@@ -177,7 +177,8 @@ tokens. Its cream ground stays `#FAF5F1` in both schemes via the SVG's own
 `@media` rule, so anything drawn on it in dark mode uses literal hex, never a
 brand token. `lib/palette-contrast.test.ts` checks it against the light
 `--color-brand-bg`. The ground is sliced from the glass outline and is not a
-tuning knob.
+tuning knob. Below `sm` it is 112px wide, not 192px, so the tag panel's heading
+and first tags show above the fold on a phone (November 2026).
 
 ### Brand colour exists in two places on purpose
 
@@ -251,6 +252,7 @@ redirects to the archive, which already lists everything.
   always cut off at 360 to 430px, and a pressed chip past the edge scrolls in.
   While more lies past the edge the row fades out over its last 3rem, since at
   a 20px root a chip edge can land on the screen edge and nothing peeks in.
+  Its scrollbar is hidden: a narrow desktop window gave it a 15px bar.
 - **Chips are links, not filters.** Each strand is a page, so the pressed chip
   is `aria-current="page"`; a post presses its strand as `"true"`, because the
   chip links away. `currentStrand` reads the path, posts via a slug map.
