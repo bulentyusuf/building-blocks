@@ -81,8 +81,8 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
 
 - **Four roles, three faces, and nothing in a component names a family.**
   `--font-display` (Bricolage Grotesque), `--font-body` (Literata), `--font-ui`,
-  `--font-mono` (IBM Plex Mono). There is no `font-sans` utility; that class
-  silently does nothing. [→ `type-roles`]
+  `--font-mono` (IBM Plex Mono). Never use `font-sans`: Tailwind still
+  generates it, and it sets the system stack, not a house face. [→ `type-roles`]
 - **`subsets: ["latin"]` only in `app/layout.tsx`.** Do not re-add `latin-ext`,
   including for `de-DE` work. [→ `font-subsets`]
 - **Never measure a prose column in `ch`.** The measure lives on `max-w-2xl`
@@ -193,12 +193,10 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
   [→ `node-pin`]
 - **Browse-page copy lives in code.** `/archive` and `/tags` take
   `SITE_DESCRIPTION`; there is no `browseIntro` type. [→ `browse-copy`]
-- **Two copies of `@contentful/rich-text-types` ship on purpose** — the app
-  resolves `17.x`, `contentful-management` nests its own `^16.6.1` dev copy.
-  Do not force a resolution to dedupe it. [→ `rich-text-types-dupe`]
 - **`'unsafe-inline'` stays global in the CSP.** `'wasm-unsafe-eval'` and
   `frame-ancestors` are relaxed per route only — `/search` plus
-  `/pagefind/*`, and `/posts/*` respectively — never on the catch-all.
+  `/pagefind/*`, and `/posts/*` plus `/de/posts/*` respectively — never on the
+  catch-all.
   [→ `csp-scoping`]
 - **Every JSON-LD block goes through `jsonLdHtml`** (`lib/json-ld.ts`), which
   escapes the three HTML-significant characters before the string reaches
@@ -210,7 +208,7 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 ## Testing
 
 - **Any new route goes in `app/routes.a11y.test.tsx`**, or it has no axe run
-  anywhere and nothing in CI reports the gap. `app/a11y.test.tsx` covers five
+  anywhere and nothing in CI reports the gap. `app/a11y.test.tsx` covers three
   page shapes, not routes. [→ `guard-limits`]
 - **Every pattern-matching guard carries a permanent known-bad control.**
   `app/posts/[slug]/opengraph-image.font.test.tsx` is the pattern to copy. Four

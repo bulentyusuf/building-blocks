@@ -23,7 +23,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 
 **Headers and home**
 
-- `strands` — Home is strand chips, a feature card and ten cards, and a card presses as one link
+- `strands` — Home is strand chips, a feature card and six cards
 - `cover-frames` — Covers take one of two frames, chosen by `wide`
 - `listing-shell` — Tag and author pages are strand pages with a trail
 - `heading-widont` — The post `h1` renders its title directly, without `widont()`
@@ -74,7 +74,6 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `collection-paging` — Every unbounded collection query pages, and must keep selecting `total`
 - `fixtures` — Contentful export/seed files are load-bearing and brittle
 - `node-pin` — One Node version pin, in `engines.node`
-- `rich-text-types-dupe` — Two copies of `@contentful/rich-text-types`, and only one ships
 - `schema-changes` — A schema change reaches the live space before the code that queries it
 
 **Testing**
@@ -108,8 +107,9 @@ Two directives are relaxed per route and never on the catch-all.
 `'wasm-unsafe-eval'` applies to `/search` and `/pagefind/*` only, because
 Pagefind compiles WebAssembly there, including inside a SharedWorker that takes
 its CSP from the worker script's own response. `frame-ancestors` admits
-`https://app.contentful.com` on `/posts/*` only, because the Post preview URL
-redirects there and that is the only document Contentful frames. `/api/draft`
+`https://app.contentful.com` on `/posts/*` and `/de/posts/*` only, because the
+Post preview URL redirects to one of them and those are the only documents
+Contentful frames. `/api/draft`
 does not need it: a 302 is never displayed in a frame. Give a Page entry its own
 preview URL and that list has to grow.
 
@@ -155,11 +155,11 @@ Two regions carry `data-pagefind-body`: a post's `h1` and its `<article>` in
 
 Pagefind reads raw text and honours neither `aria-hidden` nor `opacity-0`, so
 anything inside a body region that is not the post's own words needs
-`data-pagefind-ignore` stated explicitly. Five things carry it: the table of
-contents, the heading permalink, the foot-of-post author bio
-(`app/author-bio-card.tsx`, identical on every post by that author), the
-sidenote marker and toggle label (`lib/sidenote.tsx`), and the new-window hint
-(`app/new-window-hint.tsx`).
+`data-pagefind-ignore` stated explicitly: the sidebar with the table of
+contents, heading permalinks and section stamps, the foot-of-post author bio
+(identical on every post by that author), the sidenote marker, toggle and
+"Note N" bounds, the copy button, the language link and the new-window hint.
+Grep for the attribute rather than trusting this list.
 
 A heading's sub-result title is read separately from the DOM text and ignores
 the attribute, so the permalink glyph is CSS generated content on an empty span,
@@ -234,7 +234,7 @@ Below `sm` the pill gives way to a coloured dot before the date, on one line
 under the title (November 2026): a row went from 142px to 112px at 375px, and
 the dot is not a link, so no undersized tap target.
 
-### Home is strand chips, a feature card and ten cards
+### Home is strand chips, a feature card and six cards
 
 <!-- key: strands -->
 
@@ -600,7 +600,8 @@ standalone package parses, which is what sank an earlier face.
   typography's pin; CSS output byte-identical) and **uuid** for advisories their
   parents leave. An override stays only while an advisory needs it: on every
   `next` bump, drop each in turn and keep it only if `npm audit` then fails. Do
-  not swap in `contentful-cli` (same uuid chain).
+  not swap in `contentful-cli` (same uuid chain), and do not restore
+  `legacy-peer-deps`, which once hid every peer conflict.
 
 ### Posts carry `authors`, an ordered array capped at three
 
@@ -634,7 +635,8 @@ invisible to CI (`guard-limits`).
 `--default-font-family` at the body face.
 Nothing in a component names a family, which is what kept the last three face
 swaps to a few lines. `--font-ui` resolves to the display family but keeps its
-own token; do not merge them. There is no `font-sans` utility.
+own token; do not merge them. Tailwind's own `font-sans` still exists and sets
+the system sans stack, which is no house face, so nothing uses it.
 
 - **Display**: `h1` to `h3` and the mastheads, via the base-layer rule. Do not
   add `font-display` to a heading.
@@ -883,8 +885,8 @@ publishing reopens `expire: 0` and needs this entry rewritten first.
 <!-- key: collection-paging -->
 
 `fetchAllCollectionItems` in `lib/api.ts` pages through Contentful's 100-item
-ceiling for `getAllPosts`, `getAllPages`, `getAllTags`, `getAllCategories`,
-and `getAllAuthors`. A query handed to it accepts
+ceiling for `getAllPosts`, `getGermanPostSlugs`, `getAllPages`, `getAllTags`,
+`getAllCategories` and `getAllAuthors`. A query handed to it accepts
 `$limit: Int!` and `$skip: Int!` and selects `total` beside `items`; without
 `total` the first page silently becomes the whole result. Raise the page size
 only against a measurement. The `limit: 1` fetchers are deliberately not
@@ -914,15 +916,6 @@ adding either silently wins. Keep an exact major (`24.x`), since a range
 upgrades production silently. nvm cannot read it; switch by hand.
 `@types/node` follows the runtime major, not latest. Keep the Vercel setting
 current as a dormant fallback.
-
-### Two copies of `@contentful/rich-text-types`, and only one ships
-
-<!-- key: rich-text-types-dupe -->
-
-The app resolves `17.x`; `contentful-management`, a dev dependency of the import
-scripts, nests `^16.6.1`, and no released version accepts 17. `npm ls
---omit=dev` shows one copy. Do not force a resolution, which breaks the import
-scripts, and do not restore `legacy-peer-deps`, which hid every conflict.
 
 ### A schema change reaches the live space before the code that queries it
 
@@ -972,14 +965,15 @@ pass. What they cannot do:
   with the code, never that the space does.
 - **`app/a11y.test.tsx`** cannot check `color-contrast` or `target-size`, since
   jsdom has no layout; `lib/palette-contrast.test.ts` recomputes contrast. It
-  covers five page shapes, not routes, so **a new route goes in
+  covers three page shapes (home, a strand page, a post), not routes, so **a new route goes in
   `app/routes.a11y.test.tsx`** or it has no axe run. Both assert the page
   rendered something. The first also checks `<main>` for duplicate
   announcements; each allowance asserts its own duplication still occurs.
 - **The spacing rhythm is measured, not matched.** The layout test in lib
-  (listing-rhythm.layout.test.tsx) renders home, a tag listing and `/archive`
-  through the real routes with only the CMS mocked, and measures them in
-  Chromium at 375px and 1280px. It asserts relations between distances, never
+  (listing-rhythm.layout.test.tsx) renders home, `/tags`, `/archive` and
+  `/search` through the real routes with only the CMS mocked, and measures them
+  in Chromium at 375px, 1024px and 1280px. The other `*.layout.test.tsx` files
+  measure the same way. It asserts relations between distances, never
   values; the file lists them. It replaced the class-string tests, **a stronger
   guard, not a weakening**: those failed on refactors that kept the pixels and
   passed on breaks they did not name. `npm test` therefore needs a

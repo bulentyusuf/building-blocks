@@ -84,7 +84,7 @@ const LINE_LIMITS = [
   },
   {
     file: "docs/decisions.md",
-    limit: 1058,
+    limit: 1034,
     fix: "Trim an entry to pay for the new one",
   },
 ] as const;
