@@ -4,7 +4,7 @@ import { draftMode } from "next/headers";
 import PostRow, { ROWS_PANEL } from "../post-row";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getAllTags, getBrowseIntro } from "@/lib/api";
+import { getAllPosts, getBrowseIntro } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
 import { browsePageMetadata } from "@/lib/page-metadata";
 import { widont } from "@/lib/typography";
@@ -22,18 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
 
-  // Descriptions come from their own query, joined by slug, so they stay out
-  // of every other page's fragment. [→ `tag-pages`]
-  const intro = await getBrowseIntro("tags", isEnabled);
-  // Two elements only: a third made TypeScript infer a union and drop fields.
-  const [posts, allTags] = await Promise.all([
+  const [intro, posts] = await Promise.all([
+    getBrowseIntro("tags", isEnabled),
     getAllPosts(isEnabled),
-    getAllTags(isEnabled),
   ]);
   const groups = groupPostsByTag(posts);
-  const descriptions = new Map(
-    allTags.map((tag) => [tag.slug, tag.description]),
-  );
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Tags" }];
 
@@ -83,11 +76,6 @@ export default async function TagsPage() {
                   {tagged.length} {tagged.length === 1 ? "post" : "posts"}
                 </span>
               </h2>
-              {descriptions.get(tag.slug) && (
-                <p className="mb-4 max-w-2xl leading-relaxed text-brand-muted text-pretty">
-                  {descriptions.get(tag.slug)}
-                </p>
-              )}
               <ul className={`${ROWS_PANEL} mt-4`}>
                 {tagged.map((post) => (
                   <PostRow
