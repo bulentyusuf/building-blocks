@@ -148,38 +148,40 @@ const BISECT = `(() => {
 
 // Text that sits straight on the graph paper, measured against the dots as the
 // browser draws them. axe cannot see through the gradient, so this does it from
-// pixels: hide all text, screenshot, and take the worst ground pixel under each
-// text box. Reports every box below AA, 4.5:1, or 3:1 for large text.
+// pixels: hide all text, screenshot, and take the worst ground pixel inside the
+// line boxes of each run of text. Reports every box below AA, 4.5:1, or 3:1 for large text.
 const GROUND_TEXT = `(() => {
   const opaque = (cs) =>
     cs.backgroundImage !== "none" ||
     !/rgba\\(.*,\\s*0\\)$|transparent/.test(cs.backgroundColor);
   const out = [];
-  for (const el of document.body.querySelectorAll("*")) {
-    const own = [...el.childNodes].some(
-      (n) => n.nodeType === 3 && n.textContent.trim(),
-    );
-    if (!own) continue;
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+    if (!n.textContent.trim()) continue;
+    const el = n.parentElement;
     const cs = getComputedStyle(el);
     if (cs.visibility !== "visible" || +cs.opacity === 0) continue;
-    const b = el.getBoundingClientRect();
-    if (b.width < 2 || b.height < 2) continue;
     let onGround = true;
     for (let a = el; a && a !== document.body; a = a.parentElement)
       if (opaque(getComputedStyle(a))) onGround = false;
     if (!onGround) continue;
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    // The line boxes of the text itself, so an element's own border, outline
+    // or padding is never mistaken for the ground behind its words.
+    const rects = [...range.getClientRects()]
+      .filter((r) => r.width >= 2 && r.height >= 2)
+      .map((r) => ({ x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height }));
+    if (!rects.length) continue;
     const size = parseFloat(cs.fontSize);
     const bold = parseInt(cs.fontWeight, 10) >= 700;
     out.push({
       id: el.id,
       tag: el.tagName.toLowerCase(),
-      text: el.textContent.trim().replace(/\\s+/g, " ").slice(0, 60),
+      text: n.textContent.trim().replace(/\\s+/g, " ").slice(0, 60),
       color: cs.color,
       need: size >= 24 || (size >= 18.66 && bold) ? 3 : 4.5,
-      x: b.left + scrollX,
-      y: b.top + scrollY,
-      w: b.width,
-      h: b.height,
+      rects,
     });
   }
   return out;
@@ -204,17 +206,24 @@ const WORST_GROUND = async ([png, boxes]) => {
   for (const t of boxes) {
     const [r, g, b] = t.color.match(/[\d.]+/g).map(Number);
     const ink = lum(r, g, b);
-    const x0 = Math.max(0, Math.floor(t.x));
-    const y0 = Math.max(0, Math.floor(t.y));
-    const w = Math.min(c.width - x0, Math.ceil(t.w));
-    const h = Math.min(c.height - y0, Math.ceil(t.h));
-    if (w < 1 || h < 1) continue;
-    const d = ctx.getImageData(x0, y0, w, h).data;
     let worst = Infinity;
-    for (let i = 0; i < d.length; i += 4)
-      worst = Math.min(worst, ratio(ink, lum(d[i], d[i + 1], d[i + 2])));
+    for (const box of t.rects) {
+      // Rounded inwards, so a neighbour's background at the edge never counts.
+      const x0 = Math.max(0, Math.ceil(box.x));
+      const y0 = Math.max(0, Math.ceil(box.y));
+      const w = Math.min(c.width, Math.floor(box.x + box.w)) - x0;
+      const h = Math.min(c.height, Math.floor(box.y + box.h)) - y0;
+      if (w < 1 || h < 1) continue;
+      const d = ctx.getImageData(x0, y0, w, h).data;
+      for (let i = 0; i < d.length; i += 4)
+        worst = Math.min(worst, ratio(ink, lum(d[i], d[i + 1], d[i + 2])));
+    }
     if (worst < t.need)
-      bad.push({ ...t, ratio: Math.round(worst * 100) / 100 });
+      bad.push({
+        ...t,
+        rects: undefined,
+        ratio: Math.round(worst * 100) / 100,
+      });
   }
   return bad;
 };
@@ -223,7 +232,7 @@ async function groundContrast(page) {
   const boxes = await page.evaluate(GROUND_TEXT);
   const hide = await page.addStyleTag({
     content:
-      "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important}",
+      "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;text-decoration-color:transparent!important}",
   });
   const png = (await page.screenshot({ fullPage: true })).toString("base64");
   await hide.evaluate((el) => el.remove());
