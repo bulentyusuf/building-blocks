@@ -70,7 +70,6 @@ describe("contentful export.json", () => {
     // Which content type each fragment is selected against.
     const fragments: Record<string, string> = {
       POST_GRAPHQL_FIELDS: "post",
-      CARD_GRAPHQL_FIELDS: "post",
       LIST_GRAPHQL_FIELDS: "post",
       PAGE_GRAPHQL_FIELDS: "page",
     };

@@ -138,29 +138,6 @@ const POST_GRAPHQL_FIELDS = `
   }
 `;
 
-// Listing previews. Partial: `content`, `author`, `updatedDate` and `category`
-// are absent.
-const CARD_GRAPHQL_FIELDS = `
-  slug
-  title
-  coverImage {
-    url
-    title
-    # fileName is not rendered. app/cover-image.tsx compares the title against
-    # it to catch a filename stem standing in for alt text; see the note on
-    # CoverImage in lib/types.ts.
-    fileName
-  }
-  date
-  excerpt
-  tagsCollection(limit: 3) {
-    items {
-      name
-      slug
-    }
-  }
-`;
-
 // getAllPosts' fragment: POST_GRAPHQL_FIELDS without `content` and `bio`, so
 // both are absent. Tags ride along because tag grouping is in memory.
 // [→ `tag-pages`] These strings are GraphQL: a `//` comment inside one fails
