@@ -148,8 +148,8 @@ const BISECT = `(() => {
 
 // Text that sits straight on the graph paper, measured against the dots as the
 // browser draws them. axe cannot see through the gradient, so this does it from
-// pixels: hide all text, screenshot, and take the worst ground pixel inside the
-// line boxes of each run of text. Reports every box below AA, 4.5:1, or 3:1 for large text.
+// pixels: screenshot with and without the text, and take the worst ground pixel
+// under the letters themselves, so the gaps between words never count. Reports every box below AA, 4.5:1, or 3:1 for large text.
 const GROUND_TEXT = `(() => {
   const opaque = (cs) =>
     cs.backgroundImage !== "none" ||
@@ -162,8 +162,12 @@ const GROUND_TEXT = `(() => {
     const cs = getComputedStyle(el);
     if (cs.visibility !== "visible" || +cs.opacity === 0) continue;
     let onGround = true;
-    for (let a = el; a && a !== document.body; a = a.parentElement)
-      if (opaque(getComputedStyle(a))) onGround = false;
+    for (let a = el; a && a !== document.body; a = a.parentElement) {
+      const as = getComputedStyle(a);
+      // Clipped text, such as screen-reader-only labels, is never drawn.
+      if (opaque(as) || as.clip !== "auto" || as.clipPath !== "none")
+        onGround = false;
+    }
     if (!onGround) continue;
     const range = document.createRange();
     range.selectNodeContents(n);
@@ -187,15 +191,21 @@ const GROUND_TEXT = `(() => {
   return out;
 })()`;
 
-const WORST_GROUND = async ([png, boxes]) => {
-  const img = new Image();
-  img.src = "data:image/png;base64," + png;
-  await img.decode();
-  const c = document.createElement("canvas");
-  c.width = img.width;
-  c.height = img.height;
-  const ctx = c.getContext("2d");
-  ctx.drawImage(img, 0, 0);
+const WORST_GROUND = async ([withText, ground, boxes]) => {
+  const load = async (png) => {
+    const img = new Image();
+    img.src = "data:image/png;base64," + png;
+    await img.decode();
+    const cv = document.createElement("canvas");
+    cv.width = img.width;
+    cv.height = img.height;
+    const cx = cv.getContext("2d");
+    cx.drawImage(img, 0, 0);
+    return cx;
+  };
+  const textCtx = await load(withText);
+  const ctx = await load(ground);
+  const c = ctx.canvas;
   const lum = (r, g, b) =>
     [r, g, b]
       .map((v) => v / 255)
@@ -215,9 +225,21 @@ const WORST_GROUND = async ([png, boxes]) => {
       const h = Math.min(c.height, Math.floor(box.y + box.h)) - y0;
       if (w < 1 || h < 1) continue;
       const d = ctx.getImageData(x0, y0, w, h).data;
-      for (let i = 0; i < d.length; i += 4)
-        worst = Math.min(worst, ratio(ink, lum(d[i], d[i + 1], d[i + 2])));
+      const g = textCtx.getImageData(x0, y0, w, h).data;
+      for (let i = 0; i < d.length; i += 4) {
+        // Only where a letter was drawn: the two screenshots differ there.
+        const drawn =
+          Math.abs(d[i] - g[i]) +
+            Math.abs(d[i + 1] - g[i + 1]) +
+            Math.abs(d[i + 2] - g[i + 2]) >
+          24;
+        if (drawn)
+          worst = Math.min(worst, ratio(ink, lum(d[i], d[i + 1], d[i + 2])));
+      }
     }
+    // Text that draws no visible letter at all is indistinguishable from its
+    // ground, the worst case there is.
+    if (worst === Infinity) worst = 1;
     if (worst < t.need)
       bad.push({
         ...t,
@@ -230,13 +252,9 @@ const WORST_GROUND = async ([png, boxes]) => {
 
 async function groundContrast(page) {
   const boxes = await page.evaluate(GROUND_TEXT);
-  const hide = await page.addStyleTag({
-    content:
-      "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;text-decoration-color:transparent!important}",
-  });
   // A full-page screenshot draws fixed elements once, where they sit on the
   // first screen, over whatever text is there. They float over the text rather
-  // than sitting behind it, so they are left out of the ground.
+  // than sitting behind it, so they are left out of both screenshots.
   const floating = await page.evaluateHandle(() =>
     [...document.querySelectorAll("*")].filter((el) => {
       if (getComputedStyle(el).position !== "fixed") return false;
@@ -245,15 +263,22 @@ async function groundContrast(page) {
       return true;
     }),
   );
-  const png = (await page.screenshot({ fullPage: true })).toString("base64");
+  const shot = async () =>
+    (await page.screenshot({ fullPage: true })).toString("base64");
+  const withText = await shot();
+  const hide = await page.addStyleTag({
+    content:
+      "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;text-decoration-color:transparent!important}",
+  });
+  const ground = await shot();
+  await hide.evaluate((el) => el.remove());
   await floating.evaluate((els) =>
     els.forEach((el) => {
       el.style.visibility = el.dataset.groundHidden;
       delete el.dataset.groundHidden;
     }),
   );
-  await hide.evaluate((el) => el.remove());
-  return page.evaluate(WORST_GROUND, [png, boxes]);
+  return page.evaluate(WORST_GROUND, [withText, ground, boxes]);
 }
 
 // axe reads no background through the dots' gradient, so contrast on the page
