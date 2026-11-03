@@ -111,21 +111,21 @@
   persisted preference, so the browser applies it before first paint and there
   is no flash. We keep every --color-brand-* NAME and only swap its VALUE here,
   so no utility class in any component changes. Values are tuned to WCAG AA on
-  their real usage (body ink 14.9:1, meta 8.4:1, links 7.5:1 on the charcoal
+  their real usage (body ink 15.1:1, meta 8.5:1, links 7.5:1 on the charcoal
   page); accents are lifted because the light hexes fail on a dark background.
 */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-brand-bg: #18181b; /* neutral charcoal page (not pure #000) */
-    --color-brand-dark: #f3eae3; /* warm off-white ink */
+    --color-brand-dark: #ededee; /* neutral off-white ink */
     --color-outline: #c8c5c2; /* light grey edges, 10.3:1 on the page */
-    --color-brand-muted: #bfafb2; /* lifted so meta text keeps AA on dark */
+    --color-brand-muted: #b3b3b8; /* neutral grey, so meta text keeps AA */
     --color-brand-crimson: #f28a9b; /* lifted so links clear AAA (7.5:1) */
     /* Off-white at low alpha, matching the ink. */
-    --color-hairline: rgb(243 234 227 / 0.15);
+    --color-hairline: rgb(237 237 238 / 0.15);
 
     /* The ink's own colour at 18%, so a cover's edge still reads on the page. */
-    --color-cover-keyline: rgb(243 234 227 / 0.18);
+    --color-cover-keyline: rgb(237 237 238 / 0.18);
 
     /* A step up from the page, and shadows lifted so they read on it. */
     --color-card: #242327;
