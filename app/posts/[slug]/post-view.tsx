@@ -24,7 +24,7 @@ import { strandFor } from "@/lib/strands";
 import type { ListPost, Post } from "@/lib/types";
 
 // The post body for both routes. German posts are kept out of the search index.
-// Only the German parts carry de-DE; bio, tags and asides stay en-GB. [→ `locale`]
+// Only the German parts carry de-DE; bio, tags and related posts stay en-GB. [→ `locale`]
 export default async function PostView({
   post,
   morePosts,

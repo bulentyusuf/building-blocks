@@ -25,7 +25,7 @@ import type { Content } from "./types";
 
 // One snippet per LANGS entry. Each of the ten real grammars must tokenise its
 // snippet into at least one themed <span>; "text" has no grammar and stays
-// plain (that asymmetry — nine grammars, ten LANGS — is the point of the
+// plain (that asymmetry — ten grammars, eleven LANGS — is the point of the
 // separate `text` assertion below).
 const SNIPPETS: Record<(typeof LANGS)[number], string> = {
   typescript: "const x: number = 1;",
@@ -45,7 +45,7 @@ const SNIPPETS: Record<(typeof LANGS)[number], string> = {
 const THEMED_TOKEN = /<span style="[^"]*color:#[0-9a-fA-F]{3,8}/;
 // The escapeHtml catch path in highlightCodeBlocks, verbatim shape.
 const ESCAPE_FALLBACK = /^<pre class="shiki"><code>/;
-// codeToHtml + theme ran at all (true for the nine grammars and for plain text).
+// codeToHtml + theme ran at all (true for the ten grammars and for plain text).
 const CORE_THEMED_PRE = /^<pre class="shiki min-dark" style="background-color:/;
 
 function highlightOne(language: string, code: string) {

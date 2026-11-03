@@ -8,10 +8,10 @@ import type { AxeResults, Result } from "axe-core";
 import type { ReactElement } from "react";
 
 // Accessibility coverage for the routes app/a11y.test.tsx does not reach.
-// That file covers five page shapes by hand; this one renders the REAL route
-// components, with only the CMS mocked, inside the real RootLayout. Between
-// them the two files cover all seventeen routes, plus the not-found page, which
-// the seventeen do not include. [→ `guard-limits`]
+// That file covers three page shapes by hand, home among them; this one renders
+// the REAL route components, with only the CMS mocked, inside the real
+// RootLayout. Between them the two files cover all eleven page routes, plus the
+// not-found page. [→ `guard-limits`]
 //
 // The same two rules are disabled here as there, and for the same reason:
 // both need a layout engine that jsdom does not provide, so axe would report

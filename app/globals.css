@@ -62,34 +62,12 @@
      borders and the control edge are separate roles and do not use this. */
   --color-hairline: #e5e7eb;
 
-  /* The edge around a cover image. A fourth edge role after dividers, image
-     frames and control boundaries. Its original job was block visibility where
-     a cover sat on the masthead band, whose bottom edge the post cover crossed
-     — one image with navy behind its top and cream behind the rest. The band
-     is retired and no cover crosses a seam now.
-
-     Why an edge is needed at all when covers already carry shadow-lg. That
-     shadow is black at roughly 18% composited, which gives 1.52:1 on
-     --color-brand-bg. That is most of the job on cream but not all of it, and
-     this is the remainder. The two mechanisms split the work and neither
-     competes, because each is invisible where the other works. Nothing about
-     the half the shadow cannot do was ever specific to navy, which is why the
-     token outlived the band.
-
-     The light value is cream, the same family as --color-brand-bg, so it is
-     near-invisible on the cream page where the shadow is working and reads at
-     9.06:1 where it crosses onto navy.
-
-     Dark mode used to carry this as dark:border-brand-dark/12 on the component,
-     which composites to 1.38:1 on the band and 1.34:1 on the page. Both sit
-     under the 1.4:1 block-visibility floor lib/palette-contrast.test.ts already
-     applies to the band itself. At 18% the same edge gives 1.63:1 on both,
-     which is near the crossover where the two grounds converge. Reading the
-     same on either ground is the property worth having for an element that
-     straddles a seam.
-
-     Two literal values rather than color-mix() over a var(): Tailwind flattens
-     a var() inside color-mix() behind an @supports with a light fallback. */
+  /* The edge around a cover image, the part of the job its shadow cannot do.
+     The shadow gives 1.52:1 on cream, so the light keyline is cream and all but
+     invisible there; on charcoal the shadow fails and the dark keyline (the ink
+     at 18%, 1.66:1) takes over. [→ `border-roles`] Literal values, not
+     color-mix() over a var(): Tailwind flattens that behind an @supports with
+     a light fallback. */
   --color-cover-keyline: rgb(250 245 241 / 0.75);
 
   /* Always-dark surface, in BOTH schemes. brand-dark is body ink and must
@@ -133,9 +111,8 @@
   persisted preference, so the browser applies it before first paint and there
   is no flash. We keep every --color-brand-* NAME and only swap its VALUE here,
   so no utility class in any component changes. Values are tuned to WCAG AA on
-  their real usage (body ink 15.7:1, meta 7.8:1, links 7.4:1 on the dark bg);
-  accents are lifted because the light hexes fail on a dark background. The
-  light values above are byte-identical to production and untouched.
+  their real usage (body ink 14.9:1, meta 8.4:1, links 7.5:1 on the charcoal
+  page); accents are lifted because the light hexes fail on a dark background.
 */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -206,23 +183,12 @@
 /*
   One scroll offset for the whole site, on the scroll container.
 
-  The header used to be a 52px sticky bar, and headings cleared it with
-  `scroll-mt-*` utilities, which covered fragment links and nothing else. The
-  header now scrolls away, but the offset stays as breathing room and as the
-  value the table of contents reads. scroll-padding-top is on
-  the scroll container, so it applies to every scroll-into-view the browser
-  performs: fragment navigation, `scrollIntoView()`, and sequential focus.
-
-  It REPLACES those utilities and cannot simply be added alongside them.
-  scroll-padding on the container and scroll-margin on the target are additive,
-  so keeping both would have parked a post heading 160px down instead of 80px —
-  and app/table-of-contents.tsx, which reads this value to place its activation
-  line, would have read the 96px scroll-margin while the real landing point was
-  something else, mis-highlighting the entry clicked. There must be one value
-  and one place to read it. That place is here.
-
-  5rem, matching the `prose-headings:scroll-mt-20` this supersedes, so fragment
-  navigation lands exactly where it did before.
+  The header scrolls away, so 5rem is breathing room and the line
+  app/table-of-contents.tsx reads to mark the active entry. On the scroll
+  container it covers every scroll-into-view: fragment links,
+  `scrollIntoView()` and sequential focus. Never add a scroll-margin utility
+  beside it: the two add, and the contents box would read the wrong line.
+  [→ `scroll-offset`]
 */
 html {
   scroll-padding-top: 5rem;
@@ -261,8 +227,8 @@ html:has(dialog:modal) {
 
 /*
   One focus indicator for the whole site. Crimson clears 3:1 against both page
-  backgrounds (#9E2238 light, #EC8494 dark) and inverts with the scheme
-  automatically. [→ `focus-indicator`]
+  grounds (7.1:1 light, 7.5:1 dark) and swaps with the scheme on its own.
+  [→ `focus-indicator`]
 */
 @layer base {
   :focus-visible {
@@ -495,13 +461,8 @@ html:has(dialog:modal) {
   --tw-prose-quotes: var(--color-brand-dark);
   --tw-prose-quote-borders: var(--color-brand-crimson);
   --tw-prose-captions: var(--color-brand-muted);
-  /* Was brand-dark at 15%/10%, which composited to 1.22:1 (light) and 1.27:1
-     (dark) against the page — at or below the ~1.2 block-separation threshold
-     chrome is held to sitewide, and the only dividers in the system that never got
-     the dark-mode lift --color-hairline carries. Both now defer to that token,
-     so table rules track every other rule on the site and there is one alpha to
-     maintain rather than three. The header rule stays a step stronger than the
-     row rules so the head still reads as distinct. */
+  /* Rules defer to the hairline, so they invert like every other divider. The
+     header rule stays a step stronger so the head reads as distinct. */
   --tw-prose-th-borders: var(--color-hairline);
   --tw-prose-td-borders: color-mix(
     in srgb,
@@ -562,14 +523,14 @@ html:has(dialog:modal) {
   content: "// " / "";
 }
 
-/* Inline code sits at high contrast against the near-black dark-mode page (the
+/* Inline code sits at high contrast against the charcoal dark-mode page (the
    off-white ink), so this isn't a WCAG failure — but thin monospace strokes in
    a light ink read fainter on a dark ground than the same weight does in dark
    ink on a light one. font-weight is the fix; size is untouched, and code
    blocks stay unaffected since they're not-prose. Light mode keeps 400.
 
    The light fill is cream, which would vanish here, so dark mode keeps a 22%
-   crimson tint: 1.45:1 against the page, ink on it 10.85:1. */
+   crimson tint: 1.49:1 against the page, ink on it 10:1. */
 @media (prefers-color-scheme: dark) {
   .prose :where(code):not(:where([class~="not-prose"] *)) {
     font-weight: 500;
@@ -587,12 +548,9 @@ html:has(dialog:modal) {
    mode is free. Result markup comes from our own template in search-client.tsx
    and is styled there with ordinary Tailwind classes. */
 .pagefind-scope {
-  /* The body face, not the UI one. --pf-font styles the component's excerpt and
-     summary text, which is body copy — and the result titles in
-     search-client.tsx already set font-display themselves, so putting the
-     display family here too would render the whole panel in one face and lose
-     the pairing every other card on the site has. The fallback is a serif for
-     the same reason. */
+  /* The body face: --pf-font styles the excerpt and summary, which are body
+     copy. Result titles and meta set the UI face in search-client.tsx, so the
+     panel keeps the pairing every card has. The fallback is a serif. */
   --pf-font: var(--font-body), Georgia, serif;
   --pf-text: var(--color-brand-dark);
   --pf-text-secondary: var(--color-brand-muted);
