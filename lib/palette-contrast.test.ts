@@ -67,13 +67,22 @@ describe("strand pills and card text clear AA in both schemes", () => {
 });
 
 describe("the post's code and prompt surfaces clear AAA", () => {
-  // Ink stays ink in dark mode and the cream fill is light-only, so light
-  // values cover both schemes.
-  // [→ `post-page`]
-  it("the prompt label on ink, and ink on the inline code fill", () => {
-    expect(
-      contrast(light("--color-prompt-label"), light("--color-surface-dark")),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+  // The ink surface has its own dark value, so both schemes are checked. The
+  // cream code fill is light-only. [→ `post-page`]
+  it.each(["light", "dark"] as const)(
+    "the prompt label and white text on the ink surface, %s",
+    (scheme) => {
+      const token = scheme === "light" ? light : dark;
+      const ground = token("--color-surface-dark");
+      expect(
+        contrast(token("--color-prompt-label"), ground),
+      ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+      expect(contrast(parseColour("#ffffff"), ground)).toBeGreaterThanOrEqual(
+        MIN_AAA_TEXT,
+      );
+    },
+  );
+  it("ink on the inline code fill", () => {
     expect(
       contrast(light("--color-brand-dark"), light("--color-code-bg")),
     ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
