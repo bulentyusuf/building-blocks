@@ -41,13 +41,12 @@ A report arriving after the fact is the wrong shape for that.
 
 ## The field names are per type, and that is the trap
 
-Five types carry the long body of something, and no two call it the same thing.
+Four types carry the long body of something, and no two call it the same thing.
 
 | Type         | Long field | Kind      |
 | ------------ | ---------- | --------- |
 | Post         | `content`  | Rich text |
 | Page         | `body`     | Rich text |
-| Sidenote     | `note`     | Rich text |
 | Code Block   | `code`     | Text      |
 | Prompt Block | `prompt`   | Text      |
 
@@ -98,17 +97,15 @@ over rather than attempt.
 
 ## Embedded entries
 
-A post body can embed Sidenote, Code Block and Prompt Block entries, as block
-or inline nodes. Each is its own entry, created first and then linked from the
-rich text.
+A post body can embed Code Block, Prompt Block and Callout entries, as block
+nodes. Each is its own entry, created first and then linked from the rich text.
+Nothing renders an inline embed; an aside goes in parentheses in the prose.
 
 - **A Code Block's `language` must be one the highlighter loads.** The dropdown
   and the highlighter's list are two separate things, and a language the
   dropdown offers but the code cannot load renders as an unhighlighted block
   with no error anywhere. Check the current list in `lib/highlight.ts` rather
   than trusting the dropdown.
-- **A Sidenote is an inline embed.** A deleted or unpublished Sidenote degrades
-  to nothing rather than erroring, so a missing note is silent.
 - **An unpublished linked entry comes back as `null`** in a link array, which
   is why the code reads authors through a helper that filters nulls. The same
   applies to any embed: publish the pieces before, or with, the post.

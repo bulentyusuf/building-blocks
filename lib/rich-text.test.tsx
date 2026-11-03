@@ -4,6 +4,7 @@ import { BLOCKS, INLINES } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
 import { extractHeadings } from "./headings";
 import { RichText, numericColumns, shortColumns } from "./rich-text";
+import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
 import type { Content } from "./types";
 
 // Minimal rich-text node builders.
@@ -391,274 +392,44 @@ describe("hyperlink classification", () => {
   });
 });
 
-describe("inline sidenote embed", () => {
-  // An inline embedded-entry reference node, as it appears inside a paragraph.
-  const inlineRef = (id: string) => ({
-    nodeType: INLINES.EMBEDDED_ENTRY,
-    data: { target: { sys: { id, type: "Link", linkType: "Entry" } } },
-    content: [],
-  });
-
-  const noteContent = (value: string): Content => ({
-    json: {
-      nodeType: BLOCKS.DOCUMENT,
-      data: {},
-      content: [paragraph(value)],
-    } as unknown as Document,
-    links: { assets: { block: [] } },
-  });
-
-  // A note body whose paragraph contains a hyperlink, for the link-handling
-  // cases below.
-  const noteWithLink = (uri: string, label = "link"): Content => ({
-    json: {
-      nodeType: BLOCKS.DOCUMENT,
-      data: {},
-      content: [
-        {
-          nodeType: BLOCKS.PARAGRAPH,
-          data: {},
-          content: [text("see "), link(uri, label)],
-        },
-      ],
-    } as unknown as Document,
-    links: { assets: { block: [] } },
-  });
-
-  const renderNote = (note: Content) =>
-    render("sn1", [{ __typename: "Sidenote", sys: { id: "sn1" }, note }]);
-
-  const render = (id: string, inline: unknown[]) => {
-    const json = {
-      nodeType: BLOCKS.DOCUMENT,
-      data: {},
-      content: [
-        {
-          nodeType: BLOCKS.PARAGRAPH,
-          data: {},
-          content: [text("See "), inlineRef(id)],
-        },
-      ],
-    } as unknown as Document;
-    const content: Content = {
-      json,
-      links: {
-        assets: { block: [] },
-        entries: { block: [], inline: inline as never },
-      },
-    };
-    return renderToStaticMarkup(<RichText content={content} headings={[]} />);
-  };
-
-  it("renders the numbered reference marker and the note body", () => {
-    const html = render("sn1", [
+describe("inline embedded entries", () => {
+  // Nothing renders inline since sidenotes were retired. [→ `sidenotes`]
+  const doc = {
+    nodeType: BLOCKS.DOCUMENT,
+    data: {},
+    content: [
       {
-        __typename: "Sidenote",
-        sys: { id: "sn1" },
-        note: noteContent("An aside worth reading."),
-      },
-    ]);
-
-    // A superscript marker carrying the document-order number, and the note text.
-    expect(html).toMatch(/<sup[^>]*>1<\/sup>/);
-    expect(html).toContain("An aside worth reading.");
-    expect(html).toContain("sidenote-body");
-  });
-
-  it("tags an English note standing in on a German page", () => {
-    const html = render("sn1", [
-      {
-        __typename: "Sidenote",
-        sys: { id: "sn1" },
-        note: noteContent("An English aside."),
-        lang: "en-GB",
-      },
-    ]);
-    expect(html).toMatch(/<span[^>]*lang="en-GB"[^>]*class="sidenote-body/);
-  });
-
-  it("leaves a note untagged when it has no lang", () => {
-    // Known-bad control for the test above.
-    const html = render("sn1", [
-      { __typename: "Sidenote", sys: { id: "sn1" }, note: noteContent("x") },
-    ]);
-    expect(html).not.toMatch(/<span[^>]*lang="[^"]*"[^>]*class="sidenote-body/);
-  });
-
-  it("numbers multiple notes in document order", () => {
-    const json = {
-      nodeType: BLOCKS.DOCUMENT,
-      data: {},
-      content: [
-        {
-          nodeType: BLOCKS.PARAGRAPH,
-          data: {},
-          content: [text("A "), inlineRef("sn1")],
-        },
-        {
-          nodeType: BLOCKS.PARAGRAPH,
-          data: {},
-          content: [text("B "), inlineRef("sn2")],
-        },
-      ],
-    } as unknown as Document;
-    const content: Content = {
-      json,
-      links: {
-        assets: { block: [] },
-        entries: {
-          block: [],
-          inline: [
-            {
-              __typename: "Sidenote",
-              sys: { id: "sn1" },
-              note: noteContent("first"),
+        nodeType: BLOCKS.PARAGRAPH,
+        data: {},
+        content: [
+          text("before"),
+          {
+            nodeType: INLINES.EMBEDDED_ENTRY,
+            data: {
+              target: { sys: { id: "x1", type: "Link", linkType: "Entry" } },
             },
-            {
-              __typename: "Sidenote",
-              sys: { id: "sn2" },
-              note: noteContent("second"),
-            },
-          ] as never,
-        },
+            content: [],
+          },
+          text("after"),
+        ],
       },
-    };
+    ],
+  } as unknown as Document;
+
+  it("render nothing where a leftover embed sits", () => {
     const html = renderToStaticMarkup(
-      <RichText content={content} headings={[]} />,
+      <RichText
+        content={{ json: doc, links: { assets: { block: [] } } }}
+        headings={[]}
+      />,
     );
-
-    // The second note's label text carries 2, proving the index advances.
-    expect(html).toContain("Note 1");
-    expect(html).toContain("Note 2");
-    // Ids are derived from that index, so they must not collide either.
-    expect(html).toContain('id="sidenote-1"');
-    expect(html).toContain('id="sidenote-2"');
+    expect(html).toContain("beforeafter");
+    expect(html).not.toContain("embedded-entry-inline");
   });
 
-  it("emits no element that would close the surrounding paragraph", () => {
-    // <details>/<summary> implicitly terminate an open <p> at parse time, which
-    // split the sentence in two and desynced React's tree from the DOM. The
-    // sidenote must stay phrasing content, so neither tag may ever reappear.
-    const html = render("sn1", [
-      {
-        __typename: "Sidenote",
-        sys: { id: "sn1" },
-        note: noteContent("An aside."),
-      },
-    ]);
-
-    expect(html).not.toContain("<details");
-    expect(html).not.toContain("<summary");
-
-    // The note's own rich-text paragraphs are the same hazard: a nested <p>
-    // closes the outer one just as <details> did, so they render as spans.
-    expect(html).toContain("sidenote-para");
-    expect(html.match(/<p[ >]/g)).toHaveLength(1);
-  });
-
-  it("emits exactly one marker element per role, one of them in the label", () => {
-    // Two <sup>s carry the number: the in-text reference and the toggle's own.
-    // Which of the pair is visible is a media query, so jsdom cannot say — the
-    // count is the assertion, and it catches a third marker creeping in.
-    const html = render("sn1", [
-      {
-        __typename: "Sidenote",
-        sys: { id: "sn1" },
-        note: noteContent("An aside."),
-      },
-    ]);
-
-    expect(html.match(/<sup[^>]*>1<\/sup>/g)).toHaveLength(2);
-    expect(html).toMatch(/<label[^>]*>.*?<sup[^>]*>1<\/sup>/);
-  });
-
-  it("opens the note with no JavaScript", () => {
-    // The toggle is a checkbox driving :checked in CSS, not React state, so a
-    // note is readable with scripts off and before hydration. A <button> here
-    // means that regressed — the markup is the only thing holding it.
-    const html = render("sn1", [
-      {
-        __typename: "Sidenote",
-        sys: { id: "sn1" },
-        note: noteContent("An aside."),
-      },
-    ]);
-
-    expect(html).not.toContain("<button");
-    expect(html).toContain('type="checkbox"');
-
-    // The label must point at the checkbox, or clicking the marker does nothing.
-    const toggleId = html.match(/<input[^>]*id="([^"]+)"/)?.[1];
-    expect(toggleId).toBeTruthy();
-    expect(html).toContain(`for="${toggleId}"`);
-  });
-
-  it("wires the toggle to the note body and names it", () => {
-    const html = render("sn1", [
-      {
-        __typename: "Sidenote",
-        sys: { id: "sn1" },
-        note: noteContent("An aside."),
-      },
-    ]);
-
-    // aria-controls must name the note body's own id, not just any id.
-    const input = html.match(/<input[^>]*>/)?.[0] ?? "";
-    const controls = input.match(/aria-controls="([^"]+)"/)?.[1];
-    expect(controls).toBeTruthy();
-    expect(html).toMatch(
-      new RegExp(`<span[^>]*id="${controls}"[^>]*class="sidenote-body[^"]*"`),
-    );
-
-    // The <sup> is decorative, so the label's accessible name comes from the
-    // visually hidden text. Without it the control announces as bare "1".
-    // Its own lang: "Note" is English chrome inside a possibly German body.
-    expect(html).toMatch(
-      /<label[^>]*>\s*<span class="sr-only" lang="en-GB">Note 1<\/span>/,
-    );
-  });
-
-  // A note body renders through the same hyperlink renderer as the post body,
-  // so these mirror the "hyperlink classification" cases above. Without it the
-  // default renderer emitted data.uri as-is and a note was a way round the
-  // allowlisting the body enforces.
-  it("strips a javascript: URI inside a note body", () => {
-    const html = renderNote(noteWithLink("javascript:alert(1)", "click me"));
-
-    expect(html).not.toContain("<a");
-    expect(html).not.toContain("javascript:");
-    expect(html).toContain("click me");
-  });
-
-  it("strips a protocol-relative URI inside a note body", () => {
-    const html = renderNote(noteWithLink("//evil.example/x", "elsewhere"));
-
-    expect(html).not.toContain("<a");
-    expect(html).toContain("elsewhere");
-  });
-
-  it("gives an external link in a note the same new-window treatment", () => {
-    const html = renderNote(noteWithLink("https://example.com/x", "elsewhere"));
-
-    expect(html).toContain('href="https://example.com/x"');
-    expect(html).toContain('target="_blank"');
-    expect(html).toContain('rel="noopener noreferrer"');
-    expect(html).toContain("opens in a new window");
-  });
-
-  it("keeps an internal link in a note as a plain anchor", () => {
-    const html = renderNote(noteWithLink("/privacy", "privacy"));
-
-    expect(html).toContain('href="/privacy"');
-    expect(html).not.toContain("_blank");
-    expect(html).not.toContain("opens in a new window");
-  });
-
-  it("renders nothing (without throwing) for an unresolved entry id", () => {
-    // No matching inline entry: a draft or deleted reference must not crash.
-    expect(() => render("missing", [])).not.toThrow();
-    const html = render("missing", []);
-    expect(html).not.toContain("sidenote-body");
+  it("known-bad control: the library default prints a debug string", () => {
+    const html = renderToStaticMarkup(<>{documentToReactComponents(doc)}</>);
+    expect(html).toContain("embedded-entry-inline");
   });
 });
 

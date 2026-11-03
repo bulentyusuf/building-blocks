@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { SITE_TITLE } from "@/lib/constants";
 import type { Content } from "@/lib/types";
-import { BLOCKS, INLINES } from "@contentful/rich-text-types";
+import { BLOCKS } from "@contentful/rich-text-types";
 import type { Document } from "@contentful/rich-text-types";
 
 // Accessibility regression suite.
@@ -181,7 +181,7 @@ function duplicateLinksInMain(): string[] {
 }
 
 // A body exercising every embedded type: a figure with a caption, a code
-// block, a prompt block and an inline sidenote. Each has its own naming rules.
+// block and a prompt block. Each has its own naming rules.
 const text = (value: string) => ({
   nodeType: "text",
   value,
@@ -256,10 +256,7 @@ const bodyDoc = {
   data: {},
   content: [
     h2("First section"),
-    para(
-      text("Body copy carrying a note"),
-      embed(INLINES.EMBEDDED_ENTRY, "n1"),
-    ),
+    para(text("Body copy.")),
     embed(BLOCKS.EMBEDDED_ASSET, "img1"),
     embed(BLOCKS.EMBEDDED_ENTRY, "code1"),
     embed(BLOCKS.EMBEDDED_ENTRY, "prompt1"),
@@ -296,19 +293,6 @@ const bodyContent = {
           __typename: "PromptBlock",
           label: "A prompt",
           prompt: "Draw a cat",
-        },
-      ],
-      inline: [
-        {
-          sys: { id: "n1" },
-          __typename: "Sidenote",
-          note: {
-            json: {
-              nodeType: BLOCKS.DOCUMENT,
-              data: {},
-              content: [para(text("The note body."))],
-            },
-          },
         },
       ],
     },

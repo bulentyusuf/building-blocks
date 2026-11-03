@@ -29,10 +29,9 @@ lines in this file" is not an answer.
 
 Four tests, in the order they usually bite:
 
-- **Prefer the platform.** The sidenote toggle is a hidden checkbox and a
-  sibling selector with no client JS; the scroll offset is one
-  `scroll-padding-top` rather than per-heading margins plus a listener. Each
-  replaced something heavier.
+- **Prefer the platform.** The scroll offset is one `scroll-padding-top`
+  rather than per-heading margins plus a listener; the lightbox is a native
+  `<dialog>`. Each replaced something heavier.
 - **Count the duplication before abstracting it.** An abstraction needing a
   branch per caller is just the callers, spelled worse.
 - **A helper earns its place by removing a decision, not lines.** A wrapper
@@ -104,9 +103,8 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
   or `focus-visible:outline-*` to components. [→ `focus-indicator`]
 - **One scroll offset, `scroll-padding-top: 5rem` on `html`.** Never
   `scroll-mt-*`; they are additive and cannot coexist. [→ `scroll-offset`]
-- **Sidenote elements stay phrasing content**, ship zero client JS, and keep all
-  responsive display in the unlayered `.sidenote-*` rules rather than utilities
-  in the component. [→ `sidenotes`]
+- **There are no sidenotes.** An aside is a parenthesis in the prose; a
+  callout is the only boxed one. Inline embeds render nothing. [→ `sidenotes`]
 - **Tags are pills via `app/tag-pill.tsx`.** A tag as metadata is a pill; a tag
   as destination is a link. There is no third treatment.
   [→ `tag-pills`, `tag-pages`]

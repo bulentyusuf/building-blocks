@@ -15,7 +15,6 @@ import { highlightCodeBlocks } from "@/lib/highlight";
 import TableOfContents from "../../table-of-contents";
 import { AuthorBioSection } from "../../author-bio-card";
 import TagPill from "../../tag-pill";
-import SidenoteEnterKey from "../../sidenote-enter-key";
 import LanguageLink from "../../language-link";
 import { SITE_URL, SITE_AUTHOR, GERMAN_LOCALE } from "@/lib/constants";
 import { jsonLdHtml, postAuthorsNode } from "@/lib/json-ld";
@@ -134,7 +133,6 @@ export default async function PostView({
           />
         </div>
       </header>
-      <SidenoteEnterKey />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}

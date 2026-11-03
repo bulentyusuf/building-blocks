@@ -339,45 +339,6 @@
     },
     {
       "sys": {
-        "id": "sidenote-example",
-        "type": "Entry",
-        "contentType": {
-          "sys": {
-            "type": "Link",
-            "linkType": "ContentType",
-            "id": "sidenote"
-          }
-        },
-        "publishedVersion": 1
-      },
-      "fields": {
-        "title": {
-          "en-US": "Example sidenote"
-        },
-        "note": {
-          "en-US": {
-            "nodeType": "document",
-            "data": {},
-            "content": [
-              {
-                "nodeType": "paragraph",
-                "data": {},
-                "content": [
-                  {
-                    "nodeType": "text",
-                    "value": "Notes float into the right margin on wide screens and collapse behind their number on narrow ones.",
-                    "marks": [],
-                    "data": {}
-                  }
-                ]
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "sys": {
         "id": "post-first",
         "type": "Entry",
         "contentType": {
@@ -464,26 +425,7 @@
                   },
                   {
                     "nodeType": "text",
-                    "value": ", and a sidenote",
-                    "marks": [],
-                    "data": {}
-                  },
-                  {
-                    "nodeType": "embedded-entry-inline",
-                    "data": {
-                      "target": {
-                        "sys": {
-                          "type": "Link",
-                          "linkType": "Entry",
-                          "id": "sidenote-example"
-                        }
-                      }
-                    },
-                    "content": []
-                  },
-                  {
-                    "nodeType": "text",
-                    "value": " anchored mid-sentence so the marker lands while the prose is still running. ",
+                    "value": ", and an aside (in parentheses, the way this site does them). ",
                     "marks": [],
                     "data": {}
                   },
@@ -951,31 +893,6 @@
                   {
                     "nodeType": "text",
                     "value": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa.",
-                    "marks": [],
-                    "data": {}
-                  },
-                  {
-                    "nodeType": "text",
-                    "value": " A note",
-                    "marks": [],
-                    "data": {}
-                  },
-                  {
-                    "nodeType": "embedded-entry-inline",
-                    "data": {
-                      "target": {
-                        "sys": {
-                          "type": "Link",
-                          "linkType": "Entry",
-                          "id": "sidenote-example"
-                        }
-                      }
-                    },
-                    "content": []
-                  },
-                  {
-                    "nodeType": "text",
-                    "value": " appears here too, so the sidenote is not a one-post feature.",
                     "marks": [],
                     "data": {}
                   }

@@ -314,21 +314,13 @@ describe("contentful seed feature coverage", () => {
     expect(postBodies.some((b) => countIn(b, "heading-2") === 0)).toBe(true);
   });
 
-  it("embeds a sidenote inline in a post body", () => {
-    // The inline embed and its target entry are what regeneration used to eat.
-    const targets = allBodyNodes
-      .filter((n) => n.nodeType === "embedded-entry-inline")
-      .map((n) => n.data?.target?.sys?.id);
-
-    expect(targets.length).toBeGreaterThan(0);
-    for (const id of targets) {
-      const target = seedEntries.find((e) => e.sys.id === id);
-      expect(
-        target,
-        `inline embed targets unseeded entry "${id}"`,
-      ).toBeTruthy();
-      expect(target!.sys.contentType.sys.id).toBe("sidenote");
-    }
+  it("embeds nothing inline in a post body", () => {
+    // Nothing renders an inline embed since sidenotes were retired, so one in
+    // the seed would be invisible on a fork. [→ `sidenotes`]
+    expect(allBodyNodes.length).toBeGreaterThan(0);
+    expect(
+      allBodyNodes.filter((n) => n.nodeType === "embedded-entry-inline"),
+    ).toEqual([]);
   });
 
   it("sets updatedDate on at least one post", () => {
