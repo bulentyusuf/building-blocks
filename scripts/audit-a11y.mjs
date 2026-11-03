@@ -234,7 +234,24 @@ async function groundContrast(page) {
     content:
       "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;text-decoration-color:transparent!important}",
   });
+  // A full-page screenshot draws fixed elements once, where they sit on the
+  // first screen, over whatever text is there. They float over the text rather
+  // than sitting behind it, so they are left out of the ground.
+  const floating = await page.evaluateHandle(() =>
+    [...document.querySelectorAll("*")].filter((el) => {
+      if (getComputedStyle(el).position !== "fixed") return false;
+      el.dataset.groundHidden = el.style.visibility;
+      el.style.visibility = "hidden";
+      return true;
+    }),
+  );
   const png = (await page.screenshot({ fullPage: true })).toString("base64");
+  await floating.evaluate((els) =>
+    els.forEach((el) => {
+      el.style.visibility = el.dataset.groundHidden;
+      delete el.dataset.groundHidden;
+    }),
+  );
   await hide.evaluate((el) => el.remove());
   return page.evaluate(WORST_GROUND, [png, boxes]);
 }
