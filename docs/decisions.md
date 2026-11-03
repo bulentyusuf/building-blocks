@@ -262,9 +262,9 @@ redirects to the archive, which already lists everything.
 - **Ink means pressable.** Cards keep the 3px ink edge; the cover inside takes
   `--color-edge-quiet`. Shadows are the strand colour, lifted in dark mode.
 - **The page is graph paper**, `--color-dots` every 22px on `body`.
-- **Dark mode is neutral charcoal**, not warm brown (November 2026): the 3px
-  edges take `--color-outline`, light grey so they read as drawing rather
-  than glowing bars; strand pills and dots keep the off-white ink edge.
+- **Dark mode is neutral charcoal**, not warm brown (November 2026), and so
+  are its ink and meta text: the 3px edges take `--color-outline`, light grey
+  so they read as drawing; strand pills and dots keep the off-white ink edge.
 - **The feature card is one height on every page from `xl`.** Its cover is a
   fixed 4:3 in five columns, the text beside it in seven, and the byline (one
   line), title (three) and excerpt (two) are clamped to fit, so headline
