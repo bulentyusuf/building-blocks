@@ -32,9 +32,9 @@ in the deployed sitemap, and `--route /posts/some-slug` narrows to one. Routes
 come from the sitemap rather than a list, so a route that ships without anyone
 adding it here is still audited.
 
-Each page is measured three times: 1280px wide, 375px wide, and 375px wide at a
-20px root font size. The last is the size the author reads at, and rem-based
-layout gives way there first.
+Each page is measured four times: 1280px wide, 375px wide, 375px wide at a 20px
+root font size, and 1280px wide in dark mode. The 20px pass is the size the
+author reads at, and rem-based layout gives way there first.
 
 `SITE_URL` points it at another origin. `CHROME_PATH` names a browser when the
 installed Google Chrome is not the one to use.
@@ -68,6 +68,11 @@ subtrees and re-measuring, not the widest thing on the page. Those differ more
 often than not: an element whose box runs past the viewport is frequently
 clipped by an ancestor and costs nothing, while the real cause is often text
 overflowing a box of ordinary width.
+
+A **GROUND** line means text sitting straight on the graph paper falls below AA
+against the dots as the browser draws them. axe cannot see through the dots'
+gradient, so the script hides the text, screenshots the page and takes the
+worst pixel under each text box. The ratio printed is against that pixel.
 
 An **axe line** gives the rule, the impact, how many elements failed and the
 first one. Where axe states a measured value, quote it.
