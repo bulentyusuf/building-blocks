@@ -33,12 +33,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { isEnabled } = await draftMode();
   const { slug } = await params;
-  // Filtered in memory; there is no getPostsByAuthor. [→ `authors-array`]
-  const [author, allPosts, germanSlugs] = await Promise.all([
-    getAuthorBySlug(slug, isEnabled),
-    getAllPosts(isEnabled),
-    getGermanPostSlugs(isEnabled),
-  ]);
+  const author = await getAuthorBySlug(slug, isEnabled);
 
   if (!author) {
     return { title: "Author not found" };
