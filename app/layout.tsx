@@ -126,8 +126,8 @@ const squareButton =
 const navLink =
   "font-ui text-base font-semibold text-brand-dark hover:text-brand-crimson transition-colors duration-200";
 
-// One row: logo, strand chips, search. On phones the chips wrap below and a
-// menu joins search. [→ `strands`]
+// One row: logo, strand chips, search. On phones the chips drop to their own
+// row, which scrolls sideways, and a menu joins search. [→ `strands`]
 async function Header({ isDraftMode }: { isDraftMode: boolean }) {
   const posts = await getAllPosts(isDraftMode);
   const postStrands = Object.fromEntries(

@@ -367,7 +367,7 @@ export function RichText({
           const labelId = `callout-${entry.sys.id}`;
           return (
             // Marks exactly the text the author boxed: 2px ink, cream, flat
-            // and straight. Text only inside. [→ `post-page`]
+            // and straight. Text, links and lists only. [→ `post-page`]
             <aside
               aria-labelledby={labelId}
               lang={entry.lang}

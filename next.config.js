@@ -97,7 +97,8 @@ const wasmCspHeaders = [
 ];
 
 // The other relaxation, and it follows the catch-all for the same last-wins
-// reason: /posts/* is the one document Contentful frames for live preview.
+// reason: /posts/* and /de/posts/* are the only documents Contentful frames
+// for live preview.
 // Everything else on the site is framable by this origin alone.
 const previewCspHeaders = [
   {
