@@ -13,9 +13,9 @@
 // route that ships without anyone adding it to this file is still audited.
 // One route per page shape by default, every route in the sitemap with --all.
 //
-// Each page is measured three times: a desktop width, a phone width, and a
-// phone width at a 20px root font size, which is the size the author reads at
-// and where rem-based layout overflows first.
+// Each page is measured four times: a desktop width, a phone width, a phone
+// width at a 20px root font size, which is the size the author reads at and
+// where rem-based layout overflows first, and the desktop width in dark mode.
 //
 // Usage:  npm run audit:a11y [-- --all] [-- --route /posts/some-post]
 // Env:    SITE_URL     origin to audit (default https://beuseful.net)
@@ -45,6 +45,13 @@ const PASSES = [
   { name: "desktop 1280, 16px", width: 1280, height: 900, root: 16 },
   { name: "phone 375, 16px", width: 375, height: 812, root: 16 },
   { name: "phone 375, 20px", width: 375, height: 812, root: 20 },
+  {
+    name: "desktop 1280, dark",
+    width: 1280,
+    height: 900,
+    root: 16,
+    dark: true,
+  },
 ];
 
 // playwright-core ships no browser and downloads nothing on install, which is
@@ -139,8 +146,93 @@ const BISECT = `(() => {
   return { ...describe(node), over: over() };
 })()`;
 
+// Text that sits straight on the graph paper, measured against the dots as the
+// browser draws them. axe cannot see through the gradient, so this does it from
+// pixels: hide all text, screenshot, and take the worst ground pixel under each
+// text box. Reports every box below AA, 4.5:1, or 3:1 for large text.
+const GROUND_TEXT = `(() => {
+  const opaque = (cs) =>
+    cs.backgroundImage !== "none" ||
+    !/rgba\\(.*,\\s*0\\)$|transparent/.test(cs.backgroundColor);
+  const out = [];
+  for (const el of document.body.querySelectorAll("*")) {
+    const own = [...el.childNodes].some(
+      (n) => n.nodeType === 3 && n.textContent.trim(),
+    );
+    if (!own) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility !== "visible" || +cs.opacity === 0) continue;
+    const b = el.getBoundingClientRect();
+    if (b.width < 2 || b.height < 2) continue;
+    let onGround = true;
+    for (let a = el; a && a !== document.body; a = a.parentElement)
+      if (opaque(getComputedStyle(a))) onGround = false;
+    if (!onGround) continue;
+    const size = parseFloat(cs.fontSize);
+    const bold = parseInt(cs.fontWeight, 10) >= 700;
+    out.push({
+      id: el.id,
+      tag: el.tagName.toLowerCase(),
+      text: el.textContent.trim().replace(/\\s+/g, " ").slice(0, 60),
+      color: cs.color,
+      need: size >= 24 || (size >= 18.66 && bold) ? 3 : 4.5,
+      x: b.left + scrollX,
+      y: b.top + scrollY,
+      w: b.width,
+      h: b.height,
+    });
+  }
+  return out;
+})()`;
+
+const WORST_GROUND = async ([png, boxes]) => {
+  const img = new Image();
+  img.src = "data:image/png;base64," + png;
+  await img.decode();
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+  const lum = (r, g, b) =>
+    [r, g, b]
+      .map((v) => v / 255)
+      .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+      .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  const bad = [];
+  for (const t of boxes) {
+    const [r, g, b] = t.color.match(/[\d.]+/g).map(Number);
+    const ink = lum(r, g, b);
+    const x0 = Math.max(0, Math.floor(t.x));
+    const y0 = Math.max(0, Math.floor(t.y));
+    const w = Math.min(c.width - x0, Math.ceil(t.w));
+    const h = Math.min(c.height - y0, Math.ceil(t.h));
+    if (w < 1 || h < 1) continue;
+    const d = ctx.getImageData(x0, y0, w, h).data;
+    let worst = Infinity;
+    for (let i = 0; i < d.length; i += 4)
+      worst = Math.min(worst, ratio(ink, lum(d[i], d[i + 1], d[i + 2])));
+    if (worst < t.need)
+      bad.push({ ...t, ratio: Math.round(worst * 100) / 100 });
+  }
+  return bad;
+};
+
+async function groundContrast(page) {
+  const boxes = await page.evaluate(GROUND_TEXT);
+  const hide = await page.addStyleTag({
+    content:
+      "*{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important}",
+  });
+  const png = (await page.screenshot({ fullPage: true })).toString("base64");
+  await hide.evaluate((el) => el.remove());
+  return page.evaluate(WORST_GROUND, [png, boxes]);
+}
+
 // axe reads no background through the dots' gradient, so contrast on the page
-// ground lands in "incomplete", which this never prints. Self test proves it.
+// ground lands in "incomplete", which this never prints. groundContrast covers
+// that ground before the dots go. Self test proves both.
 async function clearPageGround(page) {
   await page.addStyleTag({
     content: "body{background-image:none !important}",
@@ -149,12 +241,14 @@ async function clearPageGround(page) {
 
 async function measure(page, path, pass) {
   await page.setViewportSize({ width: pass.width, height: pass.height });
+  await page.emulateMedia({ colorScheme: pass.dark ? "dark" : "light" });
   await page.goto(BASE + path, { waitUntil: "load" });
   if (pass.root !== 16)
     await page.addStyleTag({ content: `html{font-size:${pass.root}px}` });
   await page.waitForTimeout(250);
 
   const reflow = await page.evaluate(BISECT);
+  const ground = await groundContrast(page);
   await clearPageGround(page);
   await page.addScriptTag({ content: AXE });
   const violations = await page.evaluate(async (tags) => {
@@ -175,7 +269,7 @@ async function measure(page, path, pass) {
     }));
   }, TAGS);
 
-  return { reflow, violations };
+  return { reflow, violations, ground };
 }
 
 // Proves axe runs and reports, using a defect planted on the real page. A clean
@@ -185,6 +279,23 @@ async function selfTest() {
   const browser = await launch();
   const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
   await page.goto(BASE + "/", { waitUntil: "load" });
+  // Muted text planted on the graph paper. It passes on the real dots, so it
+  // must pass here, and must fail once the dots are darkened to a known-bad
+  // value. Either way round proves the pixels are being read.
+  await page.evaluate(() => {
+    const p = document.createElement("p");
+    p.id = "ground-control";
+    p.textContent = "Muted text on the graph paper.";
+    p.style.color = "#6B5A52";
+    document.querySelector("main").prepend(p);
+  });
+  const real = await groundContrast(page);
+  const dark = await page.addStyleTag({
+    content: ":root{--color-dots:#8A7A72!important}",
+  });
+  const darkened = await groundContrast(page);
+  await dark.evaluate((el) => el.remove());
+  await page.evaluate(() => document.getElementById("ground-control").remove());
   await clearPageGround(page);
   await page.addScriptTag({ content: AXE });
   // Pale text straight on the page ground. If the dots come back, or
@@ -235,6 +346,18 @@ async function selfTest() {
     );
     process.exit(1);
   }
+  if (real.some((t) => t.id === "ground-control")) {
+    console.error(
+      "SELF TEST FAILED: muted text failed against the real dots, so the dots or the measurement have changed.",
+    );
+    process.exit(1);
+  }
+  if (!darkened.some((t) => t.id === "ground-control")) {
+    console.error(
+      "SELF TEST FAILED: darkened dots went unreported, so text on the graph paper is going unchecked.",
+    );
+    process.exit(1);
+  }
   if (found.ok.length) {
     console.error(
       `SELF TEST FAILED: axe flagged ordinary markup (${found.ok.join(", ")}).`,
@@ -242,7 +365,7 @@ async function selfTest() {
     process.exit(1);
   }
   console.log(
-    `Self test passed: planted defects reported (${[...found.bad, ...contrast].join(", ")}), clean markup silent.`,
+    `Self test passed: planted defects reported (${[...found.bad, ...contrast, "ground contrast"].join(", ")}), clean markup silent.`,
   );
 }
 
@@ -263,8 +386,8 @@ console.log(
 let findings = 0;
 for (const path of paths) {
   for (const pass of PASSES) {
-    const { reflow, violations } = await measure(page, path, pass);
-    if (!reflow && !violations.length) continue;
+    const { reflow, violations, ground } = await measure(page, path, pass);
+    if (!reflow && !violations.length && !ground.length) continue;
     findings++;
     console.log(`${path}  [${pass.name}]`);
     if (reflow) {
@@ -275,6 +398,12 @@ for (const path of paths) {
         `  REFLOW    page scrolls sideways by ${reflow.over}px${where}`,
       );
       if (reflow.text) console.log(`            "${reflow.text}"`);
+    }
+    for (const t of ground) {
+      console.log(
+        `  GROUND    ${t.ratio}:1 against the graph paper, needs ${t.need}:1, on ${t.tag}`,
+      );
+      console.log(`            "${t.text}"`);
     }
     for (const v of violations) {
       console.log(
