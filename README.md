@@ -8,7 +8,7 @@ The code in this repo is an extension of the [Next.js Blog with Draft Mode](http
 
 A small, statically generated blog. Posts are written and managed in a headless CMS, rendered by Next.js, and deployed continuously.
 
-The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, a Callout type for boxed asides, and a Sidenote type for asides set in the margin. There's also a Page type for standalone pages like the privacy notice.
+The content model is deliberately compact: a Post type backed by Author, Category and Tag, with a Code Block type for embedded snippets, a Prompt Block type for publishing the image prompt behind a cover, and a Callout type for boxed asides. There's also a Page type for standalone pages like the privacy notice.
 
 The site is written in British English. Some posts also have a German translation, published post by post rather than site-wide: a translated post gets a second page under `/de/posts/`, and everything else stays English.
 
@@ -33,7 +33,6 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - **Code Block**, embedded into post bodies for syntax-highlighted snippets. Optional filename and a fixed list of languages
 - **Prompt Block**, embedded into post bodies to publish the generative-image prompt behind a cover, with an optional label and image
 - **Callout**, embedded into post bodies to box a passage the author wants to stand out, with a short label. Its body takes text, links and lists only. Label and body can carry a German translation
-- **Sidenote**, embedded inline in post bodies for asides set in the margin. A title for finding the entry in the CMS, and a rich-text note deliberately limited to bold, italic, and links. The note can carry a German translation; the title is for editors and stays English
 - **Page**, standalone rich-text pages such as About and Privacy
 
 ## ✨ Features
@@ -61,7 +60,6 @@ A recurring subject of the blog is the process of building and maintaining it. M
 - Light and dark colour schemes, following the operating system preference
 - Per-post table of contents, reading time, and an image lightbox
 - Shared bylines, with overlapping author portraits and a bio for each author at the foot of the post
-- Sidenotes that float into the right margin on wide screens and collapse behind their reference number on narrow ones, opening without JavaScript
 - Skip link, a single visible focus indicator across the site, and reduced-motion support
 
 **German translations**

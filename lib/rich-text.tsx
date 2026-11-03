@@ -1,5 +1,4 @@
 import LightboxImage from "./lightbox-image";
-import Sidenote from "./sidenote";
 import { renderHyperlink } from "./rich-text-link";
 import { isPlaceholderTitle } from "./placeholder-title";
 import CopyButton from "./copy-button";
@@ -115,8 +114,7 @@ function RichTextAsset({
         />
       )}
       {asset.description && (
-        // Italic tells a caption from a sidenote body, which shares its size
-        // and colour. Sized in em to match .sidenote-body.
+        // Sized in em, so it tracks the prose base.
         <figcaption className="text-[0.875em] italic text-brand-muted mt-1.5 text-center">
           {asset.description}
         </figcaption>
@@ -149,8 +147,6 @@ export function RichText({
   let headingIndex = 0;
   // Pages prioritise their first image; on posts the cover is the LCP.
   let assetIndex = 0;
-  // Pairs with the CSS counter in globals.css. [→ `sidenotes`]
-  let sidenoteIndex = 1;
   // [→ `scroll-region-names`]
   let tableIndex = 0;
   // [→ `scroll-region-names`]
@@ -447,22 +443,9 @@ export function RichText({
 
         return null;
       },
-      [INLINES.EMBEDDED_ENTRY]: (node: Block | Inline) => {
-        const id = (node as Inline).data.target.sys.id;
-        const entry = content.links.entries?.inline
-          ?.filter(present)
-          .find((e) => e.sys.id === id);
-        // Same defensive shape as the block case. [→ `sidenotes`]
-        if (!entry || entry.__typename !== "Sidenote") return null;
-
-        return (
-          <Sidenote
-            content={entry.note}
-            number={sidenoteIndex++}
-            lang={entry.lang}
-          />
-        );
-      },
+      // Nothing renders inline. The library's default would print a debug
+      // string where a leftover embed sat. [→ `sidenotes`]
+      [INLINES.EMBEDDED_ENTRY]: () => null,
       [INLINES.HYPERLINK]: renderHyperlink,
     },
   });

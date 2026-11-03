@@ -50,19 +50,9 @@ export interface Callout {
   lang?: string;
 }
 
-export interface Sidenote {
-  __typename: "Sidenote";
-  sys: { id: string };
-  note: Content; // rich text — reuses the Content shape (json + links)
-  // Set only when an English note stands in on a German page. [→ `locale`]
-  lang?: string;
-}
-
 export interface EntryLink {
   // Block embeds sit between paragraphs.
   block: (CodeBlock | PromptBlock | Callout | null)[];
-  // Inline embeds (Sidenote). Only POST_GRAPHQL_FIELDS fetches them.
-  inline?: (Sidenote | null)[];
 }
 
 export interface Content {

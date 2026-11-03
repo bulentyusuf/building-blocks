@@ -38,7 +38,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `border-roles` — Border roles are not interchangeable
 - `focus-indicator` — One focus indicator, set in `@layer base`
 - `scroll-offset` — One scroll offset, `scroll-padding-top` on `html`
-- `sidenotes` — Sidenotes carry several load-bearing constraints
+- `sidenotes` — Sidenotes were retired, and asides are parentheses
 - `tag-pages` — Tags have their own pages, and `/tags` is the index
 - `type-roles` — Three faces, four roles, and no family named directly
 - `font-subsets` — Font preloading is `subsets: ["latin"]` only
@@ -157,8 +157,8 @@ Pagefind reads raw text and honours neither `aria-hidden` nor `opacity-0`, so
 anything inside a body region that is not the post's own words needs
 `data-pagefind-ignore` stated explicitly: the sidebar with the table of
 contents, heading permalinks and section stamps, the foot-of-post author bio
-(identical on every post by that author), the sidenote marker, toggle and
-"Note N" bounds, the copy button, the language link and the new-window hint.
+(identical on every post by that author), the copy button, the language link
+and the new-window hint.
 Grep for the attribute rather than trusting this list.
 
 A heading's sub-result title is read separately from the DOM text and ignores
@@ -398,8 +398,7 @@ Defined in `app/globals.css`.
 
 <!-- key: focus-indicator -->
 
-One `:focus-visible` rule in `app/globals.css`, repeated once for the sidenote
-label because the checkbox that takes focus is hidden. Components add no
+One `:focus-visible` rule in `app/globals.css`. Components add no
 `focus-visible:ring-*` or `focus-visible:outline-*`. Two exceptions, each
 argued in its file: the code-block scroll regions in `lib/rich-text.tsx`, which
 draw inward because their parent clips; and the fixed controls,
@@ -504,36 +503,18 @@ own `tabindex` on the `<pre>` is switched off in `lib/highlight.ts`.
 - **A trail link is a 44px tap target**, padded with a matching negative
   margin so the trail keeps its height; at its text height it was 23px.
 
-### Sidenotes carry several load-bearing constraints
+### Sidenotes were retired, and asides are parentheses
 
 <!-- key: sidenotes -->
 
-A `Sidenote` entry embedded inline, rendered by `lib/sidenote.tsx`. A missing
-entry renders nothing; do not make it an error.
-
-- **Every element stays phrasing content.** A `<details>`, `<summary>` or `<p>`
-  closes the open paragraph at parse time, which CSS cannot undo, so the toggle
-  is a hidden checkbox and paragraphs are spans.
-- **The toggle needs no JavaScript.** The checkbox is visually hidden, never
-  `display: none`, so it stays focusable; `app/sidenote-enter-key.tsx` is an
-  enhancement, never a dependency.
-- **Responsive display lives in the unlayered `.sidenote-*` rules**, never in
-  utilities, which lose to unlayered styles.
-- **Notes float from 105rem only**, 1.5rem outside the reading panel. Below
-  that there is no room beside the panel (a 1536px window has 13rem, the note
-  needs 15), so the note opens inline from its toggle.
-- **Numbering has two halves**, a document-order index in `lib/rich-text.tsx`
-  and a CSS counter; both markers are `aria-hidden` and the label is named by
-  an `sr-only` "Note N". Never name a `sup` (it announces twice) or drop the
-  span (the control announces as a bare "1").
-- **A floated note is bounded in words.** From 105rem there is no toggle, so
-  `sr-only` "Note N:" and "End of note." spans sit either side of the body,
-  hidden below 105rem; without them the note read on mid-sentence. The
-  margin number takes empty alt text so it is not heard twice.
-
-`lib/rich-text.test.tsx` guards the phrasing rule, the absent `<button>` and the
-numbering; `lib/sidenote.layout.test.tsx` reads both layouts from Chromium's
-accessibility tree.
+Retired in November 2026. Five notes in four posts carried a component, a CSS
+block, an Enter-key helper and a Chromium layout test, and needed two fixes in
+two days (#686, #701). Every note was a one-line aside, so each became a
+parenthesis in its sentence, in Contentful, before the code went. Callouts do
+not replace them: a callout is a labelled box that interrupts, an aside should
+not. `INLINES.EMBEDDED_ENTRY` renders `null` in `lib/rich-text.tsx`, since the
+library default prints a debug string; `lib/rich-text.test.tsx` holds both.
+Reopen if asides start to outgrow a parenthesis.
 
 ### Tags have their own pages, and `/tags` is the index
 
@@ -774,7 +755,7 @@ three call sites are cheap to read. A fourth makes the guard worth writing.
 
 Dates, html `lang`, OG locale and feed say `en-GB`; American formats regress.
 `de-DE` is per-post opt-in, English chrome, no fallback. Title, excerpt, body,
-sidenote notes and a body embed's alt and caption are read in German, never a
+callouts and a body embed's alt and caption are read in German, never a
 file (the locale cascades, and files have none). Alt and caption go German as a
 pair or stay English, so a figure never mixes languages. The rest is the
 English post's; English in German is `en-GB`.

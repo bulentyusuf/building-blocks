@@ -64,16 +64,6 @@ const linkTo = (uri, label) => ({
   content: [text(label)],
 });
 
-// An inline embedded entry, the Sidenote reference point. Unlike embed(), which
-// is a BLOCK, this sits inside a paragraph's content array. Its absence from
-// this file while present in seed.json was the drift this generator now closes:
-// regenerating used to silently delete the seeded sidenote.
-const inlineEmbed = (id) => ({
-  nodeType: "embedded-entry-inline",
-  data: { target: link(id) },
-  content: [],
-});
-
 const heading3 = (value) => ({
   nodeType: "heading-3",
   data: {},
@@ -212,22 +202,6 @@ const entries = [
       ),
     ),
   }),
-  // One sidenote entry, referenced from two posts. This entry existed in
-  // seed.json but not here, so every regeneration deleted it along with the
-  // inline embed in post-first; the drift guard in
-  // lib/contentful-fixtures.test.ts now fails if the two part company again.
-  entry("sidenote-example", "sidenote", {
-    title: loc("Example sidenote"),
-    note: loc(
-      doc(
-        paragraph(
-          text(
-            "Notes float into the right margin on wide screens and collapse behind their number on narrow ones.",
-          ),
-        ),
-      ),
-    ),
-  }),
   entry("post-first", "post", {
     title: loc("The first placeholder post"),
     slug: loc("first-placeholder-post"),
@@ -243,7 +217,7 @@ const entries = [
     excerpt: loc("A short placeholder excerpt for the first seeded post."),
     // The showcase body. Five H2s clear the `< 3` gate in
     // app/table-of-contents.tsx with room to spare, and every branch of the
-    // renderer appears once: a mark, an external link, an inline sidenote, a
+    // renderer appears once: a mark, an external link, a
     // pull quote, an asset, a list, an H3, a rule and both embedded blocks.
     content: loc(
       doc(
@@ -257,10 +231,8 @@ const entries = [
             CONTENTFUL_RICH_TEXT_DOCS,
             "Contentful rich text documentation",
           ),
-          text(", and a sidenote"),
-          inlineEmbed("sidenote-example"),
           text(
-            " anchored mid-sentence so the marker lands while the prose is still running. ",
+            ", and an aside (in parentheses, the way this site does them). ",
           ),
           text(LOREM),
         ),
@@ -333,12 +305,7 @@ const entries = [
     // not enough to need the scroll spy.
     content: loc(
       doc(
-        paragraph(
-          text(LOREM2),
-          text(" A note"),
-          inlineEmbed("sidenote-example"),
-          text(" appears here too, so the sidenote is not a one-post feature."),
-        ),
+        paragraph(text(LOREM2)),
         embedAsset("placeholder-image"),
         heading2("A prompt block follows"),
         paragraph(text(LOREM)),

@@ -86,18 +86,6 @@ describe("getGermanPostAndMorePosts", () => {
                       body: { json: "en-c2" },
                     },
                   ],
-                  inline: [
-                    {
-                      __typename: "Sidenote",
-                      sys: { id: "n1" },
-                      note: { json: "en-1", links: {} },
-                    },
-                    {
-                      __typename: "Sidenote",
-                      sys: { id: "n2" },
-                      note: { json: "en-2", links: {} },
-                    },
-                  ],
                 },
               },
             },
@@ -251,39 +239,6 @@ describe("getGermanPostAndMorePosts", () => {
 
     const { post } = await getGermanPostAndMorePosts("c-post", false);
     expect(post).toBeUndefined();
-  });
-
-  it("uses a German sidenote where one exists and tags the rest English", async () => {
-    vi.stubGlobal(
-      "fetch",
-      respond({
-        title: "Titel",
-        excerpt: "Auszug",
-        content: {
-          json: { nodeType: "document", content: [] },
-          links: {
-            entries: {
-              inline: [
-                {
-                  __typename: "Sidenote",
-                  sys: { id: "n1" },
-                  note: { json: "de-1" },
-                },
-                { __typename: "Sidenote", sys: { id: "n2" }, note: null },
-              ],
-            },
-          },
-        },
-      }),
-    );
-
-    const { post } = await getGermanPostAndMorePosts("d-post", false);
-    const [n1, n2] = post!.content.links.entries!.inline!.map((n) => n!);
-    expect(n1.note.json).toBe("de-1");
-    expect(n1.lang).toBeUndefined();
-    // Known-bad control: the untranslated note keeps its English text.
-    expect(n2.note.json).toBe("en-2");
-    expect(n2.lang).toBe("en-GB");
   });
 
   it("uses a German callout where one exists and tags the rest English", async () => {

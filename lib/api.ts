@@ -86,24 +86,6 @@ const POST_GRAPHQL_FIELDS = `
             }
           }
         }
-        inline {
-          sys {
-            id
-          }
-          __typename
-          ... on Sidenote {
-            note {
-              json
-              links {
-                assets {
-                  block {
-                    ${ASSET_BLOCK_FIELDS}
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   }
@@ -512,11 +494,6 @@ export const getGermanPostAndMorePosts = cache(
                       label?: string | null;
                       body?: { json: Post["content"]["json"] } | null;
                     } | null)[];
-                    inline?: ({
-                      __typename?: string;
-                      sys: { id: string };
-                      note?: { json: Post["content"]["json"] } | null;
-                    } | null)[];
                   };
                 };
               } | null;
@@ -531,7 +508,7 @@ export const getGermanPostAndMorePosts = cache(
             excerpt
             content {
               json
-              # Text only: sidenotes, and an embed's alt and caption. Never a
+              # Text only: callouts, and an embed's alt and caption. Never a
               # file or image field, which has no German and comes back null.
               links {
                 assets {
@@ -552,17 +529,6 @@ export const getGermanPostAndMorePosts = cache(
                     ... on Callout {
                       label
                       body {
-                        json
-                      }
-                    }
-                  }
-                  inline {
-                    sys {
-                      id
-                    }
-                    __typename
-                    ... on Sidenote {
-                      note {
                         json
                       }
                     }
@@ -590,19 +556,8 @@ export const getGermanPostAndMorePosts = cache(
     }
 
     // German body, English links: an embed the English body lacks renders as
-    // nothing, which the renderer already handles. A sidenote takes its German
-    // note where one exists, else stays English and says so.
-    const germanNotes = new Map(
-      (german.content.links?.entries?.inline ?? [])
-        .filter(present)
-        .flatMap((e) =>
-          e.__typename === "Sidenote" && e.note?.json
-            ? [[e.sys.id, e.note.json] as const]
-            : [],
-        ),
-    );
-    // A callout turns German whole, label and body, or stays English and says
-    // so, like a sidenote.
+    // nothing, which the renderer already handles. A callout turns German
+    // whole, label and body, or stays English and says so.
     const germanCallouts = new Map(
       (german.content.links?.entries?.block ?? [])
         .filter(present)
@@ -619,12 +574,6 @@ export const getGermanPostAndMorePosts = cache(
       return de
         ? { ...entry, label: de.label, body: { json: de.json } }
         : { ...entry, lang: DEFAULT_LOCALE };
-    });
-    const inline = links.entries?.inline?.filter(present).map((note) => {
-      const json = germanNotes.get(note.sys.id);
-      return json
-        ? { ...note, note: { ...note.note, json } }
-        : { ...note, lang: DEFAULT_LOCALE };
     });
     // An embed's alt and caption turn German together or not at all, so one
     // figure never mixes languages: German once the title is, and the caption
@@ -654,7 +603,7 @@ export const getGermanPostAndMorePosts = cache(
           ...links,
           assets: { ...links.assets, block },
           ...(links.entries && {
-            entries: { ...links.entries, block: entryBlock ?? [], inline },
+            entries: { ...links.entries, block: entryBlock ?? [] },
           }),
         },
       },
