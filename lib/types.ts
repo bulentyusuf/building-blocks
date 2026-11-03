@@ -45,7 +45,7 @@ export interface Callout {
   __typename: "Callout";
   sys: { id: string };
   label: string;
-  body: { json: Document }; // text only: no embeds inside a callout
+  body: { json: Document }; // text, links and lists; no embeds inside a callout
   // Set only when an English callout stands in on a German page. [→ `locale`]
   lang?: string;
 }

@@ -1,5 +1,5 @@
-// The active entry is the last heading whose top has passed the line under the
-// sticky header. Do not let a heading entering the lower viewport win: that
+// The active entry is the last heading whose top has passed the activation
+// line, html's scroll-padding-top from the viewport top. Do not let a heading entering the lower viewport win: that
 // once jumped the highlight a screenful early.
 
 /** Fallback for a computed `auto`. globals.css is the source of truth. */
