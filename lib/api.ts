@@ -81,6 +81,7 @@ const POST_GRAPHQL_FIELDS = `
           }
           ... on Callout {
             label
+            hideFromSearch
             body {
               json
             }

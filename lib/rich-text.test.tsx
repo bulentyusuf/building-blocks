@@ -1037,6 +1037,60 @@ describe("numbered sections and callouts", () => {
     expect(html).toMatch(/id="callout-c1"[^>]*>.*A word on boot media<\/span>/);
     // widont() glues the last two words.
     expect(html).toMatch(/Inside the\sbox\./u);
+    // An ordinary callout is the post's own words, so search keeps it.
+    expect(html).not.toContain("data-pagefind-ignore");
+  });
+
+  it("keeps a callout marked Hide from search out of the index", () => {
+    // The editor's note and the spoiler warning are the same box on many
+    // posts, so they would open search excerpts. [→ `pagefind-index-scope`]
+    const body = {
+      nodeType: BLOCKS.DOCUMENT,
+      data: {},
+      content: [
+        {
+          nodeType: BLOCKS.EMBEDDED_ENTRY,
+          data: {
+            target: { sys: { id: "c2", type: "Link", linkType: "Entry" } },
+          },
+          content: [],
+        },
+      ],
+    } as unknown as Document;
+    const html = renderToStaticMarkup(
+      <RichText
+        content={
+          {
+            json: body,
+            links: {
+              assets: { block: [] },
+              entries: {
+                block: [
+                  {
+                    sys: { id: "c2" },
+                    __typename: "Callout",
+                    label: "editor's note",
+                    hideFromSearch: true,
+                    body: {
+                      json: {
+                        nodeType: BLOCKS.DOCUMENT,
+                        data: {},
+                        content: [
+                          paragraph("This post predates the redesign."),
+                        ],
+                      },
+                    },
+                  },
+                ],
+                inline: [],
+              },
+            },
+          } as unknown as Content
+        }
+        headings={[]}
+      />,
+    );
+    expect(html).toMatch(/<aside [^>]*data-pagefind-ignore=""/);
   });
 });
 

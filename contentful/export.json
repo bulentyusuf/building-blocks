@@ -714,6 +714,19 @@
           ],
           "disabled": false,
           "omitted": false
+        },
+        {
+          "id": "hideFromSearch",
+          "name": "Hide from search",
+          "type": "Boolean",
+          "localized": false,
+          "required": false,
+          "validations": [],
+          "defaultValue": {
+            "en-US": false
+          },
+          "disabled": false,
+          "omitted": false
         }
       ]
     }
@@ -1050,6 +1063,11 @@
         {
           "fieldId": "body",
           "widgetId": "richTextEditor",
+          "widgetNamespace": "builtin"
+        },
+        {
+          "fieldId": "hideFromSearch",
+          "widgetId": "boolean",
           "widgetNamespace": "builtin"
         }
       ]
