@@ -70,10 +70,9 @@
      a light fallback. */
   --color-cover-keyline: rgb(250 245 241 / 0.75);
 
-  /* Always-dark surface, in BOTH schemes. brand-dark is body ink and must
-     invert in dark mode (below), so anything that must STAY dark — the dark
-     ink used on the lifted-crimson prompt header — points here instead so it
-     never flips to light. Deliberately excluded from the dark override. */
+  /* Always-dark surface, in BOTH schemes. brand-dark is body ink and inverts
+     in dark mode, so anything that must stay dark points here instead. The
+     dark override swaps it for a neutral, never a light one. */
   --color-surface-dark: #241b1d;
   /* The label inside the prompt block, on surface-dark. [→ `post-page`] */
   --color-prompt-label: #f2c14e;
@@ -129,6 +128,8 @@
 
     /* A step up from the page, and shadows lifted so they read on it. */
     --color-card: #242327;
+    /* Shiki's min-dark ground, so a code block's bar and body match. */
+    --color-surface-dark: #1f1f1f;
     --color-edge-quiet: #403f44;
     --color-dots: #2a292d;
     --color-strand-blogging-shadow: #e0566f;
