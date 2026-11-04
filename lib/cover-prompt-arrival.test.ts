@@ -23,6 +23,16 @@ describe("the cover prompt's arrival cue", () => {
     expect(frames).not.toMatch(/background/);
   });
 
+  it("animates no background in dark mode either", () => {
+    const dark = /#cover-prompt:target \{\s*animation-name: ([\w-]+)/.exec(
+      css,
+    )?.[1];
+    expect(dark).toBeTruthy();
+    const frames = keyframes(dark!);
+    expect(frames).toContain("box-shadow");
+    expect(frames).not.toMatch(/background/);
+  });
+
   it("would catch the heading flash, which does", () => {
     // Known-bad control. [→ `known-bad-controls`]
     expect(keyframes("target-flash")).toMatch(/background/);
