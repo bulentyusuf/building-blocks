@@ -522,12 +522,30 @@ html:has(dialog:modal) {
   }
 }
 
+/* The crimson wash goes muddy on charcoal, so dark mode flashes the ink. */
+@media (prefers-reduced-motion: no-preference) and (prefers-color-scheme: dark) {
+  .prose h2:target {
+    animation-name: target-flash-dark;
+  }
+}
+
 @keyframes target-ring {
   from {
     box-shadow: 0 0 0 0.4rem
       color-mix(in srgb, var(--color-brand-crimson) 45%, transparent);
   }
   to {
+    box-shadow: 0 0 0 0.4rem transparent;
+  }
+}
+
+@keyframes target-flash-dark {
+  from {
+    background-color: rgb(237 237 238 / 0.14);
+    box-shadow: 0 0 0 0.4rem rgb(237 237 238 / 0.14);
+  }
+  to {
+    background-color: transparent;
     box-shadow: 0 0 0 0.4rem transparent;
   }
 }
