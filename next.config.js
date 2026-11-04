@@ -189,7 +189,7 @@ module.exports = {
       // Gadgets, so it lands on home, where both chips are.
       {
         source: "/categories/main-quest/:path*",
-        destination: "/categories/blogging/:path*",
+        destination: "/categories/blogging",
         permanent: true,
       },
       {
