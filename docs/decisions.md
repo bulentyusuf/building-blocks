@@ -162,8 +162,10 @@ Pagefind reads raw text and honours neither `aria-hidden` nor `opacity-0`, so
 anything inside a body region that is not the post's own words needs
 `data-pagefind-ignore` stated explicitly: the sidebar with the table of
 contents, heading permalinks and section stamps, the foot-of-post author bio
-(identical on every post by that author), the copy button, the language link
-and the new-window hint.
+(identical on every post by that author), the copy button, the language link,
+the new-window hint, and a callout with Hide from search set (the editor's
+note and the spoiler warning, the same box on many posts). Other callouts are
+the post's own words and stay indexed.
 Grep for the attribute rather than trusting this list.
 
 A heading's sub-result title is read separately from the DOM text and ignores

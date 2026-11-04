@@ -46,6 +46,9 @@ export interface Callout {
   sys: { id: string };
   label: string;
   body: { json: Document }; // text, links and lists; no embeds inside a callout
+  // Repeated boilerplate (editor's note, spoiler warning) kept out of the
+  // search index. Null on callouts saved before the field existed.
+  hideFromSearch?: boolean | null;
   // Set only when an English callout stands in on a German page. [→ `locale`]
   lang?: string;
 }
