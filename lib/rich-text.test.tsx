@@ -1039,3 +1039,32 @@ describe("numbered sections and callouts", () => {
     expect(html).toMatch(/Inside the\sbox\./u);
   });
 });
+
+describe("blank paragraphs", () => {
+  // Contentful's editor always keeps an empty paragraph after a trailing embed.
+  it("drops blank paragraphs and keeps ones holding only a link", () => {
+    const json = {
+      nodeType: BLOCKS.DOCUMENT,
+      data: {},
+      content: [
+        paragraph("Body copy."),
+        paragraph(""),
+        paragraph("  \n"),
+        {
+          nodeType: BLOCKS.PARAGRAPH,
+          data: {},
+          content: [text(""), link("https://example.com", "docs"), text("")],
+        },
+      ],
+    } as unknown as Document;
+    const html = renderToStaticMarkup(
+      <RichText
+        content={{ json, links: { assets: { block: [] } } } as Content}
+        headings={[]}
+      />,
+    );
+    expect(html.match(/<p>/g)).toHaveLength(2);
+    expect(html).not.toContain("<p></p>");
+    expect(html).toMatch(/<p><a [^>]*href="https:\/\/example\.com"/);
+  });
+});

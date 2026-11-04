@@ -221,6 +221,12 @@ export function RichText({
       },
       [BLOCKS.HEADING_1]: coalesceToH2,
       [BLOCKS.PARAGRAPH]: (node: Block | Inline, children: ReactNode) => {
+        // Contentful's editor keeps an empty paragraph after a trailing embed,
+        // which would cost the embed its last:mb-0. Drop blank ones.
+        const blank = node.content.every(
+          (c) => c.nodeType === "text" && !c.value.trim(),
+        );
+        if (blank) return null;
         const isPlainRun = plainRun(node);
         const text = isPlainRun
           ? (node.content[0] as { value?: string })?.value?.trim()
