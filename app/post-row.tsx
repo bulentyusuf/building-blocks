@@ -43,7 +43,7 @@ export default function PostRow({
       <span className="order-1 col-span-full sm:order-2 sm:col-span-1">
         <Link
           href={`/posts/${post.slug}`}
-          className="font-ui text-xl leading-snug font-bold pointer-coarse:relative pointer-coarse:py-2.5 transition-colors duration-200 hover:text-brand-crimson"
+          className="font-ui text-xl leading-snug font-bold pointer-coarse:relative pointer-coarse:py-3 transition-colors duration-200 hover:text-brand-crimson"
         >
           {widont(post.title)}
         </Link>
