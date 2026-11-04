@@ -22,7 +22,7 @@ export default function SiteWordmark({
 }) {
   const isHome = usePathname() === "/";
 
-  const shared = `inline-block -rotate-2 bg-brand-dark font-display font-[800] text-brand-bg ${SIZES[size]}`;
+  const shared = `tap-area inline-block -rotate-2 bg-brand-dark font-display font-[800] text-brand-bg ${SIZES[size]}`;
 
   if (isHome) {
     return (

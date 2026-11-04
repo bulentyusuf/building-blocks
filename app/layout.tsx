@@ -243,7 +243,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                   the one footer link that leaves the site, so marked. */}
               <a
                 href={SITE_REPO_URL}
-                className={`${footerLink} mt-2 inline-flex min-h-11 items-center md:min-h-8`}
+                className={`${footerLink} mt-2 tap-area inline-flex min-h-11 items-center md:pointer-fine:min-h-8`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -264,7 +264,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                   <li key={href}>
                     <Link
                       href={href}
-                      className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
+                      className={`${footerLink} tap-area inline-flex min-h-11 items-center md:pointer-fine:min-h-8`}
                     >
                       {label}
                     </Link>
@@ -279,7 +279,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                 <li>
                   <Link
                     href="/about"
-                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
+                    className={`${footerLink} tap-area inline-flex min-h-11 items-center md:pointer-fine:min-h-8`}
                   >
                     About
                   </Link>
@@ -287,7 +287,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                 <li>
                   <Link
                     href="/privacy"
-                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
+                    className={`${footerLink} tap-area inline-flex min-h-11 items-center md:pointer-fine:min-h-8`}
                   >
                     Privacy
                   </Link>
@@ -295,7 +295,7 @@ async function Footer({ isDraftMode }: { isDraftMode: boolean }) {
                 <li>
                   <a
                     href="/feed.xml"
-                    className={`${footerLink} inline-flex min-h-11 items-center md:min-h-8`}
+                    className={`${footerLink} tap-area inline-flex min-h-11 items-center md:pointer-fine:min-h-8`}
                   >
                     RSS feed
                   </a>

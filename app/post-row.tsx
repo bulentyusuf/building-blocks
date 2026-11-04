@@ -43,18 +43,18 @@ export default function PostRow({
       <span className="order-1 col-span-full sm:order-2 sm:col-span-1">
         <Link
           href={`/posts/${post.slug}`}
-          className="font-ui text-xl leading-snug font-bold transition-colors duration-200 hover:text-brand-crimson"
+          className="font-ui text-xl leading-snug font-bold pointer-coarse:relative pointer-coarse:py-3 transition-colors duration-200 hover:text-brand-crimson"
         >
           {widont(post.title)}
         </Link>
         {/* Where a browsing reader learns a German version exists, on every
-            row. Visible "DE" stays in the name. 24px target. [→ `locale`] */}
+            row. Visible "DE" stays in the name. [→ `locale`, `tap-targets`] */}
         {german && (
           <Link
             href={`/de/posts/${post.slug}`}
             hrefLang={GERMAN_LOCALE}
             lang={GERMAN_LOCALE}
-            className="-my-1 ml-1 inline-block px-1.5 py-1 whitespace-nowrap font-ui text-xs font-bold tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
+            className="tap-area -my-1 ml-1 inline-block px-1.5 py-1 whitespace-nowrap pointer-coarse:ml-2.5 font-ui text-xs font-bold tracking-[0.06em] text-brand-muted transition-colors duration-200 hover:text-brand-crimson"
           >
             <span className="sr-only">Auf Deutsch lesen, </span>
             DE
@@ -73,7 +73,7 @@ export default function PostRow({
       {strand && (
         <Link
           href={`/categories/${strand.slug}`}
-          className="order-3 hidden justify-self-end sm:block"
+          className="tap-area order-3 hidden justify-self-end sm:block"
         >
           {/* Keeps the title from running into the strand. */}
           <span className="sr-only">in </span>

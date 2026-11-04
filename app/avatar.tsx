@@ -40,7 +40,7 @@ function AuthorLink({ author }: { author: AvatarAuthor }) {
   return author.slug ? (
     <Link
       href={`/authors/${author.slug}`}
-      className="transition-colors duration-200 hover:text-brand-crimson"
+      className="transition-colors duration-200 pointer-coarse:relative pointer-coarse:py-3.5 hover:text-brand-crimson"
     >
       {author.name}
     </Link>

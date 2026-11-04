@@ -188,8 +188,9 @@ export function RichText({
                 // the heading's own text.
                 aria-label="Permalink"
                 // The negative margin keeps the marker off a line of its own.
-                // Hidden below md: hover-only, and it overhangs a 16px gutter.
-                className="ml-2 -mr-[0.75em] inline-block max-md:hidden align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
+                // Hidden below md, where it overhangs a 16px gutter, and on
+                // touch: it only appears on hover. [→ `tap-targets`]
+                className="ml-2 -mr-[0.75em] inline-block max-md:hidden pointer-coarse:hidden align-middle text-brand-muted no-underline opacity-0 transition-opacity duration-200 group-hover/heading:opacity-100 focus-visible:opacity-100 hover:text-brand-crimson"
               >
                 {/* Generated content, never a text node. [→ `pagefind-index-scope`] */}
                 <span aria-hidden="true" className="after:content-['#']" />
@@ -336,7 +337,7 @@ export function RichText({
             // An ink block with a bar, flat. A grey edge in dark mode keeps it
             // off the page. [→ `post-page`]
             <div className="not-prose my-8 overflow-hidden rounded-[14px] bg-surface-dark dark:border-2 dark:border-brand-muted">
-              <div className="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-2 font-mono text-xs font-medium text-white/75">
+              <div className="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-2 pointer-coarse:py-2.5 font-mono text-xs font-medium text-white/75">
                 <span>
                   <span aria-hidden="true">{"// "}</span>
                   {tag}

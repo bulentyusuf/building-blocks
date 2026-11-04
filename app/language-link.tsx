@@ -19,7 +19,7 @@ export default function LanguageLink({
         href={href}
         hrefLang={lang}
         lang={lang}
-        className="inline-flex min-h-6 items-center gap-1.5 font-ui font-semibold text-brand-crimson decoration-2 underline-offset-[3px] hover:underline"
+        className="tap-area inline-flex min-h-6 items-center gap-1.5 font-ui font-semibold text-brand-crimson decoration-2 underline-offset-[3px] hover:underline"
       >
         {/* Lucide 'languages' icon, ISC licence. */}
         <svg

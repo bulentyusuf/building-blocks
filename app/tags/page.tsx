@@ -55,7 +55,7 @@ export default async function TagsPage() {
               <h2 className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 <Link
                   href={`/tags/${tag.slug}`}
-                  className="text-4xl leading-none font-[800] tracking-[-0.02em] transition-colors duration-200 hover:text-brand-crimson md:text-5xl lg:text-[3.25rem]"
+                  className="tap-area text-4xl leading-none font-[800] tracking-[-0.02em] transition-colors duration-200 hover:text-brand-crimson md:text-5xl lg:text-[3.25rem]"
                 >
                   #{tag.name}
                 </Link>

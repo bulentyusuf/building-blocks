@@ -246,6 +246,23 @@ html:has(dialog:modal) {
   color: var(--color-brand-bg);
 }
 
+/* A 44px tap area on touch screens, centred on the control, moving nothing.
+   With a mouse the control keeps its own size. [→ `tap-targets`] */
+@utility tap-area {
+  position: relative;
+  @media (pointer: coarse) {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 2.75rem);
+      height: max(100%, 2.75rem);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
 @utility prose {
   /* Plugin measures in `ch`, keyed to the current font's zero glyph, so it
      drifts with the body face — narrowed this column by 8% (656px to 602px at
