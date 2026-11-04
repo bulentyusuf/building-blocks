@@ -140,6 +140,11 @@ not propose either, which also settles the ranking quirks (a missing term is
 retried truncated, and a broad match can outrank a literal one): fixing them
 means owning the result pipeline. Wait for Pagefind/pagefind#1246.
 
+Back from a result restores the search from `sessionStorage`, through the
+instance's documented `triggerSearch` and `search` event (`lib/search-memory.ts`).
+Never `?q=`: the term would reach request logs, analytics and Referer headers,
+and the privacy notice promises it stays in the browser.
+
 Accepted: the empty state hides the emblem via `:placeholder-shown`, so the
 placeholder must stay non-empty, and a Pagefind bump that moves the input into
 a shadow root breaks it. The index is built by `postbuild`, so a post published

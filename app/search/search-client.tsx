@@ -3,6 +3,28 @@
 import { useEffect, useRef, useState } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import { preloadModule } from "react-dom";
+import {
+  cameBack,
+  rememberSearches,
+  restoreSearch,
+  tabStorage,
+  type PagefindInstance,
+} from "@/lib/search-memory";
+
+declare global {
+  interface Window {
+    PagefindComponents?: {
+      getInstanceManager: () => {
+        getInstance: (name: string) => PagefindInstance;
+      };
+    };
+  }
+}
+
+// The instance outlives a client-side remount, so subscribe it once, and
+// restore at most once per page load. [→ `pagefind-ui`]
+const subscribed = new WeakSet<PagefindInstance>();
+let restored = false;
 
 // Declares the Pagefind web components for TSX, under React 19's module.
 type CustomElement<E = unknown> = DetailedHTMLProps<
@@ -74,6 +96,23 @@ export default function SearchClient() {
     loader.type = "module";
     loader.src = PAGEFIND_MODULE;
     loader.onerror = () => setFailed(true);
+    loader.onload = () => {
+      const instance =
+        window.PagefindComponents?.getInstanceManager().getInstance("default");
+      if (!instance) return;
+      const storage = tabStorage(window);
+      if (!subscribed.has(instance)) {
+        subscribed.add(instance);
+        rememberSearches(instance, storage);
+      }
+      const [entry] = performance.getEntriesByType(
+        "navigation",
+      ) as PerformanceNavigationTiming[];
+      if (!restored && cameBack(entry, location.href)) {
+        restored = true;
+        restoreSearch(instance, storage);
+      }
+    };
     document.body.appendChild(loader);
 
     return () => {
