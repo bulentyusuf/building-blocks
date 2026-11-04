@@ -136,6 +136,9 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
   [→ `announced-links`]
 - **A scroll region's accessible name is its position** (`Table 2`, `Code
 block 2`), never a summary of its contents. [→ `scroll-region-names`]
+- **Standalone controls are 44px to tap on a touch screen**: `tap-area` on a
+  boxed control, `pointer-coarse:py-*` on an inline text link. A mouse keeps
+  24px; links inside a sentence are exempt. [→ `tap-targets`]
 - **The skip link's target (`<main id="main">`) carries `tabIndex={-1}`**,
   needed in browsers that don't move focus on a fragment jump. [→ `skip-link`]
 - **The lightbox's enlarge button renders only after `mounted`**, and the view

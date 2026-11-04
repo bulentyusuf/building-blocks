@@ -89,7 +89,7 @@ export default async function SearchPage() {
                 </p>
                 <ul
                   aria-labelledby="tag-entry-label"
-                  className="mt-4 mb-5 flex flex-wrap gap-2"
+                  className="mt-4 mb-5 flex flex-wrap gap-2 pointer-coarse:gap-y-3"
                 >
                   {tags.map((tag) => (
                     <li key={tag.slug}>

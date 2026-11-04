@@ -21,7 +21,7 @@ export default function TagPill({
   return (
     <Link
       href={`/tags/${tag.slug}`}
-      className={`inline-flex items-center rounded-lg border-2 border-outline bg-card font-ui font-semibold ${SIZES[size]} transition-colors duration-200 hover:text-brand-crimson`}
+      className={`tap-area inline-flex items-center rounded-lg border-2 border-outline bg-card font-ui font-semibold ${SIZES[size]} transition-colors duration-200 hover:text-brand-crimson`}
     >
       <span aria-hidden="true">#</span>
       {tag.name}
@@ -41,7 +41,10 @@ export function TagRow({
   if (tags.length === 0) return null;
 
   return (
-    <ul aria-label="Tags" className={`flex flex-wrap gap-2 ${className}`}>
+    <ul
+      aria-label="Tags"
+      className={`flex flex-wrap gap-2 pointer-coarse:gap-y-3 ${className}`}
+    >
       {tags.map((tag) => (
         <li key={tag.slug}>
           <TagPill tag={tag} size="compact" />

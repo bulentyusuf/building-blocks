@@ -55,6 +55,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `lightbox-dialog` — The enlarged image is a native `<dialog>`
 - `announced-links` — One announced link per card, and one description per figure
 - `scroll-region-names` — A scroll region's name carries its position, not its contents
+- `tap-targets` — Standalone controls are 44px to tap on a touch screen
 
 **Data and Contentful**
 
@@ -493,6 +494,17 @@ has one. A name derived from the header row would repeat cells announced again
 on entry. `app/a11y.test.tsx` renders two tables, the smallest fixture that can
 tell a working name from a broken one. The wrapper is the only tab stop: Shiki's
 own `tabindex` on the `<pre>` is switched off in `lib/highlight.ts`.
+
+### Standalone controls are 44px to tap on a touch screen
+
+<!-- key: tap-targets -->
+
+WCAG 2.5.8 (AA) sets a 24px floor; W3C advises 2.5.5's 44px for important
+controls, as do Apple and Material. So under `pointer: coarse` every standalone
+control answers a tap across 44×44 at any width; a mouse keeps 24, and links in
+a sentence are exempt (November 2026). `tap-area` centres an invisible 44px
+square on a boxed control, an inline link takes vertical padding, and wrapped
+pill rows get a 12px gap on touch. Guard: `lib/tap-targets.layout.test.tsx`.
 
 ### Breadcrumbs, and the one page without them
 

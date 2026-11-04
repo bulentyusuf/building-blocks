@@ -58,7 +58,7 @@ const RESULT_TEMPLATE = `
       {{/if}}
     </p>
     <p class="font-ui text-2xl leading-tight font-[800] md:text-[1.625rem]">
-      <a class="result-link text-brand-dark transition-colors duration-200 hover:text-brand-crimson" href="{{ meta.url | default(url) | safeUrl }}">{{ meta.title | default("Untitled") }}</a>
+      <a class="result-link text-brand-dark pointer-coarse:py-2 transition-colors duration-200 hover:text-brand-crimson" href="{{ meta.url | default(url) | safeUrl }}">{{ meta.title | default("Untitled") }}</a>
     </p>
     {{#if excerpt}}
     <p class="mt-2 text-lg leading-relaxed text-brand-dark">{{+ excerpt +}}</p>
@@ -68,7 +68,7 @@ const RESULT_TEMPLATE = `
       {{#each sub_results as sub}}
       <li>
         <p class="font-display text-lg font-bold leading-tight">
-          <span aria-hidden="true" class="mr-2 font-normal text-brand-muted">↳</span><a class="text-brand-dark transition-colors duration-200 hover:text-brand-crimson" href="{{ sub.url | safeUrl }}">{{ sub.title }}</a>
+          <span aria-hidden="true" class="mr-2 font-normal text-brand-muted">↳</span><a class="text-brand-dark pointer-coarse:py-3 transition-colors duration-200 hover:text-brand-crimson" href="{{ sub.url | safeUrl }}">{{ sub.title }}</a>
         </p>
         <p class="mt-1 leading-relaxed text-brand-dark">{{+ sub.excerpt +}}</p>
       </li>

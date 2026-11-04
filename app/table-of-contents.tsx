@@ -38,8 +38,11 @@ function TocNav({
       </p>
       {/* The entries are the post's headings, so they take its language; the
           label above is chrome. [→ `locale`] */}
-      {/* Phone entries are 44px tap targets; xl keeps the gap. [→ `post-page`] */}
-      <ul lang={lang} className="font-ui leading-[1.3] xl:space-y-4">
+      {/* 44px tap targets on touch; xl keeps the gap for a mouse. [→ `post-page`, `tap-targets`] */}
+      <ul
+        lang={lang}
+        className="font-ui leading-[1.3] xl:pointer-fine:space-y-4"
+      >
         {headings.map((h, i) => (
           <li key={h.slug}>
             <a
@@ -49,7 +52,7 @@ function TocNav({
               // information sighted readers get.
               aria-current={activeId === h.slug ? "location" : undefined}
               onClick={() => onLinkClick(h.slug)}
-              className={`py-3 transition-colors duration-200 xl:py-0 ${
+              className={`py-3 transition-colors duration-200 xl:pointer-fine:py-0 ${
                 numbered ? "grid grid-cols-[1.75rem_1fr]" : "block"
               } ${
                 activeId === h.slug

@@ -38,7 +38,7 @@ export default function CopyButton({
         // the control brightens rather than recedes.
         "border border-gray-500 bg-white text-gray-600 hover:border-gray-600 hover:text-gray-900 dark:border-white/40 dark:bg-white/10 dark:text-brand-dark dark:hover:border-white/60 dark:hover:bg-white/20 dark:hover:text-brand-dark";
 
-  const box = `rounded-md px-2 py-1 font-mono text-xs ${variantStyles}`;
+  const box = `tap-area rounded-md px-2 py-1 font-mono text-xs ${variantStyles}`;
 
   // Before mount, an invisible stand-in the button's size, so its arrival
   // moves nothing. Hidden from assistive tech and the index. [→ `post-page`]
