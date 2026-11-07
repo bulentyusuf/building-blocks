@@ -202,9 +202,6 @@ block 2`), never a summary of its contents. [→ `scroll-region-names`]
 - **Every JSON-LD block goes through `jsonLdHtml`** (`lib/json-ld.ts`), which
   escapes the three HTML-significant characters before the string reaches
   `dangerouslySetInnerHTML`. Do not build one inline. [→ `json-ld`]
-- **`proxy.ts` runs only for named AI agents**, via the `has` user-agent test in
-  its matcher, so readers never invoke it. Widen the list; never drop the test.
-  It checks each agent's IP against `RANGES` and never sends the IP on.
 
 ## Testing
 
