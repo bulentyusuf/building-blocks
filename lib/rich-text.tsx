@@ -369,14 +369,14 @@ export function RichText({
         if (entry.__typename === "Callout") {
           const labelId = `callout-${entry.sys.id}`;
           return (
-            // Marks exactly the text the author boxed: 2px ink, cream, flat
-            // and straight. Text, links and lists only. [→ `post-page`]
+            // Sets off exactly the text the author marked: indented between
+            // two hairlines, never a box. Text, links, lists. [→ `post-page`]
             <aside
               aria-labelledby={labelId}
               lang={entry.lang}
               // [→ `pagefind-index-scope`]
               data-pagefind-ignore={entry.hideFromSearch ? "" : undefined}
-              className="my-8 rounded-2xl border-2 border-outline bg-brand-bg px-5 py-5 text-[0.94em] sm:px-6 [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
+              className="mx-6 my-8 border-y border-hairline py-5 text-[0.94em] [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
             >
               <span
                 id={labelId}

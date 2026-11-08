@@ -104,7 +104,7 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
 - **One scroll offset, `scroll-padding-top: 5rem` on `html`.** Never
   `scroll-mt-*`; they are additive and cannot coexist. [→ `scroll-offset`]
 - **There are no sidenotes.** An aside is a parenthesis in the prose; a
-  callout is the only boxed one. Inline embeds render nothing. [→ `sidenotes`]
+  callout is the only one set apart. Inline embeds render nothing. [→ `sidenotes`]
 - **Tags are pills via `app/tag-pill.tsx`.** A tag as metadata is a pill; a tag
   as destination is a link. There is no third treatment.
   [→ `tag-pills`, `tag-pages`]

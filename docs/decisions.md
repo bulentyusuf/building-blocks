@@ -320,9 +320,9 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
   Inline code is cream with an outline, never a border, so leading holds.
 - **Numbered sections are the owner's call per post** (`numberedSections`):
   each H2 gets a tilted ink stamp and the ToC its number, both `aria-hidden`.
-- **A callout boxes exactly what the author marked** (the `callout` type: a
-  label and rich text limited to links and lists), 2px ink on cream, flat and
-  straight.
+- **A callout sets off exactly what the author marked** (the `callout` type),
+  indented 24px between two hairlines, never boxed: a box inside the reading
+  panel nested one container in another (November 2026).
 
 ### Covers take one of two frames, chosen by `wide`
 
@@ -530,7 +530,7 @@ Retired in November 2026. Five notes in four posts carried a component, a CSS
 block, an Enter-key helper and a Chromium layout test, and needed two fixes in
 two days (#686, #701). Every note was a one-line aside, so each became a
 parenthesis in its sentence, in Contentful, before the code went. Callouts do
-not replace them: a callout is a labelled box that interrupts, an aside should
+not replace them: a callout is a labelled block that interrupts, an aside should
 not. `INLINES.EMBEDDED_ENTRY` renders `null` in `lib/rich-text.tsx`, since the
 library default prints a debug string; `lib/rich-text.test.tsx` holds both.
 Reopen if asides start to outgrow a parenthesis.
