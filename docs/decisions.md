@@ -275,11 +275,11 @@ redirects to the archive, which already lists everything.
   are its ink and meta text: the 3px edges take `--color-outline`, light grey
   so they read as drawing; strand pills and dots keep the off-white ink edge.
 - **The feature card is one height on every page from `xl`.** Its cover is a
-  fixed 4:3 in five columns, the text beside it in seven, and the byline (one
-  line), title (three) and excerpt (two) are clamped to fit, so headline
-  length never recrops the cover or grows the card. Below `xl` it stacks with
-  a 3:2 cover, the same as the cards under it (November 2026; a 16:9 feature
-  over 3:2 cards looked like an accident on a phone).
+  fixed 3:2 in six columns, the text beside it in six, and the byline (one
+  line), title (three) and excerpt (two) are clamped to fit; all 28 titles fit.
+  The old 4:3 in five made the lead cover smaller than the cards below it. 3:2
+  at every width, like the cards; three across from `xl` when the cards fill
+  their rows, else two (November 2026; seven columns clipped nine titles).
 - **Strand fills never invert**, so the pills keep cream text in both schemes;
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;

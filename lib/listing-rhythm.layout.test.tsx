@@ -323,12 +323,10 @@ function chromeProblems(m: Record<Page, Measurement>, width: number): string[] {
       `the feature text is ${featureText.height}px, taller than its ${featureCover.height}px cover`,
     );
   }
-  // 3:2 stacked, as the cards; 4:3 beside the text, whatever the headline's
-  // length.
+  // 3:2 at every width, as the cards, whatever the headline's length.
   const ratio = featureCover.width / featureCover.height;
-  const [want, name] = width >= 1280 ? [4 / 3, "4:3"] : [3 / 2, "3:2"];
-  if (Math.abs(ratio - want) > 0.02) {
-    problems.push(`the feature cover is ${ratio.toFixed(2)}:1, not ${name}`);
+  if (Math.abs(ratio - 3 / 2) > 0.02) {
+    problems.push(`the feature cover is ${ratio.toFixed(2)}:1, not 3:2`);
   }
   if (width >= 1024 && !(featureTitlePx > cardTitlePx)) {
     problems.push(
@@ -515,7 +513,8 @@ it.each([
   [
     1280,
     "the feature title at the card title's size",
-    { home: "section > article h3 { font-size: 1.875rem !important }" },
+    // The card title's size at three across. [→ `strands`]
+    { home: "section > article h3 { font-size: 1.5rem !important }" },
   ],
 ] as const)(
   "at %ipx, reports %s",

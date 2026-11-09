@@ -111,10 +111,10 @@ export async function FeatureCard({
         priority
         // Stacked, then the frame less its edge until it stops growing, then
         // beside the text from xl. [→ `priority-opaque`]
-        sizes="(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(100vw - 5.375rem), (width < 80rem) 1114px, 464px"
-        className="aspect-3/2 xl:col-span-5 xl:aspect-4/3"
+        sizes="(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(100vw - 5.375rem), (width < 80rem) 1114px, 557px"
+        className="aspect-3/2 xl:col-span-6"
       />
-      <div className="flex flex-col gap-4 px-4 pb-5 md:px-6 md:pb-7 xl:col-span-7 xl:self-center xl:px-8 xl:py-4">
+      <div className="flex flex-col gap-4 px-4 pb-5 md:px-6 md:pb-7 xl:col-span-6 xl:self-center xl:px-8 xl:py-4">
         <Meta
           post={post}
           className="text-base xl:flex-nowrap"
@@ -140,9 +140,12 @@ export async function FeatureCard({
 export default async function PostCard({
   post,
   showStrand,
+  across,
 }: {
   post: ListPost;
   showStrand: boolean;
+  /** Columns from xl: 3 in a post stream, 2 under "more like this". */
+  across: 2 | 3;
 }) {
   const strand = strandFor(post.category);
   return (
@@ -152,13 +155,20 @@ export default async function PostCard({
       <Cover
         post={post}
         priority={false}
-        // One column to md, then two. [→ `priority-opaque`]
-        sizes="(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(50vw - 4rem), 540px"
+        // One column to md, then two, then `across` from xl. [→ `priority-opaque`]
+        sizes={`(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(50vw - 4rem), ${across === 3 ? "(width < 80rem) 540px, 343px" : "540px"}`}
         className="aspect-3/2"
       />
       <div className="flex flex-col gap-3.5 px-4.5">
         <Meta post={post} className="text-sm" showStrand={showStrand} />
-        <h3 className="text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]">
+        {/* Whole class strings: Tailwind cannot read a class glued to ${...}. */}
+        <h3
+          className={
+            across === 3
+              ? "text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem] xl:text-2xl"
+              : "text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]"
+          }
+        >
           <Link href={`/posts/${post.slug}`} className={stretched}>
             {widont(post.title)}
           </Link>
