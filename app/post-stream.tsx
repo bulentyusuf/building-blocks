@@ -13,8 +13,8 @@ export function Label({ children }: { children: string }) {
   );
 }
 
-/** This many posts show as cards: the feature card, then three rows of two.
- *  Home stops there; other listings go on as rows. [→ `strands`] */
+/** This many posts show as cards: the feature card, then six more, three
+ *  across from xl. Home stops there; other listings go on as rows. [→ `strands`] */
 export const STREAM_POSTS = 7;
 
 /** The latest post as a feature card, six more as cards, then every older
@@ -35,6 +35,9 @@ export default function PostStream({
 }) {
   const [latest, ...previous] = posts.slice(0, STREAM_POSTS);
   const older = posts.slice(STREAM_POSTS);
+  // Three across only when the cards fill their rows; a sparse strand stays
+  // two across rather than strand one card. [→ `strands`]
+  const across = previous.length % 3 === 0 ? 3 : 2;
   return (
     <>
       {latest && (
@@ -50,11 +53,17 @@ export default function PostStream({
       {previous.length > 0 && (
         <section className="mt-16">
           <Label>previous posts</Label>
-          {/* Three across from xl, for a fast scan. [→ `strands`] */}
-          <ul className="grid gap-8 md:grid-cols-2 md:gap-9 xl:grid-cols-3">
+          {/* Whole class strings, so Tailwind sees each one. */}
+          <ul
+            className={
+              across === 3
+                ? "grid gap-8 md:grid-cols-2 md:gap-9 xl:grid-cols-3"
+                : "grid gap-8 md:grid-cols-2 md:gap-9"
+            }
+          >
             {previous.map((post) => (
               <li key={post.slug} className="flex">
-                <PostCard post={post} showStrand={showStrand} across={3} />
+                <PostCard post={post} showStrand={showStrand} across={across} />
               </li>
             ))}
           </ul>
