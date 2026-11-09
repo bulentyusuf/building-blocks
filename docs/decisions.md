@@ -268,8 +268,8 @@ redirects to the archive, which already lists everything.
 - **A card presses as a whole but has one link**, its title, stretched by
   `::after`, and balanced. Feature-card tags sit above it (`relative z-10`),
   from `md` only: on phones they wrapped to 92px [→ `announced-links`].
-- **Ink means pressable.** Cards keep the 3px ink edge; the cover inside has no
-  edge of its own (November 2026). Shadows are the strand colour, lifted in dark.
+- **Ink means pressable.** Cards keep the 3px ink edge; covers run full bleed to
+  it, and the labels rank the cards (November 2026). Strand-colour shadows.
 - **The page is graph paper**, `--color-dots` every 22px on `body`.
 - **Dark mode is neutral charcoal**, not warm brown (November 2026), and so
   are its ink and meta text: the 3px edges take `--color-outline`, light grey
@@ -304,8 +304,8 @@ stamp, the language link).
 The `h1` carries its own `data-pagefind-body`, since it sits outside the
 `<article>`; without it every title-only term drops out of search.
 
-- **Ink frames what stands on the page**, the cover. The reading panel and the
-  author card take `--color-edge-quiet`: they are read, not pressed.
+- **Ink frames what stands on the page**, the cover. The reading panel, author
+  card and desktop contents box take `--color-edge-quiet`: read, not pressed.
 - **From `xl` the sidebar sits beside the panel**, the ToC under the page's
   one strip of tape. The panel is 49.25rem, the 42rem
   measure plus padding, which needs the 1200px frame. Below `xl` the ToC is a
@@ -322,8 +322,8 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
 - **Numbered sections are the owner's call per post** (`numberedSections`):
   each H2 gets a tilted ink stamp and the ToC its number, both `aria-hidden`.
 - **A callout boxes exactly what the author marked** (the `callout` type: a
-  label and rich text limited to links and lists), 2px ink on cream, flat and
-  straight.
+  label and rich text limited to links and lists), 2px ink on cream, flat.
+  Unboxed versions were mocked twice (November 2026) and rejected both times.
 
 ### Covers take one of two frames, chosen by `wide`
 
@@ -411,7 +411,7 @@ Three tokens in `@theme` (November 2026), with clear jumps between them:
 `rounded-container` 20px for cards, panels and the post cover frame;
 `rounded-content` 6px for what sits in the reading panel (body images, code,
 callouts, tables, the prompt block); `rounded-nested` 4px for a box inside a
-box (card covers, the prompt thumbnail). Controls keep `rounded-xl`, pills and
+box (the prompt thumbnail). Controls keep `rounded-xl`, pills and
 portraits `rounded-full`. Ten near-equal radii between 4 and 24px read as one
 curve applied everywhere, which is what made the grid look samey; a nested box
 takes the smaller radius so its corners sit inside its parent's. An image
