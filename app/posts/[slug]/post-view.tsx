@@ -157,7 +157,7 @@ export default async function PostView({
       >
         {post.coverImage && (
           // A picture frame on the page: ink, never a shadow. [→ `post-page`]
-          <div className="relative overflow-hidden rounded-3xl border-[3px] border-outline">
+          <div className="relative overflow-hidden rounded-container border-[3px] border-outline">
             <CoverImage
               image={post.coverImage}
               wide
@@ -211,7 +211,7 @@ export default async function PostView({
           <div className="mx-auto w-full max-w-[49.25rem] xl:mx-0">
             {/* 49.25rem is the 42rem measure plus this padding and edge.
                 Phones get no panel. [→ `prose-measure`, `post-page`] */}
-            <div className="pt-2 md:rounded-3xl md:border-2 md:border-edge-quiet md:bg-card md:px-14 md:py-12">
+            <div className="pt-2 md:rounded-container md:border-2 md:border-edge-quiet md:bg-card md:px-14 md:py-12">
               {/* Heading sizes are em, tracking the prose base; the plugin
                   keys heading margins to the heading's own size. */}
               <div

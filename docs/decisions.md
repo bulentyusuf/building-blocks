@@ -36,6 +36,7 @@ Every entry below, by the `CLAUDE.md` section whose rules cite it. `lib/docs-con
 - `brand-colour-duplication` — Brand colour exists in two places on purpose
 - `tag-pills` — Tags render as pills, in one implementation
 - `border-roles` — Border roles are not interchangeable
+- `corner-radius` — Corner radius comes from a role, never a literal
 - `focus-indicator` — One focus indicator, set in `@layer base`
 - `scroll-offset` — One scroll offset, `scroll-padding-top` on `html`
 - `sidenotes` — Sidenotes were retired, and asides are parentheses
@@ -401,6 +402,21 @@ Defined in `app/globals.css`.
   mixed from crimson so they track it into dark mode.
 - **The `border-2` image frames** in `lib/rich-text.tsx` and
   `lib/lightbox-image.tsx`, a heavier role with its own pairing.
+
+### Corner radius comes from a role, never a literal
+
+<!-- key: corner-radius -->
+
+Three tokens in `@theme` (November 2026), with clear jumps between them:
+`rounded-container` 20px for cards, panels and the post cover frame;
+`rounded-content` 6px for what sits in the reading panel (body images, code,
+callouts, tables, the prompt block); `rounded-nested` 4px for a box inside a
+box (card covers, the prompt thumbnail). Controls keep `rounded-xl`, pills and
+portraits `rounded-full`. Ten near-equal radii between 4 and 24px read as one
+curve applied everywhere, which is what made the grid look samey; a nested box
+takes the smaller radius so its corners sit inside its parent's. An image
+inside a rounded frame stays square and lets the frame clip it, or its corners
+bleed past the frame's. Reopen with the next redesign's coverage grid.
 
 ### One focus indicator, set in `@layer base`
 

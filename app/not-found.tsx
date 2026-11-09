@@ -31,7 +31,7 @@ export default function NotFound() {
             width={720}
             height={480}
             priority
-            className="h-auto w-full rounded-[20px] border-[3px] border-outline"
+            className="h-auto w-full rounded-container border-[3px] border-outline"
           />
         </div>
 

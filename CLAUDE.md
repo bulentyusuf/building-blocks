@@ -99,6 +99,8 @@ md:text-6xl lg:text-7xl` weight 800, no rule. Three routes: `/archive`,
 - **Border roles are not interchangeable**: `--color-hairline` (dividers,
   never a `dark:` variant), the cover keyline, the table tokens and the
   `border-2` image frames. [→ `border-roles`]
+- **Corners come from three radius tokens by role**, `rounded-container`,
+  `-content` and `-nested`; no literal radius on a box. [→ `corner-radius`]
 - **One focus indicator, in `@layer base`.** Do not add `focus-visible:ring-*`
   or `focus-visible:outline-*` to components. [→ `focus-indicator`]
 - **One scroll offset, `scroll-padding-top: 5rem` on `html`.** Never

@@ -162,7 +162,7 @@ export default function LightboxImage({
       width={w}
       height={h}
       sizes="(max-width: 768px) 100vw, 672px"
-      className="mx-auto w-full h-auto border-2 border-gray-300 dark:border-brand-dark/15"
+      className="mx-auto w-full h-auto rounded-content border-2 border-gray-300 dark:border-brand-dark/15"
       style={{ maxWidth: w }}
     />
   );

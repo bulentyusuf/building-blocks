@@ -109,7 +109,7 @@ function RichTextAsset({
           priority={priority}
           sizes="(max-width: 768px) 100vw, 672px"
           // Never wider than the asset, as in lightbox-image.tsx.
-          className="mx-auto w-full h-auto border-2 border-gray-300 dark:border-brand-dark/15"
+          className="mx-auto w-full h-auto rounded-content border-2 border-gray-300 dark:border-brand-dark/15"
           style={{ maxWidth: asset.width ?? 1200 }}
         />
       )}
@@ -271,7 +271,7 @@ export function RichText({
           });
         });
         return (
-          <div className="not-prose my-8 overflow-hidden rounded-lg border border-table-edge">
+          <div className="not-prose my-8 overflow-hidden rounded-content border border-table-edge">
             <div
               className="overflow-x-auto"
               tabIndex={0}
@@ -336,7 +336,7 @@ export function RichText({
           return (
             // An ink block with a bar, flat. A grey edge in dark mode keeps it
             // off the page. [→ `post-page`]
-            <div className="not-prose my-8 overflow-hidden rounded-[14px] bg-surface-dark dark:border-2 dark:border-brand-muted">
+            <div className="not-prose my-8 overflow-hidden rounded-content bg-surface-dark dark:border-2 dark:border-brand-muted">
               <div className="flex items-center justify-between gap-3 border-b border-white/15 px-4 py-2 pointer-coarse:py-2.5 font-mono text-xs font-medium text-white/75">
                 <span>
                   <span aria-hidden="true">{"// "}</span>
@@ -376,7 +376,7 @@ export function RichText({
               lang={entry.lang}
               // [→ `pagefind-index-scope`]
               data-pagefind-ignore={entry.hideFromSearch ? "" : undefined}
-              className="my-8 rounded-2xl border-2 border-outline bg-brand-bg px-5 py-5 text-[0.94em] sm:px-6 [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
+              className="my-8 rounded-content border-2 border-outline bg-brand-bg px-5 py-5 text-[0.94em] sm:px-6 [&_p:first-of-type]:mt-0 [&_p:last-child]:mb-0"
             >
               <span
                 id={labelId}
@@ -414,7 +414,7 @@ export function RichText({
               // [→ `locale`]
               lang={DEFAULT_LOCALE}
               data-pagefind-weight="0.1"
-              className={`not-prose mt-10 mb-6 grid gap-x-5 gap-y-2 rounded-[20px] bg-surface-dark px-5 py-6 text-white last:mb-0 sm:px-7 dark:border-2 dark:border-brand-muted${thumb ? " min-[480px]:grid-cols-[7.5rem_1fr] min-[480px]:items-center min-[480px]:gap-y-4" : ""}`}
+              className={`not-prose mt-10 mb-6 grid gap-x-5 gap-y-2 rounded-content bg-surface-dark px-5 py-6 text-white last:mb-0 sm:px-7 dark:border-2 dark:border-brand-muted${thumb ? " min-[480px]:grid-cols-[7.5rem_1fr] min-[480px]:items-center min-[480px]:gap-y-4" : ""}`}
             >
               {/* Indexed at a low weight so a prompt match does not anchor the
                   excerpt. The yellow label is 10:1 on ink. [→ `post-page`] */}
@@ -430,7 +430,7 @@ export function RichText({
                 // Decorative.
                 <span
                   aria-hidden="true"
-                  className="relative mb-2 block aspect-video w-30 overflow-hidden rounded-[10px] border-2 border-brand-bg min-[480px]:col-start-1 min-[480px]:row-start-1 min-[480px]:mb-0 dark:border-white"
+                  className="relative mb-2 block aspect-video w-30 overflow-hidden rounded-nested border-2 border-brand-bg min-[480px]:col-start-1 min-[480px]:row-start-1 min-[480px]:mb-0 dark:border-white"
                 >
                   <ContentfulImage
                     src={thumb}
