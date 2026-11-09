@@ -129,7 +129,9 @@ export async function FeatureCard({
         <p className="text-lg leading-relaxed text-pretty xl:line-clamp-2">
           {widont(post.excerpt)}
         </p>
-        <TagRow tags={tags} className="relative z-10" />
+        {/* Phones drop them: two wrapped lines of pills, and the post and
+            /tags carry them anyway. [→ `strands`] */}
+        <TagRow tags={tags} className="relative z-10 max-md:hidden" />
       </div>
     </article>
   );
@@ -155,7 +157,7 @@ export default async function PostCard({
         className="aspect-3/2 rounded-nested"
       />
       <Meta post={post} className="text-sm" showStrand={showStrand} />
-      <h3 className="text-2xl font-[800] leading-[1.05] text-pretty md:text-[1.875rem]">
+      <h3 className="text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]">
         <Link href={`/posts/${post.slug}`} className={stretched}>
           {widont(post.title)}
         </Link>
