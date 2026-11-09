@@ -12,7 +12,7 @@ import type { ListPost, Tag } from "@/lib/types";
 // The whole card presses, but the title is its only link: the link's ::after
 // covers the card, so a reader tabs to and hears one link per post. Anything
 // else clickable sits above it with `relative z-10`. Ink edge because it
-// presses; the cover inside takes the quiet edge. [→ `strands`]
+// presses; the cover runs to that edge, full bleed. [→ `strands`]
 const press =
   "relative border-[3px] border-outline bg-card transition-[translate,box-shadow] duration-150 hover:shadow-none motion-reduce:transition-none";
 const stretched =
@@ -104,17 +104,17 @@ export async function FeatureCard({
   const strand = strandFor(post.category);
   return (
     <article
-      className={`${press} grid gap-6 rounded-container p-4 hover:translate-[3px] md:gap-8 md:p-6 xl:grid-cols-12 md:hover:translate-[6px] ${(strand ?? STRANDS[0]).featureShadow}`}
+      className={`${press} grid gap-6 overflow-hidden rounded-container hover:translate-[3px] md:gap-8 xl:grid-cols-12 xl:gap-0 md:hover:translate-[6px] ${(strand ?? STRANDS[0]).featureShadow}`}
     >
       <Cover
         post={post}
         priority
-        // Stacked, then the frame less padding until it stops growing, then
+        // Stacked, then the frame less its edge until it stops growing, then
         // beside the text from xl. [→ `priority-opaque`]
-        sizes="(width < 48rem) calc(100vw - 4.25rem), (width < 75rem) calc(100vw - 8.375rem), (width < 80rem) 1066px, 454px"
-        className="aspect-3/2 self-center rounded-nested xl:col-span-5 xl:aspect-4/3"
+        sizes="(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(100vw - 5.375rem), (width < 80rem) 1114px, 464px"
+        className="aspect-3/2 xl:col-span-5 xl:aspect-4/3"
       />
-      <div className="flex flex-col gap-4 xl:col-span-7 xl:self-center">
+      <div className="flex flex-col gap-4 px-4 pb-5 md:px-6 md:pb-7 xl:col-span-7 xl:self-center xl:px-8 xl:py-4">
         <Meta
           post={post}
           className="text-base xl:flex-nowrap"
@@ -147,24 +147,26 @@ export default async function PostCard({
   const strand = strandFor(post.category);
   return (
     <article
-      className={`${press} flex w-full flex-col gap-3.5 rounded-container p-4.5 hover:translate-[3px] md:hover:translate-[4px] ${(strand ?? STRANDS[0]).cardShadow}`}
+      className={`${press} flex w-full flex-col gap-4 overflow-hidden rounded-container pb-5 hover:translate-[3px] md:hover:translate-[4px] ${(strand ?? STRANDS[0]).cardShadow}`}
     >
       <Cover
         post={post}
         priority={false}
         // One column to md, then two. [→ `priority-opaque`]
-        sizes="(width < 48rem) calc(100vw - 4.25rem), (width < 75rem) calc(50vw - 6.25rem), 504px"
-        className="aspect-3/2 rounded-nested"
+        sizes="(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(50vw - 4rem), 540px"
+        className="aspect-3/2"
       />
-      <Meta post={post} className="text-sm" showStrand={showStrand} />
-      <h3 className="text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]">
-        <Link href={`/posts/${post.slug}`} className={stretched}>
-          {widont(post.title)}
-        </Link>
-      </h3>
-      <p className="text-base leading-relaxed text-pretty md:text-[1.0625rem]">
-        {widont(post.excerpt)}
-      </p>
+      <div className="flex flex-col gap-3.5 px-4.5">
+        <Meta post={post} className="text-sm" showStrand={showStrand} />
+        <h3 className="text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]">
+          <Link href={`/posts/${post.slug}`} className={stretched}>
+            {widont(post.title)}
+          </Link>
+        </h3>
+        <p className="text-base leading-relaxed text-pretty md:text-[1.0625rem]">
+          {widont(post.excerpt)}
+        </p>
+      </div>
     </article>
   );
 }

@@ -226,8 +226,9 @@ export default function TableOfContents({
           />
         </div>
       </details>
-      {/* The page's one strip of tape. [→ `post-page`] */}
-      <div className="relative hidden rounded-container border-[3px] border-outline bg-card px-5.5 pt-5 pb-6 xl:block">
+      {/* The page's one strip of tape. Read, not pressed, so the quiet edge
+          of the panel beside it; the phone disclosure keeps ink. [→ `post-page`] */}
+      <div className="relative hidden rounded-container border-2 border-edge-quiet bg-card px-5.5 pt-5 pb-6 xl:block">
         <Tape />
         <TocNav
           headings={headings}
