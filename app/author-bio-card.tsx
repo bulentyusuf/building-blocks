@@ -4,12 +4,12 @@ import { RichText } from "@/lib/rich-text";
 import type { Author } from "@/lib/types";
 
 // Renders nothing without a bio; callers gate their spacing the same way.
-// Read, not pressed, so the quiet edge. [→ `post-page`]
+// One row of the bio panel, so no edge of its own. [→ `post-page`]
 export default function AuthorBioCard({ author }: { author: Author }) {
   if (!author.bio) return null;
 
   return (
-    <div className="flex flex-col gap-5 rounded-[20px] border-2 border-edge-quiet bg-card px-5 py-6 sm:flex-row sm:px-7">
+    <div className="flex flex-col gap-5 px-5 py-6 sm:flex-row sm:px-7">
       {author.picture?.url && (
         <ContentfulImage
           alt=""
@@ -20,10 +20,6 @@ export default function AuthorBioCard({ author }: { author: Author }) {
         />
       )}
       <div className="flex flex-col gap-2.5">
-        <p className="font-mono text-sm font-medium text-brand-muted">
-          <span aria-hidden="true">{"// "}</span>
-          written by
-        </p>
         <p className="font-ui text-[1.625rem] leading-none font-[800]">
           {author.name}
         </p>
@@ -57,11 +53,18 @@ export function AuthorBioSection({ authors }: { authors: Author[] }) {
       aria-label={
         authorsWithBio.length > 1 ? "About the authors" : "About the author"
       }
-      className="space-y-7"
     >
-      {authorsWithBio.map((author) => (
-        <AuthorBioCard key={author.slug ?? author.name} author={author} />
-      ))}
+      {/* One label and one panel, however many authors. Read, not pressed,
+          so the quiet edge. */}
+      <p className="mb-4 font-mono text-sm font-medium text-brand-muted">
+        <span aria-hidden="true">{"// "}</span>
+        written by
+      </p>
+      <div className="divide-y-2 divide-edge-quiet overflow-hidden rounded-[20px] border-2 border-edge-quiet bg-card">
+        {authorsWithBio.map((author) => (
+          <AuthorBioCard key={author.slug ?? author.name} author={author} />
+        ))}
+      </div>
     </div>
   );
 }

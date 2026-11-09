@@ -43,34 +43,41 @@ export default async function ArchivePage() {
       {years.length === 0 ? (
         <p className="text-lg text-brand-muted">No posts yet.</p>
       ) : (
-        years.map((year) => {
-          const yearPosts = byYear.get(year)!;
-          return (
-            <section key={year} className="mb-12 last:mb-0">
-              {/* The year is the page's spine; the count is a muted label. */}
-              <h2 className="mb-4 flex items-baseline gap-4">
-                <span className="text-4xl leading-none font-[800] tracking-[-0.02em] tabular-nums md:text-5xl lg:text-[3.25rem]">
-                  {year}
-                </span>
-                <span className="font-mono text-sm font-medium text-brand-muted">
-                  <span aria-hidden="true">{"// "}</span>
-                  {yearPosts.length} {yearPosts.length === 1 ? "post" : "posts"}
-                </span>
-              </h2>
-              <ul className={ROWS_PANEL}>
-                {yearPosts.map((post) => (
-                  <PostRow
-                    key={post.slug}
-                    post={post}
-                    german={german.has(post.slug)}
-                    date="dayMonth"
-                    showStrand
-                  />
-                ))}
-              </ul>
-            </section>
-          );
-        })
+        // One panel, each year a heading inside it. [→ `band-retirement`]
+        <div className={ROWS_PANEL}>
+          {years.map((year) => {
+            const yearPosts = byYear.get(year)!;
+            return (
+              <section
+                key={year}
+                className="border-t-2 border-edge-quiet first:border-t-0"
+              >
+                {/* The year is the page's spine; the count is a muted label. */}
+                <h2 className="flex items-baseline gap-4 px-5 pt-6 pb-3 sm:px-7">
+                  <span className="text-4xl leading-none font-[800] tracking-[-0.02em] tabular-nums md:text-5xl lg:text-[3.25rem]">
+                    {year}
+                  </span>
+                  <span className="font-mono text-sm font-medium text-brand-muted">
+                    <span aria-hidden="true">{"// "}</span>
+                    {yearPosts.length}{" "}
+                    {yearPosts.length === 1 ? "post" : "posts"}
+                  </span>
+                </h2>
+                <ul>
+                  {yearPosts.map((post) => (
+                    <PostRow
+                      key={post.slug}
+                      post={post}
+                      german={german.has(post.slug)}
+                      date="dayMonth"
+                      showStrand
+                    />
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
+        </div>
       )}
     </WidePage>
   );
