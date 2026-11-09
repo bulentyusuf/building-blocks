@@ -6,7 +6,6 @@ import PostStream, { STREAM_POSTS } from "./post-stream";
 
 import { getAllPosts } from "@/lib/api";
 import { visibleTagSlugs } from "@/lib/tags";
-import { widont } from "@/lib/typography";
 import {
   SITE_URL,
   SITE_TITLE,
@@ -29,10 +28,6 @@ export default async function Page() {
     <div className="mx-auto max-w-frame px-4 md:px-10 pt-6 pb-16">
       {/* The logo names the site visually; this names the page. */}
       <h1 className="sr-only">{SITE_TITLE}</h1>
-      {/* What the site is, for a reader the logo alone does not tell. */}
-      <p className="mb-8 max-w-[42rem] text-lg leading-relaxed text-pretty md:text-xl">
-        {widont(HOME_DESCRIPTION)}
-      </p>
 
       {/* Seven posts, then the archive. No pager. [→ `strands`] */}
       <PostStream

@@ -1,10 +1,10 @@
 # Be Useful.
 
-> Personal blog by Bulent Yusuf about building this blog, spanning code and content with AI assistance. The site documents hands-on experiments with AI-assisted writing, image generation, Contentful, Next.js, and maintaining a personal publishing stack, alongside the occasional essay on film, games and popular culture.
+> Personal blog by Bulent Yusuf about building this blog, using AI assistance for code and content. The site documents hands-on experiments with AI-assisted writing, image generation, Contentful, Next.js, and maintaining a personal publishing stack, alongside the occasional essay on film, games and popular culture.
 
 ## Site overview
 
-- [Home](https://beuseful.net/): Latest posts from Be Useful., a blog about building this blog, spanning code and content with AI assistance.
+- [Home](https://beuseful.net/): Latest posts from Be Useful., a blog about building this blog, using AI assistance for code and content.
 - [About](https://beuseful.net/about): Site purpose, author background, editorial approach, use of AI tools, and notes on the blog's AI-generated mascots.
 - Strands: every post sits in one of three, each with its own page. [Blogging](https://beuseful.net/categories/blogging) (building and maintaining the site), [Films](https://beuseful.net/categories/films), and [Games & Gadgets](https://beuseful.net/categories/games-and-gadgets).
 - [Tags](https://beuseful.net/tags): An index of cross-cutting topics. Each tag also has its own page at /tags/<slug> listing every post that carries it. Categories say where a post lives; tags say what it is about, up to three per post. A tag appears once two posts share it, so single-use tags are neither listed nor given a page.

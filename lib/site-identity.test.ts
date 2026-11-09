@@ -45,7 +45,7 @@ describe("site identity overrides", () => {
 
     expect(SITE_TITLE).toBe("Be Useful.");
     expect(SITE_DESCRIPTION).toBe(
-      "A blog about building this blog, spanning code and content with AI assistance.",
+      "A blog about building this blog, using AI assistance for code and content.",
     );
     expect(SITE_FOOTER_BLURB).toContain("Munich");
     expect(SITE_REPO_URL).toBe(

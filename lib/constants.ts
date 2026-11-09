@@ -67,14 +67,13 @@ export const SITE_TITLE =
 
 export const SITE_DESCRIPTION =
   process.env.NEXT_PUBLIC_SITE_DESCRIPTION?.trim() ||
-  "A blog about building this blog, spanning code and content with AI assistance.";
+  "A blog about building this blog, using AI assistance for code and content.";
 
 // Home's own title and description. The title is short of the full site
 // description, which would run past Bing's cut-off. [→ `browse-copy`]
 export const HOME_TITLE = `${SITE_TITLE} A blog about building this blog`;
-// Shown on home as well as in search results, so one pitch everywhere.
 export const HOME_DESCRIPTION =
-  "A blog about building this blog, spanning code and content with AI assistance. Detours into films, games, single-board computers and mechanical keyboards.";
+  "A blog about building this blog, using AI assistance for code and content. Detours into films, games, single-board computers and mechanical keyboards.";
 
 export const SITE_AUTHOR = "Bulent Yusuf";
 
