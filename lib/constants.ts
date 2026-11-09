@@ -67,13 +67,14 @@ export const SITE_TITLE =
 
 export const SITE_DESCRIPTION =
   process.env.NEXT_PUBLIC_SITE_DESCRIPTION?.trim() ||
-  "Content & Code, with a little help from Generative AI.";
+  "A blog about building this blog, spanning code and content with AI assistance.";
 
-// Home's own title and description, fuller than elsewhere because search
-// results show them for the site's name. [→ `browse-copy`]
-export const HOME_TITLE = `${SITE_TITLE} ${SITE_DESCRIPTION.replace(/\.$/, "")}`;
+// Home's own title and description. The title is short of the full site
+// description, which would run past Bing's cut-off. [→ `browse-copy`]
+export const HOME_TITLE = `${SITE_TITLE} A blog about building this blog`;
+// Shown on home as well as in search results, so one pitch everywhere.
 export const HOME_DESCRIPTION =
-  "Bulent Yusuf builds a blog in public on a headless CMS, with AI as collaborator, writing up every decision. Plus side quests into films, games and Raspberry Pi.";
+  "A blog about building this blog, spanning code and content with AI assistance. Detours into films, games, single-board computers and mechanical keyboards.";
 
 export const SITE_AUTHOR = "Bulent Yusuf";
 

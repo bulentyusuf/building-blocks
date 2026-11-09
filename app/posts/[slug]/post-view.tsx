@@ -153,7 +153,7 @@ export default async function PostView({
             "data-strand-fill": strand.fill,
           }),
         })}
-        className="mt-11"
+        className="mt-8 md:mt-11"
       >
         {post.coverImage && (
           // A picture frame on the page: ink, never a shadow. [→ `post-page`]
@@ -192,7 +192,7 @@ export default async function PostView({
             )}
           </div>
         )}
-        <div className="mt-12 flex flex-col gap-10 md:mt-16 xl:grid xl:grid-cols-[minmax(15rem,1fr)_minmax(0,49.25rem)] xl:gap-12">
+        <div className="mt-8 flex flex-col gap-6 md:mt-16 md:gap-10 xl:grid xl:grid-cols-[minmax(15rem,1fr)_minmax(0,49.25rem)] xl:gap-12">
           {/* Stretches the row so the sticky wrapper has room, and keeps the
               column on xl when there is no ToC. [→ `pagefind-index-scope`] */}
           <aside

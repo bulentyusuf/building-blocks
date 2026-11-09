@@ -8,8 +8,9 @@ export const metadata: Metadata = {
   title: "Page not found",
 };
 
-const link =
-  "text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4";
+// Home's archive button, so a way out reads as pressable. [→ `tap-targets`]
+const action =
+  "inline-flex min-h-11 items-center rounded-xl border-[3px] border-outline bg-card px-5 font-ui text-base font-semibold shadow-[4px_4px_0_var(--color-brand-crimson)] transition-[translate,box-shadow] duration-150 hover:translate-[4px] hover:shadow-none motion-reduce:transition-none";
 
 // The layout supplies the chrome, the strand chips included, so no trail.
 // The image is public/404-gremlin.webp.
@@ -42,19 +43,19 @@ export default function NotFound() {
           A gremlin pulled the plug.
         </h1>
         <p className="mt-5 text-lg leading-relaxed text-pretty md:text-[1.375rem]">
-          The page you seek isn&apos;t available or never existed. Apologies!
+          Someone fed it after midnight. The page you wanted is gone.
         </p>
-        <p className="mt-8 font-ui font-semibold text-brand-muted">
-          Try{" "}
-          <Link href="/search" className={link}>
-            search
-          </Link>{" "}
-          or the{" "}
-          <Link href="/archive" className={link}>
-            archive
+        <nav
+          aria-label="Recovery options"
+          className="mt-8 flex flex-wrap items-center justify-center gap-4"
+        >
+          <Link href="/search" className={action}>
+            Search
           </Link>
-          .
-        </p>
+          <Link href="/archive" className={action}>
+            Archive
+          </Link>
+        </nav>
       </section>
     </Container>
   );
