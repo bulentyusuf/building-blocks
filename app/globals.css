@@ -126,15 +126,17 @@
     /* The ink's own colour at 18%, so a cover's edge still reads on the page. */
     --color-cover-keyline: rgb(237 237 238 / 0.18);
 
-    /* A step up from the page, and shadows lifted so they read on it. */
+    /* A step up from the page. */
     --color-card: #242327;
     /* Shiki's min-dark ground, so a code block's bar and body match. */
     --color-surface-dark: #1f1f1f;
     --color-edge-quiet: #403f44;
     --color-dots: #2a292d;
-    --color-strand-blogging-shadow: #e0566f;
-    --color-strand-films-shadow: #3ba99c;
-    --color-strand-games-shadow: #6f8fe0;
+    /* Darker than the grey edge and at least 3:1 on the page, so a shadow
+       reads as a stamp rather than a glow. */
+    --color-strand-blogging-shadow: #b8304a;
+    --color-strand-films-shadow: #1f7a72;
+    --color-strand-games-shadow: #3f5fc8;
   }
 }
 
