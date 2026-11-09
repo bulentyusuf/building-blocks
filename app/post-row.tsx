@@ -8,7 +8,7 @@ import type { ListPost } from "@/lib/types";
 
 // A list panel: read, not pressed, so the quiet edge. [→ `post-page`]
 export const ROWS_PANEL =
-  "overflow-hidden rounded-3xl border-2 border-edge-quiet bg-card";
+  "overflow-hidden rounded-container border-2 border-edge-quiet bg-card";
 
 /**
  * One compact row: date, title, strand. The archive shows day and month under

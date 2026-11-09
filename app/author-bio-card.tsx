@@ -60,7 +60,7 @@ export function AuthorBioSection({ authors }: { authors: Author[] }) {
         <span aria-hidden="true">{"// "}</span>
         written by
       </p>
-      <div className="divide-y-2 divide-edge-quiet overflow-hidden rounded-[20px] border-2 border-edge-quiet bg-card">
+      <div className="divide-y-2 divide-edge-quiet overflow-hidden rounded-container border-2 border-edge-quiet bg-card">
         {authorsWithBio.map((author) => (
           <AuthorBioCard key={author.slug ?? author.name} author={author} />
         ))}

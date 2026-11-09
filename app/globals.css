@@ -27,6 +27,12 @@
     "Liberation Mono", monospace;
   --default-font-family: var(--font-body);
 
+  /* Corner radius by role: rounded-container, -content, -nested. Controls
+     keep rounded-xl, pills and portraits rounded-full. [→ `corner-radius`] */
+  --radius-container: 1.25rem;
+  --radius-content: 0.375rem;
+  --radius-nested: 0.25rem;
+
   /* The site frame, max-w-frame: 1200px at a 16px root, inside 40px gutters
      (16px on phones). Every page edge lines up on it. [→ `page-axis`] */
   --container-frame: 75rem;
