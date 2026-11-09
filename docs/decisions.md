@@ -358,7 +358,7 @@ move those.
 `app/tag-pill.tsx`, wrapped by `TagRow` in the same file on cards, and used
 directly on the post page. Written `#name`, the `#` hidden from screen readers,
 with a 2px ink edge and an 8px radius; ink is what marks it pressable. A pill is a tag as metadata attached to something
-else; a link is a tag as destination, as on the `/tags` glossary. The search
+else; a link is a tag as destination, as on the `/tags` index. The search
 empty state's taped note offers tags as pills. There is no third treatment. Small-caps text links were proposed
 and rejected; if revisited, it is one change reaching both call sites.
 
@@ -539,20 +539,20 @@ Reopen if asides start to outgrow a parenthesis.
 
 <!-- key: tag-pages -->
 
-`/tags` lists every tag with its posts, built like the archive: the tag as a
-large heading with a `//` count, then the posts as `app/post-row.tsx` rows in
-a list panel. Tag descriptions show only as each tag page's meta description. Each heading links to `/tags/[slug]`,
-a landing page in the strand layout with a trail and an `h1` [→ `listing-shell`].
-Do not go back to `#slug` anchors: an anchor drops the reader past everything
-that says where they are. Old anchors still land.
+`/tags` is an index, one row per tag in a list panel: the name and a `//`
+count, the whole row linking to `/tags/[slug]`, a landing page in the strand
+layout with a trail and an `h1` [→ `listing-shell`]. It listed every post under
+every tag until November 2026, about 7,200px on a phone with each post repeated
+per tag. Tag descriptions show only as each tag page's meta description. No
+`/tags#slug` links: an anchor drops the reader past what says where they are.
 
 - `postsWithTag` in `lib/tags.ts` filters in memory, because Contentful's
   GraphQL cannot filter on an `Array<Link>` field. Callers pass the posts in.
-- Every surface reads the threshold through `visibleTagSlugs`: the glossary,
+- Every surface reads the threshold through `visibleTagSlugs`: the index,
   the sitemap and `/tags/[slug]`, which 404s below it. A test asserts they agree.
 - Cards take `visibleTags`, computed from all posts, so a pill never links to
   a 404. A tag page passes the set minus its own slug.
-- The glossary is `data-pagefind-ignore`. Pills sit below the body, never in the
+- The index is `data-pagefind-ignore`. Pills sit below the body, never in the
   xl-only sidebar, and not on "more like this".
 
 ### Browse-page copy lives in code, beside site identity

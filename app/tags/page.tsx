@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { draftMode } from "next/headers";
-import PostRow, { ROWS_PANEL } from "../post-row";
+import { ROWS_PANEL } from "../post-row";
 import WidePage from "../wide-page";
 import { type Crumb } from "../breadcrumb";
-import { getAllPosts, getGermanPostSlugs } from "@/lib/api";
+import { getAllPosts } from "@/lib/api";
 import { groupPostsByTag, MIN_POSTS_PER_TAG } from "@/lib/tags";
 import { browsePageMetadata } from "@/lib/page-metadata";
 
@@ -15,14 +15,7 @@ export const metadata: Metadata = browsePageMetadata({
 
 export default async function TagsPage() {
   const { isEnabled } = await draftMode();
-
-  const [posts, germanSlugs] = await Promise.all([
-    getAllPosts(isEnabled),
-    getGermanPostSlugs(isEnabled),
-  ]);
-  const groups = groupPostsByTag(posts);
-  // Translated posts, for the rows' DE marker. [→ `locale`]
-  const german = new Set(germanSlugs);
+  const groups = groupPostsByTag(await getAllPosts(isEnabled));
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Tags" }];
 
@@ -41,42 +34,28 @@ export default async function TagsPage() {
           it.
         </p>
       ) : (
-        // The glossary repeats titles once per tag. [→ `tag-pages`]
+        // An index, one row per tag, each tag page holding its posts.
+        // [→ `tag-pages`]
         <div data-pagefind-ignore>
-          {groups.map(({ tag, posts: tagged }) => (
-            <section
-              key={tag.slug}
-              // Kept so old /tags#slug links still land.
-              id={tag.slug}
-              className="mb-12 last:mb-0"
-            >
-              {/* Built like the archive: the tag is the spine, the count a
-                  muted label, the posts a list panel. [→ `tag-pages`] */}
-              <h2 className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <ul className={ROWS_PANEL}>
+            {groups.map(({ tag, posts }) => (
+              // The id keeps old /tags#slug links landing on their row.
+              <li key={tag.slug} id={tag.slug} className="even:bg-brand-bg">
                 <Link
                   href={`/tags/${tag.slug}`}
-                  className="tap-area text-4xl leading-none font-[800] tracking-[-0.02em] transition-colors duration-200 hover:text-brand-crimson md:text-5xl lg:text-[3.25rem]"
+                  className="group flex min-h-11 items-baseline justify-between gap-x-4 px-5 py-3.5 sm:px-7"
                 >
-                  #{tag.name}
+                  <span className="font-ui text-xl leading-snug font-bold transition-colors duration-200 group-hover:text-brand-crimson">
+                    #{tag.name}
+                  </span>
+                  <span className="shrink-0 font-mono text-sm font-medium text-brand-muted">
+                    <span aria-hidden="true">{"// "}</span>
+                    {posts.length} {posts.length === 1 ? "post" : "posts"}
+                  </span>
                 </Link>
-                <span className="font-mono text-sm font-medium text-brand-muted">
-                  <span aria-hidden="true">{"// "}</span>
-                  {tagged.length} {tagged.length === 1 ? "post" : "posts"}
-                </span>
-              </h2>
-              <ul className={`${ROWS_PANEL} mt-4`}>
-                {tagged.map((post) => (
-                  <PostRow
-                    key={post.slug}
-                    post={post}
-                    german={german.has(post.slug)}
-                    date="long"
-                    showStrand
-                  />
-                ))}
-              </ul>
-            </section>
-          ))}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </WidePage>

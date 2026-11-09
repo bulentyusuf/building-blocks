@@ -9,7 +9,7 @@ export function postTags(post: Pick<Post | ListPost, "tagsCollection">): Tag[] {
 }
 
 /**
- * Slugs clearing the threshold across the given posts. The glossary, the
+ * Slugs clearing the threshold across the given posts. The index, the
  * sitemap and `/tags/[slug]` all read this, so no pill links to a 404.
  */
 export function visibleTagSlugs(

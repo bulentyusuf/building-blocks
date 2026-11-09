@@ -45,7 +45,7 @@ describe("site identity overrides", () => {
 
     expect(SITE_TITLE).toBe("Be Useful.");
     expect(SITE_DESCRIPTION).toBe(
-      "Content & Code, with a little help from Generative AI.",
+      "A blog about building this blog, using AI assistance for code and content.",
     );
     expect(SITE_FOOTER_BLURB).toContain("Munich");
     expect(SITE_REPO_URL).toBe(
@@ -92,7 +92,7 @@ describe("site identity overrides", () => {
       });
 
     expect(SITE_TITLE).toBe("Be Useful.");
-    expect(SITE_DESCRIPTION).toContain("Generative AI");
+    expect(SITE_DESCRIPTION).toContain("AI assistance");
     expect(SITE_FOOTER_BLURB).toContain("Munich");
     expect(SITE_REPO_URL).toBe(
       "https://github.com/bulentyusuf/building-blocks",
@@ -109,7 +109,7 @@ describe("site identity overrides", () => {
       });
 
     expect(SITE_TITLE).toBe("Be Useful.");
-    expect(SITE_DESCRIPTION).toContain("Generative AI");
+    expect(SITE_DESCRIPTION).toContain("AI assistance");
     expect(SITE_FOOTER_BLURB).toContain("Munich");
     expect(SITE_REPO_URL).toBe(
       "https://github.com/bulentyusuf/building-blocks",
@@ -123,9 +123,7 @@ describe("site identity overrides", () => {
       NEXT_PUBLIC_SITE_DESCRIPTION: undefined,
     });
 
-    expect(HOME_TITLE).toBe(
-      "Be Useful. Content & Code, with a little help from Generative AI",
-    );
+    expect(HOME_TITLE).toBe("Be Useful. A blog about building this blog");
     expect(HOME_DESCRIPTION.length).toBeGreaterThanOrEqual(150);
     expect(HOME_DESCRIPTION.length).toBeLessThanOrEqual(160);
   });

@@ -334,15 +334,6 @@ const EXPECTED_DUPLICATES: Record<string, { href: RegExp; because: string }> = {
     // repetition is per row rather than gratuitous.
     because: "every row links its own category, by design",
   },
-  "/tags": {
-    href: /^\/(posts|categories|de\/posts)\//,
-    // The glossary groups every post under each of its tags, so a post with
-    // three tags appears three times — that repetition IS the index.
-    // docs/decisions.md notes the same property as the reason the page is
-    // data-pagefind-ignore. Its rows are the archive's, so each also links its
-    // strand and, for a translated post, its German page.
-    because: "the glossary lists each post once per tag it carries",
-  },
 };
 
 describe.each(routes)("%s", (name, load) => {
