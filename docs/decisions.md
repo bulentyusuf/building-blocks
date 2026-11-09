@@ -266,8 +266,8 @@ redirects to the archive, which already lists everything.
   is `aria-current="page"`; a post presses its strand as `"true"`, because the
   chip links away. `currentStrand` reads the path, posts via a slug map.
 - **A card presses as a whole but has one link**, its title, stretched by
-  `::after`. Tags on the feature card sit above it with `relative z-10`
-  [→ `announced-links`].
+  `::after`, and balanced. Feature-card tags sit above it (`relative z-10`),
+  from `md` only: on phones they wrapped to 92px [→ `announced-links`].
 - **Ink means pressable.** Cards keep the 3px ink edge; the cover inside has no
   edge of its own (November 2026). Shadows are the strand colour, lifted in dark.
 - **The page is graph paper**, `--color-dots` every 22px on `body`.
