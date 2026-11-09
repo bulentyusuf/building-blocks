@@ -161,8 +161,13 @@ export default async function PostCard({
       />
       <div className="flex flex-col gap-3.5 px-4.5">
         <Meta post={post} className="text-sm" showStrand={showStrand} />
+        {/* Whole class strings: Tailwind cannot read a class glued to ${...}. */}
         <h3
-          className={`text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]${across === 3 ? " xl:text-2xl" : ""}`}
+          className={
+            across === 3
+              ? "text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem] xl:text-2xl"
+              : "text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]"
+          }
         >
           <Link href={`/posts/${post.slug}`} className={stretched}>
             {widont(post.title)}
