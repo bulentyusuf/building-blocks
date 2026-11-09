@@ -50,10 +50,11 @@ export default function PostStream({
       {previous.length > 0 && (
         <section className="mt-16">
           <Label>previous posts</Label>
-          <ul className="grid gap-8 md:grid-cols-2 md:gap-9">
+          {/* Three across from xl, for a fast scan. [→ `strands`] */}
+          <ul className="grid gap-8 md:grid-cols-2 md:gap-9 xl:grid-cols-3">
             {previous.map((post) => (
               <li key={post.slug} className="flex">
-                <PostCard post={post} showStrand={showStrand} />
+                <PostCard post={post} showStrand={showStrand} across={3} />
               </li>
             ))}
           </ul>

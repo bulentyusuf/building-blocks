@@ -257,7 +257,7 @@ export default async function PostView({
           <ul className="grid gap-8 md:grid-cols-2 md:gap-9">
             {morePosts.map((card) => (
               <li key={card.slug} className="flex">
-                <PostCard post={card} showStrand />
+                <PostCard post={card} showStrand across={2} />
               </li>
             ))}
           </ul>
