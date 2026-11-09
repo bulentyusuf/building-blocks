@@ -131,9 +131,10 @@ describe("AuthorBioSection (foot-of-post bio stack)", () => {
     expect(html).not.toContain("About the author<");
     expect(html).toContain("Bulent Yusuf");
     expect(html).toContain("Trippy Robot");
-    expect(html).toContain("space-y-7");
-    // Two cards rendered
+    // Two bios in one panel, under one label
     expect(html.match(/More from/g)).toHaveLength(2);
+    expect(html.match(/border-2 border-edge-quiet/g)).toHaveLength(1);
+    expect(html.match(/written by/g)).toHaveLength(1);
   });
 
   it("renders only one card with singular 'About the author' for a two-author post where only one has a bio", () => {

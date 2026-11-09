@@ -70,9 +70,7 @@ async function Cover({
   if (!post.coverImage) return null;
   const blurDataURL = await getBlurDataURL(post.coverImage.url);
   return (
-    <div
-      className={`relative overflow-hidden border-2 border-edge-quiet bg-brand-dark/5 ${className}`}
-    >
+    <div className={`relative overflow-hidden bg-brand-dark/5 ${className}`}>
       <ContentfulImage
         src={post.coverImage.url}
         alt={coverAltText(post.coverImage)}
@@ -113,7 +111,7 @@ export async function FeatureCard({
         priority
         // Stacked, then the frame less padding until it stops growing, then
         // beside the text from xl. [→ `priority-opaque`]
-        sizes="(width < 48rem) calc(100vw - 4.5rem), (width < 75rem) calc(100vw - 8.625rem), (width < 80rem) 1062px, 450px"
+        sizes="(width < 48rem) calc(100vw - 4.25rem), (width < 75rem) calc(100vw - 8.375rem), (width < 80rem) 1066px, 454px"
         className="aspect-3/2 self-center rounded-xl xl:col-span-5 xl:aspect-4/3"
       />
       <div className="flex flex-col gap-4 xl:col-span-7 xl:self-center">
@@ -153,7 +151,7 @@ export default async function PostCard({
         post={post}
         priority={false}
         // One column to md, then two. [→ `priority-opaque`]
-        sizes="(width < 48rem) calc(100vw - 4.5rem), (width < 75rem) calc(50vw - 6.5rem), 500px"
+        sizes="(width < 48rem) calc(100vw - 4.25rem), (width < 75rem) calc(50vw - 6.25rem), 504px"
         className="aspect-3/2 rounded-xl"
       />
       <Meta post={post} className="text-sm" showStrand={showStrand} />

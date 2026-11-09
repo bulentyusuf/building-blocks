@@ -236,8 +236,8 @@ pages read daily they were noise, and the heading says enough. The layout test i
 (listing-rhythm.layout.test.tsx) holds that gap the same on `/archive` and
 `/tags`, in a browser [→ `guard-limits`].
 
-The archive lists each year in a list panel: white, the quiet edge, rows
-striped in the page colour, the strand as its pill linking to the strand page.
+The archive is one list panel, each year a heading inside it under a rule:
+white, the quiet edge, rows striped in the page colour, the strand as a pill.
 Below `sm` the pill gives way to a coloured dot before the date, on one line
 under the title (November 2026): a row went from 142px to 112px at 375px, and
 the dot is not a link, so no undersized tap target.
@@ -267,8 +267,8 @@ redirects to the archive, which already lists everything.
 - **A card presses as a whole but has one link**, its title, stretched by
   `::after`. Tags on the feature card sit above it with `relative z-10`
   [→ `announced-links`].
-- **Ink means pressable.** Cards keep the 3px ink edge; the cover inside takes
-  `--color-edge-quiet`. Shadows are the strand colour, lifted in dark mode.
+- **Ink means pressable.** Cards keep the 3px ink edge; the cover inside has no
+  edge of its own (November 2026). Shadows are the strand colour, lifted in dark.
 - **The page is graph paper**, `--color-dots` every 22px on `body`.
 - **Dark mode is neutral charcoal**, not warm brown (November 2026), and so
   are its ink and meta text: the 3px edges take `--color-outline`, light grey
