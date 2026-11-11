@@ -380,9 +380,8 @@ export function RichText({
             >
               <span
                 id={labelId}
-                className="mb-2 block font-mono text-[0.82em] font-medium text-brand-muted"
+                className="mb-2 block font-display text-[1.06em] font-bold leading-snug text-brand-dark"
               >
-                <span aria-hidden="true">{"// "}</span>
                 {entry.label}
               </span>
               <RichText
@@ -419,9 +418,9 @@ export function RichText({
               {/* Indexed at a low weight so a prompt match does not anchor the
                   excerpt. The yellow label is 10:1 on ink. [→ `post-page`] */}
               <figcaption
-                className={`prompt-label flex items-center justify-between gap-3 font-mono text-xs font-medium text-prompt-label ${side}`}
+                className={`flex items-center justify-between gap-3 ${side}`}
               >
-                <span className="min-w-0 flex-1">
+                <span className="min-w-0 flex-1 font-display text-base font-bold leading-snug text-prompt-label">
                   {entry.label || "Prompt"}
                 </span>
                 <CopyButton code={entry.prompt} label="prompt" variant="dark" />
