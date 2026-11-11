@@ -173,9 +173,18 @@ const GROUND_TEXT = `(() => {
     range.selectNodeContents(n);
     // The line boxes of the text itself, so an element's own border, outline
     // or padding is never mistaken for the ground behind its words.
-    const rects = [...range.getClientRects()]
-      .filter((r) => r.width >= 2 && r.height >= 2)
-      .map((r) => ({ x: r.left + scrollX, y: r.top + scrollY, w: r.width, h: r.height }));
+    // Cut to every clipping ancestor, so a table cell scrolled out of its
+    // scroll region is not read as text drawing no letters.
+    let rects = [...range.getClientRects()].map((r) => ({ l: r.left, t: r.top, r: r.right, b: r.bottom }));
+    for (let a = el; a && a !== document.body; a = a.parentElement) {
+      const as = getComputedStyle(a);
+      if (as.overflowX === "visible" && as.overflowY === "visible") continue;
+      const c = a.getBoundingClientRect();
+      rects = rects.map((r) => ({ l: Math.max(r.l, c.left), t: Math.max(r.t, c.top), r: Math.min(r.r, c.right), b: Math.min(r.b, c.bottom) }));
+    }
+    rects = rects
+      .map((r) => ({ x: r.l + scrollX, y: r.t + scrollY, w: r.r - r.l, h: r.b - r.t }))
+      .filter((r) => r.w >= 2 && r.h >= 2);
     if (!rects.length) continue;
     const size = parseFloat(cs.fontSize);
     const bold = parseInt(cs.fontWeight, 10) >= 700;
@@ -339,6 +348,14 @@ async function selfTest() {
     p.textContent = "Muted text on the graph paper.";
     p.style.color = "#6B5A52";
     document.querySelector("main").prepend(p);
+    // The same muted text in a scroll region, once in view and once scrolled
+    // out of it. Only the first is drawn, so only the first may be measured.
+    const scroller = document.createElement("div");
+    scroller.style.cssText = "overflow-x:auto;width:200px";
+    scroller.innerHTML =
+      '<div style="display:flex;width:1200px"><p id="scroll-shown" style="color:#6B5A52;width:180px">Muted and in view.</p><p id="scroll-hidden" style="color:#6B5A52;margin-left:600px">Muted and scrolled away.</p></div>';
+    document.querySelector("main").prepend(scroller);
+    scroller.id = "scroll-control";
   });
   const real = await groundContrast(page);
   const dark = await page.addStyleTag({
@@ -346,7 +363,10 @@ async function selfTest() {
   });
   const darkened = await groundContrast(page);
   await dark.evaluate((el) => el.remove());
-  await page.evaluate(() => document.getElementById("ground-control").remove());
+  await page.evaluate(() => {
+    document.getElementById("ground-control").remove();
+    document.getElementById("scroll-control").remove();
+  });
   await clearPageGround(page);
   await page.addScriptTag({ content: AXE });
   // Pale text straight on the page ground. If the dots come back, or
@@ -400,6 +420,18 @@ async function selfTest() {
   if (real.some((t) => t.id === "ground-control")) {
     console.error(
       "SELF TEST FAILED: muted text failed against the real dots, so the dots or the measurement have changed.",
+    );
+    process.exit(1);
+  }
+  if ([...real, ...darkened].some((t) => t.id === "scroll-hidden")) {
+    console.error(
+      "SELF TEST FAILED: text scrolled out of its scroll region was measured, so every wide table on a phone reports a false 1:1.",
+    );
+    process.exit(1);
+  }
+  if (!darkened.some((t) => t.id === "scroll-shown")) {
+    console.error(
+      "SELF TEST FAILED: darkened dots under text in a scroll region went unreported, so the clipping skips text it should measure.",
     );
     process.exit(1);
   }
