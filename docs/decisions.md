@@ -317,7 +317,7 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
 - **The cover's prompt button is a brush**, 44px, in the header's button style
   with a shadow, since it is pressable. Icon only at every width (November
   2026): the "prompt" pill covered too much of a phone cover.
-- **Code and prompt blocks are ink** with a `//` bar, grey-edged in dark mode.
+- **Code and prompt blocks are ink**, grey-edged in dark mode. Code has a `//` bar.
   Inline code is green monospace, no fill or outline (November 2026).
 - **Numbered sections are the owner's call per post** (`numberedSections`):
   each H2 gets a tilted ink stamp and the ToC its number, both `aria-hidden`.
@@ -654,8 +654,8 @@ swaps to a few lines. `--font-ui` resolves to the display family but keeps its
 own token; do not merge them. Tailwind's own `font-sans` still exists and sets
 the system sans stack, which is no house face, so nothing uses it.
 
-- **Display**: `h1` to `h3` and the mastheads, via the base-layer rule. Do not
-  add `font-display` to a heading.
+- **Display**: `h1` to `h3` and the mastheads, via the base-layer rule, and the
+  callout and prompt titles. Do not add `font-display` to a heading.
 - **Body**: prose and captions, and nothing around them.
 - **UI**: everything around the prose, since the F2 post frame (#655). The
   meta line (bylines, dates, reading time), breadcrumbs, the contents list,
@@ -663,7 +663,7 @@ the system sans stack, which is no house face, so nothing uses it.
   empty-state lines and every small uppercase letterspaced label. The footer's
   links are words, not paths. A new surface outside the prose takes UI.
 - **Mono**: `//` labels and machine text only: code, inline and block, the
-  copy button and the prompt block, via `font-mono` (November 2026; it had
+  copy button and the prompt text, via `font-mono` (November 2026; it had
   spread to nav, pills and stamps). Plex Mono's x-height and cap height sit
   closest to the other two faces. Its fallback is a monospace stack, never
   next/font's Arial-adjusted one.

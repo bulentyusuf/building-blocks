@@ -388,12 +388,6 @@ html:has(dialog:modal) {
   }
 }
 
-/* The prompt block's "// " sits outside the figcaption's text, so it never
-   joins the name the figcaption gives its figure. [→ `post-page`] */
-.prompt-label::before {
-  content: "// " / "";
-}
-
 /* Thin light strokes read faint on a dark ground, so dark mode sets inline
    code at 500. Light mode keeps 400. */
 @media (prefers-color-scheme: dark) {
