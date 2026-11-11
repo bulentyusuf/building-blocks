@@ -87,9 +87,9 @@ export default async function CategoryPage({
           href="/archive"
           className="text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
         >
-          Browse the archive
+          The archive
         </Link>{" "}
-        for the rest.
+        has everything else.
       </p>
     </div>
   );
