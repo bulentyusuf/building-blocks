@@ -26,6 +26,8 @@ function isExternalUrl(url: string): boolean {
 export function renderHyperlink(node: Block | Inline, children: ReactNode) {
   const uri: unknown = (node as Inline).data.uri;
   if (typeof uri !== "string") return <>{children}</>;
+  // Browsers strip tabs and newlines from a URL, so "/\t/x" lands on "//x".
+  if (/[\t\n\r]/.test(uri)) return <>{children}</>;
 
   // A same-page fragment, which URL parsing without a base would also reject.
   if (uri.startsWith("#")) return <a href={uri}>{children}</a>;
