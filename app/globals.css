@@ -381,7 +381,7 @@ html:has(dialog:modal) {
     padding-inline: 0.15em;
     /* Inline only, since code blocks are not-prose. Their 0.78em column budget
        lives in lib/rich-text.tsx and does not apply to code that wraps. */
-    font-size: 0.875em;
+    font-size: 0.9em;
   }
   & :where(code):not(:where([class~="not-prose"] *))::before {
     content: none;
