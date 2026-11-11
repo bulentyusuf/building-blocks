@@ -817,8 +817,8 @@ fetches the post in the same pass, as in the OG image route.
 is a PNG of about 900 KB, so prerendering put roughly 19 MB into every
 deployment against Hobby's storage allowance, for images a scraper fetches once.
 Without it the route is fully dynamic (the uncached `POST` rules out the static
-path), and its `Cache-Control` carries `s-maxage=31536000`, so Vercel's CDN
-renders each card about once per deployment.
+path). A post's card carries `s-maxage=31536000`, so the CDN renders it about
+once per deploy. A failed fetch's site card is `no-store`, so it cannot stick.
 
 Verify with `x-vercel-cache` and `age`, not `cache-control`, which Vercel's
 proxy rewrites. If scrape latency is ever a problem, reach for

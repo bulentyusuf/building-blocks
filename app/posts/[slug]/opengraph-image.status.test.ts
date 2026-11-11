@@ -10,20 +10,20 @@ vi.mock("@/lib/api", () => ({
 // the real render.
 vi.mock("next/og", () => ({
   ImageResponse: class extends Response {
-    constructor() {
-      super("card");
+    constructor(_element: unknown, init: ResponseInit) {
+      super("card", { headers: init.headers });
     }
   },
 }));
 
 const { default: OpengraphImage } = await import("./opengraph-image");
 
-const status = async () =>
-  (
-    (await OpengraphImage({
-      params: Promise.resolve({ slug: "x" }),
-    })) as Response
-  ).status;
+const card = async () =>
+  (await OpengraphImage({
+    params: Promise.resolve({ slug: "x" }),
+  })) as Response;
+
+const status = async () => (await card()).status;
 
 describe("the post OG card's status", () => {
   it("is 404 for a slug with no post", async () => {
@@ -43,5 +43,23 @@ describe("the post OG card's status", () => {
       authorsCollection: { items: [] },
     });
     expect(await status()).toBe(200);
+  });
+});
+
+describe("the post OG card's caching", () => {
+  it("never lets the CDN store the fallback card from a failed fetch", async () => {
+    getPost.mockRejectedValueOnce(new Error("Contentful down"));
+    expect((await card()).headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("holds a real post's card on the CDN", async () => {
+    // Known-bad control: a check that set no-store on everything would fail here.
+    getPost.mockResolvedValueOnce({
+      title: "A post",
+      authorsCollection: { items: [] },
+    });
+    expect((await card()).headers.get("cache-control")).toContain(
+      "s-maxage=31536000",
+    );
   });
 });
