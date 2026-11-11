@@ -27,7 +27,7 @@ export default function CollectionPage({
   visibleTags: Set<string>;
   /** Posts with a German version, for the rows' DE marker. */
   germanSlugs: Set<string>;
-  /** The closing line's lead-in, before "Browse the archive". */
+  /** The closing line's lead-in, before "The archive has everything else." */
   closing: string;
   jsonLd?: unknown;
 }) {
@@ -53,9 +53,9 @@ export default function CollectionPage({
           href="/archive"
           className="text-brand-crimson underline decoration-2 underline-offset-[3px] hover:decoration-4"
         >
-          Browse the archive
+          The archive
         </Link>{" "}
-        for the rest.
+        has everything else.
       </p>
     </div>
   );
