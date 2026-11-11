@@ -35,9 +35,9 @@ export default function PostStream({
 }) {
   const [latest, ...previous] = posts.slice(0, STREAM_POSTS);
   const older = posts.slice(STREAM_POSTS);
-  // Three across only when the cards fill their rows; a sparse strand stays
-  // two across rather than strand one card. [→ `strands`]
-  const across = previous.length % 3 === 0 ? 3 : 2;
+  // Two across only where it fills its rows (2 or 4 cards); otherwise three,
+  // so five cards sit 3 + 2 rather than leave one alone. [→ `strands`]
+  const across = previous.length === 2 || previous.length === 4 ? 2 : 3;
   return (
     <>
       {latest && (
