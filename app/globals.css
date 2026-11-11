@@ -333,12 +333,9 @@ html:has(dialog:modal) {
     padding-inline-end: 0;
   }
 
-  /* Map the typography plugin's slate palette to brand tokens. This block
-     already outranks the plugin's own `.prose` variable defaults by source
-     order, so setting the variables here re-tints every prose-inherited style
-     (body, links, bold, bullets, hr, captions, table borders) at once. Code and
-     pre variables are deliberately left unmapped — code blocks keep their
-     neutral idiom. */
+  /* Brand tokens for the plugin's palette. They win only while Tailwind's sort
+     emits this block after the plugin's defaults, which source order does not
+     decide. app/globals.cascade.test.ts guards it. Code and pre stay unmapped. */
   --tw-prose-body: var(--color-brand-dark);
   --tw-prose-headings: var(--color-brand-dark);
   --tw-prose-lead: var(--color-brand-muted);
