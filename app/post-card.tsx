@@ -144,27 +144,39 @@ export default async function PostCard({
 }: {
   post: ListPost;
   showStrand: boolean;
-  /** Columns from xl: 3 in a post stream, 2 under "more like this". */
-  across: 2 | 3;
+  /** Columns from xl: 2 or 3. "closing" is 3 from xl, and below it the full
+   *  row with cover and text side by side, sized as one card of two. */
+  across: 2 | 3 | "closing";
 }) {
   const strand = strandFor(post.category);
+  // Whole class strings: Tailwind cannot read a class glued to ${...}.
+  const shape =
+    across === "closing"
+      ? "flex w-full flex-col gap-4 overflow-hidden rounded-container pb-5 md:max-xl:grid md:max-xl:grid-cols-2 md:max-xl:gap-x-9 md:max-xl:pb-0"
+      : "flex w-full flex-col gap-4 overflow-hidden rounded-container pb-5";
   return (
     <article
-      className={`${press} flex w-full flex-col gap-4 overflow-hidden rounded-container pb-5 hover:translate-[3px] md:hover:translate-[4px] ${(strand ?? STRANDS[0]).cardShadow}`}
+      className={`${press} ${shape} hover:translate-[3px] md:hover:translate-[4px] ${(strand ?? STRANDS[0]).cardShadow}`}
     >
       <Cover
         post={post}
         priority={false}
-        // One column to md, then two, then `across` from xl. [→ `priority-opaque`]
-        sizes={`(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(50vw - 4rem), ${across === 3 ? "(width < 80rem) 540px, 343px" : "540px"}`}
+        // One column to md, then two (a closing card's half row is the same),
+        // then `across` from xl. [→ `priority-opaque`]
+        sizes={`(width < 48rem) calc(100vw - 2.375rem), (width < 75rem) calc(50vw - 4rem), ${across === 2 ? "540px" : "(width < 80rem) 540px, 343px"}`}
         className="aspect-3/2"
       />
-      <div className="flex flex-col gap-3.5 px-4.5">
+      <div
+        className={
+          across === "closing"
+            ? "flex flex-col gap-3.5 px-4.5 md:max-xl:self-center md:max-xl:py-5 md:max-xl:pl-0"
+            : "flex flex-col gap-3.5 px-4.5"
+        }
+      >
         <Meta post={post} className="text-sm" showStrand={showStrand} />
-        {/* Whole class strings: Tailwind cannot read a class glued to ${...}. */}
         <h3
           className={
-            across === 3
+            across !== 2
               ? "text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem] xl:text-2xl"
               : "text-2xl font-[800] leading-[1.05] text-balance md:text-[1.875rem]"
           }

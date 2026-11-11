@@ -55,12 +55,12 @@ const linksTo = (html: string, slug: string) =>
   count(html, new RegExp(`href="/posts/${slug}"`, "g"));
 
 describe("home", () => {
-  it("shows the feature card and six cards, then stops", async () => {
+  it("shows the feature card and five cards, then stops", async () => {
     const html = await toHtml(await Home());
-    expect(STREAM_POSTS).toBe(7);
-    expect(cards(html)).toBe(7);
-    expect(linksTo(html, "post-7")).toBe(1);
-    expect(linksTo(html, "post-8")).toBe(0);
+    expect(STREAM_POSTS).toBe(6);
+    expect(cards(html)).toBe(6);
+    expect(linksTo(html, "post-6")).toBe(1);
+    expect(linksTo(html, "post-7")).toBe(0);
   });
 });
 
@@ -77,39 +77,39 @@ describe("a collection page", () => {
       />,
     );
 
-  it("shows the latest seven as cards and every older post as a row", async () => {
+  it("shows the latest six as cards and every older post as a row", async () => {
     const html = await render(12);
-    expect(cards(html)).toBe(7);
-    expect(rows(html)).toBe(5);
+    expect(cards(html)).toBe(6);
+    expect(rows(html)).toBe(6);
     // Nothing hidden, nothing twice. [→ `listing-shell`]
     for (let i = 1; i <= 12; i++) expect(linksTo(html, `post-${i}`)).toBe(1);
     // Elsewhere every card and row keeps its strand pill, the control for the
     // strand page below.
-    expect(count(html, /href="\/categories\/blogging"/g)).toBe(5);
+    expect(count(html, /href="\/categories\/blogging"/g)).toBe(6);
     expect(count(html, /text-on-strand/g)).toBe(12);
     // On phones each row's strand is a dot instead, the control for below.
-    expect(count(html, /border-brand-dark sm:hidden/g)).toBe(5);
+    expect(count(html, /border-brand-dark sm:hidden/g)).toBe(6);
     // A row says when a German version exists, as the archive does; cards do
     // not. [→ `locale`]
     expect(count(html, /href="\/de\/posts\/post-10"/g)).toBe(1);
     expect(count(html, /href="\/de\/posts\/post-2"/g)).toBe(0);
   });
 
-  it("shows no rows, and no older posts label, at seven or fewer", async () => {
-    const html = await render(7);
-    expect(cards(html)).toBe(7);
+  it("shows no rows, and no older posts label, at six or fewer", async () => {
+    const html = await render(6);
+    expect(cards(html)).toBe(6);
     expect(rows(html)).toBe(0);
     expect(html).not.toContain("older posts");
   });
 });
 
 describe("a strand page", () => {
-  it("shows seven cards, then every older post as a row", async () => {
+  it("shows six cards, then every older post as a row", async () => {
     const html = await toHtml(
       await StrandPage({ params: Promise.resolve({ slug: "blogging" }) }),
     );
-    expect(cards(html)).toBe(7);
-    expect(rows(html)).toBe(5);
+    expect(cards(html)).toBe(6);
+    expect(rows(html)).toBe(6);
     for (let i = 1; i <= 12; i++) expect(linksTo(html, `post-${i}`)).toBe(1);
     // The page is the strand, so neither its cards nor its rows repeat it.
     expect(count(html, /href="\/categories\/blogging"/g)).toBe(0);

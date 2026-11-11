@@ -278,15 +278,15 @@ redirects to the archive, which already lists everything.
   fixed 3:2 in six columns, the text beside it in six, and the byline (one
   line), title (three) and excerpt (two) are clamped to fit; all 28 titles fit.
   The old 4:3 in five made the lead cover smaller than the cards below it. 3:2
-  at every width, like the cards; from `xl` two across for 2 or 4 cards, five
-  as a wide pair over three, else three (November 2026; 7 columns clipped 9).
+  at every width. Six posts as cards, 1 + 2 + 3 from `xl` (lead, wide pair,
+  three), size stepping down with age; fewer go 2, 3 or 2 + 2 (November 2026).
 - **Strand fills never invert**, so the pills keep cream text in both schemes;
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
   the `// latest post` and `// previous posts` labels are the `h2`s.
 - **A strand page is home with its chip pressed**, `/categories/[slug]`: an
   `sr-only` `h1`, since the chip names it, then every post in the strand,
-  seven as cards and the rest as rows, none repeating the strand pill. No
+  six as cards and the rest as rows, none repeating the strand pill. No
   description (it stays the meta description), no pager and no trail. Its
   posts are filtered from `getAllPosts` in memory, because cards need category
   and authors.
@@ -744,7 +744,7 @@ and `Container` in a route, and do not give a narrow route the wide header.
 <!-- key: listing-shell -->
 
 `app/collection-page.tsx`: the trail, a visible `h1` (no chip names the page),
-then `PostStream` with the latest seven, the same feature card and cards as
+then `PostStream` with the latest six, the same feature card and cards as
 home, then every older post as an archive-style row (`app/post-row.tsx`), and
 a closing line with the count. Every post on one page, nothing behind a load
 more: the collections run to a few dozen at most, and rows keep a long one

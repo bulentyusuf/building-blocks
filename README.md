@@ -48,8 +48,8 @@ A recurring subject of the blog is the process of building and maintaining it. M
 
 - Site search that runs entirely in the visitor's browser, with no third-party service and no query leaving the page
 - A header of strand chips, one per category plus All, that marks where the reader is. On phones they become one row that scrolls sideways, and Tags, Archive and About move into a menu
-- A home page with the latest post as a feature card, six more as cards and a link to the archive. No pagination anywhere
-- Category, tag and author landing pages that show every post: the latest seven as cards, the rest as compact rows. There is no index page for categories or authors, and those URLs redirect
+- A home page with the latest post as a feature card, five more as cards and a link to the archive. No pagination anywhere
+- Category, tag and author landing pages that show every post: the latest six as cards, the rest as compact rows. There is no index page for categories or authors, and those URLs redirect
 - A tag index with a post count per topic, each linking to its tag page. Tag pills on each post and on the feature card
 - Archive page listing every post grouped by year
 - Related posts scored on shared tags weighted by rarity, so an uncommon tag counts for more than a common one, with category and shared authorship as lesser signals
