@@ -67,8 +67,8 @@ describe("strand pills and card text clear AA in both schemes", () => {
 });
 
 describe("the post's code and prompt surfaces clear AAA", () => {
-  // The ink surface has its own dark value, so both schemes are checked. The
-  // cream code fill is light-only. [→ `post-page`]
+  // The ink surface and the inline code ink have dark values of their own, so
+  // both schemes are checked. [→ `post-page`]
   it.each(["light", "dark"] as const)(
     "the prompt label and white text on the ink surface, %s",
     (scheme) => {
@@ -82,11 +82,18 @@ describe("the post's code and prompt surfaces clear AAA", () => {
       );
     },
   );
-  it("ink on the inline code fill", () => {
-    expect(
-      contrast(light("--color-brand-dark"), light("--color-code-bg")),
-    ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
-  });
+  it.each(["light", "dark"] as const)(
+    "inline code ink on the page and the card panel, %s",
+    (scheme) => {
+      const token = scheme === "light" ? light : dark;
+      for (const ground of ["--color-brand-bg", "--color-card"]) {
+        expect(
+          contrast(token("--color-code-ink"), token(ground)),
+          ground,
+        ).toBeGreaterThanOrEqual(MIN_AAA_TEXT);
+      }
+    },
+  );
 });
 
 describe("muted small-caps labels clear AA in both schemes", () => {

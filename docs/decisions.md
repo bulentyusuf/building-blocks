@@ -318,7 +318,7 @@ The `h1` carries its own `data-pagefind-body`, since it sits outside the
   with a shadow, since it is pressable. Icon only at every width (November
   2026): the "prompt" pill covered too much of a phone cover.
 - **Code and prompt blocks are ink** with a `//` bar, grey-edged in dark mode.
-  Inline code is cream with an outline, never a border, so leading holds.
+  Inline code is green monospace, no fill or outline (November 2026).
 - **Numbered sections are the owner's call per post** (`numberedSections`):
   each H2 gets a tilted ink stamp and the ToC its number, both `aria-hidden`.
 - **A callout boxes exactly what the author marked** (the `callout` type: a

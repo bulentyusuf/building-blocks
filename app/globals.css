@@ -82,8 +82,9 @@
   --color-surface-dark: #241b1d;
   /* The label inside the prompt block, on surface-dark. [→ `post-page`] */
   --color-prompt-label: #f2c14e;
-  /* The inline code fill. [→ `post-page`] */
-  --color-code-bg: #f3eae3;
+  /* Inline code is coloured text with no box, AAA on the page and on the
+     card panel. [→ `post-page`] */
+  --color-code-ink: #1a5e33;
 
   /* Table treatment. Derived from the crimson token rather than the divider
      hairline, whose light value is a cool grey on a warm cream page and sits
@@ -136,6 +137,7 @@
     --color-card: #242327;
     /* Shiki's min-dark ground, so a code block's bar and body match. */
     --color-surface-dark: #1f1f1f;
+    --color-code-ink: #9fe0a8;
     --color-edge-quiet: #403f44;
     --color-dots: #2a292d;
     /* Darker than the grey edge and at least 3:1 on the page, so a shadow
@@ -373,24 +375,13 @@ html:has(dialog:modal) {
     font-family: var(--font-mono);
     font-weight: 400;
     font-style: normal;
-    /* An outline, never a border. A border plus padding made the inline box
-       taller than the line box, so leading went uneven in any paragraph
-       carrying a pill (measured 17px, 21px and 23px across three consecutive
-       lines), and a pill wrapped to a line start read as indented. An outline
-       takes no space, so neither happens. Ink on the fill is 14:1. */
-    background-color: var(--color-code-bg);
-    outline: 1.5px solid var(--color-brand-dark);
-    color: var(--color-brand-dark);
-    padding: 0.05em 0.3em;
-    border-radius: 0.2rem;
-    /* 0.78em holds code at 14px against the 1.125rem prose base. The blocks in
-       lib/rich-text.tsx use the same value, so inline and block code match. The
-       value is a budget, not a preference: at 14px a 640px code content box
-       (the 672px column less p-4) fits about 76 mono columns, against
-       Prettier's 80-character print width. Raising it to 0.875em costs nine of
-       them, and overflow-x-auto means that scrolls quietly on every sample
-       rather than breaking loudly on one. */
-    font-size: 0.78em;
+    color: var(--color-code-ink);
+    /* Mono spaces are wider than the body's, so without this the code sits
+       closer to its neighbours than its own words sit to each other. */
+    padding-inline: 0.15em;
+    /* Inline only, since code blocks are not-prose. Their 0.78em column budget
+       lives in lib/rich-text.tsx and does not apply to code that wraps. */
+    font-size: 0.9em;
   }
   & :where(code):not(:where([class~="not-prose"] *))::before {
     content: none;
@@ -406,22 +397,11 @@ html:has(dialog:modal) {
   content: "// " / "";
 }
 
-/* Inline code sits at high contrast against the charcoal dark-mode page (the
-   off-white ink), so this isn't a WCAG failure — but thin monospace strokes in
-   a light ink read fainter on a dark ground than the same weight does in dark
-   ink on a light one. font-weight is the fix; size is untouched, and code
-   blocks stay unaffected since they're not-prose. Light mode keeps 400.
-
-   The light fill is cream, which would vanish here, so dark mode keeps a 22%
-   crimson tint: 1.49:1 against the page, ink on it 10:1. */
+/* Thin light strokes read faint on a dark ground, so dark mode sets inline
+   code at 500. Light mode keeps 400. */
 @media (prefers-color-scheme: dark) {
   .prose :where(code):not(:where([class~="not-prose"] *)) {
     font-weight: 500;
-    background-color: color-mix(
-      in srgb,
-      var(--color-brand-crimson) 22%,
-      transparent
-    );
   }
 }
 
