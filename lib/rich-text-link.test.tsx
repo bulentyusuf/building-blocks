@@ -23,4 +23,15 @@ describe("renderHyperlink", () => {
   it("still degrades a javascript: href to text", () => {
     expect(html("javascript:alert(1)")).toBe("text");
   });
+
+  it("degrades a root-relative path hiding a tab or newline to text", () => {
+    expect(html("/\t/evil.com")).toBe("text");
+    expect(html("/\n/evil.com")).toBe("text");
+    expect(html("/\r/evil.com")).toBe("text");
+  });
+
+  // Known-bad control: the control-character check must not eat plain paths.
+  it("keeps a plain root-relative path as a link", () => {
+    expect(html("/posts/hello")).toBe('<a href="/posts/hello">text</a>');
+  });
 });
