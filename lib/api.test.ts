@@ -63,6 +63,36 @@ afterEach(() => {
 });
 
 describe("fetchGraphQL", () => {
+  it("warns once per retry, with the status and rate-limit reset", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response("{}", {
+          status: 429,
+          statusText: "Too Many Requests",
+          headers: { "X-Contentful-RateLimit-Reset": "1" },
+        }),
+      )
+      .mockResolvedValueOnce(ok(AUTHORS));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(getAllAuthors(false)).resolves.toHaveLength(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(
+      /^\[contentful\] retry 2\/3: .*429 Too Many Requests \(reset 1s\)/,
+    );
+  });
+
+  // Known-bad control: a warning on every request would pass the test above.
+  it("does not warn when the first attempt succeeds", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(ok(AUTHORS)));
+
+    await getAllAuthors(false);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it("returns items and makes a single request when Contentful answers", async () => {
     const fetchMock = vi.fn().mockResolvedValue(ok(AUTHORS));
     vi.stubGlobal("fetch", fetchMock);

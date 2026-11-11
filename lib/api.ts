@@ -248,6 +248,10 @@ async function fetchGraphQL<T>(
 
   for (let attempt = 1; attempt <= GRAPHQL_MAX_ATTEMPTS; attempt++) {
     if (attempt > 1) {
+      // Otherwise silent, so a build brushing the rate limit leaves no trace.
+      console.warn(
+        `[contentful] retry ${attempt}/${GRAPHQL_MAX_ATTEMPTS}: ${lastError?.message.slice(0, 200)}`,
+      );
       await retryDelay(GRAPHQL_RETRY_BASE_MS * 2 ** (attempt - 2));
     }
 
@@ -276,8 +280,9 @@ async function fetchGraphQL<T>(
 
     if (!response.ok) {
       const detail = await response.text();
+      const reset = response.headers.get("x-contentful-ratelimit-reset");
       lastError = new Error(
-        `Contentful GraphQL request failed: ${response.status} ${response.statusText} ${detail}`,
+        `Contentful GraphQL request failed: ${response.status} ${response.statusText}${reset ? ` (reset ${reset}s)` : ""} ${detail}`,
       );
       if (GRAPHQL_RETRY_STATUSES.has(response.status)) continue;
       throw lastError;
