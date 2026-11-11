@@ -2,35 +2,8 @@
 
 const isDev = process.env.NODE_ENV !== "production";
 
-// 'unsafe-inline' is kept deliberately. Removing it needs a per-request
-// nonce, which on App Router forces dynamic rendering and disables static
-// optimisation, ISR, and CDN HTML caching. Trusted-CMS, single-author threat
-// model makes that trade not worth it. See CLAUDE.md.
-// 'unsafe-eval' is added in development only. Turbopack and React need it for
-// dev debugging features, and React never uses eval in production, so the
-// production policy stays strict.
-// 'wasm-unsafe-eval' permits WebAssembly compilation only (not JS eval). It is
-// passed in by the /search rule below and deliberately absent from the base
-// policy: Pagefind's search core compiles WASM on /search alone, so every
-// other route serves the stricter form.
-//
-// cmsFraming adds Contentful to frame-ancestors, and is likewise passed in by
-// two rules rather than sitting in the base policy. The preview surface is the
-// post pages: the README configures the Post type's preview URL as
-// /api/draft?…&slug={entry.fields.slug}&locale={locale}, which redirects to
-// /posts/<slug>, or /de/posts/<slug> for de-DE, so those are the only
-// documents Contentful ever frames. It sat on the catch-all
-// for a long time, which made every published page on the site framable by the
-// CMS to buy preview on one of them.
-//
-// /api/draft deliberately does NOT carry it. frame-ancestors is enforced when
-// a document is DISPLAYED in a frame, and a 302 is never displayed — the final
-// /posts/<slug> response is the one the browser renders and checks. Adding a
-// rule there would be a rule that never fires.
-//
-// If a Page entry (about, privacy) is ever given a preview URL of its own,
-// this list is what has to grow with it, and preview will fail with a framing
-// error rather than anything that names this file.
+// Relaxations are passed in per route, never set on the base. 'unsafe-eval' is
+// dev-only, for Turbopack and React debugging. [→ `csp-scoping`]
 const contentSecurityPolicy = ({ wasm = false, cmsFraming = false } = {}) =>
   [
     "default-src 'self'",
@@ -52,15 +25,8 @@ const securityHeaders = [
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload",
   },
-  // Severs window.opener between this document and any cross-origin page that
-  // opened it or that it opens, so a page reached from an external link cannot
-  // reach back and navigate the tab it came from. It also puts the document in
-  // its own browsing context group, which is the precondition for
-  // cross-origin isolation if that is ever wanted.
-  //
-  // same-origin rather than same-origin-allow-popups: nothing here opens a
-  // popup it needs to keep talking to. Every external link is a plain
-  // target="_blank" that the reader navigates away into.
+  // Severs window.opener both ways. same-origin, not -allow-popups, because
+  // nothing here keeps talking to a window it opens.
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   {
     key: "Permissions-Policy",
@@ -73,22 +39,8 @@ const securityHeaders = [
   },
 ];
 
-// The one relaxation: /search loads Pagefind, whose core compiles WebAssembly,
-// so its document CSP adds 'wasm-unsafe-eval'. It carries only the CSP header;
-// X-Content-Type-Options and friends still reach /search through the catch-all,
-// whose other keys merge with this one.
-//
-// /pagefind/* also needs the relaxed CSP because Pagefind compiles WASM inside
-// a SharedWorker (pagefind-worker.js). SharedWorkers get their CSP from the
-// worker script's own response headers, not from the creating document, so
-// the worker script must carry 'wasm-unsafe-eval' on its own response.
-//
-// ORDERING IS LOAD-BEARING. Next.js walks header rules in array order and a
-// later match overwrites the same key, so the catch-all must come FIRST and
-// these rules win by following it. Inverted (PR #425), /search silently loses
-// 'wasm-unsafe-eval' and search fails in every Chromium browser with no
-// visible error. lib/csp-headers.test.ts resolves this array through those
-// semantics so the inversion cannot come back.
+// /search and /pagefind/* only. The worker script carries its own CSP. Must
+// follow the catch-all, because later rules win. [→ `csp-scoping`]
 const wasmCspHeaders = [
   {
     key: "Content-Security-Policy",
@@ -96,10 +48,7 @@ const wasmCspHeaders = [
   },
 ];
 
-// The other relaxation, and it follows the catch-all for the same last-wins
-// reason: /posts/* and /de/posts/* are the only documents Contentful frames
-// for live preview.
-// Everything else on the site is framable by this origin alone.
+// The only documents Contentful frames for preview. [→ `csp-scoping`]
 const previewCspHeaders = [
   {
     key: "Content-Security-Policy",
@@ -108,15 +57,10 @@ const previewCspHeaders = [
 ];
 
 module.exports = {
-  // Off by default in Next; suppresses free stack fingerprinting for no
-  // functional cost.
+  // Suppresses free stack fingerprinting.
   poweredByHeader: false,
-  // next dev upserts a managed block into CLAUDE.md on every start, via
-  // node_modules/next/dist/server/lib/generate-agent-files.js. CLAUDE.md is a
-  // hand-maintained house-rules doc and a tracked file, so a routine command
-  // rewriting it is a diff waiting to be committed by mistake. It happened
-  // once already and was caught by luck. start-server.js gates the write on
-  // this flag.
+  // Stops next dev writing a managed block into the tracked CLAUDE.md on every
+  // start, a diff easily committed by mistake.
   agentRules: false,
   images: {
     loader: "custom",
@@ -149,10 +93,8 @@ module.exports = {
         headers: previewCspHeaders,
       },
       {
-        // The dupe route. Crawlers only know /sitemap.xml. This marks the bare
-        // /sitemap-xml URL noindex without touching /sitemap.xml, because header
-        // source matching runs against the requested path, not the rewrite
-        // destination.
+        // Noindexes the bare route only. Headers match the requested path, so
+        // /sitemap.xml, rewritten here below, is untouched.
         source: "/sitemap-xml",
         headers: [{ key: "X-Robots-Tag", value: "noindex" }],
       },
@@ -215,10 +157,8 @@ module.exports = {
     ];
   },
   async rewrites() {
-    // /sitemap.xml is a Next-reserved metadata path whose special route does
-    // not honour on-demand tag invalidation. Serve our ordinary /sitemap-xml
-    // route handler at the canonical /sitemap.xml instead. This is an
-    // afterFiles rewrite, so it only fires because no /sitemap.xml file exists.
+    // Next's own /sitemap.xml ignores tag invalidation. This afterFiles rewrite
+    // fires only while no app/sitemap.xml file exists.
     return [{ source: "/sitemap.xml", destination: "/sitemap-xml" }];
   },
 };
