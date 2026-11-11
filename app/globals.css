@@ -379,14 +379,9 @@ html:has(dialog:modal) {
     /* Mono spaces are wider than the body's, so without this the code sits
        closer to its neighbours than its own words sit to each other. */
     padding-inline: 0.15em;
-    /* 0.78em holds code at 14px against the 1.125rem prose base. The blocks in
-       lib/rich-text.tsx use the same value, so inline and block code match. The
-       value is a budget, not a preference: at 14px a 640px code content box
-       (the 672px column less p-4) fits about 76 mono columns, against
-       Prettier's 80-character print width. Raising it to 0.875em costs nine of
-       them, and overflow-x-auto means that scrolls quietly on every sample
-       rather than breaking loudly on one. */
-    font-size: 0.78em;
+    /* Inline only, since code blocks are not-prose. Their 0.78em column budget
+       lives in lib/rich-text.tsx and does not apply to code that wraps. */
+    font-size: 0.875em;
   }
   & :where(code):not(:where([class~="not-prose"] *))::before {
     content: none;
