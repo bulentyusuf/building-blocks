@@ -376,6 +376,9 @@ html:has(dialog:modal) {
     font-weight: 400;
     font-style: normal;
     color: var(--color-code-ink);
+    /* Mono spaces are wider than the body's, so without this the code sits
+       closer to its neighbours than its own words sit to each other. */
+    margin-inline: 0.15em;
     /* 0.78em holds code at 14px against the 1.125rem prose base. The blocks in
        lib/rich-text.tsx use the same value, so inline and block code match. The
        value is a budget, not a preference: at 14px a 640px code content box
