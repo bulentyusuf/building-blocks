@@ -13,11 +13,11 @@ export function Label({ children }: { children: string }) {
   );
 }
 
-/** This many posts show as cards: the feature card, then six more, three
- *  across from xl. Home stops there; other listings go on as rows. [→ `strands`] */
-export const STREAM_POSTS = 7;
+/** This many posts show as cards: the feature card, then a wide pair and a
+ *  row of three. Home stops there; other listings go on as rows. [→ `strands`] */
+export const STREAM_POSTS = 6;
 
-/** The latest post as a feature card, six more as cards, then every older
+/** The latest post as a feature card, five more as cards, then every older
  *  post as a row. Home, strand, tag and author pages share it. [→ `strands`] */
 export default function PostStream({
   posts,
@@ -36,11 +36,13 @@ export default function PostStream({
   const [latest, ...previous] = posts.slice(0, STREAM_POSTS);
   const older = posts.slice(STREAM_POSTS);
   // From xl: two across for 2 or 4 cards, three otherwise. Five sit 2 + 3 on
-  // six columns, the newer pair wide, so size steps down with age. [→ `strands`]
+  // six columns, the newer pair wide, so size steps down with age. Below xl
+  // the fifth takes the row side by side rather than sit alone. [→ `strands`]
   const five = previous.length === 5;
   const across = previous.length === 2 || previous.length === 4 ? 2 : 3;
   // The pair spans half the row, so it sizes and sets type as two across.
-  const cardAcross = (i: number) => (five && i < 2 ? 2 : across);
+  const cardAcross = (i: number) =>
+    !five ? across : i < 2 ? 2 : i === 4 ? "closing" : 3;
   return (
     <>
       {latest && (
@@ -74,7 +76,9 @@ export default function PostStream({
                     ? "flex"
                     : i < 2
                       ? "flex xl:col-span-3"
-                      : "flex xl:col-span-2"
+                      : i === 4
+                        ? "flex md:col-span-2 xl:col-span-2"
+                        : "flex xl:col-span-2"
                 }
               >
                 <PostCard
