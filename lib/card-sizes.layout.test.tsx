@@ -84,7 +84,6 @@ vi.mock("@/lib/api", () => ({
   getGermanPostSlugs: async () => [],
   // No writers, so the footer renders no mascots.
   getAllAuthors: async () => [],
-  getAllTags: async () => [tag],
 }));
 
 const ROOT = path.join(__dirname, "..");

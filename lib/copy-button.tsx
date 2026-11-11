@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function CopyButton({
   code,
@@ -15,6 +15,9 @@ export default function CopyButton({
   // Gated on mount: with scripts off the button would announce and do nothing.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  // One timer at a time, so a second click gets its full two seconds.
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const noun = label.charAt(0).toUpperCase() + label.slice(1);
 
@@ -22,7 +25,8 @@ export default function CopyButton({
     try {
       await navigator.clipboard.writeText(code);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard unavailable; fail quietly.
     }

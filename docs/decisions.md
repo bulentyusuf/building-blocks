@@ -862,7 +862,7 @@ the theme.
 
 <!-- key: fetcher-cache -->
 
-No exceptions, including `getVisibleTagSlugs`. `lib/api.cache-invariant.test.ts`
+No exceptions. `lib/api.cache-invariant.test.ts`
 holds it, with the unwrapped form as its control. Rules telling call sites to
 fetch once failed because a call site cannot see composition: `PostPage` fetched
 once and `getPostAndMorePosts` fetched the same list internally. Passing a held
@@ -901,7 +901,7 @@ publishing reopens `expire: 0` and needs this entry rewritten first.
 <!-- key: collection-paging -->
 
 `fetchAllCollectionItems` in `lib/api.ts` pages through Contentful's 100-item
-ceiling for `getAllPosts`, `getGermanPostSlugs`, `getAllPages`, `getAllTags`,
+ceiling for `getAllPosts`, `getGermanPostSlugs`, `getAllPages`,
 `getAllCategories` and `getAllAuthors`. A query handed to it accepts
 `$limit: Int!` and `$skip: Int!` and selects `total` beside `items`; without
 `total` the first page silently becomes the whole result. Raise the page size

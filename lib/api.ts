@@ -1,6 +1,5 @@
 import "server-only";
 import { cache } from "react";
-import { visibleTagSlugs } from "./tags";
 import { relatedPosts } from "./related";
 import { MAX_AUTHORS, GERMAN_LOCALE, DEFAULT_LOCALE } from "./constants";
 import { present } from "./links";
@@ -357,15 +356,6 @@ function extractPost(fetchResponse: PostCollectionResponse): Post | undefined {
   return fetchResponse?.data?.postCollection?.items?.[0];
 }
 
-// For the category routes, whose held posts are already filtered by category
-// and cannot count tags sitewide. Not redundant with visibleTagSlugs.
-// [→ `tag-pages`]
-export const getVisibleTagSlugs = cache(
-  async (isDraftMode: boolean): Promise<Set<string>> => {
-    return visibleTagSlugs(await getAllPosts(isDraftMode));
-  },
-);
-
 // Reached twice per post render from two directions, and nothing below
 // dedupes: fetchGraphQL sets no cache option, so the response is never
 // persisted. [→ `post-scheduling`, `fetcher-cache`]
@@ -677,28 +667,6 @@ export const getTagBySlug = cache(
     );
 
     return entries?.data?.tagCollection?.items?.[0];
-  },
-);
-
-// No per-tag query: postsWithTag filters in memory. [→ `tag-pages`]
-
-export const getAllTags = cache(
-  async (isDraftMode: boolean): Promise<Tag[]> => {
-    return fetchAllCollectionItems<Tag>(
-      "tagCollection",
-      `query GetAllTags($preview: Boolean, $limit: Int!, $skip: Int!) {
-      tagCollection(where: { slug_exists: true }, order: name_ASC, preview: $preview, limit: $limit, skip: $skip) {
-        total
-        items {
-          name
-          slug
-          description
-        }
-      }
-    }`,
-      isDraftMode,
-      { preview: isDraftMode },
-    );
   },
 );
 
