@@ -251,7 +251,7 @@ The F2 refresh. Posts sit in three strands, the Contentful categories
 `blogging`, `films` and `games-and-gadgets`; `lib/strands.ts` maps each to a
 label and literal Tailwind classes, and any other category falls back to
 Blogging's colours under its own name. Home is the latest post as a feature
-card, six more cards and a link to `/archive`. No pager: `/page/:n`
+card, five more cards and a link to `/archive`. No pager: `/page/:n`
 redirects to the archive, which already lists everything.
 
 - **The chips are the header, on every page**: logo, four chips, a search
