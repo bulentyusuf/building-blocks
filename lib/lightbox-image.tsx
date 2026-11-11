@@ -3,27 +3,16 @@
 import { useEffect, useId, useRef, useState } from "react";
 import ContentfulImage from "@/lib/contentful-image";
 
-// The enlarge control is only offered when the enlarged view would be at least
-// this much wider than the picture as it sits in the post. On a phone the post
-// column already spans the screen, and a screenshot barely wider than the
-// column opens barely larger, so the click promises more than it gives.
+// Offer the click only if the enlarged view is at least this much wider. On a
+// phone most pictures already fill the column.
 const MIN_ENLARGE_GAIN = 1.25;
 
-// The widest file the site ever asks Contentful for, the largest entry in
-// images.deviceSizes in next.config.js. An asset stored wider than this still
-// reaches the reader as a file this wide, so the enlarged view stops here too,
-// or on a very large screen it would stretch that file past its own pixels.
-// lib/lightbox-image.test.tsx holds it against the config.
+// The largest images.deviceSizes entry, so nothing enlarges past the pixels it
+// receives. lib/lightbox-image.test.tsx holds it against next.config.js.
 export const WIDEST_SERVED_FILE = 1920;
 
-// How wide the enlarged picture will be, worked out in script the same way the
-// dialog's width calculation below works it out in the stylesheet. It is
-// computed here because the dialog is empty until the reader clicks, and the
-// question is whether to offer the click at all. The dialog's padding
-// is 1rem a side, rising to 2rem from 48rem up, the breakpoint its own padding
-// classes use. The 0.75 is the 75vh height limit. Change either there and it
-// has to change here too. The last limit is the width of the file the reader
-// actually receives, not the asset as stored.
+// Mirrors enlargedWidth below in script, because the dialog is empty until
+// opened. Its padding (p-4, md:p-8) and 75vh must change with the dialog's.
 export function worthEnlarging({
   shownWidth,
   assetWidth,
@@ -48,12 +37,8 @@ export function worthEnlarging({
   return enlarged >= shownWidth * MIN_ENLARGE_GAIN;
 }
 
-// A single inline body image that opens into a modal lightbox on click.
-// Server-rendered as a plain image — the button appears only after mount, so
-// with scripts off readers get the image rather than a dead control. The
-// enlarged view is a native <dialog> opened with showModal(), which supplies
-// the top layer, the inert page, Escape and the backdrop. The page scroll lock
-// is a CSS rule in app/globals.css. [→ `lightbox-dialog`]
+// An inline body image that opens into a native <dialog>.
+// [→ `lightbox-mounted`, `lightbox-dialog`]
 export default function LightboxImage({
   src,
   alt,
@@ -75,61 +60,37 @@ export default function LightboxImage({
   const closeRef = useRef<HTMLButtonElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // Whether this picture gets the enlarge control at all. False until judged,
-  // so the server and the first client render agree on a plain image.
+  // False until judged, so the server and first client render agree.
   const [enlargeable, setEnlargeable] = useState(false);
 
   const titleId = useId();
 
   useEffect(() => setMounted(true), []);
 
-  // The dialog's contents render only while open, so they exist by the time
-  // this runs. Focus is placed explicitly rather than left to each engine's
-  // choice of initial focus. [→ `lightbox-dialog`]
+  // Focus is set explicitly, because engines differ. [→ `lightbox-dialog`]
   useEffect(() => {
     if (!open) return;
     dialogRef.current?.showModal();
     closeRef.current?.focus();
   }, [open]);
 
-  // Every way out (Escape, the close button, a click beside the picture) ends
-  // in the dialog's own close event, so this is the one place state follows.
+  // Every way out ends in the dialog's close event, so state follows only here.
   const close = () => dialogRef.current?.close();
   const onClose = () => {
     setOpen(false);
     triggerRef.current?.focus();
   };
 
-  // The asset's real shape, which is what both renders below are laid out
-  // against. Contentful returns null for these on a non-image asset and a
-  // payload cached before they were queried has neither, so 3:2 remains as a
-  // fallback — it is the shape this component assumed for every image until
-  // now, and object-contain on the enlarged view is its safety net.
+  // Null on a non-image asset or an old cached payload, so 3:2 is the fallback,
+  // with object-contain on the enlarged view as the safety net.
   const w = width ?? 1200;
   const h = height ?? 800;
 
-  // The enlarged picture's width, worked out from the asset's own shape and
-  // the screen, never from the file the browser downloads. Left to size
-  // itself, the picture took the file's pixels divided by the screen's
-  // density, so one image opened at a different size on every screen, and on
-  // a phone some opened smaller than they sit in the post. Three limits, and
-  // the smallest wins. The dialog's width. The width at which the picture
-  // reaches 75vh tall, which leaves the picture room to breathe rather than
-  // filling the screen edge to edge. The width of the file the reader
-  // receives, which is the asset's own width or the widest file the site
-  // serves, whichever is smaller, because a picture blown up past its own
-  // pixels looks soft, and that is worse than a smaller one. On a short screen at a large reader font, a square picture can open
-  // a little smaller than it sits in the post. That is accepted, because the
-  // whole picture still shows in one view.
+  // The smallest of the dialog's width, 75vh tall, and the served file's width.
+  // Accepted: a square picture on a short screen can open smaller than inline.
   const enlargedWidth = `min(100%, calc(75vh * ${w} / ${h}), ${Math.min(w, WIDEST_SERVED_FILE)}px)`;
 
-  // Never wider than the asset itself. The column grows with the reader's font
-  // size, and at 20px it is 840px across, so a screenshot narrower than that
-  // was stretched to fill it and blurred. Capped here it sits centred at its
-  // own width instead. The trigger below takes the same cap, so the clickable
-  // area ends where the picture does.
-  // Judged after mount and again whenever the window changes size, because
-  // the answer depends on the screen as much as on the picture.
+  // Re-judged on resize, because the answer depends on the screen too.
   useEffect(() => {
     function judge() {
       const shown = imageRef.current?.getBoundingClientRect().width;
@@ -163,37 +124,24 @@ export default function LightboxImage({
       height={h}
       sizes="(max-width: 768px) 100vw, 672px"
       className="mx-auto w-full h-auto rounded-content border-2 border-gray-300 dark:border-brand-dark/15"
+      // Never wider than the asset, or a narrow screenshot stretches and blurs.
       style={{ maxWidth: w }}
     />
   );
 
   return (
     <>
-      {/* The trigger only exists once the script that powers it is running.
-          Rendered unconditionally it was a control that lies with JavaScript
-          off: focusable, announced as "Enlarge image", cursor-zoom-in, and
-          inert on click. The image itself never depended on JS, so degrading
-          to a plain image loses nothing — mounted gates the affordance, not
-          the content. It flips immediately after hydration. It also appears
-          only where enlarging is worth a click, judged above, and stays while
-          the dialog is open so focus has somewhere to return to. The dialog
-          follows the same condition, so a picture without the control carries
-          no dialog either. */}
+      {/* Stays while the dialog is open, so focus has somewhere to return.
+          [→ `lightbox-mounted`] */}
       {offered ? (
         <button
           ref={triggerRef}
           type="button"
           onClick={() => setOpen(true)}
-          // Deliberately bare, and never `Enlarge image: ${alt}`. aria-label on
-          // a button overrides its contents for naming, so folding the alt in
-          // here would duplicate a string the img already carries for crawlers
-          // while adding nothing for assistive tech. The button names the
-          // action; the image describes itself.
+          // Bare on purpose. aria-label overrides the contents, and the img
+          // already carries the alt.
           aria-label="Enlarge image"
-          // No local focus styling. The sitewide indicator in app/globals.css
-          // already clears 3:1 on both page grounds, and the local override it
-          // replaced drew a pure white gap between image and indicator, which
-          // showed as a pale stripe on the dark page. [→ `focus-indicator`]
+          // No local focus styling. [→ `focus-indicator`]
           className="mx-auto block w-full cursor-zoom-in"
           style={{ maxWidth: w }}
         >
@@ -210,9 +158,8 @@ export default function LightboxImage({
           aria-label={caption ? undefined : alt || "Enlarged image"}
           onClose={onClose}
           onClick={close}
-          // Stretched over the whole viewport so a click anywhere but the
-          // picture lands on the dialog itself. The padding matches what
-          // worthEnlarging() assumes above; change one and change the other.
+          // Full-viewport, so a click anywhere but the picture closes. Padding
+          // must match worthEnlarging().
           className="fixed inset-0 m-0 size-full max-h-none max-w-none items-center justify-center bg-transparent p-4 open:flex md:p-8 backdrop:bg-black/80"
         >
           {open && (
@@ -222,10 +169,8 @@ export default function LightboxImage({
                 type="button"
                 onClick={close}
                 aria-label="Close enlarged image"
-                // One of the sitewide focus exceptions. This button sits on the
-                // dimmed backdrop, where crimson falls to roughly 1.7:1 against
-                // the darkened ground (#9E2238 on #323130), so it takes white
-                // instead, which clears 12:1. [→ `focus-indicator`]
+                // A focus exception. Crimson is about 1.7:1 on the backdrop,
+                // white clears 12:1. [→ `focus-indicator`]
                 className="absolute top-4 right-4 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/40 bg-black/40 text-white hover:bg-brand-crimson focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <svg
@@ -244,10 +189,7 @@ export default function LightboxImage({
                 </svg>
               </button>
 
-              {/* Sized to the picture exactly, so there is no margin around it
-                  where a click lands without closing. Only the picture itself
-                  stops the click, so the caption and everything around the
-                  picture close the dialog. */}
+              {/* Sized to the picture, so only the picture stops a click. */}
               <figure
                 className="flex max-h-full flex-col"
                 style={{ width: enlargedWidth }}
@@ -256,25 +198,19 @@ export default function LightboxImage({
                   src={src}
                   alt={alt}
                   onClick={(e) => e.stopPropagation()}
-                  // The asset's own dimensions, not an upscaled 3:2 box. sizes
-                  // already tells Next what resolution to request, so these are
-                  // here to establish the aspect ratio and nothing else.
+                  // For the aspect ratio only. sizes picks the resolution.
                   width={w}
                   height={h}
                   sizes="100vw"
-                  // Framed like the inline figure, but the backdrop is always
-                  // black, so a light grey edge would glare — a soft white
-                  // hairline reads as the same intentional frame here.
+                  // A white hairline, because a grey edge glares on black.
                   className="max-h-[75vh] w-full h-auto object-contain border-2 border-white/15"
                 />
                 {caption && (
                   <figcaption
                     id={titleId}
-                    // A solid black backing of its own, sized to the text. The
-                    // backdrop is only partly opaque, so the page behind shows
-                    // through it and collided with the caption. The backdrop's
-                    // own opacity stays as it is, because the close button's
-                    // contrast figures above are worked out against it.
+                    // Its own black backing, because the backdrop lets the page
+                    // through. The backdrop stays, as the close button's
+                    // contrast is measured against it.
                     className="mt-1.5 self-center bg-black px-2 py-0.5 text-center text-sm italic text-white/80"
                   >
                     {caption}
