@@ -62,8 +62,8 @@ export default async function OpengraphImage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // A failed fetch still gets the site card. A slug with no post 404s, so the
-  // CDN never stores a card for it.
+  // A failed fetch still gets the site card, uncached so an outage cannot pin
+  // it. A slug with no post 404s, so the CDN never stores a card for it.
   const post = await getPost(slug, false).catch(() => null);
   if (post === undefined) return new Response(null, { status: 404 });
 
@@ -151,8 +151,9 @@ export default async function OpengraphImage({
       headers: {
         // The CDN holds the rendered card; the browser revalidates.
         // [→ `og-card-on-demand`]
-        "Cache-Control":
-          "public, max-age=0, s-maxage=31536000, must-revalidate",
+        "Cache-Control": post
+          ? "public, max-age=0, s-maxage=31536000, must-revalidate"
+          : "no-store",
       },
       fonts: [
         {
