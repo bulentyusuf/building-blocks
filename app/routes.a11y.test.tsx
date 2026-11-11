@@ -118,7 +118,6 @@ const germanPost = fullPost(
 
 vi.mock("@/lib/api", () => ({
   getAllPosts: async () => posts,
-  getAllTags: async () => tags,
   getAllAuthors: async () => [author],
   getAuthorBySlug: async () => author,
   getTagBySlug: async (slug: string) => tags.find((t) => t.slug === slug),

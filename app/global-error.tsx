@@ -6,6 +6,7 @@
 
 import "./globals.css";
 import { useEffect } from "react";
+import { DEFAULT_LOCALE } from "@/lib/constants";
 
 export default function GlobalError({
   error,
@@ -19,7 +20,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en-GB">
+    <html lang={DEFAULT_LOCALE}>
       <body className="min-h-screen flex items-center justify-center bg-brand-bg px-5">
         <main className="mx-auto max-w-xl text-center">
           <p className="text-lg font-bold uppercase tracking-wide text-brand-crimson">

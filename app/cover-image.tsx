@@ -1,6 +1,5 @@
 import ContentfulImage from "../lib/contentful-image";
 import Link from "next/link";
-import { clsx as cn } from "clsx";
 import { getBlurDataURL } from "@/lib/blur";
 import { isPlaceholderTitle } from "@/lib/placeholder-title";
 import type { CoverImage as CoverImageAsset } from "@/lib/types";
@@ -60,11 +59,14 @@ export default async function CoverImage({
       sizes={
         sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
       }
-      className={cn("object-cover", {
+      className={[
+        "object-cover",
         // No focus variant: focus never lands inside a hidden-from-tab link.
-        "motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.02] pointer-fine:motion-safe:will-change-transform":
-          hover,
-      })}
+        hover &&
+          "motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.02] pointer-fine:motion-safe:will-change-transform",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       src={image.url}
       placeholder={blurDataURL ? "blur" : "empty"}
       blurDataURL={blurDataURL}
@@ -75,16 +77,15 @@ export default async function CoverImage({
     // 1.06:1 on darker ground, where the keyline does the work.
     <div className={bare ? undefined : "shadow-lg sm:mx-0"}>
       <div
-        className={cn(
+        className={[
           "relative overflow-hidden bg-brand-dark/5",
-          bare ? undefined : "border border-cover-keyline",
+          !bare && "border border-cover-keyline",
           wide ? "aspect-3/2 md:aspect-video" : "aspect-3/2",
-          {
-            "cursor-pointer": linkHref,
-            group: hover,
-            "motion-safe:transform-gpu": hover,
-          },
-        )}
+          linkHref && "cursor-pointer",
+          hover && "group motion-safe:transform-gpu",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         {linkHref ? (
           // Mouse only: the card's heading links to the same place. aria-hidden
