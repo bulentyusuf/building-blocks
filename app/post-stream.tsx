@@ -35,9 +35,12 @@ export default function PostStream({
 }) {
   const [latest, ...previous] = posts.slice(0, STREAM_POSTS);
   const older = posts.slice(STREAM_POSTS);
-  // Three across only when the cards fill their rows; a sparse strand stays
-  // two across rather than strand one card. [→ `strands`]
-  const across = previous.length % 3 === 0 ? 3 : 2;
+  // From xl: two across for 2 or 4 cards, three otherwise. Five sit 2 + 3 on
+  // six columns, the newer pair wide, so size steps down with age. [→ `strands`]
+  const five = previous.length === 5;
+  const across = previous.length === 2 || previous.length === 4 ? 2 : 3;
+  // The pair spans half the row, so it sizes and sets type as two across.
+  const cardAcross = (i: number) => (five && i < 2 ? 2 : across);
   return (
     <>
       {latest && (
@@ -56,14 +59,29 @@ export default function PostStream({
           {/* Whole class strings, so Tailwind sees each one. */}
           <ul
             className={
-              across === 3
-                ? "grid gap-8 md:grid-cols-2 md:gap-9 xl:grid-cols-3"
-                : "grid gap-8 md:grid-cols-2 md:gap-9"
+              five
+                ? "grid gap-8 md:grid-cols-2 md:gap-9 xl:grid-cols-6"
+                : across === 3
+                  ? "grid gap-8 md:grid-cols-2 md:gap-9 xl:grid-cols-3"
+                  : "grid gap-8 md:grid-cols-2 md:gap-9"
             }
           >
-            {previous.map((post) => (
-              <li key={post.slug} className="flex">
-                <PostCard post={post} showStrand={showStrand} across={across} />
+            {previous.map((post, i) => (
+              <li
+                key={post.slug}
+                className={
+                  !five
+                    ? "flex"
+                    : i < 2
+                      ? "flex xl:col-span-3"
+                      : "flex xl:col-span-2"
+                }
+              >
+                <PostCard
+                  post={post}
+                  showStrand={showStrand}
+                  across={cardAcross(i)}
+                />
               </li>
             ))}
           </ul>

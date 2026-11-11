@@ -278,8 +278,8 @@ redirects to the archive, which already lists everything.
   fixed 3:2 in six columns, the text beside it in six, and the byline (one
   line), title (three) and excerpt (two) are clamped to fit; all 28 titles fit.
   The old 4:3 in five made the lead cover smaller than the cards below it. 3:2
-  at every width, like the cards; three across from `xl` when the cards fill
-  their rows, else two (November 2026; seven columns clipped nine titles).
+  at every width, like the cards; from `xl` two across for 2 or 4 cards, five
+  as a wide pair over three, else three (November 2026; 7 columns clipped 9).
 - **Strand fills never invert**, so the pills keep cream text in both schemes;
   `lib/palette-contrast.test.ts` holds them at 4.5:1.
 - Home's `h1` is an `sr-only` `SITE_TITLE`, the logo naming the site visually;
