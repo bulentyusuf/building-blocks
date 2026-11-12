@@ -183,20 +183,27 @@ describe("literal hexes track the tokens they duplicate", () => {
     ).toBe(false);
   });
 
-  it("keeps the lens ground's dark-mode fill the fixed cream, not a token", () => {
+  it("keeps the lens ground's fill the fixed cream, not a token", () => {
     // --color-brand-bg flips to near-black in dark mode and would paint a
     // black glass, so the ground the knockouts read against stays a literal
     // hex in both schemes rather than the token.
-    const m =
-      /prefers-color-scheme:dark\)\{\.search-lens-ground\{fill:(#[0-9a-fA-F]{6})\}/i.exec(
-        emblemSvg,
-      );
+    const m = /id="search-lens-ground"[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(
+      emblemSvg,
+    );
     expect(
       m,
-      "dark-mode ground fill not found in public/search-emblem.svg",
+      "ground fill not found in public/search-emblem.svg",
     ).not.toBeNull();
     expect(sameColour(parseColour(m![1]), light("--color-brand-bg"))).toBe(
       true,
     );
+  });
+
+  it("keeps colour-scheme media queries out of the emblem", () => {
+    // Safari did not apply prefers-color-scheme inside this <img> SVG, so a
+    // scheme-dependent fill renders wrong there. [→ `search-emblem`]
+    const scheme = /prefers-color-scheme/i;
+    expect(scheme.test("@media (prefers-color-scheme:dark){}")).toBe(true);
+    expect(scheme.test(emblemSvg)).toBe(false);
   });
 });
