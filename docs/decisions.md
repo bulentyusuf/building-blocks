@@ -182,10 +182,10 @@ stays indexed, so an author's name still finds their posts, and so does the
 <!-- key: search-emblem -->
 
 `public/search-emblem.svg` is loaded as an `<img>`, so it cannot read the page's
-tokens. Its cream ground stays `#FAF5F1` in both schemes via the SVG's own
-`@media` rule, so anything drawn on it in dark mode uses literal hex, never a
-brand token. `lib/palette-contrast.test.ts` checks it against the light
-`--color-brand-bg`. The ground is sliced from the glass outline and is not a
+tokens. Its cream ground is a plain `#FAF5F1` fill in both schemes, no `@media`
+rule, since Safari ignored `prefers-color-scheme` there and showed a see-through
+lens. Dark-mode marks on it use literal hex, never a brand token. The palette
+test checks it against the light `--color-brand-bg`. The ground is sliced from the glass outline and is not a
 tuning knob. Below `sm` it is 112px wide, not 192px, so the tag panel's heading
 and first tags show above the fold on a phone (November 2026).
 
